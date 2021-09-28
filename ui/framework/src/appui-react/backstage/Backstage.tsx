@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { UserInfo } from "@bentley/itwin-client";
 import { CommonProps, IconSpec, UiEvent } from "@itwin/core-react";
 import { Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
+import { UserInfo } from "../UserInfo";
 import { BackstageManager } from "./BackstageManager";
 
 // cSpell:ignore safearea

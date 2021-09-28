@@ -5,9 +5,8 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { Guid, Mutable } from "@itwin/core-bentley";
+import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { LockProps, LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
@@ -21,11 +20,11 @@ describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
 
   before(async () => {
     HubMock.startup("HubMockTest");
-    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Regular);
   });
   after(() => {
     HubMock.shutdown();

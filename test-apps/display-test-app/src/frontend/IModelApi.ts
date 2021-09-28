@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { AccessToken } from "@itwin/core-bentley";
 import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@itwin/core-common";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelHubFrontend } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelHubFrontend } from "@itwin/core-frontend";
 
 export class IModelApi {
 
   /** Get all iModels in a project */
-  public static async getIModelByName(requestContext: AuthorizedFrontendRequestContext, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
+  public static async getIModelByName(requestContext: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
     const iModels: HubIModel[] = await IModelHubFrontend.iModelClient.iModels.get(requestContext, projectId, queryOptions);

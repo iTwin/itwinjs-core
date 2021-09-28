@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "remove ClientRequestContext and its subclasses",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend"
+}

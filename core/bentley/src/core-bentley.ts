@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+export * from "./AccessToken";
 export * from "./Assert";
 export * from "./AsyncMutex";
 export * from "./BeEvent";
@@ -9,7 +10,6 @@ export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";
 export * from "./BeSQLite";
 export * from "./ByteStream";
-export * from "./ClientRequestContext";
 export * from "./Compare";
 export * from "./CompressedId64Set";
 export * from "./Dictionary";
@@ -19,13 +19,13 @@ export * from "./IndexMap";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
-export * from "./ProcessDetector";
 export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
 export * from "./OrderedId64Iterable";
 export * from "./OrderedSet";
 export * from "./partitionArray";
 export * from "./PriorityQueue";
+export * from "./ProcessDetector";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";

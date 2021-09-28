@@ -8,6 +8,9 @@
 export class AbandonedError extends Error {
 }
 
+// @beta
+export type AccessToken = string;
+
 // @public
 export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
 
@@ -212,30 +215,6 @@ export enum ChangeSetStatus {
     // (undocumented)
     Success = 0,
     WrongDgnDb = 90130
-}
-
-// @public
-export class ClientRequestContext {
-    constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
-    readonly activityId: GuidString;
-    readonly applicationId: string;
-    readonly applicationVersion: string;
-    // (undocumented)
-    static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
-    sanitize(): {
-        activityId: string;
-        applicationId: string;
-        applicationVersion: string;
-        sessionId: string;
-    };
-    readonly sessionId: GuidString;
-    // @internal (undocumented)
-    toJSON(): ClientRequestContextProps;
-}
-
-// @public
-export interface ClientRequestContextProps extends SessionProps {
-    readonly activityId?: GuidString;
 }
 
 // @public
@@ -1333,34 +1312,6 @@ export enum RpcInterfaceStatus {
     RPC_INTERFACE_ERROR_BASE = 135168,
     // (undocumented)
     Success = 0
-}
-
-// @public
-export interface SerializedClientRequestContext {
-    // (undocumented)
-    applicationId: string;
-    // (undocumented)
-    applicationVersion: string;
-    // (undocumented)
-    authorization?: string;
-    // (undocumented)
-    csrfToken?: {
-        headerName: string;
-        headerValue: string;
-    };
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    sessionId: string;
-    // (undocumented)
-    userId?: string;
-}
-
-// @public
-export interface SessionProps {
-    readonly applicationId: string;
-    readonly applicationVersion: string;
-    readonly sessionId: GuidString;
 }
 
 // @public

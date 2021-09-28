@@ -77,6 +77,7 @@ export * from "./NativeAppProps";
 export * from "./OctEncodedNormal";
 export * from "./Paging";
 export * from "./PlanarClipMask";
+export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
 export * from "./QPoint";
 export * from "./Render";
@@ -84,8 +85,16 @@ export * from "./RenderMaterial";
 export * from "./RenderSchedule";
 export * from "./RenderTexture";
 export * from "./RgbColor";
+export * from "./rpc/core/RpcConfiguration";
+export * from "./rpc/DevToolsRpcInterface";
+export * from "./rpc/IModelReadRpcInterface";
+export * from "./rpc/IModelTileRpcInterface";
+export * from "./rpc/SnapshotIModelRpcInterface";
+export * from "./rpc/TestRpcManager";
+export * from "./rpc/WipRpcInterface";
 export * from "./RpcInterface";
 export * from "./RpcManager";
+export * from "./SessionProps";
 export * from "./SkyBox";
 export * from "./Snapping";
 export * from "./SolarCalculate";
@@ -104,14 +113,6 @@ export * from "./TxnAction";
 export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";
-export * from "./rpc/DevToolsRpcInterface";
-export * from "./rpc/IModelReadRpcInterface";
-export * from "./rpc/IModelTileRpcInterface";
-export * from "./ModelGeometryChanges";
-export * from "./rpc/SnapshotIModelRpcInterface";
-export * from "./rpc/TestRpcManager";
-export * from "./rpc/WipRpcInterface";
-export * from "./rpc/core/RpcConfiguration";
 export * from "./rpc/core/RpcConstants";
 export * from "./rpc/core/RpcControl";
 export * from "./rpc/core/RpcInvocation";
@@ -142,7 +143,7 @@ export * from "./tile/TileMetadata";
 export * from "./WhiteOnWhiteReversalSettings";
 
 /** @docs-package-description
- * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
+ * The core-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Entities

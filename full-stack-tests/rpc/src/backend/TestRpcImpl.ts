@@ -7,8 +7,8 @@ import {
   IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
 } from "@itwin/core-common";
 import {
-  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
-  TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
+  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode,
+  TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3, TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
 export async function testInterfaceResource() {
@@ -124,7 +124,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op15(): Promise<void> {
-    if (RpcInvocation.currentRequest.applicationVersion !== "testbed1") {
+    if (RpcInvocation.currentActivity.applicationVersion !== "testbed1") {
       throw new Error("Wrong app version code.");
     }
 

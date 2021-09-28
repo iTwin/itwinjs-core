@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';

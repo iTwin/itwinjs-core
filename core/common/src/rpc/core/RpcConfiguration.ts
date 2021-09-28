@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { ClientRequestContext, SerializedClientRequestContext } from "@itwin/core-bentley";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { RpcActivity, SerializedRpcActivity } from "./RpcInvocation";
+import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol";
 import { INSTANCE } from "./RpcRegistry";
 import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
@@ -95,15 +95,20 @@ export abstract class RpcConfiguration {
   /** Enables passing of application-specific context with each RPC request. */
   public static requestContext: RpcRequestContext = {
     getId: (_request: RpcRequest): string => "",
-    serialize: async (_request: RpcRequest): Promise<SerializedClientRequestContext> => ({
-      id: _request.id,
+    serialize: async (request: RpcRequest): Promise<SerializedRpcActivity> => ({
+      id: request.id,
       applicationId: "",
       applicationVersion: "",
       sessionId: "",
       authorization: "",
-      userId: "",
     }),
-    deserialize: async (_request: SerializedRpcRequest): Promise<ClientRequestContext> => new ClientRequestContext(""),
+    deserialize: (request: SerializedRpcActivity): RpcActivity => ({
+      activityId: request.id,
+      applicationId: request.applicationId,
+      applicationVersion: request.applicationVersion,
+      sessionId: request.sessionId,
+      accessToken: request.authorization,
+    }),
   };
 
   /** @internal */

@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { AmbientOcclusion } from '@itwin/core-common';
 import { AnalysisStyle } from '@itwin/core-common';
 import { AnalysisStyleDisplacement } from '@itwin/core-common';
@@ -13,7 +13,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -26,14 +26,12 @@ import { BaseQuantityDescription } from '@itwin/appui-abstract';
 import { BatchType } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
-import { BentleyCloudRpcParams } from '@itwin/core-common';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { BoundingSphere } from '@itwin/core-common';
 import { BriefcaseDownloader } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
-import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
 import { ByteStream } from '@itwin/core-bentley';
 import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
@@ -43,7 +41,6 @@ import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
-import { ClientRequestContext } from '@itwin/core-bentley';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipStyle } from '@itwin/core-common';
@@ -99,7 +96,6 @@ import { FillFlags } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
 import * as Fuse from 'fuse.js';
@@ -249,7 +245,7 @@ import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SectionDrawingViewProps } from '@itwin/core-common';
-import { SessionProps } from '@itwin/core-bentley';
+import { SessionProps } from '@itwin/core-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -1206,12 +1202,6 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
 // @public
-export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
-    constructor(accessToken: AccessToken, activityId?: string);
-    static create(activityId?: string): Promise<AuthorizedFrontendRequestContext>;
-}
-
-// @public
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection);
     // (undocumented)
@@ -1561,17 +1551,13 @@ export class BingElevationProvider {
     getHeightAverage(iModel: IModelConnection): Promise<number>;
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
-    // (undocumented)
-    protected _requestContext: ClientRequestContext;
     }
 
 // @public
 export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
-    // (undocumented)
-    protected _requestContext: ClientRequestContext;
-}
+    }
 
 // @internal (undocumented)
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
@@ -3210,11 +3196,6 @@ export enum FrontendLoggerCategory {
 }
 
 // @public
-export class FrontendRequestContext extends ClientRequestContext {
-    constructor(activityId?: string);
-}
-
-// @public
 export interface FrontendSecurityOptions {
     readonly csrfProtection?: {
         readonly enabled: boolean;
@@ -4271,7 +4252,7 @@ export class IModelApp {
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
     static get applicationVersion(): string;
-    static authorizationClient?: FrontendAuthorizationClient;
+    static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @alpha
@@ -4348,7 +4329,7 @@ export interface IModelAppOptions {
     accuSnap?: AccuSnap;
     applicationId?: string;
     applicationVersion?: string;
-    authorizationClient?: FrontendAuthorizationClient;
+    authorizationClient?: AuthorizationClient;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
@@ -4540,9 +4521,9 @@ export class IModelHubFrontend {
 // @internal (undocumented)
 export interface IModelIdArg {
     // (undocumented)
-    iModelId: GuidString;
+    accessToken: AccessToken;
     // (undocumented)
-    requestContext: AuthorizedClientRequestContext;
+    iModelId: GuidString;
 }
 
 // @public
@@ -4872,7 +4853,9 @@ export class LocalhostIpcApp {
 }
 
 // @internal (undocumented)
-export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
+export interface LocalHostIpcAppOpts {
+    // (undocumented)
+    iModelApp?: IModelAppOptions;
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
@@ -5222,8 +5205,6 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // (undocumented)
-    protected _requestContext: ClientRequestContext;
-    // (undocumented)
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
@@ -5284,7 +5265,7 @@ export class MapLayerSettingsService {
     // (undocumented)
     static deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
-    static getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
+    static getSettingFromUrl(accessToken: AccessToken, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
     static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
     // (undocumented)
     static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
@@ -6489,7 +6470,7 @@ export class NativeApp {
     }
 
 // @public
-export class NativeAppAuthorization {
+export class NativeAppAuthorization implements AuthorizationClient {
     constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
@@ -6500,7 +6481,7 @@ export class NativeAppAuthorization {
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
 }
@@ -6524,10 +6505,7 @@ export class NativeAppLogger {
 // @public
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
-    nativeApp?: {
-        authConfig?: NativeAppAuthorizationConfiguration;
-        noInitializeAuthClient?: boolean;
-    };
+    nativeApp?: {};
 }
 
 // @internal
@@ -13004,26 +12982,6 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
     latitudeToYFraction(latitude: number): number;
     // (undocumented)
     yFractionToLatitude(yFraction: number): number;
-}
-
-// @beta
-export class WebViewerApp {
-    // (undocumented)
-    static shutdown(): Promise<void>;
-    // (undocumented)
-    static startup(opts: WebViewerAppOpts): Promise<void>;
-}
-
-// @beta
-export interface WebViewerAppOpts {
-    // (undocumented)
-    iModelApp?: IModelAppOptions;
-    // (undocumented)
-    webViewerApp: {
-        rpcParams: BentleyCloudRpcParams;
-        routing?: RpcRoutingToken;
-        authConfig?: BrowserAuthorizationClientConfiguration;
-    };
 }
 
 // @internal

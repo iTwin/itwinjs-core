@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@itwin/core-frontend";
+import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
+import { AccessToken } from "@itwin/core-bentley";
 
 export class IModelSession {
 
@@ -22,7 +23,7 @@ export class IModelSession {
     this.changesetId = changesetId;
   }
 
-  public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
+  public static async create(requestContext: AccessToken, iModelData: IModelData): Promise<IModelSession> {
     let contextId;
     let imodelId;
 

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ClientRequestContext, Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
 import { request } from "@bentley/itwin-client";
@@ -27,7 +27,6 @@ export class MapTileLoader extends RealityTileLoader {
   protected readonly _heightRange: Range1d | undefined;
   public override get isContentUnbounded(): boolean { return true; }
   public isTileAvailable(quadId: QuadId) { return this.terrainProvider.isTileAvailable(quadId); }
-  private _requestContext = new ClientRequestContext("");
 
   public constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, private _terrainProvider: TerrainMeshProvider) {
     super();
@@ -56,7 +55,7 @@ export class MapTileLoader extends RealityTileLoader {
     const tileRequestOptions = this._terrainProvider.requestOptions;
 
     try {
-      const response = await request(this._requestContext, tileUrl, tileRequestOptions);
+      const response = await request(tileUrl, tileRequestOptions);
       if (response.status === 200)
         return new Uint8Array(response.body);
 

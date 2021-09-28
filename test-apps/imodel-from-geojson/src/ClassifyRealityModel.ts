@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { getJson } from "@bentley/itwin-client";
-import { ClientRequestContext, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
 import {
@@ -64,7 +64,7 @@ class RealityModelTileUtils {
   }
 
   public static async rangeFromUrl(url: string): Promise<AxisAlignedBox3d> {
-    const json = await getJson(new ClientRequestContext(), url);
+    const json = await getJson(url);
     return RealityModelTileUtils.rangeFromJson(json);
   }
 }

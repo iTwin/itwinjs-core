@@ -672,6 +672,7 @@ internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
+public;UserInfo
 beta;UserSettingsProvider
 public;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void

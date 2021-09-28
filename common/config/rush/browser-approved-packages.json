@@ -952,7 +952,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "webpack-core",

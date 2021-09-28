@@ -6,8 +6,8 @@
  * @module Introspection
  */
 
-import { getErrorProps, Logger } from "@itwin/core-bentley";
-import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, getErrorProps, Logger } from "@itwin/core-bentley";
+import { ImsAuthorizationClient, removeAccessTokenPrefix, RequestGlobalOptions } from "@bentley/itwin-client";
 import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
@@ -65,8 +65,8 @@ export class IntrospectionClient {
     return this._issuerUrl;
   }
 
-  public async introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse> {
-    const accessTokenStr = requestContext.accessToken.toTokenString(IncludePrefix.No);
+  public async introspect(accessToken: AccessToken): Promise<IntrospectionResponse> {
+    const accessTokenStr = removeAccessTokenPrefix(accessToken) ?? "";
 
     try {
       const cachedResponse = await this._cache.get(accessTokenStr);

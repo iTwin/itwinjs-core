@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { CancelRequest } from '@bentley/itwin-client';

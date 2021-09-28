@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
 import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -21,7 +21,6 @@ import {
   GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 
 export class IModelTransformerTestUtils {
@@ -822,7 +821,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeSeparator();
     await this.exporter.exportAll();
   }
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
+  public async exportChanges(requestContext: AccessToken, startChangeSetId?: string): Promise<void> {
     this._shouldIndent = false;
     return this.exporter.exportChanges(requestContext, startChangeSetId);
   }

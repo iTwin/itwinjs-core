@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ClientRequestContext, ProcessDetector } from "@itwin/core-bentley";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { I18NOptions } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
@@ -49,15 +49,15 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+  const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new NativeAppAuthorization(oidcConfiguration);
-    await desktopClient.initialize(requestContext);
+    await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
@@ -77,11 +77,14 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<N
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const requestContext = new FrontendRequestContext();
-  const oidcClient = await createOidcClient(requestContext);
+  const oidcClient = await createOidcClient({
+    applicationId: IModelApp.applicationId,
+    applicationVersion: IModelApp.applicationVersion,
+    sessionId: IModelApp.sessionId,
+  });
 
   IModelApp.authorizationClient = oidcClient;
-  if (oidcClient.isAuthorized)
+  if ((await oidcClient.getAccessToken()) !== undefined)
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {

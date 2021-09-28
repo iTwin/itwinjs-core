@@ -84,9 +84,9 @@ In V2, the constructor of the base exception class [BentleyError]($core-bentley)
 
 The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
 
-## ClientRequestContext.current has been removed
+## ClientRequestContext and AuthorizedClientRequestContext have been removed
 
-The class [ClientRequestContext]($core-bentley) exists to identify RPC requests between a web frontend and a cloud backend. In V2, had a static (i.e. global) member called `current` whose purpose was to identify the _current request_ for logging from the backend. The members of `ClientRequestContext` called `sessionId` and `activityId` were "magically" appended in log messages without the need for passing the current request context as an argument. That originally seemed like a good idea, but became hopelessly complicated as asynchronous code was introduced. That's because when async methods run, there can be many request contexts extant simultaneously. So, it became the job of all code that awaited an async function to accept an argument with a request context and call `.enter()` on it, to set the very global variable whose existence was solely to avoid having to have the argument in the first place! Needless to say, global variables and `async`s don't mix and the whole concept has been removed.
+The classes `ClientRequestContext` and `AuthorizedClientRequestContext` existed to identify RPC requests between a web frontend and a cloud backend. They have been removed. Most places that previously used an `AuthorizedClientRequestContext` should now be replaced with [AccessToken]($core-bentley).
 
 If you have code that has something like this:
 
@@ -94,9 +94,9 @@ If you have code that has something like this:
 requestContext.enter();
 ```
 
-you can simply delete it. If your function accepts a [ClientRequestContext]($core-bentley) merely to call `enter` on it, consider refactoring your code to remove the argument.
+you can simply delete it.
 
-This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all _unhandled_ exceptions will automatically be logged along the appropriate `ClientRequestContext`. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
+This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate RPC metadata. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
 
 ## Viewport.zoomToElements improvements
 
@@ -622,6 +622,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
+| `WebAppViewer`                                | *eliminated*                                                       |
 
 ### @itwin/core-geometry
 
@@ -647,7 +648,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
-| `ContentLayoutProps.priority` | _eliminated_ |
+| `ContentLayoutProps.priority` | *eliminated* |
 
 ### @itwin/core-react
 
@@ -686,20 +687,20 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                                    | Replacement                                                                                                                   |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                      | `SYSTEM_PREFERRED_COLOR_THEME` in @itwin/appui-react is used as default color theme                                           |
-| `FunctionKey`                              | `FunctionKey` in @itwin/appui-abstract                                                                                        |
-| `IModelAppUiSettings`                      | `UserSettingsStorage` in @itwin/appui-react                                                                                   |
+| `COLOR_THEME_DEFAULT`                      | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                              | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                      | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
 | `ConfigurableUiManager.findFrontstageDef`  | `FrontstageManager.findFrontstageDef`                                                                                         |
-| `ConfigurableUiManager.loadContentGroup`   | _eliminated_                                                                                                                  |
-| `ConfigurableUiManager.loadContentGroups`  | _eliminated_                                                                                                                  |
-| `ConfigurableUiManager.loadContentLayout`  | _eliminated_                                                                                                                  |
-| `ConfigurableUiManager.loadContentLayouts` | _eliminated_                                                                                                                  |
-| `ContentGroupManager`                      | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentGroup`   | *eliminated*                                                                                                                  |
+| `ConfigurableUiManager.loadContentGroups`  | *eliminated*                                                                                                                  |
+| `ConfigurableUiManager.loadContentLayout`  | *eliminated*                                                                                                                  |
+| `ConfigurableUiManager.loadContentLayouts` | *eliminated*                                                                                                                  |
+| `ContentGroupManager`                      | *eliminated*                                                                                                                  |
 | `Frontstage.initializeFrontstageDef`       | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
 | `Frontstage.findFrontstageDef`             | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
 | `Frontstage.initializeFromProvider`        | `Frontstage.create` (async method)                                                                                            |
 | `FrontstageProps.defaultLayout`            | `ContentGroup` now holds the layout information.                                                                              |
-| `FrontstageProvider.initializeDef`         | _eliminated_                                                                                                                  |
+| `FrontstageProvider.initializeDef`         | *eliminated*                                                                                                                  |
 | `FrontstageProvider.frontstageDef`         | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
 | `reactElement` in ContentControl           | `ContentControl.reactNode`                                                                                                    |
 | `reactElement` in NavigationAidControl     | `NavigationAidControl.reactNode`                                                                                              |
@@ -710,13 +711,13 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
 | `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
 | `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
-| `UserProfileBackstageItem`                 | _eliminated_                                                                                                                  |
-| `SignIn`                                   | _eliminated_                                                                                                                  |
-| `SignOutModalFrontstage`                   | _eliminated_                                                                                                                  |
-| `IModelConnectedCategoryTree`              | _eliminated_                                                                                                                  |
-| `IModelConnectedModelsTree`                | _eliminated_                                                                                                                  |
-| `IModelConnectedSpatialContainmentTree`    | _eliminated_                                                                                                                  |
-| `CategoryTreeWithSearchBox`                | _eliminated_                                                                                                                  |
+| `UserProfileBackstageItem`                 | *eliminated*                                                                                                                  |
+| `SignIn`                                   | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                   | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`              | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`                | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree`    | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
@@ -727,7 +728,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed         | Replacement                                                |
 | --------------- | ---------------------------------------------------------- |
 | `Config`        | Use `process.env` to access environment variables directly |
-| `EnvMacroSubst` | _eliminated_                                               |
+| `EnvMacroSubst` | *eliminated*                                               |
 
 ### @itwin/presentation-common
 
@@ -737,11 +738,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ContentInstancesOfSpecificClassesSpecification.arePolymorphic` | `ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically`                                                                                |
 | `ContentModifiersList.propertiesDisplay`                        | `ContentModifiersList.propertyOverrides`                                                                                                                       |
 | `ContentModifiersList.propertyEditors`                          | `ContentModifiersList.propertyOverrides`                                                                                                                       |
-| `ContentRelatedInstancesSpecification.isRecursive`              | _eliminated_                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.isRecursive`              | *eliminated*                                                                                                                                                   |
 | `ContentRelatedInstancesSpecification.relatedClasses`           | `ContentRelatedInstancesSpecification.relationshipPaths.targetClass`                                                                                           |
 | `ContentRelatedInstancesSpecification.relationships`            | `ContentRelatedInstancesSpecification.relationshipPaths.relationship`                                                                                          |
 | `ContentRelatedInstancesSpecification.requiredDirection`        | `ContentRelatedInstancesSpecification.relationshipPaths.direction`                                                                                             |
-| `ContentRelatedInstancesSpecification.skipRelatedLevel`         | _eliminated_                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.skipRelatedLevel`         | *eliminated*                                                                                                                                                   |
 | `Descriptor.toCompressedJSON`                                   | `Descriptor.toJSON`                                                                                                                                            |
 | `DescriptorOverrides.hiddenFieldNames`                          | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
 | `DescriptorOverrides.sortDirection`                             | `DescriptorOverrides.sorting.direction`                                                                                                                        |
@@ -752,22 +753,22 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ExtendedHierarchyRequestOptions`                               | `HierarchyRequestOptions`                                                                                                                                      |
 | `ExtendedHierarchyRpcRequestOptions`                            | `HierarchyRpcRequestOptions`                                                                                                                                   |
 | `Field.fromJSON`                                                | `Field.fromCompressedJSON`                                                                                                                                     |
-| `HierarchyCompareRpcOptions`                                    | _eliminated_                                                                                                                                                   |
+| `HierarchyCompareRpcOptions`                                    | *eliminated*                                                                                                                                                   |
 | `LabelRequestOptions`                                           | `DisplayLabelRequestOptions`                                                                                                                                   |
 | `LabelRpcRequestOptions`                                        | `DisplayLabelRpcRequestOptions`                                                                                                                                |
 | `LoggingNamespaces`                                             | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
 | `NodeDeletionInfo.target`                                       | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
 | `NodeDeletionInfoJSON.target`                                   | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
-| `PresentationDataCompareOptions`                                | _eliminated_                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchies`                   | _eliminated_                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchiesPaged`              | _eliminated_                                                                                                                                                   |
+| `PresentationDataCompareOptions`                                | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`                   | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`              | *eliminated*                                                                                                                                                   |
 | `PresentationRpcInterface.getContent`                           | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
 | `PresentationRpcInterface.getContentAndSize`                    | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
 | `PresentationRpcInterface.getDisplayLabelDefinitions`           | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
 | `PresentationRpcInterface.getDistinctValues`                    | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
 | `PresentationRpcInterface.getNodes`                             | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
 | `PresentationRpcInterface.getNodesAndCount`                     | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.loadHierarchy`                        | _eliminated_                                                                                                                                                   |
+| `PresentationRpcInterface.loadHierarchy`                        | *eliminated*                                                                                                                                                   |
 | `PresentationUnitSystem`                                        | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
 | `PropertiesFieldDescriptor.propertyClass`                       | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
 | `PropertiesFieldDescriptor.propertyName`                        | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
@@ -776,8 +777,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `RelatedInstanceNodesSpecification.relatedClasses`              | `RelatedInstanceNodesSpecification.relationshipPaths.targetClass`                                                                                              |
 | `RelatedInstanceNodesSpecification.relationships`               | `RelatedInstanceNodesSpecification.relationshipPaths.relationship`                                                                                             |
 | `RelatedInstanceNodesSpecification.requiredDirection`           | `RelatedInstanceNodesSpecification.relationshipPaths.direction`                                                                                                |
-| `RelatedInstanceNodesSpecification.skipRelatedLevel`            | _eliminated_                                                                                                                                                   |
-| `RelatedInstanceNodesSpecification.supportedSchemas`            | _eliminated_                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.skipRelatedLevel`            | *eliminated*                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.supportedSchemas`            | *eliminated*                                                                                                                                                   |
 | `RelatedInstanceSpecification.class`                            | `RelatedInstanceSpecification.relationshipPath.targetClass`                                                                                                    |
 | `RelatedInstanceSpecification.relationship`                     | `RelatedInstanceSpecification.relationshipPath.relationship`                                                                                                   |
 | `RelatedInstanceSpecification.requiredDirection`                | `RelatedInstanceSpecification.relationshipPath.direction`                                                                                                      |
@@ -787,8 +788,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `RelatedPropertiesSpecification.relationships`                  | `RelatedPropertiesSpecification.propertiesSource.relationship`                                                                                                 |
 | `RelatedPropertiesSpecification.requiredDirection`              | `RelatedPropertiesSpecification.propertiesSource.direction`                                                                                                    |
 | `Ruleset.supportedSchemas`                                      | `Ruleset.requiredSchemas`                                                                                                                                      |
-| `RequestPriority`                                               | _eliminated_                                                                                                                                                   |
-| `RequestOptions<TIModel>.priority`                              | _eliminated_                                                                                                                                                   |
+| `RequestPriority`                                               | *eliminated*                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                              | *eliminated*                                                                                                                                                   |
 | `SelectClassInfo.pathToPrimaryClass`                            | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
 | `SelectClassInfo.relatedInstanceClasses`                        | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
 | `SelectClassInfoJSON.pathToPrimaryClass`                        | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
@@ -845,10 +846,10 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `TreeWithUnifiedSelectionProps`                        | `UnifiedSelectionTreeEventHandlerParams`        |
 | `useControlledTreeFiltering`                           | `useControlledPresentationTreeFiltering`        |
 
-### @itwin/ecschema-metadata
+### @iwin/ecschema-metadata
 
-| Removed                                  | Replacement                                                |
-| ---------------------------------------- | ---------------------------------------------------------- |
+| Removed                                  | Replacement                                                  |
+| ---------------------------------------- | ------------------------------------------------------------ |
 | `IDiagnostic`                            | `IDiagnostic` in @itwin/ecschema-editing                   |
 | `BaseDiagnostic`                         | `BaseDiagnostic` in @itwin/ecschema-editing                |
 | `DiagnosticType`                         | `DiagnosticType` in @itwin/ecschema-editing                |
@@ -870,9 +871,16 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @itwin/ecschema-editing      |
 | `SchemaValidater`                        | `SchemaValidater` in @itwin/ecschema-editing               |
 | `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @itwin/ecschema-editing       |
-| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                          |
-| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                      |
-| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                            |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                            |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                        |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                              |
+
+### @bentley/itwin-client
+
+| Removed                            | Replacement                    |
+| ---------------------------------- | ------------------------------ |
+| `UserInfo`                         | Moved to @itwin/appui-react |
+| `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
 <!---
 User Interface Changes - section to comment below
@@ -891,15 +899,15 @@ For migration purposes, React 16 is included in the peerDependencies for the pac
 
 ### New options for defining Frontstages
 
-| Class/Component                                 | Description                                                                                      |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Class/Component                                  | Description                                                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
 | [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
 | [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
 | [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
 | [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
 | [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
-| [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
+| [StandardContentLayouts]($appui-abstract)           | Provides standard view layouts that can be used when defining a ContentGroup.                    |
 | [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
 ### New Timeline Date Marker

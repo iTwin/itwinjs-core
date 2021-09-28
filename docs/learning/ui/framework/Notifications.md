@@ -23,7 +23,7 @@ Thereafter, the NotificationManager methods are available via `IModelApp.notific
 // Use the AppNotificationManager subclass from ui-framework to get prompts and messages
 import { AppNotificationManager } from "@itwin/appui-react";
 . . .
-  const opts: WebViewerAppOpts & NativeAppOpts = {
+  const opts: NativeAppOpts = {
     iModelApp: {
       . . .
       notifications: new AppNotificationManager(),

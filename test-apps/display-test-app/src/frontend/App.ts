@@ -5,26 +5,29 @@
 
 import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
-  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
+  ToolAdmin,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
+import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
+import { FrameStatsTool } from "./FrameStatsTool";
 import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
@@ -32,17 +35,15 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
+import { signIn } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ApplyModelDisplayScaleTool } from "./DisplayScale";
-import { SyncViewportsTool } from "./SyncViewportsTool";
-import { FrameStatsTool } from "./FrameStatsTool";
-import { signIn } from "./signIn";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -207,22 +208,9 @@ export class DisplayTestApp {
         },
         /* eslint-enable @typescript-eslint/naming-convention */
       },
-      webViewerApp: {
-        rpcParams: {
-          uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
-          info: { title: "DisplayTestApp", version: "v1.0" },
-        },
-        authConfig: {
-          clientId: "imodeljs-spa-test",
-          redirectUri: "http://localhost:3000/signin-callback",
-          scope: "openid email profile organization itwinjs",
-          responseType: "code",
-        },
-      },
       localhostIpcApp: {
         socketPort: 3002,
       },
-
     };
 
     this._iTwinId = configuration.iTwinId;
@@ -234,6 +222,14 @@ export class DisplayTestApp {
     } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
     } else {
+      const redirectUri = "http://localhost:3000/signin-callback";
+      const urlObj = new URL(redirectUri);
+      if (urlObj.pathname === window.location.pathname) {
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+      }
+
+      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
       await LocalhostIpcApp.startup(opts);
     }
 

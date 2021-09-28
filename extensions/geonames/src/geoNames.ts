@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ClientRequestContext, Logger } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import {
@@ -73,7 +73,6 @@ class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
 export class GeoNameMarkerManager {
   private _markerSet: GeoNameMarkerSet;
   public static decorator?: GeoNameMarkerManager; // static variable so we can tell if the manager is active.
-  protected _requestContext = new ClientRequestContext("");
   private static _scratchCarto = Cartographic.createZero();
   private static _scratchPoint = Point3d.createZero();
 
@@ -135,7 +134,7 @@ export class GeoNameMarkerManager {
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      const locationResponse: Response = await request(this._requestContext, url, requestOptions);
+      const locationResponse: Response = await request(url, requestOptions);
 
       const cities = new Array<GeoNameProps>();
       for (const geoName of locationResponse.body.geonames) {

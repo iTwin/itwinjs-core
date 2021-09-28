@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Logger, LogLevel } from "@itwin/core-bentley";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@itwin/core-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@itwin/oidc-signin-tool/lib/frontend";
@@ -69,8 +68,7 @@ export class TestContext {
 
     const iModelData = this.settings.iModel;
 
-    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
-    this.iModelWithChangesets = await IModelSession.create(requestContext, iModelData);
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, iModelData);
     this.iTwinId = this.iModelWithChangesets.iTwinId;
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });

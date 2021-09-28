@@ -15,7 +15,6 @@ import { Logger } from "@itwin/core-bentley";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
 
 export const assetsPath = `${__dirname}/../../../lib/test/assets/`;
 export const workDir = `${__dirname}/../../../lib/test/output/`;
@@ -35,10 +34,10 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   const orchestratorUrl: string = process.env.IMJS_TEST_IMODEL_BANK_URL ?? "";
 
   const basicAuthentication: boolean = !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK_BASIC_AUTHENTICATION ?? "");
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+  const getAuthorizationClient = (userCredentials: any) => {
     return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   };
 
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
@@ -148,10 +147,10 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   }
 
   const basicAuthentication: boolean = !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK_BASIC_AUTHENTICATION ?? "");
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+  const getAuthorizationClient = (userCredentials: any) => {
     return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   };
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;

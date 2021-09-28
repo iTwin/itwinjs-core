@@ -9,7 +9,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
 import { I18N } from "@itwin/core-i18n";
-import { UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
 

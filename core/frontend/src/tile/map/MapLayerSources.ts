@@ -8,7 +8,6 @@ import { compareStrings, getErrorMessage } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
@@ -212,8 +211,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const requestContext = new FrontendRequestContext();
-      const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
+      const sourcesJson = await getJson("assets/MapLayerSources.json");
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);

@@ -16,17 +16,17 @@ Instead of repeating steps 2 and 3, it's possible to [create a listener](#creati
 
 When a user [subscribes to events](#creating-events-subscription), they have to provide `EventType`s of `IModelHubEvent`s they want to receive. iModelHub sends these events:
 
-| Type                                        | Description                                                                         |
-| ------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `AllCodesDeletedEvent`                      | All `HubCode`s for a `Briefcase` are deleted. |
-| `AllLocksDeletedEvent`                      | All `Lock`s for a `Briefcase` are deleted.    |
-| `BriefcaseDeletedEvent`                     | A `Briefcase` was deleted.                                       |
-| `ChangeSetPostPushEvent`                    | A `ChangeSet` was successfully pushed.                          |
-| `ChangeSetPrePushEvent`                     | A `ChangeSet` push has started.                                 |
-| `CodeEvent`                                 | One or more `HubCode`s were updated.                             |
-| `IModelDeletedEvent`                        | An iModel was deleted.                                                              |
-| `LockEvent`                                 | One or more `Lock`s were updated.                                |
-| `VersionEvent`                              | A new named `Version` was created.                               |
+| Type                     | Description                                   |
+| ------------------------ | --------------------------------------------- |
+| `AllCodesDeletedEvent`   | All `HubCode`s for a `Briefcase` are deleted. |
+| `AllLocksDeletedEvent`   | All `Lock`s for a `Briefcase` are deleted.    |
+| `BriefcaseDeletedEvent`  | A `Briefcase` was deleted.                    |
+| `ChangeSetPostPushEvent` | A `ChangeSet` was successfully pushed.        |
+| `ChangeSetPrePushEvent`  | A `ChangeSet` push has started.               |
+| `CodeEvent`              | One or more `HubCode`s were updated.          |
+| `IModelDeletedEvent`     | An iModel was deleted.                        |
+| `LockEvent`              | One or more `Lock`s were updated.             |
+| `VersionEvent`           | A new named `Version` was created.            |
 
 > `CodeEvent` and `LockEvent` includes every updated `HubCode` or `Lock` value, so it tends to be quite chatty. It's recommended to not subscribe to these events, unless they are necessary for your workflow.
 
@@ -68,7 +68,7 @@ If `EventHandler.getEvent` is called with a timeout duration specified, this req
 
 `EventHandler.createListener` can be used to handle repeated calls to `EventHandler.getEvent` and `EventHandler.getSASToken`.
 
-Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). [AccessToken]($itwin-client) could be retrieved from credentials stored somewhere else or refreshed before it expires.
+Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). `AccessToken` could be retrieved from credentials stored somewhere else or refreshed before it expires.
 
 ```ts
 [[include:EventHandler.createListener.authenticate.example-code]]
@@ -92,7 +92,7 @@ Deleting the listener after it's no longer necessary is just calling the callbac
 [[include:EventHandler.createListener.delete.example-code]]
 ```
 
-Event listener will work in the background, continuously getting events for a specific `EventSubscription`. Once an `IModelHubEvent` is received, all registered listener callbacks for that subscription are called. If `EventSAS` expires, `EventHandler.getSASToken` will be called automatically. If [AccessToken]($itwin-client) expires, authentication callback will be called to refresh that token.
+Event listener will work in the background, continuously getting events for a specific `EventSubscription`. Once an `IModelHubEvent` is received, all registered listener callbacks for that subscription are called. If `EventSAS` expires, `EventHandler.getSASToken` will be called automatically. If `AccessToken` expires, authentication callback will be called to refresh that token.
 
 Event listener will stop if there's an error getting events for that subscription or when all listeners for it are deleted. In the latter case, any outstanding long polling requests could still complete.
 

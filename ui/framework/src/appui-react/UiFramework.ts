@@ -9,17 +9,18 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
+import { RpcActivity } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
+import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { IModelServices } from "./clientservices/IModelServices";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
@@ -31,12 +32,12 @@ import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
-import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
+import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
+import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 
 // cSpell:ignore Mobi
 
@@ -84,7 +85,7 @@ export interface TrackingTime {
 }
 
 /**
- * Manages the Redux store, I18N service and iModel, Project and Login services for the appui-react package.
+ * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
  */
 export class UiFramework {
@@ -185,15 +186,10 @@ export class UiFramework {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
     if (isFrontendAuthorizationClient(oidcClient)) {
-      const authorized = IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-      if (authorized) {
-        const accessToken = await oidcClient.getAccessToken();
-        UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
-      }
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
-    // Initialize imodel-components-react, components-react, core-react & appui-abstract
+    // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
     await UiIModelComponents.initialize(UiFramework._i18n);
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
@@ -328,7 +324,7 @@ export class UiFramework {
 
   /** @internal */
   public static get packageName(): string {
-    return "appui-react";
+    return "ui-framework";
   }
 
   /** @internal */
@@ -512,7 +508,7 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  public static isMobile() {  // eslint-disable-line @itwin/prefer-get
+  public static isMobile() {  // eslint-disable-line @bentley/prefer-get
     return ProcessDetector.isMobileBrowser;
   }
 
@@ -543,11 +539,17 @@ export class UiFramework {
    */
   // istanbul ignore next
   public static async postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+    if (!IModelApp.authorizationClient)
       return;
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const activity: RpcActivity = {
+      sessionId: IModelApp.sessionId,
+      activityId: "",
+      applicationId: IModelApp.applicationId,
+      applicationVersion: IModelApp.applicationVersion,
+      accessToken: (await IModelApp.authorizationClient.getAccessToken()) ?? "",
+    };
     const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
-    await IModelApp.telemetry.postTelemetry(requestContext, telemetryEvent);
+    await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
@@ -559,8 +561,6 @@ export class UiFramework {
 
   // istanbul ignore next
   private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
-    UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
-
     if (accessToken === undefined) {
       ConfigurableUiManager.closeUi();
     }

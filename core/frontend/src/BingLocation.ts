@@ -6,7 +6,6 @@
  * @module Tiles
  */
 
-import { ClientRequestContext } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
@@ -17,8 +16,6 @@ import { GlobalLocation } from "./ViewGlobalLocation";
  */
 export class BingLocationProvider {
   private _locationRequestTemplate: string;
-  // private _localCircularSearchRequestTemplate: string;
-  protected _requestContext = new ClientRequestContext("");
 
   constructor() {
     let bingKey = "";
@@ -36,7 +33,7 @@ export class BingLocationProvider {
     const requestUrl = this._locationRequestTemplate.replace("{query}", query);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
-      const locationResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      const locationResponse: Response = await request(requestUrl, requestOptions);
       const point = locationResponse.body.resourceSets[0].resources[0].point;
       const bbox = locationResponse.body.resourceSets[0].resources[0].bbox;
       const southLatitude = bbox[0];

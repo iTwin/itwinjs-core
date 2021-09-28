@@ -10,7 +10,6 @@ import { assert } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { getJson } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "./FrontendRequestContext";
 import { GeographicTilingScheme, QuadId } from "./tile/internal";
 
 let instance: ApproximateTerrainHeights | undefined;
@@ -40,8 +39,7 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (undefined === this._terrainHeights) {
-      const requestContext = new FrontendRequestContext();
-      this._terrainHeights = await getJson(requestContext, "assets/approximateTerrainHeights.json");
+      this._terrainHeights = await getJson("assets/approximateTerrainHeights.json");
     }
   }
 

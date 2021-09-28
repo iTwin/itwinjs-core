@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessTokenProps } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AngleProps } from '@itwin/core-geometry';
 import { AnyGeometryQuery } from '@itwin/core-geometry';
@@ -15,8 +15,6 @@ import { BentleyStatus } from '@itwin/core-bentley';
 import { BriefcaseStatus } from '@itwin/core-bentley';
 import { ByteStream } from '@itwin/core-bentley';
 import { ChangeSetStatus } from '@itwin/core-bentley';
-import { ClientRequestContext } from '@itwin/core-bentley';
-import { ClientRequestContextProps } from '@itwin/core-bentley';
 import { ClipPlane } from '@itwin/core-geometry';
 import { ClipPlaneContainment } from '@itwin/core-geometry';
 import { ClipVector } from '@itwin/core-geometry';
@@ -30,6 +28,7 @@ import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
+import { GuidString as GuidString_2 } from '@itwin/core-bentley/src/Id';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
@@ -64,7 +63,6 @@ import { Range3dProps } from '@itwin/core-geometry';
 import { Readable } from 'stream';
 import { RepositoryStatus } from '@itwin/core-bentley';
 import { RpcInterfaceStatus } from '@itwin/core-bentley';
-import { SerializedClientRequestContext } from '@itwin/core-bentley';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Vector2d } from '@itwin/core-geometry';
@@ -500,7 +498,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     getOperationFromPath(path: string): SerializedRpcOperation;
     inflateToken(tokenFromBody: IModelRpcProps, request: SerializedRpcRequest): IModelRpcProps;
     protocolVersionHeaderName: string;
-    serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
+    serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined): string;
     // @internal
     supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
@@ -5127,14 +5125,14 @@ export interface NativeAppFunctions {
     deleteBriefcaseFiles(_fileName: string): Promise<void>;
     downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number): Promise<LocalBriefcaseProps>;
     // (undocumented)
-    getAccessTokenProps(): Promise<AccessTokenProps>;
+    getAccessToken: () => Promise<AccessToken | undefined>;
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
     getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
-    initializeAuth(props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
+    initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
     // (undocumented)
-    setAccessTokenProps(token: AccessTokenProps): Promise<void>;
+    setAccessToken(token: AccessToken): Promise<void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
@@ -5153,7 +5151,7 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
     // (undocumented)
-    notifyUserStateChanged(accessToken?: AccessTokenProps): void;
+    notifyUserStateChanged(accessToken?: AccessToken): void;
 }
 
 // @internal (undocumented)
@@ -6684,6 +6682,12 @@ export interface RootSubjectProps {
 }
 
 // @public
+export interface RpcActivity extends SessionProps {
+    readonly accessToken: AccessToken;
+    readonly activityId: GuidString;
+}
+
+// @public
 export abstract class RpcConfiguration {
     // @alpha (undocumented)
     allowAttachedInterfaces: boolean;
@@ -6840,11 +6844,11 @@ export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
     // (undocumented)
-    static currentRequest: ClientRequestContext;
+    static currentActivity: RpcActivity;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
     // @internal
-    static logRpcException(currentRequest: ClientRequestContext, error: any): void;
+    static logRpcException(activity: RpcActivity, operationName: string, error: unknown): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
@@ -6853,7 +6857,7 @@ export class RpcInvocation {
     }
 
 // @public
-export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
+export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 // @public
 export class RpcManager {
@@ -6923,7 +6927,7 @@ export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
     allowTokenMismatch: boolean;
     forceStrictMode: boolean;
-    invocationCallback: RpcInvocationCallback_T;
+    invocationCallback: RpcInvocationCallback;
     requestCallback: RpcRequestCallback_T;
     retryInterval: RpcRequestInitialRetryIntervalSupplier_T;
     sentCallback: RpcRequestCallback_T;
@@ -6982,7 +6986,7 @@ export abstract class RpcProtocol {
     abstract readonly requestType: typeof RpcRequest;
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
-    serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
+    serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
     transferChunkThreshold: number;
 }
@@ -7190,9 +7194,9 @@ export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 // @public
 export interface RpcRequestContext {
-    deserialize: (request: SerializedRpcRequest) => Promise<ClientRequestContext>;
+    deserialize: (request: SerializedRpcActivity) => RpcActivity;
     getId: (request: RpcRequest) => string;
-    serialize: (request: RpcRequest) => Promise<SerializedClientRequestContext>;
+    serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }
 
 // @public
@@ -7370,6 +7374,25 @@ export enum SectionType {
 }
 
 // @public
+export interface SerializedRpcActivity {
+    // (undocumented)
+    applicationId: string;
+    // (undocumented)
+    applicationVersion: string;
+    // (undocumented)
+    authorization: string;
+    // (undocumented)
+    csrfToken?: {
+        headerName: string;
+        headerValue: string;
+    };
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    sessionId: string;
+}
+
+// @public
 export interface SerializedRpcOperation {
     // (undocumented)
     encodedRequest?: string;
@@ -7382,7 +7405,7 @@ export interface SerializedRpcOperation {
 }
 
 // @public
-export interface SerializedRpcRequest extends SerializedClientRequestContext {
+export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     caching: RpcResponseCacheControl;
     // (undocumented)
@@ -7407,6 +7430,13 @@ export class ServerError extends IModelError {
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
     constructor(message: string);
+}
+
+// @public
+export interface SessionProps {
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString_2;
 }
 
 // @beta

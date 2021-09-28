@@ -49,21 +49,23 @@
   $small-space: 5px;
 
   .iui-expandable-block {
-    > .iui-header {
+    >.iui-header {
       padding: $small-space $small-space !important;
 
-      > .iui-icon {
+      >.iui-icon {
         width: $uicore-icons-x-small !important;
         height: $uicore-icons-x-small !important;
 
-        margin-top: $small-space !important;
         margin-left: $iui-xs !important;
-        margin-right: $iui-s !important;
+      }
+
+      >.iui-expandable-block-label {
+        margin-left: 8px;
       }
     }
 
     &.iui-expanded {
-      > .iui-content {
+      >.iui-content {
         padding: 0 !important;
       }
     }

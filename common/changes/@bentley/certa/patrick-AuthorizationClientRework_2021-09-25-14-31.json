@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/certa",
+      "comment": "remove ClientRequestContext and its subclasses",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa"
+}

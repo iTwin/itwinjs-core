@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "remove ClientRequestContext and its subclasses",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework"
+}

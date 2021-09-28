@@ -7,8 +7,8 @@
  * @module BrowserAuthorization
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, IDisposable, Logger } from "@itwin/core-bentley";
-import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, assert, AuthStatus, BeEvent, BentleyError, IDisposable, Logger } from "@itwin/core-bentley";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
@@ -60,12 +60,15 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   protected _accessToken?: AccessToken;
+  protected _expiresAt?: Date;
 
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
   }
 
   public get hasExpired(): boolean {
+    if (this._expiresAt)
+      return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired;
     return !this._accessToken;
   }
 
@@ -244,7 +247,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       this._accessToken = undefined;
       return;
     }
-    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
+    this._accessToken = `Bearer ${user.access_token}`;
+    this._expiresAt = new Date(user.expires_at * 1000);
   }
 
   /**

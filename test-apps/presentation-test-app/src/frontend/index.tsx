@@ -7,7 +7,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
-import { IModelApp, IModelAppOptions, WebViewerApp } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
@@ -32,12 +33,9 @@ export class SampleApp {
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
     } else if (ProcessDetector.isBrowserProcess) {
-      await WebViewerApp.startup({
-        iModelApp: iModelAppOpts,
-        webViewerApp: {
-          rpcParams: { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" },
-        },
-      });
+      const rpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      await IModelApp.startup(iModelAppOpts);
+      BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []);
     }
     const readyPromises = new Array<Promise<void>>();
 

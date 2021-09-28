@@ -286,6 +286,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
@@ -299,6 +300,7 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
     devDependencies:
       '@bentley/itwin-client': link:../itwin
       '@itwin/build-tools': link:../../tools/build
@@ -2046,6 +2048,7 @@ importers:
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
       webpack: 4.42.0
+      webpack-cli: ^3.1.0
       webpack-core: 0.6.9
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
@@ -2095,6 +2098,7 @@ importers:
       source-map-loader: 1.1.3_webpack@4.42.0
       typescript: 4.4.3
       webpack: 4.42.0
+      webpack-cli: 3.3.12_webpack@4.42.0
       webpack-core: 0.6.9
 
   ../../full-stack-tests/ecschema-rpc-interface:
@@ -2287,6 +2291,7 @@ importers:
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
       webpack: 4.42.0
+      webpack-cli: ^3.1.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/context-registry-client': link:../../clients/context-registry
@@ -2327,6 +2332,7 @@ importers:
       source-map-loader: 1.1.3_webpack@4.42.0
       typescript: 4.4.3
       webpack: 4.42.0
+      webpack-cli: 3.3.12_webpack@4.42.0
 
   ../../full-stack-tests/presentation:
     specifiers:
@@ -2488,6 +2494,7 @@ importers:
       spdy: ^4.0.1
       typescript: ~4.4.0
       webpack: 4.42.0
+      webpack-cli: ^3.1.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
@@ -2519,6 +2526,7 @@ importers:
       source-map-loader: 1.1.3_webpack@4.42.0
       typescript: 4.4.3
       webpack: 4.42.0
+      webpack-cli: 3.3.12_webpack@4.42.0
 
   ../../full-stack-tests/rpc-interface:
     specifiers:
@@ -6700,6 +6708,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
+      '@bentley/webpack-tools-core': 2.19.13_webpack@4.44.2
       '@itwin/core-webpack-tools': 2.19.12_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
@@ -6800,6 +6809,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
+      '@bentley/webpack-tools-core': 2.19.13_webpack@4.44.2
       '@itwin/core-webpack-tools': 2.19.12_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
@@ -6900,6 +6910,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
+      '@bentley/webpack-tools-core': 2.19.13_webpack@4.44.2
       '@itwin/core-webpack-tools': 2.19.12_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
@@ -6991,8 +7002,8 @@ packages:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
     dev: true
 
-  /@itwin/core-webpack-tools/2.19.12_webpack@4.44.2:
-    resolution: {integrity: sha512-01JjEKH/TA6T8TYmRU9I/QHPbEdNk4kVgqx7LeGwPUR9f7LVdcAKQhYEPOxMRTVkBeWrX3eoBtDLdB4AhR/2QQ==}
+  /@bentley/webpack-tools-core/2.19.13_webpack@4.44.2:
+    resolution: {integrity: sha512-Lk4OuAcABLhSm36k8TTkGGTDsCXl1DTwuMmaGlAk1Qe/DMcFeeOvUW/Uip8R7tTs9kW1RBXmx+nEYaW0RkTvOg==}
     peerDependencies:
       webpack: 4.42.0
     dependencies:
@@ -7208,6 +7219,25 @@ packages:
   /@istanbuljs/schema/0.1.3:
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
+
+  /@itwin/core-webpack-tools/2.19.12_webpack@4.44.2:
+    resolution: {integrity: sha512-01JjEKH/TA6T8TYmRU9I/QHPbEdNk4kVgqx7LeGwPUR9f7LVdcAKQhYEPOxMRTVkBeWrX3eoBtDLdB4AhR/2QQ==}
+    peerDependencies:
+      webpack: 4.42.0
+    dependencies:
+      chalk: 3.0.0
+      copy-webpack-plugin: 6.4.1_webpack@4.44.2
+      file-loader: 4.3.0_webpack@4.44.2
+      findup: 0.1.5
+      fs-extra: 8.1.0
+      glob: 7.1.7
+      lodash: 4.17.21
+      resolve: 1.19.0
+      source-map-loader: 1.1.3_webpack@4.44.2
+      webpack: 4.44.2
+      webpack-filter-warnings-plugin: 1.2.1_webpack@4.44.2
+      webpack-sources: 1.4.3
+    dev: true
 
   /@itwin/itwinui-css/0.27.3:
     resolution: {integrity: sha512-2kiak9/KX1QHv+aB1bcK3MjM6H2oF2QzrgRzYWfuBY/6uWWoIKLDzsCDJEplNCEbDHZTuYeojw2Ac/e9ieVVAg==}

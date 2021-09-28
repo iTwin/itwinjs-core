@@ -2,12 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContextProps } from "@itwin/core-bentley";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelDb, IModelHost, IModelJsFs } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/CheckpointManager";
-import { IModelRpcProps, RpcInterface, RpcInvocation, RpcManager } from "@itwin/core-common";
-import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
@@ -23,19 +21,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
     return JSON.parse(IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(testName, JSON.stringify(params)));
-  }
-
-  public async reportRequestContext(): Promise<ClientRequestContextProps> {
-    if (RpcInvocation.currentRequest instanceof AuthorizedClientRequestContext)
-      throw new Error("Did not expect AuthorizedClientRequestContext");
-    return RpcInvocation.currentRequest.toJSON();
-  }
-
-  public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
-    if (!(RpcInvocation.currentRequest instanceof AuthorizedClientRequestContext))
-      throw new Error("Expected AuthorizedClientRequestContext");
-    const context = RpcInvocation.currentRequest;
-    return context.toJSON();
   }
 
   public async getCloudEnv(): Promise<CloudEnvProps> {

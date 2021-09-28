@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as fs from "fs";
-import { ClientRequestContext, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb,
@@ -111,7 +112,7 @@ export class RealityModelContextIModelCreator {
 
     let json: any;
     try {
-      json = await getJson(new ClientRequestContext(), this.url);
+      json = await getJson(this.url);
     } catch (error) {
       process.stdout.write(`Error occurred requesting data from: ${this.url}Error: ${error}\n`);
     }

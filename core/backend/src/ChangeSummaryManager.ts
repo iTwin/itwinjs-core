@@ -6,9 +6,8 @@
  * @module iModels
  */
 
-import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -154,7 +153,7 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if the iModel is standalone
    * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
    */
-  public static async extractChangeSummaries(user: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
+  public static async extractChangeSummaries(user: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
     if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
@@ -495,7 +494,7 @@ export class ChangeSummaryManager {
    * @returns The id of the extracted change summary.
    * @beta
    */
-  public static async createChangeSummary(user: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String> {
+  public static async createChangeSummary(user: AccessToken, iModel: BriefcaseDb): Promise<Id64String> {
     if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
     const changesetId = iModel.changeset.id;
@@ -544,7 +543,7 @@ export class ChangeSummaryManager {
    * @param args Arguments including the range of versions for which Change Summaries are to be created, and other necessary input for creation
    */
   public static async createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]> {
-    const user = args.user ?? await IModelHost.getAuthorizedContext();
+    const user = args.user ?? await IModelHost.getAccessToken() ?? "";
     const { iModelId, iTwinId, range } = args;
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
@@ -562,7 +561,7 @@ export class ChangeSummaryManager {
     try {
       // Download a version that has the first change set applied
       const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
-      iModel = await BriefcaseDb.open({ user, fileName: props.fileName });
+      iModel = await BriefcaseDb.open({ fileName: props.fileName });
 
       const summaryIds = new Array<Id64String>();
       for (let index = 0; index < changesets.length; index++) {

@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GuidString } from "@itwin/core-bentley";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
 import { BriefcaseDb, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -18,12 +17,12 @@ export class TestChangeSetUtility {
   public projectId!: GuidString;
   public iModelId!: GuidString;
   private _iModel!: BriefcaseDb;
-  private _requestContext: AuthorizedClientRequestContext;
+  private _requestContext: AccessToken;
 
   private _modelId!: string;
   private _categoryId!: string;
 
-  constructor(requestContext: AuthorizedClientRequestContext, iModelName: string) {
+  constructor(requestContext: AccessToken, iModelName: string) {
     this._requestContext = requestContext;
     this._iModelName = HubUtility.generateUniqueName(iModelName); // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
   }

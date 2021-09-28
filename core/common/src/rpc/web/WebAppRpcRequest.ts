@@ -7,7 +7,7 @@
  */
 
 import "@ungap/url-search-params/index";
-import { BentleyStatus, SerializedClientRequestContext } from "@itwin/core-bentley";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -17,6 +17,7 @@ import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 
 /** @public */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -45,15 +46,14 @@ export class WebAppRpcRequest extends RpcRequest {
   public metadata = { status: 0, message: "" };
 
   /** Parse headers */
-  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedClientRequestContext {
-    const headerNames: SerializedClientRequestContext = protocol.serializedClientRequestContextHeaderNames;
-    const parsedHeaders: SerializedClientRequestContext = {
+  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
+    const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;
+    const parsedHeaders: SerializedRpcActivity = {
       id: req.header(headerNames.id) || "",
       applicationId: req.header(headerNames.applicationId) || "",
       applicationVersion: req.header(headerNames.applicationVersion) || "",
       sessionId: req.header(headerNames.sessionId) || "",
-      authorization: headerNames.authorization ? req.header(headerNames.authorization) : undefined,
-      userId: headerNames.userId ? req.header(headerNames.userId) : undefined,
+      authorization: (headerNames.authorization ? req.header(headerNames.authorization) : "") ?? "",
     };
     return parsedHeaders;
   }

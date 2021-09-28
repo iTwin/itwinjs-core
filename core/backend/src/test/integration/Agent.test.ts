@@ -5,9 +5,9 @@
 
 import { assert } from "chai";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { AuthorizedBackendRequestContext } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { AccessToken } from "@itwin/core-bentley";
 
 // Configuration needed
 //    IMJS_AGENT_TEST_CLIENT_ID
@@ -16,7 +16,7 @@ import { HubUtility } from "./HubUtility";
 describe("Agent iModel Download (#integration)", () => {
   let testProjectId: string;
   let testReadIModelId: string;
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
@@ -33,8 +33,7 @@ describe("Agent iModel Download (#integration)", () => {
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    const jwt = await agentClient.getAccessToken();
-    user = new AuthorizedBackendRequestContext(jwt);
+    user = await agentClient.getAccessToken();
 
     testProjectId = await HubUtility.getTestITwinId(user);
     testReadIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
