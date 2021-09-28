@@ -9,7 +9,7 @@
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import {
-  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, RealityDataProvider,
+  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, RealityDataProvider, RealityDataSourceKey,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -46,6 +46,8 @@ export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
   /** The iModel with which the reality model is associated. */
   public readonly iModel: IModelConnection;
+  /** The reality data source key with which the reality model is associated. */
+  public readonly rdSourceKey: RealityDataSourceKey;
 
   /** @internal */
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
@@ -54,14 +56,14 @@ export class ContextRealityModelState extends ContextRealityModel {
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     const provider = (undefined === props.orbitGtBlob) ? RealityDataProvider.ContextShare : RealityDataProvider.ContextShareOrbitGt;
     // TODO: &&Bed: use provider from key to select proper realityTileTree
-    const rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl,provider);
+    this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl,provider);
     const useOrbitGtTileTreeReference = provider === RealityDataProvider.ContextShareOrbitGt;
 
     this._treeRef = (!useOrbitGtTileTreeReference) ?
       createRealityTileTreeReference({
         iModel,
         source: displayStyle,
-        rdSourceKey,
+        rdSourceKey: this.rdSourceKey,
         url: props.tilesetUrl,
         name: props.name,
         classifiers: this.classifiers,
@@ -70,7 +72,7 @@ export class ContextRealityModelState extends ContextRealityModel {
       createOrbitGtTileTreeReference({
         iModel,
         orbitGtBlob: props.orbitGtBlob!,
-        rdSourceKey,
+        rdSourceKey: this.rdSourceKey,
         name: props.name,
         classifiers: this.classifiers,
         source: displayStyle,
