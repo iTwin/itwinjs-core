@@ -249,10 +249,17 @@ export class MapLayerSettings {
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
   public clone(changedProps: MapLayerProps): MapLayerSettings {
-    if (undefined === changedProps)
-      return this;
+    const clone = MapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
 
-    const props = {
+    // Clone members not part of MapLayerProps
+    clone.userName = this.userName;
+    clone.password = this.password;
+
+    return clone;
+  }
+
+  protected cloneProps(changedProps: MapLayerProps): MapLayerProps {
+    return {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
       formatId: undefined !== changedProps.formatId ? changedProps.formatId : this.formatId,
       visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
@@ -262,13 +269,6 @@ export class MapLayerSettings {
       subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
       accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
     };
-    const clone = MapLayerSettings.fromJSON(props)!;
-
-    // Clone members not part of MapLayerProps
-    clone.userName = this.userName;
-    clone.password = this.password;
-
-    return clone;
   }
 
   /** @internal */
@@ -376,10 +376,17 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     return props;
   }
 
+  public override cloneProps(changedProps: MapLayerProps): BaseMapLayerProps {
+    const props = super.cloneProps(changedProps) as BaseMapLayerProps;
+    if (this.provider)
+      props.provider = this.provider.toJSON();
+
+    return props;
+  }
+
   public override clone(changedProps: MapLayerProps): BaseMapLayerSettings {
     const prevUrl = this.url;
-    const clone = super.clone(changedProps);
-    assert(clone instanceof BaseMapLayerSettings);
+    const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
 
     if (this.provider && prevUrl !== this.url)
       clone._provider = undefined;
