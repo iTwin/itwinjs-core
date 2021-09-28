@@ -84,6 +84,7 @@ import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
+import { ExceptionMetaData } from '@bentley/bentleyjs-core';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureAppearance } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProvider } from '@bentley/imodeljs-common';
@@ -110,7 +111,6 @@ import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GeometrySummaryRequestProps } from '@bentley/imodeljs-common';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GlobeMode } from '@bentley/imodeljs-common';
 import { GltfBufferData } from '@bentley/imodeljs-common';
 import { GltfBufferView } from '@bentley/imodeljs-common';
@@ -6493,13 +6493,13 @@ export class NativeAppLogger {
     // (undocumented)
     static initialize(): void;
     // (undocumented)
-    static logError(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logError(category: string, message: string, metaData: ExceptionMetaData): void;
     // (undocumented)
-    static logInfo(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logInfo(category: string, message: string, metaData: ExceptionMetaData): void;
     // (undocumented)
-    static logTrace(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logTrace(category: string, message: string, metaData: ExceptionMetaData): void;
     // (undocumented)
-    static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logWarning(category: string, message: string, metaData: ExceptionMetaData): void;
     }
 
 // @public
