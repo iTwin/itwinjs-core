@@ -343,14 +343,14 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
   message: string;
 }
 
-/** A function that returns metadata for a [[BentleyError]].
- * Metadata is generally used for logging, and not every exception is logged. Use this if the metadata for an exception is expensive to create.
+/** A function that returns a metadata object for a [[BentleyError]].
+ * This is generally used for logging. However not every exception is logged, so use this if the metadata for an exception is expensive to create.
  * @public
  */
 export type GetMetaDataFunction = () => object | undefined;
 
 /** Optional metadata attached to a [[BentleyError]]. May either be an object or a function that returns an object.
- * If this exception is logged, the metadata object is attached to the log entry via `JSON.stringify`
+ * If this exception is logged and metadata is present, the metaData object is attached to the log entry via `JSON.stringify`
  * @public
  */
 export type ExceptionMetaData = GetMetaDataFunction | object | undefined;
@@ -374,7 +374,7 @@ export class BentleyError extends Error {
   /**
    * @param errorNumber The a number that identifies of the problem.
    * @param message  message that describes the problem (should not be localized).
-   * @param getMetaData a function to be stored on the exception object that provides metaData about the problem.
+   * @param metaData metaData about the exception.
    */
   public constructor(public errorNumber: number, message?: string, metaData?: ExceptionMetaData) {
     super(message);
