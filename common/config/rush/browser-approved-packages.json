@@ -15,52 +15,12 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/backend-webpack-tools",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/bentleyjs-core",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
-    },
-    {
-      "name": "@bentley/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing" ]
-    },
-    {
-      "name": "@itwin/eslint-plugin",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/express-server",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/frontend-devtools",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -75,96 +35,12 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-common",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-editor-backend",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-editor-common",
-      "allowedCategories": [ "edit", "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-editor-frontend",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-markup",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-transformer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/linear-referencing-common",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "@bentley/map-layers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/mobile-manager",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/orbitgt-core",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/perf-tools",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "@bentley/presentation-backend",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-common",
-      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-frontend",
-      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-testing",
-      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/product-settings-client",
@@ -183,40 +59,8 @@
       "allowedCategories": [ "backend", "frontend", "integration-testing" ]
     },
     {
-      "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/ui-components",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/ui-core",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/ui-framework",
-      "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
-      "name": "@bentley/ui-imodel-components",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "@bentley/webgl-compatibility",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/webpack-tools-core",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -241,6 +85,10 @@
     {
       "name": "@itwin/certa",
       "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/components-react",
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-backend",
@@ -279,6 +127,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/core-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
       "name": "@itwin/core-transformer",
       "allowedCategories": [ "internal" ]
     },
@@ -315,6 +167,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/eslint-plugin",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@itwin/express-server",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -325,6 +181,10 @@
     {
       "name": "@itwin/hypermodeling-frontend",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-components-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@itwin/itwinui-css",
@@ -373,18 +233,6 @@
     {
       "name": "@itwin/presentation-testing",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@itwin/components-react",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@itwin/core-react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@itwin/imodel-components-react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -744,7 +592,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions" ]
     },
     {
       "name": "jsdom-global",
@@ -1060,7 +908,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "tsconfig-paths",
