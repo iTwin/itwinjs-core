@@ -223,6 +223,47 @@ Upgrade instructions:
   let ovrs = { ...props }; // New code
 ```
 
+## Breaking map imagery API changes
+
+Originally, the type of imagery to be displayed for the background map was defined by `BackgroundMapSettings.providerName` and `BackgroundMapSettings.mapType`. Later, support for any number of map layers from any source was added in the form of [MapImagerySettings]($common). The [BackgroundMapSettings]($common) properties therefore became redundant with (and more limited than) [MapImagerySettings.backgroundBase]($common).
+
+MapImagerySettings is now fully responsible for specifying the background map imagery; BackgroundMapSettings controls only how that imagery is applied to the view. The corresponding JSON properties have been removed from [BackgroundMapProps]($common); for backwards compatibility, they continue to exist in [PersistentBackgroundMapProps]($common) and will be used as the background imagery if no background imagery is specified by [MapImageryProps.backgroundBase]($common).
+
+Previously, most code would change the map imagery using [Viewport.changeBackgroundMapProps]($frontend) or [DisplayStyleState.changeBackgroundMapProps]($frontend). Such code will no longer compile - it should instead use [Viewport.changeBackgroundMapProvider]($frontend) or [DisplayStyleState.changeBackgroundMapProvider]($frontend). For example:
+```ts
+  // Replace this:
+  viewport.changeBackgroundMapProps({ providerName: "BingMapProvider", providerData: { mapType: BackgroundMapType.Street } });
+  // With this:
+  viewport.changeBackgroundMapProvider({ name: "BingMapProvider", type: BackgroundMapType.Street });
+```
+
+Because a [BaseLayerSettings]($common) can be either a [BaseMapLayerSettings]($common) or a solid [ColorDef]($common), and the former can be configured to use a [BackgroundMapProvider]($common) or any other imagery source, querying the current provider is now more complicated:
+```ts
+  // Replace this:
+  const providerName: BackgroundMapProviderName = displayStyleSettings.backgroundMap.providerName;
+  // With something like:
+  let providerName: BackgroundMapProviderName | undefined;
+  if (displayStyleSettings.mapImagery.backgroundBase instanceof BaseMapLayerSettings)
+    providerName = displayStyleSettings.mapImagery.backgroundBase.provider?.name;
+```
+
+If you are producing JSON from a [BackgroundMapSettings]($common) to be persisted as a [DisplayStyleSettingsProps]($common) object, change your code as follows:
+```ts
+  // Replace this (no longer compiles):
+  displayStyleSettingsProps.backgroundMap = backgroundMapSettings.toJSON();
+  // With this:
+  displayStyleSettingsProps.backgroundMap = backgroundMapSettings.toPersistentJSON();
+
+Likewise if you are reading a [BackgroundMapSettings]($common) directly from a persistent [DisplayStyleSettingsProps]($common), change your code as follows:
+```ts
+  // Replace this (no longer compiles):
+  const mapSettings = BackgroundMapSettings.fromJSON(displayStyleSettings.backgroundMap);
+  // With this:
+  const mapSettings = BackgroundMapSettings.fromPersistentJSON(displayStyleSettings.backgroundMap);
+```
+
+[DisplayStyleSettings.onBackgroundMapChanged]($common) will no longer be raised when changing the imagery provider. Use [DisplayStyleSettings.onMapImageryChanged]($common) instead.
+
 ## Moved utility types
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
@@ -231,10 +272,10 @@ The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [Pr
 
 Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
 
-A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
+A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapProvider.name]($common) set to "MapBoxProvider".
 
 A valid [Bing Maps](https://www.bing.com/maps) key is required for:
-- Display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "BingProvider".
+- Display of map imagery in views with [BackgroundMapProvider.name]($common) set to "BingProvider".
 - Location services supplied by [BingLocationProvider]($frontend), along with tools that use these services like [ViewGlobeLocationTool]($frontend).
 - Elevation services supplied by [BingElevationProvider]($frontend), including accurate 3d terrain display.
 
