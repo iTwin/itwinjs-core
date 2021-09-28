@@ -16,6 +16,7 @@ import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
+import { TextureOwnership } from "../RenderTexture";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -138,11 +139,16 @@ interface TextureImageProperties {
  */
 export class Texture extends RenderTexture implements WebGLDisposable {
   public readonly texture: TextureHandle;
+  public readonly ownership?: TextureOwnership;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
+  public get hasOwner(): boolean { return undefined !== this.ownership; }
+  public get key(): string | undefined {
+    return typeof this.ownership !== "string" && typeof this.ownership?.key === "string" ? this.ownership.key : undefined;
+  }
 
   public constructor(params: RenderTexture.Params, texture: TextureHandle) {
-    super(params);
+    super(params.type);
     this.texture = texture;
   }
 

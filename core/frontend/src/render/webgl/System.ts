@@ -196,6 +196,7 @@ export class IdMap implements WebGLDisposable {
 
   /** Add a texture to this IdMap, given that it has a valid key. */
   public addTexture(texture: RenderTexture) {
+    assert(texture instanceof Texture);
     if (texture.key)
       this.textures.set(texture.key, texture);
   }

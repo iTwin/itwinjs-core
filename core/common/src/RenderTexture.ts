@@ -15,26 +15,16 @@ import { IDisposable } from "@bentley/bentleyjs-core";
  * @public
  */
 export abstract class RenderTexture implements IDisposable {
-  /** A string uniquely identifying this texture within the context of an [[IModel]]. Typically this is the element Id of the corresponding [Texture]($backend).
-   * Textures created on the front-end generally have no key.
-   */
-  public readonly key: string | undefined;
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
-  /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
-   * An unowned texture associated with a [RenderGraphic]($frontend) will be disposed when the RenderGraphic is disposed.
-   */
-  public readonly isOwned: boolean;
 
   public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
   public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
   public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
   public abstract get bytesUsed(): number;
 
-  protected constructor(params: RenderTexture.Params) {
-    this.key = params.key;
-    this.type = params.type;
-    this.isOwned = params.isOwned;
+  protected constructor(type: RenderTexture.Type) {
+    this.type = type;
   }
 
   /** Releases any WebGL resources owned by this texture.
@@ -46,6 +36,9 @@ export abstract class RenderTexture implements IDisposable {
 
 /** @public */
 export namespace RenderTexture { // eslint-disable-line no-redeclare
+  /** @deprecated use RenderTexture.Type
+   * @public
+   */
   /** Enumerates the types of [[RenderTexture]]s. */
   export enum Type {
     /** An image applied to a surface, with support for mip-mapping and repeating. */
@@ -62,28 +55,30 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
     ThematicGradient,
   }
 
-  /** Parameters used to construct a [[RenderTexture]]. */
+  /** Parameters used to construct a [[RenderTexture]].
+   * @public
+   */
   export class Params {
     /** A string uniquely identifying this texture within the context of an [[IModel]]. Typically this is the element Id of the corresponding [Texture]($backend) element.
      * Textures created on the front-end generally have no key.
      */
     public readonly key?: string;
     /** Indicates the type of texture. */
-    public readonly type: Type;
+    public readonly type: RenderTexture.Type;
     /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
      * An unowned texture associated with a [RenderGraphic]($frontend) will be disposed when the RenderGraphic is disposed.
      */
     public readonly isOwned: boolean;
 
-    public constructor(key?: string, type: Type = Type.Normal, isOwned: boolean = false) {
+    public constructor(key?: string, type: RenderTexture.Type = RenderTexture.Type.Normal, isOwned: boolean = false) {
       this.key = key;
       this.type = type;
       this.isOwned = isOwned;
     }
 
-    public get isTileSection(): boolean { return Type.TileSection === this.type; }
-    public get isGlyph(): boolean { return Type.Glyph === this.type; }
-    public get isSkyBox(): boolean { return Type.SkyBox === this.type; }
+    public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
+    public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
+    public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
 
     /** Obtain a RenderTexture params object with default values. */
     public static readonly defaults = new Params();
