@@ -5,10 +5,8 @@
 
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 
-// SWB
-export interface TestProjectProps {
-  // SWB
-  projectName: string;
+export interface TestITwinProps {
+  iTwinName: string;
   iModelBank?: {
     url: string;
   };
@@ -22,6 +20,5 @@ export interface TestIpcInterface {
   purgeStorageCache: () => Promise<void>;
   beginOfflineScope: () => Promise<void>;
   endOfflineScope: () => Promise<void>;
-  // SWB
-  getTestProjectProps: (user: TestUserCredentials) => Promise<TestProjectProps>;
+  getTestITwinProps: (user: TestUserCredentials) => Promise<TestITwinProps>;
 }

@@ -60,7 +60,6 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   public override fromJson(obj: any) {
     super.fromJson(obj);
     this.iModelId = obj.iModelId;
-    // SWB
     this.projectId = obj.ProjectId;
     this.iTwinId = obj.iTwinId;
   }

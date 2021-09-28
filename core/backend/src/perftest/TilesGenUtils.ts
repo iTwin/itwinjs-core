@@ -62,7 +62,6 @@ export class BackendTileGenerator {
     maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
     enableInstancing: true,
     enableImprovedElision: true,
-    // SWB What does project mean here?
     useProjectExtents: true,
     disableMagnification: false,
     ignoreAreaPatterns: false,

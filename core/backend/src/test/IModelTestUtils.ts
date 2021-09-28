@@ -803,9 +803,7 @@ export class ExtensiveTestScenario {
       assert.exists(sourceDb.fontMap.getFont("Arial"));
       assert.exists(sourceDb.fontMap.getFont(1));
     }
-    // SWB What does project mean here?
     // Initialize project extents
-    // SWB What does project mean here?
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     sourceDb.updateProjectExtents(projectExtents);
     // Insert CodeSpecs
@@ -1096,7 +1094,6 @@ export class ExtensiveTestScenario {
     const displayStyle3dId = displayStyle3d.insert();
     assert.isTrue(Id64.isValidId64(displayStyle3dId));
     // Insert ViewDefinitions
-    // SWB What does project mean here?
     const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
     assert.isTrue(Id64.isValidId64(viewId));
     sourceDb.views.setDefaultViewId(viewId);

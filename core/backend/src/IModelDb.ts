@@ -62,11 +62,9 @@ export interface UpdateModelOptions extends ModelProps {
   geometryChanged?: boolean;
 }
 
-// SWB What does project mean here?
 /** Options supplied to [[IModelDb.computeProjectExtents]].
  * @public
  */
-// SWB What does project mean here?
 export interface ComputeProjectExtentsOptions {
   /** If true, the result will include `extentsWithOutliers`. */
   reportExtentsWithOutliers?: boolean;
@@ -74,11 +72,9 @@ export interface ComputeProjectExtentsOptions {
   reportOutliers?: boolean;
 }
 
-// SWB What does project mean here?
 /** The result of [[IModelDb.computeProjectExtents]].
  * @public
  */
-// SWB What does project mean here?
 export interface ComputedProjectExtents {
   /** The computed extents, excluding any outlier elements. */
   extents: Range3d;
@@ -313,7 +309,7 @@ export abstract class IModelDb extends IModel {
 
     db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
     db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
-    // SWB What does project mean here?
+
     db.onProjectExtentsChanged.addListener(() => IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON()));
     db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
     db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
@@ -774,13 +770,12 @@ export abstract class IModelDb extends IModel {
    * [[include:IModelDb.updateProjectExtents]]
    * ```
    */
-  // SWB What does project mean here?
+
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this.projectExtents = newExtents;
     this.updateIModelProps();
   }
 
-  // SWB What does project mean here?
   /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
    * Typically, the result is simply the union of the ranges of all spatial elements. However, the algorithm also detects "outlier elements",
    * whose placements locate them so far from the rest of the spatial geometry that they are considered statistically insignificant. The
@@ -789,7 +784,7 @@ export abstract class IModelDb extends IModel {
    * @returns the computed extents.
    * @note This method does not modify the IModel's stored project extents. @see [[updateProjectExtents]].
    */
-  // SWB What does project mean here?
+
   public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
     const wantFullExtents = true === options?.reportExtentsWithOutliers;
     const wantOutliers = true === options?.reportOutliers;

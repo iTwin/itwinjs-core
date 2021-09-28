@@ -13,8 +13,7 @@ import { ExternalIModel } from "../ExternalIModel";
 
 export interface ViewportDialogProps {
   opened: boolean;
-  // SWB
-  projectName: string;
+  iTwinName: string;
   imodelName: string;
   dialogId: string;
 }
@@ -39,8 +38,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
   }
 
   public override async componentDidMount() {
-    // SWB
-    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    const externalIModel = new ExternalIModel(this.props.iTwinName, this.props.imodelName);
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {

@@ -189,7 +189,7 @@ async function generateIModelDbTiles(user: AuthorizedClientRequestContext, confi
 describe("TilesGenerationPerformance", () => {
   if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
     throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
-    // SWB TODO: Update config to match renaming
+  // TODO: Update config to use iTwin terminology
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
@@ -198,9 +198,7 @@ describe("TilesGenerationPerformance", () => {
 
   before(async () => {
     assert.isDefined(config.regionId, "No Region defined");
-    // SWB Requires config change
     assert.isDefined(config.contextId, "No iTwinId defined");
-    // SWB Requires config change
     imodels.forEach((element) => element.iTwinId = config.contextId);
 
     IModelTestUtils.setupLogging();

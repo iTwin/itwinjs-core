@@ -28,7 +28,6 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   constructor(public baseUri: string) {
   }
 
-  // SWB What does context mean here
   private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
     Logger.logInfo(loggerCategory, `Sending GET request to ${url}`);
@@ -63,14 +62,13 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   }
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const props = await this.queryContextProps(requestContext, name); // SWB what does context mean here
+    const props = await this.queryContextProps(requestContext, name);
 
     // Get first iTwin
     return props[0] as ITwin;
   }
 
-  // SWB What does context mean here
-  public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+  public async createITwin(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
 
     Logger.logInfo(loggerCategory, `Sending POST request to ${url}`);
@@ -86,8 +84,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     await request(requestContext, url, options);
   }
 
-  // SWB What does context mean here
-  public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
+  public async deleteITwin(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${contextId}`;
     Logger.logInfo(loggerCategory, `Sending DELETE request to ${url}`);
 

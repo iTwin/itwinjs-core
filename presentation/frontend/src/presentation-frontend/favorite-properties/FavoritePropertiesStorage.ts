@@ -168,9 +168,9 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
       // note: we're copying the cached values to temp arrays because `saveProperties` and `savePropertiesOrder` both
       // attempt to modify cache dictionaries
 
-      const propertiesCache = new Array<{ properties: Set<PropertyFullName>, iTwinID?: string, imodelId?: string }>();
-      this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, iTwinID: key[0], imodelId: key[1] }));
-      propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.iTwinID, cached.imodelId));
+      const propertiesCache = new Array<{ properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string }>();
+      this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, iTwinId: key[0], imodelId: key[1] }));
+      propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.iTwinId, cached.imodelId));
 
       const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[], iTwinId?: string, imodelId: string }>();
       this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, iTwinId: key[0], imodelId: key[1]! }));
@@ -273,13 +273,13 @@ function iTwinAndIModelIdsKeyComparer(lhs: ITwinAndIModelIdsKey, rhs: ITwinAndIM
 /** @internal */
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
   // istanbul ignore next
-  public async loadProperties(_projectId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined> { return undefined; }
+  public async loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined> { return undefined; }
   // istanbul ignore next
-  public async saveProperties(_properties: Set<PropertyFullName>, _projectId?: string, _imodelId?: string) { }
+  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) { }
   // istanbul ignore next
-  public async loadPropertiesOrder(_projectId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> { return undefined; }
+  public async loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> { return undefined; }
   // istanbul ignore next
-  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _projectId: string | undefined, _imodelId: string): Promise<void> { }
+  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> { }
 }
 
 /** @internal */
@@ -291,15 +291,15 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
     this._localStorage = props?.localStorage ?? window.localStorage;
   }
 
-  public createFavoritesSettingItemKey(projectId?: string, imodelId?: string): string {
-    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_SETTING_NAME}?projectId=${projectId}&imodelId=${imodelId}`;
+  public createFavoritesSettingItemKey(iTwinId?: string, imodelId?: string): string {
+    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_SETTING_NAME}?iTwinId=${iTwinId}&imodelId=${imodelId}`;
   }
-  public createOrderSettingItemKey(projectId?: string, imodelId?: string): string {
-    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}?projectId=${projectId}&imodelId=${imodelId}`;
+  public createOrderSettingItemKey(iTwinId?: string, imodelId?: string): string {
+    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}?iTwinId=${iTwinId}&imodelId=${imodelId}`;
   }
 
-  public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    const value = this._localStorage.getItem(this.createFavoritesSettingItemKey(projectId, imodelId));
+  public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
+    const value = this._localStorage.getItem(this.createFavoritesSettingItemKey(iTwinId, imodelId));
     if (!value)
       return undefined;
 
@@ -307,12 +307,12 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
     return new Set(properties);
   }
 
-  public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string) {
-    this._localStorage.setItem(this.createFavoritesSettingItemKey(projectId, imodelId), JSON.stringify([...properties]));
+  public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string) {
+    this._localStorage.setItem(this.createFavoritesSettingItemKey(iTwinId, imodelId), JSON.stringify([...properties]));
   }
 
-  public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    const value = this._localStorage.getItem(this.createOrderSettingItemKey(projectId, imodelId));
+  public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+    const value = this._localStorage.getItem(this.createOrderSettingItemKey(iTwinId, imodelId));
     if (!value)
       return undefined;
 
@@ -323,7 +323,7 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
     return orderInfos;
   }
 
-  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void> {
-    this._localStorage.setItem(this.createOrderSettingItemKey(projectId, imodelId), JSON.stringify(orderInfos));
+  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void> {
+    this._localStorage.setItem(this.createOrderSettingItemKey(iTwinId, imodelId), JSON.stringify(orderInfos));
   }
 }

@@ -306,7 +306,6 @@ export class EcefLocation implements EcefLocationProps {
  * @public
  */
 export abstract class IModel implements IModelProps {
-  // SWB What does project mean here?
   private _projectExtents?: AxisAlignedBox3d;
   private _name?: string;
   private _rootSubject?: RootSubjectProps;
@@ -327,9 +326,7 @@ export abstract class IModel implements IModelProps {
   public readonly onNameChanged = new BeEvent<(previousName: string) => void>();
   /** Event raised after [[rootSubject]] changes. */
   public readonly onRootSubjectChanged = new BeEvent<(previousSubject: RootSubjectProps) => void>();
-  // SWB What does project mean here?
   /** Event raised after [[projectExtents]] changes. */
-  // SWB What does project mean here?
   public readonly onProjectExtentsChanged = new BeEvent<(previousExtents: AxisAlignedBox3d) => void>();
   /** Event raised after [[globalOrigin]] changes. */
   public readonly onGlobalOriginChanged = new BeEvent<(previousOrigin: Point3d) => void>();
@@ -373,17 +370,14 @@ export abstract class IModel implements IModelProps {
 
   public abstract get isOpen(): boolean;
 
-  /**
-// SWB What does project mean here?
+  /*
    * The volume, in spatial coordinates, inside which the entire project is contained.
    * @note The object returned from this method is frozen. You *must* make a copy before you do anything that might attempt to modify it.
    */
-  // SWB What does project mean here?
   public get projectExtents() {
     assert(undefined !== this._projectExtents);
     return this._projectExtents;
   }
-  // SWB What does project mean here?
   public set projectExtents(extents: AxisAlignedBox3d) {
     // Don't allow any axis of the project extents to be less than 1 meter.
     const projectExtents = extents.clone();
@@ -457,7 +451,6 @@ export abstract class IModel implements IModelProps {
     return {
       name: this.name,
       rootSubject: this.rootSubject,
-      // SWB What does project mean here?
       projectExtents: this.projectExtents.toJSON(),
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
@@ -523,7 +516,6 @@ export abstract class IModel implements IModelProps {
   protected initialize(name: string, props: IModelProps) {
     this.name = name;
     this.rootSubject = props.rootSubject;
-    // SWB What does project mean here?
     this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
     this.ecefLocation = props.ecefLocation ? new EcefLocation(props.ecefLocation) : undefined;

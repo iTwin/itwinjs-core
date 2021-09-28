@@ -7,13 +7,11 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 class DummyAccessToken extends AccessToken {
-  // SWB What does project mean here
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
 
   /** Sets up a new AccessToken based on some generic token abstraction used for iModelBank use cases
    * @internal
    */
-  // SWB What does project mean here
   public static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined {
     if (!foreignJsonStr.startsWith(`{\"${this.foreignProjectAccessTokenJsonProperty}\":`))
       return undefined;

@@ -89,7 +89,7 @@ abstract class HiddenContext extends Context {
   public timeZoneLocation?: string;
 }
 
-/** A deprecated implementation of a Project type iTwin. Represents time-constrained work done on an [[Asset]].
+/** A deprecated implementation of a Project type iTwin. Represents time-constrained work done on an Asset.
  * Deprecated
  * @beta
  */

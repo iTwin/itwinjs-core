@@ -196,7 +196,6 @@ export namespace LineStyleDefinition {
     NoClip = 0x0200,
     /** No partial strokes */
     NoPartial = 0x0400,
-    // SWB What does project mean here?
     /** Project partial origin */
     ProjectOrigin = 0x0800,
     /** Use color from symbol instead of inheriting curve color */

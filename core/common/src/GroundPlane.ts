@@ -25,7 +25,6 @@ export interface GroundPlaneProps {
   belowColor?: ColorDefProps;
 }
 
-// SWB What does project mean here?
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view.
  * @public
  */

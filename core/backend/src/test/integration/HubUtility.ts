@@ -46,9 +46,9 @@ export class HubUtility {
       return HubUtility.imodelCache.get(name)!;
 
     const iTwinId = await HubUtility.getTestITwinId(requestContext);
-    const imodelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, name);
-    HubUtility.imodelCache.set(name, imodelId);
-    return imodelId;
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, name);
+    HubUtility.imodelCache.set(name, iModelId);
+    return iModelId;
   }
 
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelName: string): Promise<GuidString | undefined> {
@@ -56,7 +56,7 @@ export class HubUtility {
   }
 
   private static async queryIModelById(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
-    const iModels = await getIModelProjectAbstraction().queryIModels(requestContext, iTwinId, new IModelQuery().byId(iModelId));
+    const iModels = await getITwinAbstraction().queryIModels(requestContext, iTwinId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
     return iModels[0];
@@ -72,15 +72,14 @@ export class HubUtility {
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
 
-    const iTwin = await getIModelProjectAbstraction().getITwinByName(requestContext, name);
+    const iTwin = await getITwinAbstraction().getITwinByName(requestContext, name);
     if (iTwin === undefined || !iTwin.id)
       throw new Error(`ITwin ${name} was not found for the user.`);
 
     return iTwin.id;
   }
 
-  /**
-   * Queries the iModel id by its name
+  /** Queries the iModel id by its name
    * @param requestContext The client request context
    * @param iTwinId Id of the parent iTwin
    * @param iModelName Name of the iModel
@@ -94,7 +93,7 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _iTwinId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
     const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
@@ -121,7 +120,7 @@ export class HubUtility {
   }
 
   /** Download all named versions of the specified iModel */
-  private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, _iTwinId: string, iModelId: GuidString): Promise<Version[]> {
+  private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Version[]> {
     const query = new VersionQuery();
     query.orderBy("createdDate");
 
@@ -163,14 +162,14 @@ export class HubUtility {
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, iTwinId, iModelId);
+    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
 
     // Download the version information
-    const namedVersions = await HubUtility.downloadNamedVersions(requestContext, iTwinId, iModelId);
+    const namedVersions = await HubUtility.downloadNamedVersions(requestContext, iModelId);
     const namedVersionsJsonStr = JSON.stringify(namedVersions, undefined, 4);
     const namedVersionsJsonPathname = path.join(downloadDir, "namedVersions.json");
     IModelJsFs.writeFileSync(namedVersionsJsonPathname, namedVersionsJsonStr);
@@ -180,13 +179,13 @@ export class HubUtility {
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
   public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
-    const projectId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
+    const iTwinId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
 
-    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    const iModelId = await HubUtility.queryIModelByName(requestContext, iTwinId, iModelName);
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
 
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir, reDownload);
+    await HubUtility.downloadIModelById(requestContext, iTwinId, iModelId, downloadDir, reDownload);
   }
 
   /** Delete an IModel from the hub */
@@ -591,7 +590,6 @@ export class HubUtility {
 
 // SWB Should this class be renamed?
 /** An implementation of IModelProjectAbstraction backed by an iTwin */
-
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
@@ -609,7 +607,7 @@ class TestIModelHubProject {
   }
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const client = TestIModelHubProject.iTwinClient;
+    const client = TestITwin.iTwinClient;
     const iTwinList: ITwin[] = await client.getAll(requestContext, {
       search: {
         searchString: name,
@@ -632,11 +630,10 @@ class TestIModelHubProject {
   }
 }
 
-let projectAbstraction: TestIModelHubProject;
-// SWB Should this be renamed along with the class?
-export function getIModelProjectAbstraction(): TestIModelHubProject {
-  if (projectAbstraction !== undefined)
-    return projectAbstraction;
+let iTwinAbstraction: TestITwin;
+export function getITwinAbstraction(): TestITwin {
+  if (iTwinAbstraction !== undefined)
+    return iTwinAbstraction;
 
-  return projectAbstraction = new TestIModelHubProject();
+  return iTwinAbstraction = new TestITwin();
 }

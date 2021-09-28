@@ -23,7 +23,7 @@ describe("HyperModeling (#integration)", () => {
   before(async () => {
     await IModelApp.startup({
       // SWB
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
@@ -32,7 +32,7 @@ describe("HyperModeling (#integration)", () => {
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
     // SWB
-    const testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const testContextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
 
     hypermodel = await CheckpointConnection.openRemote(testContextId, testIModelId);

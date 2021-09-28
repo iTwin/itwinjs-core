@@ -25,8 +25,7 @@ import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
-// SWB
-const bankProjects: string[] = [];
+const bankITwins: string[] = [];
 
 export const sharedimodelName = "imodeljs-clients Shared iModel";
 
@@ -217,16 +216,14 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   return authorizationClient.getAccessToken(requestContext);
 }
 
-// SWB
-export async function bootstrapBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-  if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
+export async function bootstrapBankITwin(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+  if (getCloudEnv().isIModelHub || bankITwins.includes(name))
     return;
 
-  // SWB
   const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
   let iTwin: ITwin | undefined;
   try {
-    iTwin = await bankContext.getITwinByName(requestContext, projectName);
+    iTwin = await bankContext.getITwinByName(requestContext, name);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
       iTwin = undefined;
@@ -235,9 +232,9 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     }
   }
   if (!iTwin)
-    await bankContext.createContext(requestContext, projectName);
+    await bankContext.createITwin(requestContext, name);
 
-  bankProjects.push(projectName);
+  bankITwins.push(name);
 }
 
 // SWB
@@ -247,7 +244,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   assetName = assetName || TestConfig.assetName;
 
-  await bootstrapBankProject(requestContext, assetName);
+  await bootstrapBankITwin(requestContext, assetName);
 
   const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, assetName);
 
@@ -258,21 +255,18 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
   return iTwin.id;
 }
 
-// SWB
-export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
+export async function getITwinId(requestContext: AuthorizedClientRequestContext, iTwinName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
-  // SWB
-  projectName = projectName || TestConfig.projectName;
+  iTwinName = iTwinName || TestConfig.iTwinName;
 
-  await bootstrapBankProject(requestContext, projectName);
+  await bootstrapBankITwin(requestContext, iTwinName);
 
-  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, projectName);
+  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, iTwinName);
 
   if (!iTwin || !iTwin.id)
-  // SWB
-    throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
+    throw new Error(`iTwin with name ${TestConfig.iTwinName} doesn't exist.`);
 
   return iTwin.id;
 }
@@ -284,8 +278,7 @@ export function getUniqueIModelName(imodelName: string): string {
   return `${imodelName} - ${getTestInstanceId()}`;
 }
 
-// SWB
-export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, contextId: string, imodelName: string, useUniqueName = true): Promise<void> {
+export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, iTwinId: string, imodelName: string, useUniqueName = true): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
@@ -293,25 +286,24 @@ export async function deleteIModelByName(requestContext: AuthorizedClientRequest
     imodelName = getUniqueIModelName(imodelName);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(requestContext, iTwinId, new IModelQuery().byName(imodelName));
 
   for (const imodel of imodels) {
-    await client.iModels.delete(requestContext, contextId, imodel.id!);
+    await client.iModels.delete(requestContext, iTwinId, imodel.id!);
   }
 }
 
-// SWB
-export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string, useUniqueName = true): Promise<GuidString> {
+export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, iTwinId?: string, useUniqueName = true): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
   if (useUniqueName)
     imodelName = getUniqueIModelName(imodelName);
 
-  projectId = projectId ?? await getProjectId(requestContext);
+  iTwinId = iTwinId ?? await getITwinId(requestContext);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(requestContext, iTwinId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
     throw new Error(`iModel with name ${imodelName} doesn't exist.`);
@@ -741,8 +733,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-// SWB
-export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, iTwinId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
@@ -752,23 +743,22 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   if (useUniqueName)
     name = getUniqueIModelName(name);
 
-  // SWB
-  contextId = contextId || await getProjectId(requestContext, TestConfig.projectName);
+  iTwinId = iTwinId || await getITwinId(requestContext, TestConfig.iTwinName);
 
   const client = getDefaultClient();
 
-  const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(name));
+  const imodels = await client.iModels.get(requestContext, iTwinId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await client.iModels.delete(requestContext, contextId, imodels[0].id!);
+      await client.iModels.delete(requestContext, iTwinId, imodels[0].id!);
     } else {
       return;
     }
   }
 
   const pathName = fromSeedFile && !TestConfig.enableIModelBank ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, contextId, name,
+  return client.iModels.create(requestContext, iTwinId, name,
     { path: pathName, timeOutInMilliseconds: TestConfig.initializeiModelTimeout });
 }
 

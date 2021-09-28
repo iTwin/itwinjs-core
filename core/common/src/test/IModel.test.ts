@@ -29,7 +29,6 @@ class TestIModel extends IModel {
     return {
       name: this.name,
       rootSubject: { ...this.rootSubject },
-      // SWB What does project mean here?
       projectExtents: this.projectExtents.toJSON(),
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
@@ -101,7 +100,6 @@ describe("IModel", () => {
         key: "",
         name: "imodel",
         rootSubject: { name: "subject", description: "SUBJECT" },
-        // SWB What does project mean here?
         projectExtents: { low: [0, 1, 2], high: [3, 4, 5] },
         globalOrigin: [-1, -2, -3],
       };
@@ -118,7 +116,6 @@ describe("IModel", () => {
       });
 
       const newRange = Range3d.fromJSON({ low: [0, 0, 0], high: [100, 100, 100] });
-      // SWB What does project mean here?
       expectChange(imodel, () => imodel.projectExtents = newRange, { extents: { prev: imodel.projectExtents, curr: newRange } });
 
       const newOrigin = new Point3d(101, 202, 303);
@@ -140,7 +137,6 @@ describe("IModel", () => {
         key: "",
         name: "abc",
         rootSubject: { name: "new subject" },
-        // SWB What does project mean here?
         projectExtents: { low: [-100, 0, -50], high: [100, 20, 50] },
         globalOrigin: [123, 456, 789],
       };
@@ -162,7 +158,6 @@ describe("IModel", () => {
         key: "",
         name: "imodel",
         rootSubject: { name: "subject", description: "SUBJECT" },
-        // SWB What does project mean here?
         projectExtents: { low: [0, 1, 2], high: [3, 4, 5] },
         globalOrigin: [-1, -2, -3],
         ecefLocation,

@@ -412,7 +412,7 @@ export class IModelsHandler {
     ArgumentCheck.defined("iTwinId", iTwinId); // iTwinId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
     const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(iTwinId, query.getId()), query.getQueryOptions());
-    Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ contextId: iTwinId, count: imodels.length }));
+    Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ iTwinId, count: imodels.length }));
 
     return imodels;
   }
@@ -427,7 +427,7 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async delete(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString): Promise<void> {
-    Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, contextId: iTwinId }));
+    Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, iTwinId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iTwinId", iTwinId);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -441,7 +441,7 @@ export class IModelsHandler {
     } else {
       await this._handler.delete(requestContext, this.getRelativeUrl(iTwinId, iModelId));
     }
-    Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, contextId: iTwinId }));
+    Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, iTwinId }));
   }
 
   /** Create an iModel instance
@@ -453,7 +453,7 @@ export class IModelsHandler {
    * @param iModelType iModel type.
    */
   private async createIModelInstance(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
-    Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId: iTwinId }));
+    Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ iTwinId }));
 
     let imodel: HubIModel;
     const iModel = new HubIModel();
@@ -469,30 +469,30 @@ export class IModelsHandler {
 
     try {
       imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(iTwinId), iModel);
-
-      Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId: iTwinId }));
+      Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ iTwinId }));
     } catch (err) {
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
-        Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ contextId: iTwinId }));
+        Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ iTwinId }));
 
         throw err;
       }
 
       const initialized: boolean = err.data.iModelInitialized;
       if (initialized) {
-        Logger.logWarning(loggerCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`, () => ({ contextId: iTwinId }));
+        Logger.logWarning(loggerCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`, () => ({ iTwinId }));
 
         throw err;
       }
 
-      Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId: iTwinId }));
+      Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ iTwinId }));
 
-      Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId: iTwinId }));
+      const imodels = await this.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
+      Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ iTwinId }));
 
       if (imodels.length > 0) {
         imodel = imodels[0];
       } else {
-        Logger.logTrace(loggerCategory, `iModel by name: iModel ${iModelName} not found`, () => ({ contextId: iTwinId }));
+        Logger.logTrace(loggerCategory, `iModel by name: iModel ${iModelName} not found`, () => ({ iTwinId }));
 
         throw new Error(`iModel by name: iModel ${iModelName} not found`);
       }
@@ -541,7 +541,7 @@ export class IModelsHandler {
       try {
         const initState = await this.getInitializationState(requestContext, imodel.id!);
         if (initState === InitializationState.Successful) {
-          Logger.logTrace(loggerCategory, "Created iModel", () => ({ contextId: iTwinId, iModelId: imodel.id }));
+          Logger.logTrace(loggerCategory, "Created iModel", () => ({ iTwinId, iModelId: imodel.id }));
           imodel.initialized = true;
           return imodel;
         }
@@ -784,7 +784,6 @@ export class IModelHandler {
     let imodelExists = true;
     try {
       await this.get(requestContext, iTwinId);
-
     } catch (err) {
       if (err instanceof IModelHubError && err.errorNumber === IModelHubStatus.iModelDoesNotExist)
         imodelExists = false;

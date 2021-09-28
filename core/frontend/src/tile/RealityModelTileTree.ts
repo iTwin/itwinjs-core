@@ -974,7 +974,7 @@ export class RealityModelTileClient {
     const token = await this.getAccessToken();
     const useRds = this.rdsProps !== undefined && token !== undefined;
     // Use an empty activityId to keep tile json as simple request
-    const requestContext = useRds ? new AuthorizedFrontendRequestContext(token!, "") : new FrontendRequestContext("");
+    const requestContext = useRds ? new AuthorizedFrontendRequestContext(token, "") : new FrontendRequestContext("");
 
     if (this.rdsProps && token)
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.

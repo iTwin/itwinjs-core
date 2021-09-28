@@ -10,9 +10,7 @@ import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client"
 import { getIModelHubClient } from "./TestUtils";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 
-// SWB
-/** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
-// SWB
+/** An implementation of TestITwin backed by a iModelHub/iTwin project */
 class TestITwinManagerClient implements ITwinManagerClient {
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();
@@ -35,7 +33,6 @@ class TestITwinManagerClient implements ITwinManagerClient {
 
 export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
-  // SWB
   public readonly iTwinMgr = new TestITwinManagerClient();
   public readonly imodelClient = getIModelHubClient();
   public async startup(): Promise<void> { }

@@ -28,8 +28,7 @@ function containsCode(codes: HubCode[], wantCode: HubCode) {
 }
 
 describe("iModelHub CodeHandler", () => {
-  // SWB
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
@@ -44,10 +43,9 @@ describe("iModelHub CodeHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    // SWB
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(requestContext);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;
@@ -56,7 +54,7 @@ describe("iModelHub CodeHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
   });
 
   afterEach(() => {
@@ -394,7 +392,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     // SWB
-    contextId = await utils.getProjectId(requestContext);
+    contextId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();

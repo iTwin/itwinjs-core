@@ -73,7 +73,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityData);
   });
 
-  // SWB Is this related to iTwin to "projectExtents" that are keeping their name?
   it("should be able to retrieve reality data properties for every reality data associated with iTwin within an extent", async () => {
     const theRange = Range2d.createXYXY(-81 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pennsylvania and should gather Shell iTwin
     const minLongDeg = Angle.radiansToDegrees(theRange.low.x);

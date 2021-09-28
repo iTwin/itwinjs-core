@@ -117,7 +117,7 @@ export class MapLayerSettingsService {
     const settingFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, iTwinId, undefined);
     if (settingFromName.setting && storeOnIModel) {
       // SWB What should be done for localization?
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: settingFromName.setting.name });
+      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsITwinSetting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromName.setting) {
@@ -129,7 +129,7 @@ export class MapLayerSettingsService {
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, iTwinId, undefined); // check if setting with url already exists, if it does, delete it
     if (settingFromUrl && storeOnIModel) {
       // SWB What should be done for localization?
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
+      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsITwinSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromUrl) {
@@ -203,8 +203,7 @@ export class MapLayerSettingsService {
     const sharedResultByImodel = settingsMapArray[2];
     const sharedResultByITwin = settingsMapArray[3];
     if (userResultByITwin.status !== SettingsStatus.Success || !userResultByITwin.settingsMap) {
-      // SWB What to do about localization?
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: userResultByITwin.errorMessage }));
+      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserITwin", { errorMessage: userResultByITwin.errorMessage }));
     }
     if (userResultByImodel.status !== SettingsStatus.Success || !userResultByImodel.settingsMap) {
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserModel", { errorMessage: userResultByImodel.errorMessage }));
@@ -215,7 +214,7 @@ export class MapLayerSettingsService {
     }
     if (sharedResultByITwin.status !== SettingsStatus.Success || !sharedResultByITwin.settingsMap) {
       // SWB What to do about localization
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedProject", { errorMessage: sharedResultByITwin.errorMessage }));
+      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedITwin", { errorMessage: sharedResultByITwin.errorMessage }));
     }
 
     const savedMapLayerSources: MapLayerSource[] = [];

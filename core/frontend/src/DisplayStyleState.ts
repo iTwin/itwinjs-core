@@ -590,7 +590,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          // SWB What does project mean here?
           return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
@@ -1172,7 +1171,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     this.settings.onOverridesApplied.addListener((overrides: DisplayStyle3dSettingsProps) => {
       if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {
-        // SWB What does project mean here?
         // Use the project extents as reasonable default height range.
         // NB: assumes using Z axis...
         const extents = this.iModel.projectExtents;
