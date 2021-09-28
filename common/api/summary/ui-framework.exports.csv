@@ -614,10 +614,10 @@ public;ToolItemDef
 public;ToolItemProps 
 internal;ToolSettingsContent(): JSX.Element | null
 internal;ToolSettingsDockedContent(): JSX.Element
-beta;ToolSettingsEntry
-beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
+public;ToolSettingsEntry
+internal;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 beta;ToolSettingsGridContainer({ componentGenerator }:
-beta;ToolSettingsGridProps
+internal;ToolSettingsGridProps
 beta;ToolSettingsManager
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
