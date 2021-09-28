@@ -385,7 +385,6 @@ describe("DisplayStyleSettings overrides", () => {
     },
     mapImagery: {
       backgroundBase: {
-        accessKey: undefined,
         formatId: "BingMaps",
         isBase: true,
         name: "Bing Maps: Aerial Imagery",
@@ -393,13 +392,10 @@ describe("DisplayStyleSettings overrides", () => {
           name: "BingProvider",
           type: 2,
         },
-        subLayers: [],
         transparentBackground: false,
         url: "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
         visible: true,
       },
-      backgroundLayers: undefined,
-      overlayLayers: undefined,
     },
   };
 

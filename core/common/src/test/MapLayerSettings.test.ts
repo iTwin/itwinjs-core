@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
 
-const testMapSubLayer0 = { name: "TestName", title: "TestTitle", visible: true };
-const testMapSubLayer1 = { name: "TestName", title: "TestTitle", visible: true, id: 0, parent: -1, children: [1, 2, 3] };
+const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
+const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };
 
 describe("MapSubLayerSettings", () => {
   const expectMatch = (output: MapSubLayerProps, expected: MapSubLayerProps) => {
@@ -77,7 +77,7 @@ describe("MapLayerSettings", () => {
       expect(output.subLayers).not.to.be.undefined;
       expect(expected.subLayers.length).to.equal(output.subLayers!.length);
       for (let i = 0; i < expected.subLayers.length; i++)
-        expect(JSON.stringify(expected.subLayers[i])).to.equal(JSON.stringify(output.subLayers![i]));
+        expect(expected.subLayers[i]).to.deep.equal(output.subLayers![i]);
     }
   };
 

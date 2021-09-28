@@ -69,6 +69,9 @@ export class MapSubLayerSettings {
     if (undefined !== this.id && this.id !== this.name)
       props.id = this.id;
 
+    if (undefined !== this.title)
+      props.title = this.title;
+
     if (this.children)
       props.children = [...this.children];
 
