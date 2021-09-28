@@ -414,7 +414,7 @@ This pattern is *built-in* to JavaScript via [JSON](https://www.json.org/), usin
 
 Our convention is to define either a `Type Alias` or an `interface` with the suffix `Props` (for properties) for any information that can be serialized to/from JSON. There will often be an eponymous class without the `Props` suffice to supply methods for working with instances of that type. A serializeable class `Abc` will usually implement `AbcProps`, if it is an `interface`. Then, either its constructor or a static `fomJson` method will take an `AbcProps` as its argument, and it will override the `toJSON` method to return an `AbcProps`. Anyone implementing the "other end" of a JSON serialized type will then know what properties to expect/include.
 
-For example, in `@bentley/geometry-core` we have a class called `Angle`. You will find code similar to:
+For example, in `@itwin/core-geometry` we have a class called `Angle`. You will find code similar to:
 
 ```ts
 /** The Properties for a JSON representation of an Angle.
@@ -437,7 +437,7 @@ From this we can tell that an Angle may be serialized to/from JSON as either:
 - has a member named `degrees` of type `number`, or
 - has a member named `radians` of type `number`.
 
-Likewise, in `@bentley/geometry-core`, we have a class called XYZ. This is a base class for 3d points and vectors. We define the following type:
+Likewise, in `@itwin/core-geometry`, we have a class called XYZ. This is a base class for 3d points and vectors. We define the following type:
 
 ```ts
 /** Properties for a JSON XYZ.

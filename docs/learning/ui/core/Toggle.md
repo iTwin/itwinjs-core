@@ -1,6 +1,6 @@
 # Toggle
 
-The [Toggle]($core-react:Toggle) category in the `@bentley/ui-core` package includes
+The [Toggle]($core-react:Toggle) category in the `@itwin/core-react` package includes
 the [Toggle]($core-react) and [LabeledToggle]($core-react) components for working with a Toggle switch.
 
 ## Toggle Component

@@ -1,6 +1,6 @@
 # PropertyEditors
 
-The [PropertyEditors]($components-react:PropertyEditors) category in the `@bentley/ui-components` package includes
+The [PropertyEditors]($components-react:PropertyEditors) category in the `@itwin/components-react` package includes
 classes and components for working with Property Editors.
 Property editors are used by the Table, Tree and PropertyGrid components for cell editing of properties.
 Property editors have two pieces:

@@ -1,6 +1,6 @@
 # Table
 
-The [Table]($components-react:Table) category in the `@bentley/ui-components` package includes
+The [Table]($components-react:Table) category in the `@itwin/components-react` package includes
 classes and components for working with a Table control.
 
 ## Components
@@ -115,9 +115,9 @@ create a HOC table component that supports unified selection.
 
 ```tsx
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Table } from "@bentley/ui-components";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Table } from "@itwin/components-react";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 
 // create a HOC table component that supports unified selection
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -151,6 +151,6 @@ const rulesetId = "Default";
 
 ## API Reference
 
-- [Table in @bentley/ui-components]($components-react:Table)
-- [Properties in @bentley/ui-components]($components-react:Properties)
-- [Properties in @bentley/ui-abstract]($appui-abstract:Properties)
+- [Table in @itwin/components-react]($components-react:Table)
+- [Properties in @itwin/components-react]($components-react:Properties)
+- [Properties in @itwin/appui-abstract]($appui-abstract:Properties)

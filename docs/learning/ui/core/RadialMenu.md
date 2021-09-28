@@ -29,7 +29,7 @@ and closed by calling ModalDialogManager.closeDialog.
 ```tsx
 import * as React from "react";
 
-import { RadialMenu, RadialButton } from "@bentley/ui-core";
+import { RadialMenu, RadialButton } from "@itwin/core-react";
 
 export interface TestRadialMenuProps {
   opened: boolean;

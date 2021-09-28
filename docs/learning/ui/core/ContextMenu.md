@@ -23,7 +23,7 @@ These objects contain a menu item using the `item` member
 or a submenu item using the `submenu` member.
 
 ```tsx
-import { AbstractMenuItemProps } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps } from "@itwin/appui-abstract";
 
 private _myMenuItems: AbstractMenuItemProps[] = [
   {
@@ -48,7 +48,7 @@ The `IModelApp.uiAdmin.showContextMenu` method will be called in response to an
 event, such as a right-click.
 
 ```tsx
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 public showContextMenu() {
   IModelApp.uiAdmin.showContextMenu(this._myMenuItems, IModelApp.uiAdmin.cursorPosition);
@@ -62,8 +62,8 @@ In the example below, the PopupContextMenu is displayed below the `button` eleme
 
 ```tsx
 import * as React from "react";
-import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@itwin/core-react";
+import { RelativePosition } from "@itwin/appui-abstract";
 
 export function SamplePopupContextMenu() {
   const [targetRef, target] = useRefState<HTMLButtonElement>();

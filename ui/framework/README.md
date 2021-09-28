@@ -1,10 +1,10 @@
-# @bentley/ui-framework
+# @itwin/appui-react
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/ui-framework__ package contains application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Widgets, etc.
+The __@itwin/appui-react__ package contains application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Widgets, etc.
 
 The ui-framework package is a portion of the iTwin.js User Interface library. It consists of major fragments of code that combine the
 functionality from the imodeljs-frontend and imodeljs client packages with the ui-core, ui-components and ui-ninezone packages to implement substantial

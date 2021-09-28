@@ -13,7 +13,7 @@ and `fields`, which are the definitions used to create each Field in the Form.
 ## Example
 
 ```tsx
-import { Dialog, Form, FieldDefinitions, FieldValues } from "@bentley/ui-core";
+import { Dialog, Form, FieldDefinitions, FieldValues } from "@itwin/core-react";
 
 // Example of using a Form as contents of a modal dialog.
 export class ExampleForm extends React.Component {

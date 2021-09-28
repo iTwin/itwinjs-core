@@ -1,6 +1,6 @@
 # Base
 
-The [Base]($core-react:Base) category in the `@bentley/ui-core` package includes low-level classes and components for building a user interface.
+The [Base]($core-react:Base) category in the `@itwin/core-react` package includes low-level classes and components for building a user interface.
 
 ## Div
 
@@ -16,7 +16,7 @@ A React component that uses the Div component accepts props with the type of [Co
 
 ```tsx
 import * as React from "react";
-import { CommonDivProps, Div } from "@bentley/ui-core";
+import { CommonDivProps, Div } from "@itwin/core-react";
 
 export function MyComponent(props: CommonDivProps) {
   return <Div {...props} mainClassName="my-css-class" />;

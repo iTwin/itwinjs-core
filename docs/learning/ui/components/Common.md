@@ -1,6 +1,6 @@
 # Common
 
-The [Common]($components-react:Common) category in the `@bentley/ui-components` package includes
+The [Common]($components-react:Common) category in the `@itwin/components-react` package includes
 common classes used across various UI components.
 
 The Common category can be broken down further into the following sections:

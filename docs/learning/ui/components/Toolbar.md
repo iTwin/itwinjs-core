@@ -1,6 +1,6 @@
 # Toolbar
 
-The [Toolbar]($components-react:Toolbar) category in the `@bentley/ui-components` package includes
+The [Toolbar]($components-react:Toolbar) category in the `@itwin/components-react` package includes
 components that provide a toolbar that supports an overflow button.
 
 |Component|Description

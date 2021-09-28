@@ -1,6 +1,6 @@
 # Tiles
 
-The [Tiles]($core-react:Tabs) category in the `@bentley/ui-core` package includes
+The [Tiles]($core-react:Tabs) category in the `@itwin/core-react` package includes
 the [Tile]($core-react), [FeaturedTile]($core-react), [MinimalTile]($core-react) and [MinimalFeaturedTile]($core-react) components.
 Tiles are components for a container rendering elements that can be grouped together.
 

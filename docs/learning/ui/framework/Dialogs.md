@@ -1,7 +1,7 @@
 # Dialogs
 
 A **Dialog** is a small temporary window of options presented to the user.
-The `@bentley/ui-framework` and `@bentley/ui-core` packages contain several classes and components for displaying modal and modeless dialogs.
+The `@itwin/appui-react` and `@itwin/core-react` packages contain several classes and components for displaying modal and modeless dialogs.
 
 * [ModalDialogManager]($appui-react) - displays and manages multiple modal dialogs
 * [ModelessDialogManager]($appui-react) - displays and manages multiple modeless dialogs
@@ -21,8 +21,8 @@ close the dialog properly.
 
 ```tsx
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { Dialog, DialogButtonType } from "@itwin/core-react";
 
 export interface SampleModalDialogProps {
   opened: boolean;
@@ -117,8 +117,8 @@ close the dialog properly.
 
 ```tsx
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ModelessDialog } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { ModelessDialog } from "@itwin/appui-react";
 
 export interface SampleModelessDialogProps {
   opened: boolean;

@@ -1,6 +1,6 @@
 # Utilities
 
-The [Utilities]($appui-abstract:Utilities) category in the `@bentley/ui-abstract` package includes
+The [Utilities]($appui-abstract:Utilities) category in the `@itwin/appui-abstract` package includes
 various utility classes for working with a UI.
 
 ## IconSpecUtilities

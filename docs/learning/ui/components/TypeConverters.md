@@ -1,6 +1,6 @@
 # TypeConverters
 
-The [TypeConverters]($components-react:TypeConverters) category in the `@bentley/ui-components` package includes
+The [TypeConverters]($components-react:TypeConverters) category in the `@itwin/components-react` package includes
 various Type Converter classes for different types.
 
 All type converters extend the [TypeConverter]($components-react) abstract class.

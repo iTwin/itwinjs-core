@@ -1,7 +1,7 @@
 # AccuDraw User Interface
 
 AccuDraw is an aide for entering coordinate data in editing and modeling applications.
-The `@bentley/ui-framework` package contains several classes and components for displaying a UI for AccuDraw
+The `@itwin/appui-react` package contains several classes and components for displaying a UI for AccuDraw
 in a Widget or Dialog.
 
 ## AccuDraw UI Implementation in ui-framework
@@ -24,7 +24,7 @@ AccuDraw UI classes and components include:
 An AccuDraw class or subclass instance is setup in the IModelApp instance using `IModelApp.startup` options containing the `iModelApp.accuDraw` member.
 
 ```ts
-import { FrameworkAccuDraw } from "@bentley/ui-framework";
+import { FrameworkAccuDraw } from "@itwin/appui-react";
 . . .
   const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {

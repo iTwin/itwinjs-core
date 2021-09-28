@@ -69,7 +69,7 @@ import * as React from "react";
 import {
   WidgetControl,
   ConfigurableCreateInfo,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 
 import SimpleTreeComponent from "../components/Tree";
 

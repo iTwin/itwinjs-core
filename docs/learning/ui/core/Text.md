@@ -1,6 +1,6 @@
 # Text
 
-The [Text]($core-react:Text) category in the `@bentley/ui-core` package includes
+The [Text]($core-react:Text) category in the `@itwin/core-react` package includes
 CSS classes and React components for working with styled text.
 
 |Component|Description

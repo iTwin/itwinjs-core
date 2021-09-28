@@ -12,7 +12,7 @@ A backend package can be a [service](../../learning/App.md#agents-and-services),
 - See [iModel contents](./iModelContents.md) for guidance on whether a data type belongs in the iModel or should be stored in a separate repository.
 - See [best practices](./BestPractices.md) for writing backend code.
 
-App backends require the `@bentley/imodeljs-backend` npm package.
+App backends require the `@itwin/core-backend` npm package.
 The [common packages](../common/index.md) will also be required. Please also note the [supported platforms](../SupportedPlatforms.md).
 
 These packages provide the following functions to support backend operations:

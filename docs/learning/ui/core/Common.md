@@ -1,6 +1,6 @@
 # Common
 
-The [Common]($core-react:Common) category in the `@bentley/ui-core` package includes some common classes, components and enums used across various UI components.
+The [Common]($core-react:Common) category in the `@itwin/core-react` package includes some common classes, components and enums used across various UI components.
 
 ## React Higher-Order Components (HOCs)
 

@@ -1,6 +1,6 @@
 # Notification
 
-The [Notification]($core-react:Notification) category in the `@bentley/ui-core` package includes components, interfaces and types for displaying messages and tooltips. These include:
+The [Notification]($core-react:Notification) category in the `@itwin/core-react` package includes components, interfaces and types for displaying messages and tooltips. These include:
 
 - [MessageRenderer]($core-react) - React component renders a string, `HTMLElement` or React node in a `div` or `span`
 - [ReactMessage]($core-react) - Interface that describes a React based message. The `reactNode` member is a `React.ReactNode` that represents the message.

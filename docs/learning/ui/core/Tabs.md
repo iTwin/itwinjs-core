@@ -1,6 +1,6 @@
 # Tabs
 
-The [Tabs]($core-react:Tabs) category in the `@bentley/ui-core` package includes
+The [Tabs]($core-react:Tabs) category in the `@itwin/core-react` package includes
 the [HorizontalTabs]($core-react) and [VerticalTabs]($core-react) components.
 
 ## Properties

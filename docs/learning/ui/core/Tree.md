@@ -1,7 +1,7 @@
 # Tree
 
-The [Tree]($core-react:Tabs) category in the `@bentley/ui-core` package includes
-various presentation React components used by the Tree component in `@bentley/ui-components`.
+The [Tree]($core-react:Tabs) category in the `@itwin/core-react` package includes
+various presentation React components used by the Tree component in `@itwin/components-react`.
 
 - [Tree]($core-react) - Presentation React component for a Tree
 - [TreeNode]($core-react) - Presentation React component for a Tree node

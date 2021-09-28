@@ -1,6 +1,6 @@
 # PropertyGrid
 
-The [PropertyGrid]($components-react:PropertyGrid) category in the `@bentley/ui-components` package includes
+The [PropertyGrid]($components-react:PropertyGrid) category in the `@itwin/components-react` package includes
 classes and components for working with a PropertyGrid control.
 
 ## Components
@@ -59,10 +59,10 @@ The following sample uses Presentation Rules and Unified Selection.
 
 ```tsx
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Orientation, useDisposable } from "@bentley/ui-core";
-import { VirtualizedPropertyGridWithDataProvider } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "@bentley/presentation-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Orientation, useDisposable } from "@itwin/core-react";
+import { VirtualizedPropertyGridWithDataProvider } from "@itwin/components-react";
+import { PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "@itwin/presentation-components";
 
 /** React properties for the property grid component */
 export interface Props {
@@ -97,5 +97,5 @@ export default function SimplePropertiesComponent(props: Props) {
 ## API Reference
 
 - [VirtualizedPropertyGridWithDataProvider]($components-react)
-- [Properties in @bentley/ui-components]($components-react:Properties)
-- [Properties in @bentley/ui-abstract]($appui-abstract:Properties)
+- [Properties in @itwin/components-react]($components-react:Properties)
+- [Properties in @itwin/appui-abstract]($appui-abstract:Properties)

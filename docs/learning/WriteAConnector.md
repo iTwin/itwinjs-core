@@ -395,13 +395,13 @@ The node packages you'll need can be installed using
 
 ```Shell
 $npm install  @bentley/backend-itwin-client
-$npm install  @bentley/bentleyjs-core
+$npm install  @itwin/core-bentley
 $npm install  @bentley/context-registry-client
-$npm install  @bentley/ecschema-metadata
-$npm install  @bentley/geometry-core
+$npm install  @itwin/ecschema-metadata
+$npm install  @itwin/core-geometry
 $npm install  @bentley/imodelhub-client
-$npm install  @bentley/imodeljs-backend
-$npm install  @bentley/imodeljs-common
+$npm install  @itwin/core-backend
+$npm install  @itwin/core-common
 $npm install  @bentley/itwin-client
 $npm install  @bentley/rbac-client
 $npm install  @bentley/telemetry-client
@@ -409,7 +409,7 @@ $npm install  @bentley/telemetry-client
 $npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @bentley/config-loader
 $npm install  --save-dev @itwin/eslint-plugin
-$npm install  --save-dev @bentley/oidc-signin-tool
+$npm install  --save-dev @itwin/oidc-signin-tool
 
 $npm install  --save-dev chai
 $npm install  --save-dev cpx

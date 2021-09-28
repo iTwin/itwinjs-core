@@ -39,7 +39,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection Handling
 
-The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($components-react), [Table]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($components-react), [Table]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
@@ -112,13 +112,13 @@ Here are the scopes we support at the moment:
 
 ## Reference
 
-The key unified selection APIs are defined in [@bentley/presentation-frontend]($presentation-frontend:UnifiedSelection) package:
+The key unified selection APIs are defined in [@itwin/presentation-frontend]($presentation-frontend:UnifiedSelection) package:
 
 - [SelectionManager]($presentation-frontend) is where the selection is stored, it allows retrieving current selection, modifying it and listening to its changes. Accessed globally on the frontend through `Presentation.selection` accessor.
 - [SelectionScopesManager]($presentation-frontend) helps with [selection scopes](#selection-scopes), it may be used to get available selection scopes and compute selection given input element IDs and desired selection scope. Accessed globally through `Presentation.selection.scopes` accessor.
 - [HiliteSetProvider]($presentation-frontend) helps with computing [hilite sets](#hilite-set) for the given selection. The provider may be created on demand whenever a hilite set for custom input needs to be computed. For the *current* selection stored in [SelectionManager]($presentation-frontend), it's recommended to use the [SelectionManager.getHiliteSet]($presentation-frontend) method.
 
-For each type of component described in [selection handling section](#selection-handling), the `@bentley/presentation-component` package delivers a set of React-based helper APIs:
+For each type of component described in [selection handling section](#selection-handling), the `@itwin/presentation-component` package delivers a set of React-based helper APIs:
 
 - Tree
   - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.

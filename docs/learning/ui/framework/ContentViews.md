@@ -27,9 +27,9 @@ import * as React from "react";
 import {
   ConfigurableCreateInfo,
   ViewportContentControl,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@itwin/core-frontend";
 
 import SimpleViewportComponent from "../components/Viewport";
 
@@ -70,7 +70,7 @@ import * as React from "react";
 import {
   ConfigurableCreateInfo,
   ContentControl,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 
 import SimpleTableComponent from "../components/Table";
 

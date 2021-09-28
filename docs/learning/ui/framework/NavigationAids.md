@@ -1,7 +1,7 @@
 # Navigation Aids
 
 A **Navigation Aid** is a user interface control that moves the user's perspective around within a specific Content View.
-There are two navigation aids provided in the `@bentley/ui-framework` package:
+There are two navigation aids provided in the `@itwin/appui-react` package:
 
 |Navigation Aid|Description
 |-----|-----
@@ -39,7 +39,7 @@ Each NavigationAidControl subclass should be registered by calling the `Configur
 ```
 
 The `ConfigurableUiManager.initialize` function calls `ConfigurableUiManager.registerControl` for the
-two navigation aids provided in the `@bentley/ui-framework` package:
+two navigation aids provided in the `@itwin/appui-react` package:
 
 ```ts
     ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);

@@ -1,6 +1,6 @@
 # Inputs
 
-The [Inputs]($core-react:Inputs) category in the `@bentley/ui-core` package includes
+The [Inputs]($core-react:Inputs) category in the `@itwin/core-react` package includes
 components for working with input controls, such as Input, IconInput, NumberInput TextArea.
 
 ## Input

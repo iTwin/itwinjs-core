@@ -1,6 +1,6 @@
 # Button
 
-The [Button]($core-react:Button) category in the `@bentley/ui-core` package includes various Button components.
+The [Button]($core-react:Button) category in the `@itwin/core-react` package includes various Button components.
 
 ## Button
 

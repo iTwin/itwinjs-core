@@ -95,7 +95,7 @@ calls `processFieldInput` to notify the AccuDraw core of a value update.
 An AccuDraw class or subclass instance is setup in the IModelApp instance using `IModelApp.startup` options containing the `iModelApp.accuDraw` member. See example in `test-apps/ui-test-app/src/frontend/index.tsx`.
 
 ```ts
-import { FrameworkAccuDraw } from "@bentley/ui-framework";
+import { FrameworkAccuDraw } from "@itwin/appui-react";
 . . .
   const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {

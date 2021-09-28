@@ -1,6 +1,6 @@
 # Select
 
-The [Select]($core-react:Select) category in the `@bentley/ui-core` package includes the
+The [Select]($core-react:Select) category in the `@itwin/core-react` package includes the
 [Select]($core-react), [LabeledSelect]($core-react) and [ThemedSelect]($core-react) components.
 
 ## Select

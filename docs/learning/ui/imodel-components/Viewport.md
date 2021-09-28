@@ -1,6 +1,6 @@
 # Viewport
 
-The [Viewport]($imodel-components-react:Viewport) category in the `@bentley/ui-imodel-components` package includes
+The [Viewport]($imodel-components-react:Viewport) category in the `@itwin/imodel-components-react` package includes
 classes and components for working with a Viewport.
 
 ## Component and Properties
@@ -15,7 +15,7 @@ The `viewDefinitionId` is the Id of a default view definition to load.
 The `viewState` is the [ViewState]($core-frontend) to use as a starting point.
 
 The `viewportRef` specifies a function that receives the [ScreenViewport]($core-frontend) created by the component and
-allows the component user a chance to save it. When using `@bentley/ui-framework` and
+allows the component user a chance to save it. When using `@itwin/appui-react` and
 Frontstages, setting `ViewportContentControl.viewport` notifies the [FrontstageManager]($appui-react) that the
 content view is ready.
 
@@ -29,8 +29,8 @@ create a HOC viewport component that supports unified selection.
 
 ```tsx
 import * as React from "react";
-import { ViewportComponent, ViewportProps } from "@bentley/ui-imodel-components";
-import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+import { ViewportComponent, ViewportProps } from "@itwin/imodel-components-react";
+import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 
 // create a HOC viewport component that supports unified selection
 // eslint-disable-next-line @typescript-eslint/naming-convention

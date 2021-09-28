@@ -1,6 +1,6 @@
 # Loading
 
-The [Loading]($core-react:Loading) category in the `@bentley/ui-core` package includes components for displaying determinate and indeterminate status indicators, such as spinners and progress bars. These include:
+The [Loading]($core-react:Loading) category in the `@itwin/core-react` package includes components for displaying determinate and indeterminate status indicators, such as spinners and progress bars. These include:
 
 - [Spinner]($core-react) - indeterminate spinner component that supports multiple sizes
 - [LoadingBar]($core-react) - determinate loading bar with optional percentage text

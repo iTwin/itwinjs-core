@@ -1,6 +1,6 @@
 # Tree
 
-The [Tree]($components-react:Tree) category in the `@bentley/ui-components` package includes
+The [Tree]($components-react:Tree) category in the `@itwin/components-react` package includes
 classes and components for working with a Tree control.
 
 ## Components and Hooks
@@ -13,7 +13,7 @@ The following React components comprise the ControlledTree component.
 - [TreeRenderer]($components-react) - default component for rendering the tree
 - [TreeNodeRenderer]($components-react) - default component for rendering tree nodes
 
-There are also several [Tree]($core-react:Tree) presentational  components in the `@bentley/ui-core`
+There are also several [Tree]($core-react:Tree) presentational  components in the `@itwin/core-react`
 package used for rendering.
 
 The following React hooks work in conjunction with the ControlledTree component.
@@ -76,9 +76,9 @@ This React component utilizes the [ControlledTree]($components-react) component 
 
 ```tsx
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ControlledTree, useTreeModel, SelectionMode } from "@bentley/ui-components";
-import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ControlledTree, useTreeModel, SelectionMode } from "@itwin/components-react";
+import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
 const RULESET_TREE = require("./Tree.ruleset.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** React properties for the tree component */
@@ -103,11 +103,11 @@ export default function SimpleTreeComponent(props: Props) {
 
 ## API Reference
 
-- [Tree in @bentley/ui-components]($components-react:Tree)
-- [Tree in @bentley/presentation-components]($presentation-components:Tree)
-- [Tree in @bentley/ui-core]($core-react:Tree)
-- [Properties in @bentley/ui-components]($components-react:Properties)
-- [Properties in @bentley/ui-abstract]($appui-abstract:Properties)
+- [Tree in @itwin/components-react]($components-react:Tree)
+- [Tree in @itwin/presentation-components]($presentation-components:Tree)
+- [Tree in @itwin/core-react]($core-react:Tree)
+- [Properties in @itwin/components-react]($components-react:Properties)
+- [Properties in @itwin/appui-abstract]($appui-abstract:Properties)
 
 ## Samples
 

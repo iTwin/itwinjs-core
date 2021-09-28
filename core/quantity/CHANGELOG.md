@@ -1,4 +1,4 @@
-# Change Log - @bentley/imodeljs-quantity
+# Change Log - @itwin/core-quantity
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 

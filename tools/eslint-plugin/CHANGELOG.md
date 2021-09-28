@@ -124,7 +124,7 @@ Mon, 28 Jun 2021 16:20:11 GMT
 ### Updates
 
 - Output parent symbol and skip local files in no-internal eslint rule
-- Added no-internal-report command to @bentley/eslint-plugin
+- Added no-internal-report command to @itwin/eslint-plugin
 
 ## 2.16.10
 Thu, 22 Jul 2021 20:23:45 GMT

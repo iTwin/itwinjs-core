@@ -1,6 +1,6 @@
 # LineWeight
 
-The [LineWeight]($imodel-components-react:LineWeight) category in the `@bentley/ui-imodel-components` package includes
+The [LineWeight]($imodel-components-react:LineWeight) category in the `@itwin/imodel-components-react` package includes
 classes and components for working with and picking a Line Weight.
 
 |Component|Description

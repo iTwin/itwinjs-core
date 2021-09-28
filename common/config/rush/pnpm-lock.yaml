@@ -6700,7 +6700,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.12_webpack@4.44.2
+      '@itwin/core-webpack-tools': 2.19.12_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6800,7 +6800,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.12_webpack@4.44.2
+      '@itwin/core-webpack-tools': 2.19.12_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6900,7 +6900,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.12_webpack@4.44.2
+      '@itwin/core-webpack-tools': 2.19.12_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6991,7 +6991,7 @@ packages:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
     dev: true
 
-  /@bentley/webpack-tools-core/2.19.12_webpack@4.44.2:
+  /@itwin/core-webpack-tools/2.19.12_webpack@4.44.2:
     resolution: {integrity: sha512-01JjEKH/TA6T8TYmRU9I/QHPbEdNk4kVgqx7LeGwPUR9f7LVdcAKQhYEPOxMRTVkBeWrX3eoBtDLdB4AhR/2QQ==}
     peerDependencies:
       webpack: 4.42.0
