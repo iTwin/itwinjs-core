@@ -5,7 +5,7 @@
 import { BeDuration, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -30,8 +30,8 @@ describe("Opening IModelConnection (#integration)", () => {
     testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.stadium);
 
     // Setup a testChangeSetId somewhere in the middle of the change history
-    const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();
-    const changeSets: ChangeSet[] = await (new IModelHubClient()).changeSets.get(authorizedRequestContext, testIModelId, new ChangeSetQuery().latest());
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const changeSets: ChangeSet[] = await (new IModelHubClient()).changeSets.get(accessToken, testIModelId, new ChangeSetQuery().latest());
     assert.isAbove(changeSets.length, 5);
     testChangeSetId = changeSets[Math.floor(changeSets.length / 2)].wsgId;
 

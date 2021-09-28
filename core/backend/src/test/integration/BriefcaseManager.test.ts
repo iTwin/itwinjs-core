@@ -6,10 +6,10 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, StopWatch } from "@bentley/bentleyjs-core";
+import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -39,13 +39,13 @@ describe("BriefcaseManager (#integration)", () => {
   const readOnlyTestElementCounts = [27, 28, 29];
 
   let noVersionsTestIModelId: GuidString;
-  let user: AuthorizedBackendRequestContext;
-  let manager: AuthorizedBackendRequestContext;
+  let user: AccessToken;
+  let manager: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
-    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Regular);
     testITwinId = await HubUtility.getTestITwinId(user);
     readOnlyTestIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
     noVersionsTestIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readWrite);
@@ -217,8 +217,8 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
     HubMock.startup("workflow");
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const userContext1 = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    const userContext2 = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, HubUtility.generateUniqueName("BriefcaseReuseTest"));
@@ -261,8 +261,8 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
     HubMock.startup("pullPush");
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager); // User1 is just used to create and update the iModel
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager); // User2 is used for the test
+    const userContext1 = await IModelTestUtils.getAccessToken(TestUserType.Manager); // User1 is just used to create and update the iModel
+    const userContext2 = await IModelTestUtils.getAccessToken(TestUserType.SuperManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullAndPushTest");
@@ -361,7 +361,7 @@ describe("BriefcaseManager (#integration)", () => {
     const props = await BriefcaseManager.downloadBriefcase(args);
     // eslint-disable-next-line no-console
     console.log(`download took ${watch.elapsedSeconds} seconds`);
-    const iModel = await BriefcaseDb.open({ user, fileName: props.fileName });
+    const iModel = await BriefcaseDb.open({ fileName: props.fileName });
 
     await expect(BriefcaseManager.downloadBriefcase(args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
 

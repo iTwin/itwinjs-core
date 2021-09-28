@@ -24,7 +24,7 @@ import { V2CheckpointManager } from "../../CheckpointManager";
 import { BriefcaseDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  AuthorizedBackendRequestContext, BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
+  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
   DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions,
   DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
@@ -1882,7 +1882,7 @@ describe("iModel", () => {
     const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
+    const user = "token";
     const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
@@ -1932,7 +1932,7 @@ describe("iModel", () => {
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
+    const user = "token";
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
@@ -1949,7 +1949,7 @@ describe("iModel", () => {
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
+    const user = "token";
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
@@ -1960,7 +1960,7 @@ describe("iModel", () => {
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
+    const user = "token";
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
     await imodel1.reattachDaemon(user);
     assert.isTrue(attachMock.notCalled);

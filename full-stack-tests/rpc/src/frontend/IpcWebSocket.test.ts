@@ -5,8 +5,6 @@
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IpcWebSocketFrontend } from "@bentley/imodeljs-common";
-import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
@@ -43,13 +41,6 @@ if (!ProcessDetector.isElectronAppFrontend) {
         assert.equal(invoked[3], 3);
         resolve();
       });
-    });
-
-    it("should not recurse in auth call", async () => {
-      await NativeApp.startup(socket);
-      IModelApp.authorizationClient!.onUserStateChanged.raiseEvent(new AccessToken(undefined, undefined, new Date(0)));
-      await NativeApp.callNativeHost("getAccessTokenProps");
-      IModelApp.authorizationClient = undefined;
     });
   });
 }

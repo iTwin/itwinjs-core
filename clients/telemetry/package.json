@@ -1,6 +1,6 @@
 {
   "name": "@bentley/telemetry-client",
-  "version": "3.0.0-dev.69",
+  "version": "3.0.0-dev.70",
   "description": "iModel.js Telemetry Client",
   "main": "lib/cjs/telemetry-client.js",
   "module": "lib/esm/telemetry-client.js",
@@ -34,10 +34,11 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*"
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.69"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.70"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

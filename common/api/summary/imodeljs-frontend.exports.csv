@@ -42,7 +42,6 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
@@ -170,7 +169,6 @@ alpha;FrameStats
 internal;FrameStatsCollector
 internal;FrontendHubAccess
 public;FrontendLoggerCategory
-public;FrontendRequestContext 
 public;FrontendSecurityOptions
 public;Frustum2d
 public;FrustumAnimator 
@@ -289,7 +287,7 @@ internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LocalhostIpcApp
-internal;LocalHostIpcAppOpts 
+internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
 public;LocateAction
 public;LocateFilterStatus
@@ -356,7 +354,7 @@ public;ModelState
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
-public;NativeAppAuthorization
+public;NativeAppAuthorization 
 internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp
@@ -650,8 +648,6 @@ beta;VisibleFeature
 public;WalkViewTool 
 internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
-beta;WebViewerApp
-beta;WebViewerAppOpts
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

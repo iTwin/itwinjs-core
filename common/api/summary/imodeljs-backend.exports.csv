@@ -3,7 +3,6 @@ Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
 public;AnnotationElement2d 
-public;AuthorizedBackendRequestContext 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
@@ -11,7 +10,6 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorage 
 beta;BackendHubAccess
 public;BackendLoggerCategory
-public;BackendRequestContext 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -237,7 +235,7 @@ beta;OnModelIdArg
 beta;OnModelPropsArg 
 beta;OnSubModelIdArg 
 beta;OnSubModelPropsArg 
-public;OpenBriefcaseArgs = OpenBriefcaseProps & UserArg
+public;OpenBriefcaseArgs = OpenBriefcaseProps &
 public;OrthographicViewDefinition 
 public;ParameterValue = undefined | number | boolean | string | Uint8Array |
 public;class PhysicalElement 

@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { AccessToken, Id64String } from "@bentley/bentleyjs-core";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
@@ -28,7 +27,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb) {
 
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
   let iModelDbHub: SnapshotDb;
 
   before(async () => {
@@ -38,7 +37,7 @@ describe("ElementAspectPerformance", () => {
     const iTwinId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId, iModelId: imodelId });
     assert.exists(iModelDbHub);
   });

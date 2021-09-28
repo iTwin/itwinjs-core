@@ -32,7 +32,22 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces } });
+    await ElectronHost.startup({
+      electronHost: {
+        webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces, authConfig: {
+          clientId: "imodeljs-electron-test",
+          redirectUri: "http://localhost:3000/signin-callback",
+          scope: "openid email profile organization itwinjs",
+        },
+      },
+    });
+
+    // TODO: Use this setup once the ElectronAuth is split out.
+    // IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    //   clientId: "imodeljs-electron-test",
+    //   redirectUri: "http://localhost:3000/signin-callback",
+    //   scope: "openid email profile organization itwinjs",
+    // });
   } else
     await IModelHost.startup();
 }

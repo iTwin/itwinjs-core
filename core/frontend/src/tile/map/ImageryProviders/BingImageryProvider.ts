@@ -171,7 +171,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     const requestOptions: RequestOptions = { method: "GET" };
 
     try {
-      const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
+      const response: Response = await request(bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];

@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// required to get certa to read the .env file - should be reworked
 import { BentleyLoggerCategory, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs,
+  BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
   IpcHandler, NativeHost, NativeLoggerCategory,
 } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUtility } from "@bentley/oidc-signin-tool";
+// required to get certa to read the .env file - should be reworked
 import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/cjs/TestUsers";
 import * as fs from "fs";
@@ -57,10 +56,7 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getTestProjectProps(user: TestUserCredentials): Promise<TestProjectProps> {
-    // first, perform silent login
-    NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
-
+  public async getTestProjectProps(_user: TestUserCredentials): Promise<TestProjectProps> {
     const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
@@ -88,8 +84,8 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   }
 
   public async createChangeSummary(iModelRpcProps: IModelRpcProps): Promise<string> {
-    const requestContext = await AuthorizedBackendRequestContext.create();
-    return ChangeSummaryManager.createChangeSummary(requestContext, BriefcaseDb.findByKey(iModelRpcProps.key));
+    const accessToken = (await IModelHost.getAccessToken())!;
+    return ChangeSummaryManager.createChangeSummary(accessToken, BriefcaseDb.findByKey(iModelRpcProps.key));
   }
 
   public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
@@ -129,6 +125,14 @@ async function init() {
     },
     iModelHost,
   });
+
+  // TODO: Use this setup once the ElectronAuth is split out.
+  // await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
+  // IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+  //   clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+  //   redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+  //   scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+  // });
 }
 
 module.exports = init();

@@ -38,7 +38,6 @@ export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
 export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-export * from "./BackendRequestContext";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./IModelHubBackend";

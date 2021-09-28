@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestBrowserAuthorizationClient } from "@bentley/oidc-signin-tool/lib/cjs/TestBrowserAuthorizationClient";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
@@ -110,7 +111,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   if (props.useClientServices)
-    await frontendAppOptions.authorizationClient!.signIn(new ClientRequestContext());
+    await (frontendAppOptions.authorizationClient! as TestBrowserAuthorizationClient).signIn();
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,

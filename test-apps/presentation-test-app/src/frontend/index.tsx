@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
@@ -31,13 +32,10 @@ export class SampleApp {
       // __PUBLISH_EXTRACT_START__ Presentation.Frontend.IModelAppStartup
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
-    } else if (ProcessDetector.isBrowserProcess) {
-      await WebViewerApp.startup({
-        iModelApp: iModelAppOpts,
-        webViewerApp: {
-          rpcParams: { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" },
-        },
-      });
+    } else if (ProcessDetector.isBrowserProcess){
+      const rpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      await IModelApp.startup(iModelAppOpts);
+      BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []);
     }
     const readyPromises = new Array<Promise<void>>();
 

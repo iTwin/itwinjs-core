@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
@@ -49,15 +49,15 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+  const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new NativeAppAuthorization(oidcConfiguration);
-    await desktopClient.initialize(requestContext);
+    await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
@@ -77,11 +77,14 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<N
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const requestContext = new FrontendRequestContext();
-  const oidcClient = await createOidcClient(requestContext);
+  const oidcClient = await createOidcClient({
+    applicationId: IModelApp.applicationId,
+    applicationVersion: IModelApp.applicationVersion,
+    sessionId: IModelApp.sessionId,
+  });
 
   IModelApp.authorizationClient = oidcClient;
-  if (oidcClient.isAuthorized)
+  if ((await oidcClient.getAccessToken()) !== undefined)
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {

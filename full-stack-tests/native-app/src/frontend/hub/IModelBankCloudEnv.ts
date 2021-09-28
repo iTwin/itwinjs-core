@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { AccessToken } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
-import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { ITwin } from "@bentley/context-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
@@ -21,13 +21,13 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
     this.contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
   }
 
-  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient {
+  public getAuthorizationClient(userCredentials: any): FrontendAuthorizationClient {
     return this._basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   }
 
-  public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
+  public async bootstrapIModelBankProject(requestContext: AccessToken, projectName: string): Promise<void> {
     let iTwin: ITwin | undefined;
     try {
       iTwin = await this.contextMgr.getITwinByName(requestContext, projectName);
