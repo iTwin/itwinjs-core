@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { AccessToken } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import {
@@ -10,13 +11,12 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
-import { AccessToken } from "@bentley/itwin-client";
 
 class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized)
+    if (IModelApp.authorizationClient)
       this.reactNode = <IModelOpen getAccessToken={this._getAccessToken} onIModelSelected={this._onOpenIModel} />;
   }
 
@@ -26,7 +26,7 @@ class IModelOpenControl extends ContentControl {
   };
 
   private _getAccessToken = async (): Promise<AccessToken | undefined> => {
-    if (IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized)
+    if (IModelApp.authorizationClient)
       return IModelApp.authorizationClient.getAccessToken();
 
     return undefined;

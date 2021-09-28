@@ -12,7 +12,6 @@ import {
   RpcRequest, RpcRequestEvent,
 } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
@@ -44,10 +43,11 @@ export class CheckpointConnection extends IModelConnection {
    */
   public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    if (undefined === accessToken)
+      throw new Error();
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-
-    const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version }) };
+    const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ accessToken, iModelId, version }) };
 
     const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
     const openResponse = await this.callOpen(iModelRpcProps, routingContext);

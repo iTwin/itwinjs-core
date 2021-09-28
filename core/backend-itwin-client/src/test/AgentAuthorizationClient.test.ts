@@ -6,11 +6,11 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
+
 import * as fs from "fs";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -67,47 +67,13 @@ describe("AgentAuthorizationClient (#integration)", () => {
 
   it("should get valid OIDC tokens for agent applications", async () => {
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    const now = Date.now();
-    const jwt: AccessToken = await agentClient.getAccessToken();
-
-    const expiresAt = jwt.getExpiresAt();
-    chai.assert.isDefined(expiresAt);
-    chai.assert.isAbove(expiresAt!.getTime(), now);
-
-    const startsAt = jwt.getStartsAt();
-    chai.assert.isDefined(startsAt);
-    chai.assert.isAtLeast(startsAt!.getTime(), expiresAt!.getTime() - 1 * 60 * 60 * 1000); // Starts at least 1 hour before expiry
+    const jwt: AccessToken = await agentClient.getAccessToken() ?? "";
 
     await validator.validateITwinClientAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
 
-    const refreshJwt: AccessToken = await agentClient.getAccessToken();
+    const refreshJwt: AccessToken = await agentClient.getAccessToken() ?? "";
     await validator.validateITwinClientAccess(refreshJwt);
     await validator.validateIModelHubAccess(refreshJwt);
-  });
-
-  it("should not refresh token unless necessary", async () => {
-    const agentClient = new AgentAuthorizationClient(agentConfiguration);
-
-    const jwt: AccessToken = await agentClient.getAccessToken();
-
-    // Refresh after a second, and the token should remain the same
-    await BeDuration.wait(1000);
-    let refreshJwt: AccessToken = await agentClient.getAccessToken();
-    chai.assert.strictEqual(refreshJwt, jwt);
-
-    // Set the expiry of the token to be 2 min from now, and the token should remain the same
-    const twoMinFromNow = new Date(Date.now() + 2 * 60 * 1000);
-    const jwtExpiresAtTwoMinFromNow = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), twoMinFromNow, jwt.getUserInfo());
-    (agentClient as any)._accessToken = jwtExpiresAtTwoMinFromNow;
-    refreshJwt = await agentClient.getAccessToken();
-    chai.assert.strictEqual(refreshJwt, jwtExpiresAtTwoMinFromNow);
-
-    // Set the expiry of the token to be less than a min from now, and the token should be refreshed
-    const lessThanMinFromNow = new Date(Date.now() + 59 * 1000);
-    const jwtExpiresAtLessThanMinFromNow = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), lessThanMinFromNow, jwt.getUserInfo());
-    (agentClient as any)._accessToken = jwtExpiresAtLessThanMinFromNow;
-    refreshJwt = await agentClient.getAccessToken();
-    chai.assert.notStrictEqual(refreshJwt.toTokenString(IncludePrefix.No), jwtExpiresAtLessThanMinFromNow.toTokenString(IncludePrefix.No));
   });
 });

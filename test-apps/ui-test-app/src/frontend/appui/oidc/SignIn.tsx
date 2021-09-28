@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import {  ProcessDetector } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SignInBase } from "./SignInBase";
@@ -49,17 +49,15 @@ export class SignIn extends React.PureComponent<SignInProps> {
     if (isFrontendAuthorizationClient(oidcClient))
       this._oidcClient = oidcClient;
 
-    // istanbul ignore next
-    const isAuthorized = this._oidcClient && this._oidcClient.isAuthorized;
     // istanbul ignore if
-    if (isAuthorized)
-      this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
+    if (this._oidcClient)
+      this._oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   // istanbul ignore next
   private _onUserStateChanged() {
     // istanbul ignore next
-    if (this._oidcClient && this._oidcClient.isAuthorized && this.props.onSignedIn)
+    if (this._oidcClient && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 
@@ -72,7 +70,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   private _onStartSignin = async () => {
     // istanbul ignore next
     if (this._oidcClient)
-      this._oidcClient.signIn(new ClientRequestContext()); // eslint-disable-line @typescript-eslint/no-floating-promises
+      this._oidcClient.signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // istanbul ignore else
     if (this.props.onStartSignIn)

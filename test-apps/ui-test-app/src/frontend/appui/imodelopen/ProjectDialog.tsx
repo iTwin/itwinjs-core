@@ -10,7 +10,7 @@ import { SearchBox } from "@bentley/ui-core";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ProjectTab, ProjectTabs } from "./ProjectTabs";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /** Properties for the [[ProjectDialog]] component */
 export interface ProjectDialogProps {
@@ -43,8 +43,8 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   private async getRecentProjects() {
     this.setState({ isLoading: true, projects: undefined });
     const client = new ITwinAccessClient();
-    const ctx = await AuthorizedFrontendRequestContext.create();
-    const iTwins = await client.getAll(ctx, {
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+    const iTwins = await client.getAll(accessToken, {
       pagination: {
         top: 40,
       },
@@ -72,26 +72,25 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     }
   };
 
-  private _handleSearchValueChanged = (value: string): void => {
+  private _handleSearchValueChanged = async (value: string) => {
     if (!value || value.trim().length === 0) {
       this.setState({ isLoading: false, projects: undefined, filter: value });
     } else {
       this.setState({ isLoading: true, projects: undefined });
 
-      AuthorizedFrontendRequestContext.create().then((ctx: AuthorizedFrontendRequestContext) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        const client = new ITwinAccessClient();
-        client.getAll(ctx, { // eslint-disable-line @typescript-eslint/no-floating-promises
-          pagination: {
-            top: 40,
-          },
-          search: {
-            searchString: value,
-            exactMatch: false,
-            propertyName: ITwinSearchableProperty.Name,
-          },
-        }).then((iTwins: ITwin[]) => {
-          this.setState({ isLoading: false, projects: iTwins, filter: value });
-        });
+      const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+      const client = new ITwinAccessClient();
+      client.getAll(accessToken, { // eslint-disable-line @typescript-eslint/no-floating-promises
+        pagination: {
+          top: 40,
+        },
+        search: {
+          searchString: value,
+          exactMatch: false,
+          propertyName: ITwinSearchableProperty.Name,
+        },
+      }).then((iTwins: ITwin[]) => {
+        this.setState({ isLoading: false, projects: iTwins, filter: value });
       });
     }
   };

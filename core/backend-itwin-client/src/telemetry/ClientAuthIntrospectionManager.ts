@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { RpcActivity } from "@bentley/imodeljs-common";
 import { IntrospectionClient, IntrospectionResponse } from "../oidc";
 
 /**
@@ -45,8 +45,8 @@ export class ClientAuthIntrospectionManager {
   public constructor(public readonly introspectionClient: IntrospectionClient) {
   }
 
-  public async getClientAuthDetails(requestContext: AuthorizedClientRequestContext): Promise<ClientAuthDetail> {
-    const introspectionResponse = await this.introspectionClient.introspect(requestContext);
+  public async getClientAuthDetails(requestContext: RpcActivity): Promise<ClientAuthDetail> {
+    const introspectionResponse = await this.introspectionClient.introspect(requestContext.accessToken);
     const clientAuthDetail = new ClientAuthDetail(introspectionResponse);
     return clientAuthDetail;
   }

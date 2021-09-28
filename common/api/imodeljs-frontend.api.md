@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { AmbientOcclusion } from '@bentley/imodeljs-common';
 import { AnalysisStyle } from '@bentley/imodeljs-common';
 import { AnalysisStyleDisplacement } from '@bentley/imodeljs-common';
@@ -13,7 +13,7 @@ import { AngleSweep } from '@bentley/geometry-core';
 import { AnyCurvePrimitive } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
 import { AsyncMethodsOf } from '@bentley/bentleyjs-core';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuxChannel } from '@bentley/geometry-core';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
@@ -26,14 +26,12 @@ import { BaseQuantityDescription } from '@bentley/ui-abstract';
 import { BatchType } from '@bentley/imodeljs-common';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyCloudRpcParams } from '@bentley/imodeljs-common';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BoundingSphere } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
-import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -43,7 +41,6 @@ import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangedEntities } from '@bentley/imodeljs-common';
 import { ChangesetIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
 import { ClipStyle } from '@bentley/imodeljs-common';
@@ -99,7 +96,6 @@ import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
 import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
@@ -249,7 +245,7 @@ import { RootSubjectProps } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 import { RpcRoutingToken } from '@bentley/imodeljs-common';
 import { SectionDrawingViewProps } from '@bentley/imodeljs-common';
-import { SessionProps } from '@bentley/bentleyjs-core';
+import { SessionProps } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SilhouetteEdgeArgs } from '@bentley/imodeljs-common';
@@ -1206,12 +1202,6 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
 // @public
-export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
-    constructor(accessToken: AccessToken, activityId?: string);
-    static create(activityId?: string): Promise<AuthorizedFrontendRequestContext>;
-}
-
-// @public
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelConnection);
     // (undocumented)
@@ -1561,17 +1551,13 @@ export class BingElevationProvider {
     getHeightAverage(iModel: IModelConnection): Promise<number>;
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
     getHeightValue(point: Point3d, iModel: IModelConnection, geodetic?: boolean): Promise<number>;
-    // (undocumented)
-    protected _requestContext: ClientRequestContext;
     }
 
 // @public
 export class BingLocationProvider {
     constructor();
     getLocation(query: string): Promise<GlobalLocation | undefined>;
-    // (undocumented)
-    protected _requestContext: ClientRequestContext;
-}
+    }
 
 // @internal (undocumented)
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
@@ -3210,11 +3196,6 @@ export enum FrontendLoggerCategory {
 }
 
 // @public
-export class FrontendRequestContext extends ClientRequestContext {
-    constructor(activityId?: string);
-}
-
-// @public
 export interface FrontendSecurityOptions {
     readonly csrfProtection?: {
         readonly enabled: boolean;
@@ -4271,7 +4252,7 @@ export class IModelApp {
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
     static get applicationVersion(): string;
-    static authorizationClient?: FrontendAuthorizationClient;
+    static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @alpha
@@ -4348,7 +4329,7 @@ export interface IModelAppOptions {
     accuSnap?: AccuSnap;
     applicationId?: string;
     applicationVersion?: string;
-    authorizationClient?: FrontendAuthorizationClient;
+    authorizationClient?: AuthorizationClient;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
@@ -4540,9 +4521,9 @@ export class IModelHubFrontend {
 // @internal (undocumented)
 export interface IModelIdArg {
     // (undocumented)
-    iModelId: GuidString;
+    accessToken: AccessToken;
     // (undocumented)
-    requestContext: AuthorizedClientRequestContext;
+    iModelId: GuidString;
 }
 
 // @public
@@ -4872,7 +4853,9 @@ export class LocalhostIpcApp {
 }
 
 // @internal (undocumented)
-export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
+export interface LocalHostIpcAppOpts {
+    // (undocumented)
+    iModelApp?: IModelAppOptions;
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
@@ -5222,8 +5205,6 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     readonly onStatusChanged: BeEvent<(provider: MapLayerImageryProvider) => void>;
     // (undocumented)
-    protected _requestContext: ClientRequestContext;
-    // (undocumented)
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
@@ -5284,7 +5265,7 @@ export class MapLayerSettingsService {
     // (undocumented)
     static deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
-    static getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
+    static getSettingFromUrl(accessToken: AccessToken, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
     static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
     // (undocumented)
     static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
@@ -6489,7 +6470,7 @@ export class NativeApp {
     }
 
 // @public
-export class NativeAppAuthorization {
+export class NativeAppAuthorization implements AuthorizationClient {
     constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
@@ -6500,7 +6481,7 @@ export class NativeAppAuthorization {
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
 }
@@ -6524,10 +6505,7 @@ export class NativeAppLogger {
 // @public
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
-    nativeApp?: {
-        authConfig?: NativeAppAuthorizationConfiguration;
-        noInitializeAuthClient?: boolean;
-    };
+    nativeApp?: {};
 }
 
 // @internal
@@ -13004,26 +12982,6 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
     latitudeToYFraction(latitude: number): number;
     // (undocumented)
     yFractionToLatitude(yFraction: number): number;
-}
-
-// @beta
-export class WebViewerApp {
-    // (undocumented)
-    static shutdown(): Promise<void>;
-    // (undocumented)
-    static startup(opts: WebViewerAppOpts): Promise<void>;
-}
-
-// @beta
-export interface WebViewerAppOpts {
-    // (undocumented)
-    iModelApp?: IModelAppOptions;
-    // (undocumented)
-    webViewerApp: {
-        rpcParams: BentleyCloudRpcParams;
-        routing?: RpcRoutingToken;
-        authConfig?: BrowserAuthorizationClientConfiguration;
-    };
 }
 
 // @internal

@@ -5,17 +5,17 @@
 
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyError } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import {
-  ChangesetIdWithIndex,
-  IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
-  RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
+  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
+  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
+  SerializedRpcActivity, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2,
-  TokenValues, ZeroMajorRpcInterface,
+  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
+  TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
@@ -445,12 +445,13 @@ describe("RpcInterface", () => {
   it("should send app version to backend", async () => {
     const backupFn = RpcConfiguration.requestContext.serialize;
 
-    RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedClientRequestContext> => {
-      const serializedContext: SerializedClientRequestContext = {
+    RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedRpcActivity> => {
+      const serializedContext: SerializedRpcActivity = {
         id: _request.id,
         applicationId: "",
         applicationVersion: "testbed1",
         sessionId: "",
+        authorization: "",
       };
       return serializedContext;
     };

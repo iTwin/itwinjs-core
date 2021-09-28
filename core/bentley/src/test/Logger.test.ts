@@ -5,7 +5,6 @@
 import { assert } from "chai";
 import { BentleyError, ExceptionMetaData } from "../BentleyError";
 import { GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
-import { ClientRequestContext } from "../ClientRequestContext";
 import { BeDuration } from "../Time";
 
 let outerr: any[];

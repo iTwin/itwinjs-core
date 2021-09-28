@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { AccessToken, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseDb } from "@bentley/imodeljs-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -38,7 +37,7 @@ const cred = {
   password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
 };
 
-getUserAccessToken(cred).then((_accessToken: AccessToken) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+getUserAccessToken(cred).then((_accessToken: AccessToken | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
 });
 
 configureIModel();

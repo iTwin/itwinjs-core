@@ -6,10 +6,10 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, ClientRequestContext, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
 import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@bentley/imodeljs-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { request, RequestOptions } from "@bentley/itwin-client";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -43,7 +43,7 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
 
 /** @internal */
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
-  const requestContext = new ClientRequestContext("");
+
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
     if (undefined === requestKey)
@@ -55,7 +55,7 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
   try {
-    const apiResponse: Response = await request(requestContext, apiUrl, apiRequestOptions);
+    const apiResponse = await request(apiUrl, apiRequestOptions);
     if (undefined === apiResponse || undefined === apiResponse.body || undefined === apiResponse.body.url) {
       assert(false);
       return {};
@@ -69,7 +69,6 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
 
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
-  const requestContext = new ClientRequestContext("");
   let layers;
 
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
@@ -79,7 +78,7 @@ export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId
   try {
     const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
-    const layerResponse = await request(requestContext, layerUrl, layerRequestOptions);
+    const layerResponse = await request(layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
       assert(false);
       return undefined;

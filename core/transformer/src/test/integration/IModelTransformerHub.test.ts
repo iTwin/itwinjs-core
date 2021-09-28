@@ -6,10 +6,9 @@
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
-import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
   ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
@@ -28,13 +27,13 @@ import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUt
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
   let iTwinId: GuidString;
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
 
   before(async () => {
     HubMock.startup("IModelTransformerHub");
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Regular);
     iTwinId = HubUtility.iTwinId!;
 
     // initialize logging

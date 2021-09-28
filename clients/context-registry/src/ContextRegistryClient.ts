@@ -6,9 +6,10 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { AuthorizedClientRequestContext, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
-import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
+import { AccessToken } from "@bentley/bentleyjs-core";
+import { RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
+import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
 /** The iTwin context such as Projects and Assets.
@@ -131,7 +132,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @param arg Options for paging and/or searching
    * @returns Array of iTwins, may be empty
    */
-  public async getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
+  public async getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]> {
     const queryOptions: RequestQueryOptions = {
       $top: arg?.pagination?.top,
       $skip: arg?.pagination?.skip,
@@ -144,7 +145,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
         queryOptions.$filter = `${arg.search.propertyName}+like+'${arg.search.searchString}'`;
     }
 
-    return this.getByQuery(requestContext, queryOptions);
+    return this.getByQuery(accessToken, queryOptions);
   }
 
   /** Gets all iTwins (projects or assets) using the given query options
@@ -152,7 +153,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of iTwins meeting the query's requirements
    */
-  private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+  private async getByQuery(accessToken: AccessToken, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
     // Spread operator possible since there are no nested properties
     const innerQuery = { ...queryOptions };
 
@@ -160,8 +161,8 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     innerQuery.$top = innerQuery.$top ? innerQuery.$top + (innerQuery.$skip ?? 0) : undefined;
     innerQuery.$skip = undefined;
 
-    const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", innerQuery);
-    const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", innerQuery);
+    const projectITwins: ITwin[] = await this.getInstances<Project>(accessToken, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", innerQuery);
+    const assetITwins: ITwin[] = await this.getInstances<Asset>(accessToken, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", innerQuery);
 
     // Default range is whole list
     const projectRange = {
