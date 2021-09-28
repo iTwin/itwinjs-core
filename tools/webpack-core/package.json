@@ -11,16 +11,16 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/cjs/plugins/index.js",
-  "typings": "lib/cjs/plugins/index",
+  "main": "lib/plugins/index.js",
+  "typings": "lib/plugins/index",
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:cjs": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
+    "test": "mocha \"./lib/test/**/*.test.js\"",
     "cover": "nyc npm test"
   },
   "dependencies": {

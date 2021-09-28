@@ -22,7 +22,7 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
     });
     // memfs (vol) doesn't work if plugins being tested grab files from actual file system
     fsFromJson({
-      "lib/test/assets/copy-bentley-static-resources-plugin-test/node_modules/@bentley/resource/cjs/assets/staticResourcePlugin.js": `console.log("Fake resource");`,
+      "lib/test/assets/copy-bentley-static-resources-plugin-test/node_modules/@bentley/resource/lib/assets/staticResourcePlugin.js": `console.log("Fake resource");`,
     });
   });
 
