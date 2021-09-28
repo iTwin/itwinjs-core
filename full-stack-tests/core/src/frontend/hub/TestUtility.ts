@@ -15,7 +15,7 @@ import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { ITwin } from "@bentley/itwin-registry-client";
 
 export class TestUtility {
-  public static testiTwinName = "iModelJsIntegrationTest";
+  public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
@@ -37,10 +37,10 @@ export class TestUtility {
 
   private static iTwinId: GuidString | undefined = undefined;
   /** Returns the iTwinId if an iTwin with the name exists. Otherwise, returns undefined. */
-  public static async getTestiTwinId(): Promise<GuidString> {
+  public static async getTestITwinId(): Promise<GuidString> {
     if (undefined !== TestUtility.iTwinId)
       return TestUtility.iTwinId;
-    return TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    return TestUtility.queryITwinIdByName(TestUtility.testITwinName);
   }
 
   public static imodelCloudEnv: IModelCloudEnvironment;
@@ -50,7 +50,7 @@ export class TestUtility {
     return new AuthorizedClientRequestContext(accessToken);
   }
 
-  public static async initializeTestiTwin(testiTwinName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
+  public static async initializeTestITwin(testITwinName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank) {
       this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);
@@ -68,13 +68,13 @@ export class TestUtility {
     }
     const accessToken = await authorizationClient.getAccessToken();
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
-      await this.imodelCloudEnv.bootstrapiTwin(new AuthorizedClientRequestContext(accessToken), testiTwinName);
+      await this.imodelCloudEnv.bootstrapITwin(new AuthorizedClientRequestContext(accessToken), testITwinName);
     }
 
     return authorizationClient;
   }
 
-  public static async queryiTwinIdByName(iTwinName: string): Promise<string> {
+  public static async queryITwinIdByName(iTwinName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const iTwin: ITwin = await this.imodelCloudEnv.iTwinMgr.getITwinByName(requestContext, iTwinName);
     assert(iTwin && iTwin.id);

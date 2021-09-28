@@ -15,7 +15,7 @@ import { HubUtility } from "./HubUtility";
 //    IMJS_AGENT_TEST_CLIENT_SECRET
 
 describe("Agent iModel Download (#integration)", () => {
-  let testiTwinId: string;
+  let testITwinId: string;
   let testReadIModelId: string;
   let user: AuthorizedBackendRequestContext;
 
@@ -37,12 +37,12 @@ describe("Agent iModel Download (#integration)", () => {
     const jwt = await agentClient.getAccessToken(new ClientRequestContext());
     user = new AuthorizedBackendRequestContext(jwt);
 
-    testiTwinId = await HubUtility.getTestITwinId(user);
+    testITwinId = await HubUtility.getTestITwinId(user);
     testReadIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
   });
 
   it("Agent should be able to open a checkpoint", async () => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testiTwinId, iModelId: testReadIModelId });
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testReadIModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   });

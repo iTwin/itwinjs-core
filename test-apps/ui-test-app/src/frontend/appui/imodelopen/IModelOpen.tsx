@@ -24,12 +24,12 @@ export interface IModelOpenProps {
 }
 
 interface IModelOpenState {
-  isLoadingiTwin: boolean;
-  isLoadingiTwins: boolean;
-  isLoadingiModel: boolean;
-  recentiTwins?: ITwin[];
+  isLoadingITwin: boolean;
+  isLoadingITwins: boolean;
+  isLoadingIModel: boolean;
+  recentITwins?: ITwin[];
   iModels?: IModelInfo[];
-  currentiTwin?: ITwin;
+  currentITwin?: ITwin;
   prompt: string;
   isNavigationExpanded: boolean;
 }
@@ -43,9 +43,9 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     super(props, context);
 
     this.state = {
-      isLoadingiTwin: true,
-      isLoadingiTwins: false,
-      isLoadingiModel: false,
+      isLoadingITwin: true,
+      isLoadingITwins: false,
+      isLoadingIModel: false,
       isNavigationExpanded: false,
       prompt: "Fetching iTwin information...",
     };
@@ -53,14 +53,14 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
-      const currentiTwin = this.props.initialIModels[0].iTwinInfo;
-      currentiTwin.id = "";
+      const currentITwin = this.props.initialIModels[0].iTwinInfo;
+      currentITwin.id = "";
 
       this.setState({
-        isLoadingiTwin: false,
-        isLoadingiTwins: false,
-        isLoadingiModel: false,
-        currentiTwin: this.props.initialIModels[0].iTwinInfo, // eslint-disable-line @bentley/react-set-state-usage
+        isLoadingITwin: false,
+        isLoadingITwins: false,
+        isLoadingIModel: false,
+        currentITwin: this.props.initialIModels[0].iTwinInfo, // eslint-disable-line @bentley/react-set-state-usage
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
     }
@@ -70,13 +70,13 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   private async startRetrieveIModels(itwin: ITwin) {
     this.setState({
       prompt: "Fetching iModel information...",
-      isLoadingiTwins: true,
-      isLoadingiTwin: false,
-      currentiTwin: itwin,
+      isLoadingITwins: true,
+      isLoadingITwin: false,
+      currentITwin: itwin,
     });
     const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(itwin, 80, 0);
     this.setState({
-      isLoadingiTwins: false,
+      isLoadingITwins: false,
       iModels: iModelInfos,
     });
   }
@@ -85,14 +85,14 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
-  private _selectiTwin(itwin: ITwin) {
+  private _selectITwin(itwin: ITwin) {
     this.startRetrieveIModels(itwin); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
     this.setState({
       prompt: `Opening '${iModelInfo.name}'...`,
-      isLoadingiModel: true,
+      isLoadingIModel: true,
     }, () => {
       if (this.props.onIModelSelected)
         this.props.onIModelSelected(iModelInfo);
@@ -100,7 +100,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   };
 
   private renderIModels() {
-    if (this.state.isLoadingiTwin || this.state.isLoadingiTwins) {
+    if (this.state.isLoadingITwin || this.state.isLoadingITwins) {
       return (
         <BlockingPrompt prompt={this.state.prompt} />
       );
@@ -109,7 +109,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         <>
           <IModelList iModels={this.state.iModels}
             onIModelSelected={this._handleIModelSelected} />
-          {this.state.isLoadingiModel &&
+          {this.state.isLoadingIModel &&
             <BlockingPrompt prompt={this.state.prompt} />
           }
         </>
@@ -151,7 +151,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <div className="itwin-picker-content">
               <span className="itwins-label">iTwins</span>
               <div className="itwin-picker">
-                <ITwinDropdown currentiTwin={this.state.currentiTwin} recentiTwins={this.state.recentiTwins} oniTwinClicked={this._selectiTwin.bind(this)} />
+                <ITwinDropdown currentITwin={this.state.currentITwin} recentITwins={this.state.recentITwins} onITwinClicked={this._selectITwin.bind(this)} />
               </div>
             </div>
             <Button styleType="cta" style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>

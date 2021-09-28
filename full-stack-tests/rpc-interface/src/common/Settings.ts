@@ -24,7 +24,7 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  useiTwinName: boolean;
+  useITwinName: boolean;
   iTwinId?: string;
   iTwinName?: string;
   changeSetId?: string;
@@ -139,7 +139,7 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
-      useiTwinName: !process.env.IMODEL_PROJECTID,
+      useITwinName: !process.env.IMODEL_PROJECTID,
       iTwinId: process.env.IMODEL_PROJECTID,
       iTwinName: process.env.IMODEL_PROJECTNAME,
 
@@ -160,7 +160,7 @@ export class Settings {
         useName: !process.env.IMODEL_WRITE_IMODELID,
         id: process.env.IMODEL_WRITE_IMODELID,
         name: process.env.IMODEL_WRITE_IMODELNAME,
-        useiTwinName: !process.env.IMODEL_WRITE_PROJECTID,
+        useITwinName: !process.env.IMODEL_WRITE_PROJECTID,
         iTwinId: process.env.IMODEL_WRITE_PROJECTID,
         iTwinName: process.env.IMODEL_WRITE_PROJECTNAME,
       });

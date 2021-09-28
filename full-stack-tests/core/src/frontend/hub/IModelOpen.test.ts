@@ -12,7 +12,7 @@ import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
 describe("Opening IModelConnection (#integration)", () => {
-  let testiTwinId: GuidString;
+  let testITwinId: GuidString;
   let testIModelId: GuidString;
   let testChangeSetId: string;
 
@@ -26,8 +26,8 @@ describe("Opening IModelConnection (#integration)", () => {
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
-    testiTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
-    testIModelId = await TestUtility.queryIModelIdbyName(testiTwinId, TestUtility.testIModelNames.stadium);
+    testITwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    testIModelId = await TestUtility.queryIModelIdbyName(testITwinId, TestUtility.testIModelNames.stadium);
 
     // Setup a testChangeSetId somewhere in the middle of the change history
     const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();
@@ -49,7 +49,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let promiseChainWithFullWaits: Promise<any> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
-      const openPromise = CheckpointConnection.openRemote(testiTwinId, testIModelId, IModelVersion.asOfChangeSet(testChangeSetId));
+      const openPromise = CheckpointConnection.openRemote(testITwinId, testIModelId, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]);
 

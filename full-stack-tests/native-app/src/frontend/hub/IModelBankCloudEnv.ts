@@ -28,20 +28,20 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
       : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
   }
 
-  public async bootstrapiTwin(requestContext: AuthorizedClientRequestContext, iTwinName: string): Promise<void> {
+  public async bootstrapITwin(requestContext: AuthorizedClientRequestContext, iTwinName: string): Promise<void> {
     let iTwin: ITwin | undefined;
     try {
       iTwin = await this.iTwinMgr.getITwinByName(requestContext, iTwinName);
       if (iTwin === undefined)
         throw new Error("what happened?");
-      await this.iTwinMgr.deleteiTwin(requestContext, iTwin.id);
+      await this.iTwinMgr.deleteITwin(requestContext, iTwin.id);
     } catch (err) {
       if (!(err instanceof WsgError) || (err.errorNumber !== WSStatus.InstanceNotFound)) {
         throw err;
       }
     }
 
-    await this.iTwinMgr.createiTwin(requestContext, iTwinName);
+    await this.iTwinMgr.createITwin(requestContext, iTwinName);
   }
 
 }

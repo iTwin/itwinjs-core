@@ -19,7 +19,7 @@ import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { testIpcChannel, TestIpcInterface, TestiTwinProps } from "../common/IpcInterfaces";
+import { testIpcChannel, TestIpcInterface, TestITwinProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 /** Loads the provided `.env` file into process.env */
@@ -57,7 +57,7 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getTestiTwinProps(user: TestUserCredentials): Promise<TestiTwinProps> {
+  public async getTestITwinProps(user: TestUserCredentials): Promise<TestITwinProps> {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
 

@@ -37,12 +37,12 @@ describe("external texture requests (#integration)", () => {
   before(async () => {
     await IModelApp.startup({
       // SWB
-      authorizationClient: await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
     // SWB
-    const contextId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
@@ -118,7 +118,7 @@ describe("external texture requests (#integration)", () => {
       expect(texData).to.not.be.undefined;
       let texBytes = texData?.bytes;
       expect(texBytes).to.not.be.undefined;
-      let imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
+      let imageSource = new ImageSource(texBytes, ImageSourceFormat.Jpeg);
       let image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.lessThanOrEqual(maxTextureSize);
       expect(image.height).to.be.lessThanOrEqual(maxTextureSize);
@@ -129,7 +129,7 @@ describe("external texture requests (#integration)", () => {
       expect(texData).to.not.be.undefined;
       texBytes = texData?.bytes;
       expect(texBytes).to.not.be.undefined;
-      imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
+      imageSource = new ImageSource(texBytes, ImageSourceFormat.Jpeg);
       image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.greaterThan(maxTextureSize);
       expect(image.height).to.be.greaterThan(maxTextureSize);

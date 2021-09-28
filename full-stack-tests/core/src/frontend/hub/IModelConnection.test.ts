@@ -38,10 +38,10 @@ describe("IModelConnection (#integration)", () => {
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
-    const testiTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testiTwinId, TestUtility.testIModelNames.connectionRead);
+    const testITwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const testIModelId = await TestUtility.queryIModelIdbyName(testITwinId, TestUtility.testIModelNames.connectionRead);
 
-    iModel = await CheckpointConnection.openRemote(testiTwinId, testIModelId);
+    iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
 
   after(async () => {

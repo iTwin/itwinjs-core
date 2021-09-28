@@ -11,15 +11,15 @@ import { ITwin } from "@bentley/itwin-registry-client";
 
 /** Properties for the [[ITwinDropdown]] component */
 export interface ITwinDropdownProps {
-  numVisibleiTwins?: number;
-  recentiTwins?: ITwin[];
-  currentiTwin?: ITwin;
-  oniTwinClicked: (itwin: ITwin) => any;
+  numVisibleITwins?: number;
+  recentITwins?: ITwin[];
+  currentITwin?: ITwin;
+  onITwinClicked: (itwin: ITwin) => any;
 }
 
 interface ITwinDropdownState {
   isDropdownOpen: boolean;
-  showiTwinsDialog: boolean;
+  showITwinsDialog: boolean;
 }
 
 /**
@@ -30,22 +30,22 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
   private _target: HTMLElement | null = null;
 
   public static defaultProps: Partial<ITwinDropdownProps> = {
-    numVisibleiTwins: 5, // default number of visible iTwin to 5
+    numVisibleITwins: 5, // default number of visible iTwin to 5
   };
 
   constructor(props: ITwinDropdownProps, context?: any) {
     super(props, context);
-    this.state = { isDropdownOpen: false, showiTwinsDialog: false };
+    this.state = { isDropdownOpen: false, showITwinsDialog: false };
   }
 
   private _onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
     this.closeDropdown();
-    this.setState({ showiTwinsDialog: true });
+    this.setState({ showITwinsDialog: true });
   };
 
   private _onItemClick(itwin: ITwin) {
     this.closeDropdown();
-    this.props.oniTwinClicked(itwin);
+    this.props.onITwinClicked(itwin);
   }
 
   private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
@@ -60,17 +60,17 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     this.setState({ isDropdownOpen: false });
   }
 
-  private getiTwins(): ITwin[] {
-    if (this.props.recentiTwins) {
-      return this.props.recentiTwins;
+  private getITwins(): ITwin[] {
+    if (this.props.recentITwins) {
+      return this.props.recentITwins;
     }
     return [];
   }
 
-  private renderiTwins() {
-    const itwins: ITwin[] = this.getiTwins();
+  private renderITwins() {
+    const itwins: ITwin[] = this.getITwins();
     const ulStyle: React.CSSProperties = {
-      height: `${this.props.numVisibleiTwins! * this._itemHeight}em`,
+      height: `${this.props.numVisibleITwins! * this._itemHeight}em`,
     };
     const liStyle: React.CSSProperties = {
       height: `${this._itemHeight}em`,
@@ -104,7 +104,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     return (
       <Popup isOpen={this.state.isDropdownOpen} position={RelativePosition.Bottom} onClose={this._handleOnOutsideClick} target={this._target}>
         <div className="pp-dropdown">
-          {this.renderiTwins()}
+          {this.renderITwins()}
           <div className="pp-separator" />
           <div className="pp-more" style={liStyle} onClick={this._onMoreClicked} >
             <span className="pp-icon icon icon-search" />
@@ -121,8 +121,8 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
       <div className="pp">
         <div className="pp-content" onClick={this._splitterClicked} ref={(element) => { this._target = element; }}>
           <div>
-            <span className="number">{this.props.currentiTwin ? this.props.currentiTwin.code : ""}</span>
-            <span className="name">{this.props.currentiTwin ? this.props.currentiTwin.name : ""}</span>
+            <span className="number">{this.props.currentITwin ? this.props.currentITwin.code : ""}</span>
+            <span className="name">{this.props.currentITwin ? this.props.currentITwin.name : ""}</span>
           </div>
           <span className={splitterClassName} />
         </div>

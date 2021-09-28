@@ -25,7 +25,7 @@ import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
-const bankiTwins: string[] = [];
+const bankITwins: string[] = [];
 
 export const sharedimodelName = "imodeljs-clients Shared iModel";
 
@@ -216,8 +216,8 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   return authorizationClient.getAccessToken(requestContext);
 }
 
-export async function bootstrapBankiTwin(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
-  if (getCloudEnv().isIModelHub || bankiTwins.includes(name))
+export async function bootstrapBankITwin(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+  if (getCloudEnv().isIModelHub || bankITwins.includes(name))
     return;
 
   const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
@@ -232,9 +232,9 @@ export async function bootstrapBankiTwin(requestContext: AuthorizedClientRequest
     }
   }
   if (!iTwin)
-    await bankContext.createiTwin(requestContext, name);
+    await bankContext.createITwin(requestContext, name);
 
-  bankiTwins.push(name);
+  bankITwins.push(name);
 }
 
 // SWB
@@ -244,7 +244,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   assetName = assetName || TestConfig.assetName;
 
-  await bootstrapBankiTwin(requestContext, assetName);
+  await bootstrapBankITwin(requestContext, assetName);
 
   const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, assetName);
 
@@ -255,13 +255,13 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
   return iTwin.id;
 }
 
-export async function getiTwinId(requestContext: AuthorizedClientRequestContext, iTwinName?: string): Promise<string> {
+export async function getITwinId(requestContext: AuthorizedClientRequestContext, iTwinName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
   iTwinName = iTwinName || TestConfig.iTwinName;
 
-  await bootstrapBankiTwin(requestContext, iTwinName);
+  await bootstrapBankITwin(requestContext, iTwinName);
 
   const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, iTwinName);
 
@@ -300,7 +300,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
   if (useUniqueName)
     imodelName = getUniqueIModelName(imodelName);
 
-  iTwinId = iTwinId ?? await getiTwinId(requestContext);
+  iTwinId = iTwinId ?? await getITwinId(requestContext);
 
   const client = getDefaultClient();
   const imodels = await client.iModels.get(requestContext, iTwinId, new IModelQuery().byName(imodelName));
@@ -743,7 +743,7 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   if (useUniqueName)
     name = getUniqueIModelName(name);
 
-  iTwinId = iTwinId || await getiTwinId(requestContext, TestConfig.iTwinName);
+  iTwinId = iTwinId || await getITwinId(requestContext, TestConfig.iTwinName);
 
   const client = getDefaultClient();
 

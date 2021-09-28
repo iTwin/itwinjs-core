@@ -19,13 +19,13 @@ export class NativeAppTest {
     return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args) as PromiseReturnType<TestIpcInterface[T]>;
   }
 
-  public static async initializeTestiTwin(): Promise<string> {
+  public static async initializeTestITwin(): Promise<string> {
     const user = TestUsers.regular;
-    const props = await NativeAppTest.callBackend("getTestiTwinProps", user);
+    const props = await NativeAppTest.callBackend("getTestITwinProps", user);
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
       const authorizationClient = bank.getAuthorizationClient(undefined, user);
-      await bank.bootstrapiTwin(new AuthorizedClientRequestContext(await authorizationClient.getAccessToken()), props.iTwinName);
+      await bank.bootstrapITwin(new AuthorizedClientRequestContext(await authorizationClient.getAccessToken()), props.iTwinName);
       this.imodelCloudEnv = bank;
     } else {
       this.imodelCloudEnv = new IModelHubCloudEnv();
