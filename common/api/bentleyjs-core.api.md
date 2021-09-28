@@ -989,7 +989,7 @@ export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static formatMetaData(metaData?: ExceptionMetaData): string;
     static getLevel(category: string): LogLevel | undefined;
-    static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
+    static initialize(logError: LogFunction | undefined, logWarning: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: ExceptionMetaData): void;
