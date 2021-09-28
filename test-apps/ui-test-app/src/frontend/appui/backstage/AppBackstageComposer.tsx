@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { UserInfo } from "@bentley/itwin-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework } from "@bentley/ui-framework";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@bentley/ui-framework";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
@@ -23,7 +22,7 @@ function mapStateToProps(state: RootState) {
   if (!frameworkState)
     return undefined;
 
-  return { userInfo: frameworkState.sessionState.userInfo };
+  return { userInfo: frameworkState.sessionState.userInfo! };
 }
 
 interface AppBackstageComposerProps {

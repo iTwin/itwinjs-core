@@ -7,18 +7,18 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { ChangesetProps } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
+import { IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 describe("Checkpoints (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
   let testIModelId: GuidString;
   let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
@@ -32,7 +32,7 @@ describe("Checkpoints (#integration)", () => {
     process.env.BLOCKCACHE_DIR = blockcacheDir;
     // IModelTestUtils.setupDebugLogLevels();
 
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
     testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ user, iModelId: testIModelId });

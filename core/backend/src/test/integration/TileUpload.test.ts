@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as Azure from "@azure/storage-blob";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcInvocation, RpcManager, RpcRegistry, TileContentSource,
 } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as zlib from "zlib";
 import { IModelDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -59,7 +59,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
 }
 
 describe("TileUpload (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
   let testIModelId: GuidString;
   let testContextId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
@@ -86,7 +86,7 @@ describe("TileUpload (#integration)", () => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     testContextId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
 
@@ -117,6 +117,13 @@ describe("TileUpload (#integration)", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
+    RpcInvocation.currentActivity = {
+      accessToken: user,
+      activityId: "",
+      applicationId: "",
+      applicationVersion: "",
+      sessionId: "",
+    };
     const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     assert.equal(tile, TileContentSource.ExternalCache);

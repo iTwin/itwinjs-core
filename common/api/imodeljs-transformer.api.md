@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import * as ECSchemaMetaData from '@bentley/ecschema-metadata';
 import { Element } from '@bentley/imodeljs-backend';
@@ -36,7 +36,7 @@ export class IModelExporter {
     excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(user?: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
+    exportChanges(user?: AccessToken, startChangesetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -153,7 +153,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
-    processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
+    processChanges(requestContext: AccessToken, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;

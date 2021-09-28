@@ -6,7 +6,7 @@
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
 
 /* eslint-disable deprecation/deprecation */
@@ -38,15 +38,16 @@ export class ExternalIModel {
     const projectName = this.projectName;
     const imodelName = this.imodelName;
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
 
     const connectClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await connectClient.getAll(requestContext, {
+    const iTwinList: ITwin[] = await connectClient.getAll(accessToken, {
       search: {
         searchString: projectName,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      },
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${projectName} was not found for the user.`);
@@ -55,7 +56,7 @@ export class ExternalIModel {
 
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, iTwinList[0].id, imodelQuery);
+    const imodels = await IModelHubFrontend.iModelClient.iModels.get(accessToken, iTwinList[0].id, imodelQuery);
     if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
     }

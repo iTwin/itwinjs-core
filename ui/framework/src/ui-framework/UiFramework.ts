@@ -9,17 +9,18 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
+import { RpcActivity } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";
 import { UiIModelComponents } from "@bentley/ui-imodel-components";
 import { BackstageManager } from "./backstage/BackstageManager";
+import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { IModelServices } from "./clientservices/IModelServices";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
@@ -31,12 +32,12 @@ import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
-import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
+import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
+import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 
 // cSpell:ignore Mobi
 
@@ -185,11 +186,6 @@ export class UiFramework {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
     if (isFrontendAuthorizationClient(oidcClient)) {
-      const authorized = IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-      if (authorized) {
-        const accessToken = await oidcClient.getAccessToken();
-        UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
-      }
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
@@ -543,11 +539,17 @@ export class UiFramework {
    */
   // istanbul ignore next
   public static async postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+    if (!IModelApp.authorizationClient)
       return;
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const activity: RpcActivity = {
+      sessionId: IModelApp.sessionId,
+      activityId: "",
+      applicationId: IModelApp.applicationId,
+      applicationVersion: IModelApp.applicationVersion,
+      accessToken: (await IModelApp.authorizationClient.getAccessToken()) ?? "",
+    };
     const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
-    await IModelApp.telemetry.postTelemetry(requestContext, telemetryEvent);
+    await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
@@ -559,8 +561,6 @@ export class UiFramework {
 
   // istanbul ignore next
   private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
-    UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
-
     if (accessToken === undefined) {
       ConfigurableUiManager.closeUi();
     }

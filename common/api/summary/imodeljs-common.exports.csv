@@ -514,6 +514,7 @@ public;RgbColor
 public;RgbColorProps
 public;RgbFactorProps = number[]
 public;RootSubjectProps
+public;RpcActivity 
 public;class RpcConfiguration
 public;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
@@ -528,7 +529,7 @@ public;RpcInterfaceDefinition
 public;RpcInterfaceEndpoints
 public;RpcInterfaceImplementation
 public;RpcInvocation
-public;RpcInvocationCallback_T = (invocation: RpcInvocation) => void
+public;RpcInvocationCallback = (invocation: RpcInvocation) => void
 public;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
@@ -575,10 +576,12 @@ public;SectionDrawingLocationProps
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
 public;SectionType
+public;SerializedRpcActivity
 public;SerializedRpcOperation
 public;SerializedRpcRequest 
 public;ServerError 
 public;ServerTimeoutError 
+public;SessionProps
 beta;SheetBorderTemplateProps 
 public;SheetProps 
 beta;SheetTemplateProps 

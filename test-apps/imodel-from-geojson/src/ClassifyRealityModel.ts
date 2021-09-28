@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { getJson } from "@bentley/itwin-client";
-import { ClientRequestContext, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@bentley/geometry-core";
 import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import {
@@ -50,8 +50,8 @@ class RealityModelTileUtils {
       const region = JsonUtils.asArray(json.root.boundingVolume.region);
       if (undefined === region)
         throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-      const ecefLow = (Cartographic.fromRadians({longitude: region[0], latitude: region[1], height: region[4]})).toEcef();
-      const ecefHigh = (Cartographic.fromRadians({longitude: region[2], latitude: region[3], height: region[5]})).toEcef();
+      const ecefLow = (Cartographic.fromRadians({ longitude: region[0], latitude: region[1], height: region[4] })).toEcef();
+      const ecefHigh = (Cartographic.fromRadians({ longitude: region[2], latitude: region[3], height: region[5] })).toEcef();
       return Range3d.create(ecefLow, ecefHigh);
     }
 
@@ -64,7 +64,7 @@ class RealityModelTileUtils {
   }
 
   public static async rangeFromUrl(url: string): Promise<AxisAlignedBox3d> {
-    const json = await getJson(new ClientRequestContext(), url);
+    const json = await getJson(url);
     return RealityModelTileUtils.rangeFromJson(json);
   }
 }

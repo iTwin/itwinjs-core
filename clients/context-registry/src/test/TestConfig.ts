@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/bentleyjs-core";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
 /** Basic configuration used by all tests
@@ -15,8 +15,7 @@ export class TestConfig {
   public static readonly iTwinId: string = "ec002f93-f0c1-4ab3-a407-351848eba233";
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials = TestUsers.regular): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await getAccessTokenFromBackend(user);
-    return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
+  public static async getAccessToken(user: TestUserCredentials = TestUsers.regular): Promise<AccessToken> {
+    return getAccessTokenFromBackend(user);
   }
 }
