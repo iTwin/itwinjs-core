@@ -310,7 +310,7 @@ export abstract class ViewState extends ElementState {
         const props = await this.iModel.elements.getProps(acsId);
         if (0 !== props.length)
           this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
-      } catch { }
+      } catch (_) { }
     }
   }
 

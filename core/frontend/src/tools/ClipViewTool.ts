@@ -1004,7 +1004,7 @@ export class ViewClipByElementTool extends ViewClipTool {
 
       await this.onReinitialize();
       return true;
-    } catch {
+    } catch (_) {
       return false;
     }
   }

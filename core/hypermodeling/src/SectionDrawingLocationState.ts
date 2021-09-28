@@ -141,9 +141,7 @@ export class SectionDrawingLocationState {
       if (str) {
         try {
           clip = ClipVector.fromJSON(JSON.parse(str));
-        } catch {
-          //
-        }
+        } catch (_) {}
       }
 
       return clip;
@@ -178,7 +176,7 @@ export class SectionDrawingLocationState {
       const view = await this.iModel.views.load(this.drawingViewId);
       if (view instanceof DrawingViewState)
         return view;
-    } catch { }
+    } catch (_) { }
 
     return undefined;
   }
@@ -189,7 +187,7 @@ export class SectionDrawingLocationState {
       const view = await this.iModel.views.load(this.spatialViewId);
       if (view instanceof SpatialViewState)
         return view;
-    } catch { }
+    } catch (_) { }
 
     return undefined;
   }
@@ -203,7 +201,7 @@ export class SectionDrawingLocationState {
       const view = await this.iModel.views.load(this.viewAttachment.viewId);
       if (view instanceof SheetViewState)
         return view;
-    } catch { }
+    } catch (_) { }
 
     return undefined;
   }

@@ -101,7 +101,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
       const categorySelector = new CategorySelectorState({} as any, state.iModel);
 
       return new DrawingViewState(viewProps, state.iModel, categorySelector, displayStyle, sheetExtents);
-    } catch {
+    } catch (_) {
       return undefined;
     }
   }

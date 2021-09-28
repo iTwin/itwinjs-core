@@ -110,7 +110,7 @@ export class TransformGraphicsProvider {
 
       this.data.push(info);
       return true;
-    } catch {
+    } catch (_) {
       return false;
     }
   }
@@ -137,7 +137,7 @@ export class TransformGraphicsProvider {
             this.data.push(info);
         });
       }
-    } catch { }
+    } catch (_) { }
   }
 
   /** Call to dispose of [[RenderGraphic]] held by [[RenderGraphicOwner]] and cancel requests that are still pending.

@@ -473,7 +473,7 @@ export class SymbolTool extends RedlineTool {
         symbol.remove();
         this._symbolData = undefined;
       }
-      try { symbol.flatten(symbol); } catch { }
+      try { symbol.flatten(symbol); } catch (_) { }
       this._symbol = symbol;
     } else if (!isDynamics) {
       svgMarkup.add(this._symbol);

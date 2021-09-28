@@ -125,7 +125,7 @@ export class DynamicGraphicsProvider {
       const graphic = await this.createRequest(categoryId, placement, geometry);
       this.cleanupGraphic();
       return (undefined !== (this.graphic = graphic));
-    } catch {
+    } catch (_) {
       return false;
     }
   }
