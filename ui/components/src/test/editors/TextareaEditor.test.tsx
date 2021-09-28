@@ -10,7 +10,7 @@ import sinon from "sinon";
 import * as React from "react";
 import {
   InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
-  PropertyEditorParamTypes, SpecialKey, StandardEditorNames
+  PropertyEditorParamTypes, SpecialKey, StandardEditorNames,
 } from "@itwin/appui-abstract";
 import { TextareaEditor } from "../../components-react/editors/TextareaEditor";
 import { EditorContainer } from "../../components-react/editors/EditorContainer";
