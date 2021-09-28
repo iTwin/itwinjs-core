@@ -27,7 +27,7 @@ The [BentleyError]($bentleyjs-core) constructor now accepts 3 arguments, the las
 
 ## Logger functions
 
-The optional `metaData` argument for the [Logger]($bentleyjs-core) functions was previously a function returning an object or undefined. This was to allow cases where it may be expensive to create the metadata to be deferred, in the case where logging is turned off. However, there are many cases where the object for the metaData is directly available, so creating a function to return it creates overhead, whether or not logging is enabled. It may now also be just an object so you don't have to make a function.
+The optional `metaData` argument for the [Logger]($bentleyjs-core) functions was previously a function returning an object or undefined. This was to permit cases where it may be expensive to create the metadata to be elided when logging is turned off. However, there are many cases where the metaData object is directly available, so creating a function to return it created overhead whether or not logging is enabled. It may now also be just an object so you don't have to make a function.
 
 ## ClientRequestContext and AuthorizedClientRequestContext have been removed
 
