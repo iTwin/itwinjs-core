@@ -540,7 +540,6 @@ interface WidgetContentRendererState {
 
 class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererProps, WidgetContentRendererState> {
   private _content = document.createElement("span");
-
   public constructor(props: WidgetContentRendererProps) {
     super(props);
 
@@ -572,8 +571,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.props.widgetDef.saveTransientState();
     this.props.renderTo.appendChild(this._content);
 
-    const shouldRemount = this.props.widgetDef.restoreTransientState();
-    // const shouldRemount = this.props.widgetDef.widgetControl ? !this.props.widgetDef.widgetControl.restoreTransientState() : true;
+    const shouldRemount = this.props.widgetDef.restoreTransientState() || this.props.widgetDef.isToolSettings;
 
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }
@@ -617,7 +615,8 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   private _handleToolActivatedEvent = () => {
     if (this.props.toolSettingsMode === undefined)
       return;
-    this.forceUpdate();
+    // force update when tool is activated
+    this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   };
 }
 
