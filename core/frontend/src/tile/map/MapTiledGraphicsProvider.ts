@@ -32,7 +32,17 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
     this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
+
     const removals = this._detachFromDisplayStyle;
+    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings) => {
+      // ###TODO I think the clearLayers calls can be removed?
+      this.backgroundMap.clearLayers();
+      this.backgroundDrapeMap.clearLayers();
+
+      this.backgroundMap.settings = settings;
+      this.overlayMap.settings = settings;
+      this.backgroundDrapeMap.settings = settings;
+    }));
 
     removals.push(displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
       this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
