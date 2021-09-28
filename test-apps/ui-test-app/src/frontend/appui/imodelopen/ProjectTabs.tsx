@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// SWB
 import "./ProjectTabs.scss";
 import classnames from "classnames";
 import * as React from "react";
 
 /**
-   // SWB
- * Properties for the [[ProjectTab]] component. A temporary tab component.  Do not reuse!
+ * Properties for the [[ITwinTab]] component. A temporary tab component.  Do not reuse!
  * @internal
  */
 export interface TabProps {
@@ -25,8 +23,7 @@ export interface TabProps {
  * A temporary tab component.  Do not reuse!
  * @internal
  */
-// SWB
-export class ProjectTab extends React.Component<TabProps> {
+export class ITwinTab extends React.Component<TabProps> {
   public static defaultProps: Partial<TabProps> = {
     label: "",
     icon: "",
@@ -49,8 +46,6 @@ export class ProjectTab extends React.Component<TabProps> {
     );
   }
 
-  // {this.props.index === 0 && this.renderIndicator()}
-
   public override render() {
     const isActive = this.props.index === this.props.selectedTabIndex!;
     const classes = classnames("tabs-style-linemove", isActive && "tab-active");
@@ -66,8 +61,7 @@ export class ProjectTab extends React.Component<TabProps> {
   }
 }
 
-// SWB
-/** Properties for the [[ProjectTabs]] component
+/** Properties for the [[ITwinTabs]] component
  * @internal
  */
 export interface TabsProps {
@@ -83,8 +77,7 @@ interface TabsState {
  * List of tabs.  Do not reuse!
  * @internal
  */
-// SWB
-export class ProjectTabs extends React.Component<TabsProps, TabsState> {
+export class ITwinTabs extends React.Component<TabsProps, TabsState> {
 
   constructor(props: TabsProps, context?: any) {
     super(props, context);

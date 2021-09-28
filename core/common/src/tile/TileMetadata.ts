@@ -59,7 +59,6 @@ export interface TileOptions {
   readonly enableImprovedElision: boolean;
   readonly ignoreAreaPatterns: boolean;
   readonly enableExternalTextures: boolean;
-  // SWB What does project mean here?
   readonly useProjectExtents: boolean;
   readonly optimizeBRepProcessing: boolean;
   readonly disableMagnification: boolean;
@@ -84,7 +83,6 @@ export namespace TileOptions {
       enableImprovedElision: 0 !== (contentFlags & ContentFlags.ImprovedElision),
       ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
       enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
-      // SWB What does project mean here?
       useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
       optimizeBRepProcessing: 0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
       disableMagnification: false,
@@ -265,7 +263,6 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   enableImprovedElision: true,
   ignoreAreaPatterns: false,
   enableExternalTextures: true,
-  // SWB What does project mean here?
   useProjectExtents: true,
   optimizeBRepProcessing: true,
   disableMagnification: false,
@@ -329,7 +326,6 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
  */
 export enum TreeFlags {
   None = 0,
-  // SWB What does project mean here?
   UseProjectExtents = 1 << 0, // Use project extents as the basis of the tile tree's range.
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
   OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
@@ -385,7 +381,6 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
  */
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string {
   let idStr = "";
-  // SWB What does project mean here?
   let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
   if (options.optimizeBRepProcessing)
     flags |= TreeFlags.OptimizeBRepProcessing;
@@ -404,7 +399,6 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     idStr = `${idStr + typeStr}:${treeId.expansion.toFixed(6)}_`;
 
     if (BatchType.VolumeClassifier === treeId.type)
-      // SWB What does project mean here?
       flags |= TreeFlags.UseProjectExtents;
 
     if (undefined !== treeId.animationId)
@@ -699,7 +693,6 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
   // Don't bother creating children or requesting content for such empty volumes.
   const emptyMask = parent.emptySubRangeMask;
 
-  // SWB What does project mean here?
   // Spatial tree range == project extents; content range == model range.
   // Trivially reject children whose ranges are entirely outside model range.
   let treeContentRange = root.contentRange;
@@ -727,7 +720,6 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
           bisectRange(range, 0 === k);
 
         if (undefined !== treeContentRange && !range.intersectsRange(treeContentRange)) {
-          // SWB What does project mean here?
           // volume is within project extents but entirely outside model range
           ++numEmpty;
           continue;

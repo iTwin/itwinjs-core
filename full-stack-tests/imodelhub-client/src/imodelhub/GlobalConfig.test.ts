@@ -18,16 +18,14 @@ before(() => {
 
 before(async () => {
   const requestContext = await getRequestContext();
-  // SWB
-  const contextId = await utils.getProjectId(requestContext);
-  await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+  const iTwinId = await utils.getITwinId(requestContext);
+  await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
 });
 
 after(async () => {
   const requestContext = await getRequestContext();
-  // SWB
-  const contextId = await utils.getProjectId(requestContext);
-  await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+  const iTwinId = await utils.getITwinId(requestContext);
+  await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
 });
 
 async function getRequestContext(): Promise<AuthorizedClientRequestContext> {

@@ -31,18 +31,16 @@ describe("Schedule script (#integration)", () => {
   before(async () => {
     await IModelApp.shutdown();
     await IModelApp.startup({
-      // SWB
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
 
-    // SWB
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
-    dbOld = await CheckpointConnection.openRemote(contextId, oldIModelId);
-    const newIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchroNew);
-    dbNew = await CheckpointConnection.openRemote(contextId, newIModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const oldIModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.synchro);
+    dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
+    const newIModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.synchroNew);
+    dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 
   after(async () => {

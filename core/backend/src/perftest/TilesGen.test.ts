@@ -33,8 +33,7 @@ interface TileResult {
 }
 
 interface ConfigData {
-  // SWB
-  contextId: string;
+  iTwinId: string;
   iModelName: string;
   changesetId: string;
   genParams: TileGenParams;
@@ -127,12 +126,10 @@ async function generateIModelDbTiles(user: AuthorizedClientRequestContext, confi
   if (config.localPath) {
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
-    // SWB
-    const iModelId = await HubUtility.queryIModelIdByName(user, config.contextId, config.iModelName);
+    const iModelId = await HubUtility.queryIModelIdByName(user, config.iTwinId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
-    // SWB
-    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: config.contextId, iModelId, asOf: version.toJSON() });
+    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 
@@ -192,6 +189,7 @@ async function generateIModelDbTiles(user: AuthorizedClientRequestContext, confi
 describe("TilesGenerationPerformance", () => {
   if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
     throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  // TODO: Update config to use iTwin terminology
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
@@ -200,10 +198,8 @@ describe("TilesGenerationPerformance", () => {
 
   before(async () => {
     assert.isDefined(config.regionId, "No Region defined");
-    // SWB
-    assert.isDefined(config.contextId, "No ContextId defined");
-    // SWB
-    imodels.forEach((element) => element.contextId = config.contextId);
+    assert.isDefined(config.contextId, "No iTwinId defined");
+    imodels.forEach((element) => element.iTwinId = config.contextId);
 
     IModelTestUtils.setupLogging();
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);

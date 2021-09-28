@@ -1089,7 +1089,6 @@ export abstract class ViewState extends ElementState {
     return normal;
   }
 
-  // SWB What does project mean here?
   /** Return true if the view is looking at the current iModel project extents or
    * false if the viewed area do does not include more than one percent of the project.
    */

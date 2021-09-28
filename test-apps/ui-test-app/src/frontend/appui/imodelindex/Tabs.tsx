@@ -51,8 +51,7 @@ export class Tab extends React.Component<TabProps> {
   }
 }
 
-// SWB
-/** Properties for the [[ProjectTabs]] component
+/** Properties for the [[ITwinTabs]] component
  * @internal
  */
 export interface TabsProps {

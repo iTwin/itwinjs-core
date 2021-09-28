@@ -109,7 +109,6 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   public drawGrid(context: DecorateContext): void {
     // Called for active ACS when grid orientation is GridOrientationType::ACS.
     const view = context.viewport.view;
-    // SWB What does project mean here?
     const fixedRepsAuto = Point2d.create(); // limit grid to project extents
     context.drawStandardGrid(this.getOrigin(), this.getRotation(), view.getGridSpacing(), view.getGridsPerRef(), false, fixedRepsAuto);
   }

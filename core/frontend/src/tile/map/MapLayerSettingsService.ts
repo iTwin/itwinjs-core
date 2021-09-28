@@ -126,7 +126,7 @@ export class MapLayerSettingsService {
     const settingFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, undefined);
     if (settingFromName.setting && storeOnIModel) {
       // SWB What should be done for localization?
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: settingFromName.setting.name });
+      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsITwinSetting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromName.setting) {
@@ -138,7 +138,7 @@ export class MapLayerSettingsService {
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, projectId, undefined); // check if setting with url already exists, if it does, delete it
     if (settingFromUrl && storeOnIModel) {
       // SWB What should be done for localization?
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
+      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsITwinSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromUrl) {
@@ -176,51 +176,49 @@ export class MapLayerSettingsService {
     return savedMapLayer;
   }
   /**
-  // SWB
-   * Grabs any MapLayerSources in the user's settings, the shared settings on the iModel, and the shared settings on the project.
-  // SWB
-   * @param projectId id of the project
+   * Grabs any MapLayerSources in the user's settings, the shared settings on the iModel, and the shared settings on the iTwin.
+   * @param iTwinId id of the iTwin
    * @param iModelId id of the iModel
    * @throws error if any of the calls to grab settings fail.
    */
-  // SWB
-  public static async getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
+  public static async getSourcesFromSettingsService(iTwinId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     // SWB
     const userResultByProjectPromise = IModelApp.settings.getUserSettingsByNamespace(
       requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       undefined,
     );
     const userResultByImodelPromise = IModelApp.settings.getUserSettingsByNamespace(
       requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       iModelId,
     );
     const sharedResultByImodelPromise = IModelApp.settings.getSharedSettingsByNamespace(requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       iModelId);
-      // SWB
+    // SWB
     const sharedResultByProjectPromise = IModelApp.settings.getSharedSettingsByNamespace(requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       undefined);
     const settingsMapArray: SettingsMapResult[] = await Promise.all([userResultByProjectPromise, userResultByImodelPromise, sharedResultByImodelPromise, sharedResultByProjectPromise]);
-    const userResultByProject = settingsMapArray[0];
+    // SWB
+    const userResultByITwin = settingsMapArray[0];
     const userResultByImodel = settingsMapArray[1];
     const sharedResultByImodel = settingsMapArray[2];
     // SWB
-    const sharedResultByProject = settingsMapArray[3];
-    if (userResultByProject.status !== SettingsStatus.Success || !userResultByProject.settingsMap) {
+    const sharedResultByITwin = settingsMapArray[3];
+    if (userResultByITwin.status !== SettingsStatus.Success || !userResultByITwin.settingsMap) {
       // SWB What to do about localization?
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: userResultByProject.errorMessage }));
+      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserITwin", { errorMessage: userResultByITwin.errorMessage }));
     }
     if (userResultByImodel.status !== SettingsStatus.Success || !userResultByImodel.settingsMap) {
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserModel", { errorMessage: userResultByImodel.errorMessage }));
@@ -229,9 +227,9 @@ export class MapLayerSettingsService {
     if (sharedResultByImodel.status !== SettingsStatus.Success || !sharedResultByImodel.settingsMap) {
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
     }
-    if (sharedResultByProject.status !== SettingsStatus.Success || !sharedResultByProject.settingsMap) {
+    if (sharedResultByITwin.status !== SettingsStatus.Success || !sharedResultByITwin.settingsMap) {
       // SWB What to do about localization
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedProject", { errorMessage: sharedResultByProject.errorMessage }));
+      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedITwin", { errorMessage: sharedResultByITwin.errorMessage }));
     }
 
     const savedMapLayerSources: MapLayerSource[] = [];

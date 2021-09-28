@@ -18,12 +18,9 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  // SWB
-  useProjectName: boolean;
-  // SWB
-  projectId?: string;
-  // SWB
-  projectName?: string;
+  useITwinName: boolean;
+  iTwinId?: string;
+  iTwinName?: string;
   changeSetId?: string;
 }
 
@@ -104,7 +101,6 @@ export class Settings {
     //  Parse the iModel variables
     // SWB Change .env vars?
     if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
-      // SWB
       throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
     if (!process.env.IMODEL_IMODELID && !process.env.IMODEL_IMODELNAME)
@@ -114,12 +110,9 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
-      // SWB
-      useProjectName: !process.env.IMODEL_PROJECTID,
-      // SWB
-      projectId: process.env.IMODEL_PROJECTID,
-      // SWB
-      projectName: process.env.IMODEL_PROJECTNAME,
+      useITwinName: !process.env.IMODEL_PROJECTID,
+      iTwinId: process.env.IMODEL_PROJECTID,
+      iTwinName: process.env.IMODEL_PROJECTNAME,
       changeSetId: process.env.IMODEL_CHANGESETID,
     };
 

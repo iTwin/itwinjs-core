@@ -28,8 +28,7 @@ function log(msg: string) {
  * This utility will change an existing iModel file to be a standalone iModel. It does so by
  * clearing the iTwinId, and resetting the briefcaseId to 0.
  *
-   // SWB
- * This should only be done for testing, with the project owner's permission.
+ * This should only be done for testing, with the iTwin owner's permission.
  *
  * To run:
 ```

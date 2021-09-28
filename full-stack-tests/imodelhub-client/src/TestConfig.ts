@@ -33,10 +33,8 @@ function isOfflineSet(): boolean {
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  // SWB
-  /** Name of project used by most tests */
-  // SWB
-  public static readonly projectName: string = process.env.IMJS_TEST_PROJECT_NAME ?? "iModelJsIntegrationTest";
+  /** Name of iTwin used by most tests */
+  public static readonly iTwinName: string = process.env.IMJS_TEST_PROJECT_NAME ?? "iModelJsIntegrationTest";
   // SWB
   public static readonly assetName: string = process.env.IMJS_TEST_ASSET_NAME ?? "iModelJsAssetTest";
   public static readonly enableMocks: boolean = isOfflineSet();

@@ -27,8 +27,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
 export interface CheckpointProps extends UserArg {
   readonly expectV2?: boolean;
 
-  // SWB
-  /** Context (Project or Asset) that the iModel belongs to */
+  /** iTwin that the iModel belongs to */
   readonly iTwinId: GuidString;
 
   /** Id of the iModel */

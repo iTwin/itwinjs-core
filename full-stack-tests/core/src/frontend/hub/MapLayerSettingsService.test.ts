@@ -13,15 +13,13 @@ import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {
-  // SWB
-  let contextId: GuidString;
+  let iTwinId: GuidString;
   let iModelId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
-    // SWB
-    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
     new TestFrontendAuthorizationClient(requestContext.accessToken);
@@ -30,12 +28,10 @@ describe("MapLayerSettingsService (#integration)", () => {
     };
     await IModelApp.shutdown();
     await IModelApp.startup(options);
-    // SWB
-    contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    chai.assert.isDefined(contextId);
-    iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.readOnly);
+    iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    chai.assert.isDefined(iTwinId);
+    iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.readOnly);
     chai.assert.isDefined(iModelId);
-
   });
   after(async () => {
     await IModelApp.shutdown();
@@ -49,66 +45,63 @@ describe("MapLayerSettingsService (#integration)", () => {
       transparentBackground: true,
     });
     chai.assert.isDefined(layer);
-    let sources = await MapLayerSettingsService.getSourcesFromSettingsService(contextId, iModelId);
+    let sources = await MapLayerSettingsService.getSourcesFromSettingsService(iTwinId, iModelId);
     let foundSource = sources.some((value) => { return value.name === testName; }); // expect not to find it bc we haven't stored yet.
     chai.expect(foundSource).to.be.false;
-    const success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
+    const success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
 
-    sources = await MapLayerSettingsService.getSourcesFromSettingsService(contextId, iModelId);
+    sources = await MapLayerSettingsService.getSourcesFromSettingsService(iTwinId, iModelId);
     foundSource = sources.some((value) => { return value.name === testName; });
     chai.expect(foundSource).to.be.true;
-    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, contextId);
+    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
-  // SWB
-  it("should not be able to store model setting if same setting exists as project setting", async () => {
+  it("should not be able to store model setting if same setting exists as iTwin setting", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
       name: testName,
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, iTwinId, iModelId);
     chai.assert.isFalse(success); // cant store model setting that collides with a project setting expect a false
-    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, contextId);
+    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
-  // SWB
-  it("should be able to store project setting if same setting exists as project setting", async () => {
+  it("should be able to store iTwin setting if same setting exists as iTwin setting", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
       name: testName,
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, contextId);
+    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
-  // SWB
-  it("should be able to delete a mapSource stored on project and imodel level", async () => {
+  it("should be able to delete a mapSource stored on iTwin and imodel level", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
       name: testName,
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.deleteSharedSettings(layer!, contextId, iModelId);
+    success = await MapLayerSettingsService.deleteSharedSettings(layer!, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.deleteSharedSettings(layer!, contextId, iModelId);
+    success = await MapLayerSettingsService.deleteSharedSettings(layer!, iTwinId, iModelId);
     chai.assert.isTrue(success);
   });
 });

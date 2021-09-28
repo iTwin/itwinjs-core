@@ -126,8 +126,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       return (
         <div className="cards-empty">
           <div className="fade-in-fast">
-            {/* // SWB */}
-            There are no iModels associated to this project.
+            There are no iModels associated to this iTwin.
           </div>
         </div>
       );

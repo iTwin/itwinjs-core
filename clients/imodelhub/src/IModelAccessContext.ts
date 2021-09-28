@@ -10,6 +10,5 @@ import { IModelClient } from "./IModelClient";
 
 export abstract class IModelAccessContext {
   public abstract get client(): IModelClient | undefined;
-  // SWB
   public abstract toIModelTokenContextId(): string;
 }

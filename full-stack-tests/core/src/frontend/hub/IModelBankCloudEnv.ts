@@ -12,7 +12,6 @@ import { ITwin } from "@bentley/itwin-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
-  // SWB
   public readonly iTwinMgr: IModelBankFileSystemITwinClient;
   public readonly imodelClient: IModelClient;
   public async startup(): Promise<void> { }
@@ -29,23 +28,20 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
       : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
   }
 
-  // SWB
-  public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
+  public async bootstrapITwin(requestContext: AuthorizedClientRequestContext, iTwinName: string): Promise<void> {
     let iTwin: ITwin | undefined;
     try {
-      iTwin = await this.iTwinMgr.getITwinByName(requestContext, projectName);
+      iTwin = await this.iTwinMgr.getITwinByName(requestContext, iTwinName);
       if (iTwin === undefined)
-        // SWB Needs Better error code message
         throw new Error("what happened?");
-      await this.iTwinMgr.deleteContext(requestContext, iTwin.id);
+      await this.iTwinMgr.deleteITwin(requestContext, iTwin.id);
     } catch (err) {
       if (!(err instanceof WsgError) || (err.errorNumber !== WSStatus.InstanceNotFound)) {
         throw err;
       }
     }
 
-    // SWB What does context mean here
-    await this.iTwinMgr.createContext(requestContext, projectName);
+    await this.iTwinMgr.createITwin(requestContext, iTwinName);
   }
 
 }

@@ -54,8 +54,7 @@ function mockCreateChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
 }
 
 describe("iModelHub ChangeSetHandler", () => {
-  // SWB
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
@@ -75,16 +74,16 @@ describe("iModelHub ChangeSetHandler", () => {
     (requestContext as any).activityId = "iModelHub ChangeSetHandler";
 
     // SWB
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(requestContext);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount + newChangeSetsPerTestSuit >= maxChangeSetCount) {
         // Recreate iModel if can not create any new changesets
-        await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true);
-        imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+        await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId, true);
+        imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
       }
     }
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
@@ -109,7 +108,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
     }
   });
 

@@ -133,8 +133,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         setting: [orderInfo],
       }));
 
-      // SWB
-      const properties = await storage.loadPropertiesOrder("projectId", "imodelId");
+      const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
       expect(properties!.length).to.eq(1);
       expect(properties![0]).to.eq(orderInfo);
@@ -147,16 +146,14 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       }));
       sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
-      // SWB
-      const properties = await storage.loadPropertiesOrder("projectId", "imodelId");
+      const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.undefined;
     });
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
-      // SWB
-      await expect(storage.loadPropertiesOrder("projectId", "imodelId")).to.eventually.be.rejected;
+      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 
   });
@@ -175,16 +172,14 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         orderedTimestamp: new Date(),
       };
 
-      // SWB
-      await storage.savePropertiesOrder([orderInfo], "projectId", "imodelId");
+      await storage.savePropertiesOrder([orderInfo], "iTwinId", "imodelId");
       settingsAdminMock.verify(async (x) => x.saveUserSetting(moq.It.isAny(), moq.It.isAny(), "imodeljs.presentation", "FavoritePropertiesOrderInfo", moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
     });
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
-      // SWB
-      await expect(storage.savePropertiesOrder([], "projectId", "imodelId")).to.eventually.be.rejected;
+      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 
   });

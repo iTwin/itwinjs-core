@@ -8,9 +8,7 @@ import { UiComponents } from "../UiComponents";
 import React from "react";
 
 /** @internal */
-// SWB What does context mean here?
 export function createContextWithMandatoryProvider<T>(
-  // SWB What does context mean here?
   contextName: string,
 ): [
     React.ProviderExoticComponent<React.ProviderProps<T>>,

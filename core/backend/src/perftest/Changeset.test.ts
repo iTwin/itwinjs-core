@@ -281,6 +281,7 @@ describe("ImodelChangesetPerformance", () => {
   before(async () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
+    // TODO: Update config to use iTwin terminology
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     iTwinId = configData.basicTest.projectId;
     imodelId = configData.basicTest.imodelId;
@@ -328,6 +329,7 @@ describe("ImodelChangesetPerformance", () => {
 
 describe("ImodelChangesetPerformance big datasets", () => {
   let iModelRootDir: string;
+  // TODO: Update config to use iTwin terminology
   const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSLocalPerf.csv");
 
@@ -485,10 +487,8 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const startNum: number = ds.csStart ? ds.csStart : 0;
       const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
       const modelInfo = {
-        // SWB
-        projId: iTwinId,
-        // SWB
-        projName: ds.projName,
+        iTwinId,
+        iTwinName: ds.projName,
         modelId: imodelId,
         modelName: ds.modelName,
       };
@@ -586,12 +586,12 @@ describe("ImodelChangesetPerformance own data", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ChangesetPerfOwn");
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerfOwnData.csv");
   const reporter = new Reporter();
+  // TODO: Update config to use iTwin terminology
   const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const dbSize: number = configData.ownDataTest.dbSize;
   const iModelNameBase: string = `CS_Lg3d_PElSub3_${dbSize}_`;
   const opSizes: number[] = configData.ownDataTest.opSizes;
   const baseNames: string[] = configData.ownDataTest.baseNames;
-  // SWB
   const iTwinId: string = configData.ownDataTest.projectId;
   const schemaDetail = configData.ownDataTest.schema;
   const schemaName: string = schemaDetail.name;

@@ -71,7 +71,6 @@ export interface TxnNotifications {
 
   notifyIModelNameChanged: (name: string) => void;
   notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
-  // SWB What does project mean here?
   notifyProjectExtentsChanged: (extents: Range3dProps) => void;
   notifyGlobalOriginChanged: (origin: XYZProps) => void;
   notifyEcefLocationChanged: (ecef: EcefLocationProps | undefined) => void;

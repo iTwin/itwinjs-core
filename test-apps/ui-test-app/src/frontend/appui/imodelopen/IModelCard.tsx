@@ -42,12 +42,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
       this.startRetrieveThumbnail(this.props.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  // SWB
-  // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
+  // retrieves the IModels for an iTwin. Called when first mounted and when a new iTwin is selected.
   private async startRetrieveThumbnail(thisIModel: IModelInfo) {
     this.setState({ waitingForThumbnail: true });
-    // SWB
-    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.projectInfo.id, thisIModel.wsgId);
+    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.iTwinInfo.id, thisIModel.wsgId);
     this.setState({ waitingForThumbnail: false });
   }
 

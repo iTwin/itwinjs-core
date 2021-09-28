@@ -96,7 +96,7 @@ describe("iModelHub BriefcaseHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 
-    iTwinId = await utils.getProjectId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();

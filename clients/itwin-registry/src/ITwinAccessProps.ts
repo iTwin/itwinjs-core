@@ -7,9 +7,7 @@
  */
 
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-
-// SWB
-/** The iTwin context object, for generalized properties of Projects, Assets, custom contexts, etc.
+/** The iTwin object, for general properties covering Projects, Assets, and custom contexts
  * @beta
  */
 export interface ITwin {

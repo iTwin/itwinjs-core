@@ -1053,7 +1053,6 @@ describe("iModel", () => {
     checkElementMetaData(metaData);
   });
 
-  // SWB What does project mean here?
   it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
@@ -1064,7 +1063,6 @@ describe("iModel", () => {
     const updatedProps = imodel1.nativeDb.getIModelProps();
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
-    // SWB What does project mean here?
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
   });
 
@@ -1099,7 +1097,6 @@ describe("iModel", () => {
 
   it("ecefLocation for iModels", () => {
     assert.isTrue(imodel5.isGeoLocated);
-    // SWB What does project mean here?
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
     const pt = { x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183 };
@@ -1592,11 +1589,9 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel", async () => {
     const args = {
-      // SWB What does project mean here?
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
-      // SWB What does project mean here?
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
     };
@@ -1605,11 +1600,8 @@ describe("iModel", () => {
     assert.equal(iModel.iModelId, args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
-    // SWB What does project mean here?
     assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
-    // SWB What does project mean here?
     assert.equal(iModel.projectExtents.low.y, args.projectExtents.low.y);
-    // SWB What does project mean here?
     assert.equal(iModel.projectExtents.low.z, args.projectExtents.low.z);
     assert.equal(iModel.globalOrigin.x, args.globalOrigin.x);
     assert.equal(iModel.globalOrigin.y, args.globalOrigin.y);
@@ -1656,11 +1648,9 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
     const args = {
-      // SWB What does project mean here?
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
-      // SWB What does project mean here?
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
     };
@@ -1751,11 +1741,9 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
     const args = {
-      // SWB What does project mean here?
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
-      // SWB What does project mean here?
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
     };
@@ -1786,11 +1774,9 @@ describe("iModel", () => {
 
   it("presence of a GCS imposes the ecef value", async () => {
     const args = {
-      // SWB What does project mean here?
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
-      // SWB What does project mean here?
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
     };
@@ -2562,8 +2548,6 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid); // should not have changed
   });
 });
-
-// SWB What does project mean here?
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
 
@@ -2576,7 +2560,6 @@ describe("computeProjectExtents", () => {
   });
 
   it("should return requested information", () => {
-    // SWB What does project mean here?
     const projectExtents = imodel.projectExtents;
     const args = [undefined, false, true];
     for (const reportExtentsWithOutliers of args) {
@@ -2617,7 +2600,6 @@ describe("computeProjectExtents", () => {
     expect(newElem.placement.origin.z).to.equal(originalOrigin.z * mult);
 
     const outlierRange = placement.calculateRange();
-    // SWB What does project mean here?
     const originalExtents = imodel.projectExtents;
     const extentsWithOutlier = originalExtents.clone();
     extentsWithOutlier.extendRange(outlierRange);
