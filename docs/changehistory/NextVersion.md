@@ -227,7 +227,7 @@ Upgrade instructions:
 
 ## Breaking map imagery API changes
 
-Originally, the type of imagery to be displayed for the background map was defined by `BackgroundMapSettings.providerName` and `BackgroundMapSettings.mapType`. Later, support for any number of map layers from any source was added in the form of [MapImagerySettings]($common). The backgroundMapSettings properties therefore became redundant with [MapImagerySettings.backgroundBase]($common).
+Originally, the type of imagery to be displayed for the background map was defined by `BackgroundMapSettings.providerName` and `BackgroundMapSettings.mapType`. Later, support for any number of map layers from any source was added in the form of [MapImagerySettings]($common). The [BackgroundMapSettings]($common) properties therefore became redundant with (and more limited than) [MapImagerySettings.backgroundBase]($common).
 
 MapImagerySettings is now fully responsible for specifying the background map imagery; BackgroundMapSettings controls only how that imagery is applied to the view. The corresponding JSON properties have been removed from [BackgroundMapProps]($common); for backwards compatibility, they continue to exist in [PersistentBackgroundMapProps]($common) and will be used as the background imagery if no background imagery is specified by [MapImageryProps.backgroundBase]($common).
 
@@ -263,6 +263,8 @@ Likewise if you are reading a [BackgroundMapSettings]($common) directly from a p
   // With this:
   const mapSettings = BackgroundMapSettings.fromPersistentJSON(displayStyleSettings.backgroundMap);
 ```
+
+[DisplayStyleSettings.onBackgroundMapChanged]($common) will no longer be raised when changing the imagery provider. Use [DisplayStyleSettings.onMapImageryChanged]($common) instead.
 
 ## Moved utility types
 
