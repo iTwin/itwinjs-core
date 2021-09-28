@@ -8,6 +8,7 @@
 
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@bentley/geometry-core";
+import { GeometryClass } from "@bentley/imodeljs-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -32,6 +33,8 @@ export interface ExportLinesInfo {
   subCategory: Id64String;
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
   /** The linework for these graphics */
   lines: ExportGraphicsLines;
 }
@@ -70,6 +73,8 @@ export interface ExportGraphicsInfo {
   subCategory: Id64String;
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
   /** If defined, ID for the [RenderMaterialElement]($imodeljs-backend) for these graphics */
   materialId?: Id64String;
   /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
@@ -89,6 +94,7 @@ export interface ExportGraphicsInfo {
 export interface ExportPartDisplayInfo {
   categoryId: Id64String;
   subCategoryId: Id64String;
+  geometryClass: GeometryClass;
   materialId: Id64String;
   elmTransparency: number;
   lineColor: number;
@@ -167,6 +173,8 @@ export interface ExportGraphicsOptions {
 export interface ExportPartInfo {
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
   /** If defined, ID for the [RenderMaterialElement]($imodeljs-backend) for these graphics */
   materialId?: Id64String;
   /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
@@ -188,6 +196,8 @@ export type ExportPartFunction = (info: ExportPartInfo) => void;
 export interface ExportPartLinesInfo {
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
   /** The linework for these graphics */
   lines: ExportGraphicsLines;
 }

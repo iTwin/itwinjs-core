@@ -181,11 +181,3 @@ export enum DbResult {
   BE_SQLITE_CONSTRAINT_VTAB = (BE_SQLITE_CONSTRAINT_BASE | (9 << 8)),
 }
 /* eslint-enable @typescript-eslint/naming-convention */
-
-/**
- * @internal
- */
-export enum ChangeSetApplyOption {
-  Merge = 1,
-  Reverse = 2,
-}

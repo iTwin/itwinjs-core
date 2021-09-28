@@ -17,7 +17,7 @@ import {
   FieldDescriptor, FieldDescriptorType, FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, Ruleset,
+  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset,
   SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
 import {
@@ -27,7 +27,7 @@ import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelationsh
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
   createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElementJSON, createRandomRelationshipPathJSON, createRandomRuleset,
+  createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
@@ -1214,7 +1214,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const classesMap = {};
+        const testClassInfo = createTestECClassInfo();
+        const classesMap = {
+          [testClassInfo.id]: {
+            label: testClassInfo.label,
+            name: testClassInfo.name,
+          },
+        };
         const addonResponse: DescriptorJSON = {
           connectionId: faker.random.uuid(),
           inputKeysHash: faker.random.uuid(),
@@ -1248,7 +1254,7 @@ describe("PresentationManager", () => {
             },
             properties: [{
               property: {
-                classInfo: createRandomECClassInfoJSON(),
+                classInfo: testClassInfo.id,
                 name: faker.random.word(),
                 type: "string",
                 enumerationInfo: {
@@ -1261,10 +1267,10 @@ describe("PresentationManager", () => {
                   }],
                   isStrict: faker.random.boolean(),
                 },
-              } as PropertyInfoJSON,
+              } as PropertyInfoJSON<Id64String>,
               relatedClassPath: [],
-            } as PropertyJSON],
-          } as PropertiesFieldJSON, {
+            } as PropertyJSON<Id64String>],
+          } as PropertiesFieldJSON<Id64String>, {
             name: "Complex array of structs property field",
             category: "test-category",
             label: faker.random.words(),
@@ -1299,7 +1305,7 @@ describe("PresentationManager", () => {
             priority: faker.random.number(),
             properties: [{
               property: {
-                classInfo: createRandomECClassInfoJSON(),
+                classInfo: testClassInfo.id,
                 name: faker.random.word(),
                 type: "double",
                 kindOfQuantity: {
@@ -1307,10 +1313,10 @@ describe("PresentationManager", () => {
                   label: faker.random.words(),
                   persistenceUnit: faker.random.word(),
                 } as KindOfQuantityInfo,
-              } as PropertyInfoJSON,
+              } as PropertyInfoJSON<Id64String>,
               relatedClassPath: [],
-            } as PropertyJSON],
-          } as PropertiesFieldJSON, {
+            } as PropertyJSON<Id64String>],
+          } as PropertiesFieldJSON<Id64String>, {
             name: "Nested content field",
             category: "test-category",
             label: faker.random.words(),
@@ -1326,8 +1332,8 @@ describe("PresentationManager", () => {
                 },
               }],
             } as StructTypeDescription,
-            contentClassInfo: createRandomECClassInfoJSON(),
-            pathToPrimaryClass: createRandomRelationshipPathJSON(1),
+            contentClassInfo: testClassInfo.id,
+            pathToPrimaryClass: createRandomRelationshipPath(1).map((step) => RelatedClassInfo.toCompressedJSON(step, classesMap)),
             nestedFields: [{
               name: "Simple property field",
               category: "test-category",
@@ -1342,7 +1348,7 @@ describe("PresentationManager", () => {
             isReadonly: faker.random.boolean(),
             priority: faker.random.number(),
             autoExpand: faker.random.boolean(),
-          } as NestedContentFieldJSON],
+          } as NestedContentFieldJSON<Id64String>],
           contentFlags: 0,
         };
         setup(addonResponse);
