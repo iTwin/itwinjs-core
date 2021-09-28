@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps, TerrainHeightOriginMode,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps, TerrainHeightOriginMode,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
@@ -37,10 +37,12 @@ describe("Background map", () => {
       const prevTree = vp.backgroundMap!.treeOwner.tileTree!;
       expect(prevTree).not.to.be.undefined;
 
-
       vp.changeBackgroundMapProps(props as BackgroundMapProps);
-      if (props.providerName || props.providerData)
-        vp.displayStyle.changeBackgroundMapProvider({ name: props.providerName as any, type: props.providerData?.mapType });
+      // eslint-disable-next-line deprecation/deprecation
+      if (props.providerName || props.providerData) {
+        // eslint-disable-next-line deprecation/deprecation
+        vp.displayStyle.changeBackgroundMapProvider({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
+      }
 
       await vp.waitForAllTilesToRender();
       const newTree = vp.backgroundMap!.treeOwner.tileTree!;

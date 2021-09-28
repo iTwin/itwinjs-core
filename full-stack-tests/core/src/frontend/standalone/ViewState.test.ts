@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
@@ -145,6 +145,7 @@ describe("ViewState", () => {
       // eslint-disable-next-line deprecation/deprecation
       const mt = oldBackgroundMap.providerData?.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
       vs0DisplayStyle3d.changeBackgroundMapProvider({
+        // eslint-disable-next-line deprecation/deprecation
         name: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         type: mt,
       });

@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
+import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** @beta */
