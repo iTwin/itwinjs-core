@@ -118,7 +118,7 @@ describe("external texture requests (#integration)", () => {
       expect(texData).to.not.be.undefined;
       let texBytes = texData?.bytes;
       expect(texBytes).to.not.be.undefined;
-      let imageSource = new ImageSource(texBytes, ImageSourceFormat.Jpeg);
+      let imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       let image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.lessThanOrEqual(maxTextureSize);
       expect(image.height).to.be.lessThanOrEqual(maxTextureSize);
@@ -129,7 +129,7 @@ describe("external texture requests (#integration)", () => {
       expect(texData).to.not.be.undefined;
       texBytes = texData?.bytes;
       expect(texBytes).to.not.be.undefined;
-      imageSource = new ImageSource(texBytes, ImageSourceFormat.Jpeg);
+      imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.greaterThan(maxTextureSize);
       expect(image.height).to.be.greaterThan(maxTextureSize);
