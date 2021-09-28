@@ -10,7 +10,7 @@
 
 import { Store } from "redux";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { RpcActivity } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -185,7 +185,7 @@ export class UiFramework {
 
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
-    if (isFrontendAuthorizationClient(oidcClient)) {
+    if (isBrowserAuthorizationClient(oidcClient)) {
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 

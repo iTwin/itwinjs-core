@@ -8,9 +8,8 @@
  */
 
 import { AccessToken, assert, AuthStatus, BeEvent, BentleyError, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
-import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
@@ -53,10 +52,17 @@ export interface BrowserAuthorizationClientRequestOptions {
   prompt?: "none" | "login" | "consent" | "select_account" | string;
 }
 
+/** BrowserAuthorizationClient type guard.
+ * @beta
+ */
+export const isBrowserAuthorizationClient = (client: AuthorizationClient | undefined): client is BrowserAuthorizationClient => {
+  return client !== undefined && (client as BrowserAuthorizationClient).signIn !== undefined && (client as BrowserAuthorizationClient).signOut !== undefined;
+};
+
 /**
  * @beta
  */
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements AuthorizationClient, IDisposable {
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   protected _accessToken?: AccessToken;

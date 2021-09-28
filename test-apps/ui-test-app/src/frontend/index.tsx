@@ -12,7 +12,7 @@ import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@ben
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient,
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isBrowserAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -639,7 +639,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isFrontendAuthorizationClient(oidcClient))
+    if (isBrowserAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
@@ -647,7 +647,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   public override componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isFrontendAuthorizationClient(oidcClient))
+    if (isBrowserAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 /** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.
  * @internal
  */
-export class IModelBankDummyAuthorizationClient implements FrontendAuthorizationClient {
+export class IModelBankDummyAuthorizationClient implements AuthorizationClient {
   private _token?: AccessToken;
 
   public constructor(private _userCredentials: any) {

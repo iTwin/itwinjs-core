@@ -9,13 +9,13 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
@@ -27,7 +27,7 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 
 let imodelBankClient: IModelBankClient;
 
-const authorizationClientFactory = (authScheme: string, userCredentials: any): FrontendAuthorizationClient => {
+const authorizationClientFactory = (authScheme: string, userCredentials: any): AuthorizationClient => {
   switch (authScheme) {
     case "bearer":
       return new TestIModelHubOidcAuthorizationClient(userCredentials);
@@ -49,7 +49,7 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   const orchestratorUrl: string = process.env.IMJS_TEST_IMODEL_BANK_URL ?? "";
 
   const authScheme: string = (process.env.IMJS_TEST_IMODEL_BANK_AUTH_SCHEME ?? "").toLowerCase();
-  const getAuthorizationClient = (userCredentials: any): FrontendAuthorizationClient =>
+  const getAuthorizationClient = (userCredentials: any): AuthorizationClient =>
     authorizationClientFactory(authScheme, userCredentials);
 
   let bankClient: IModelBankClient;
@@ -163,7 +163,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   }
 
   const authScheme: string = (process.env.IMJS_TEST_IMODEL_BANK_AUTH_SCHEME ?? "").toLowerCase();
-  const getAuthorizationClient = (userCredentials: any): FrontendAuthorizationClient =>
+  const getAuthorizationClient = (userCredentials: any): AuthorizationClient =>
     authorizationClientFactory(authScheme, userCredentials);
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;

@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ITwin } from "@bentley/context-registry-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { Briefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelApp, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 import { AuthorizationClient } from "@bentley/itwin-client";
@@ -57,7 +57,7 @@ export class TestUtility {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
+    const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as BrowserAuthorizationClient;
     await authorizationClient.signIn();
     const accessToken = (await authorizationClient.getAccessToken())!;
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {

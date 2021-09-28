@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
-export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizationClient {
+export class TestIModelHubOidcAuthorizationClient implements AuthorizationClient {
   private _token: AccessToken | undefined;
 
   public constructor(private _userCredentials: any) {

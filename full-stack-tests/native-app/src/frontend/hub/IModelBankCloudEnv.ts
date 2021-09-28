@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { ITwin } from "@bentley/context-registry-client";
 import { AccessToken } from "@bentley/bentleyjs-core";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
@@ -21,7 +21,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
     this.contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
   }
 
-  public getAuthorizationClient(userCredentials: any): FrontendAuthorizationClient {
+  public getAuthorizationClient(userCredentials: any): AuthorizationClient {
     return this._basicAuthentication
       ? new IModelBankBasicAuthorizationClient(userCredentials)
       : new IModelBankDummyAuthorizationClient(userCredentials);

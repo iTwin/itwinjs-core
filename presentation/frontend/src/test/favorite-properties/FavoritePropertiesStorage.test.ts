@@ -7,7 +7,6 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -19,19 +18,20 @@ import {
   BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, IModelAppFavoritePropertiesStorage,
   NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 
   let storage: IModelAppFavoritePropertiesStorage;
   let settingsAdminMock: moq.IMock<SettingsAdmin>;
-  let authorizationClientMock: moq.IMock<FrontendAuthorizationClient>;
+  let authorizationClientMock: moq.IMock<AuthorizationClient>;
 
   beforeEach(async () => {
     const requestConextMock = moq.Mock.ofType<AccessToken>();
     configureForPromiseResult(requestConextMock);
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
-    authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
+    authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
     const accessToken: AccessToken = "TestToken";
     authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
@@ -153,7 +153,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
       await expect(storage.loadPropertiesOrder("projectId", "imodelId")).to.eventually.be.rejected;
     });
 

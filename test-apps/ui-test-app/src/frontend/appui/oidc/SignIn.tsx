@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import {  ProcessDetector } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient, isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SignInBase } from "./SignInBase";
 import { CommonProps } from "@bentley/ui-core";
@@ -37,7 +37,7 @@ export interface SignInProps extends CommonProps {
  */
 export class SignIn extends React.PureComponent<SignInProps> {
   /** Oidc Frontend Client object */
-  private _oidcClient: FrontendAuthorizationClient | undefined;
+  private _oidcClient: BrowserAuthorizationClient | undefined;
 
   constructor(props: SignInProps) {
     super(props);
@@ -46,7 +46,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore if
-    if (isFrontendAuthorizationClient(oidcClient))
+    if (isBrowserAuthorizationClient(oidcClient))
       this._oidcClient = oidcClient;
 
     // istanbul ignore if
