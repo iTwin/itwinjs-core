@@ -17,9 +17,9 @@ export class SequentialLogMatcher extends Logger {
   private _originalLogTrace: LogFunction | undefined;
 
   private allow(level: LogLevel, category: string, message: string): boolean {
-    if (this._rules.length === 0) {
+    if (this._rules.length === 0)
       return true;
-    }
+
     const rule = this._rules[0];
     if (rule.test(level, category, message)) {
       this._rules.shift();

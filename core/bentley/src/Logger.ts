@@ -171,7 +171,7 @@ export class Logger {
     }
   }
 
-  private static isLogLevel(v: any) {
+  private static isLogLevel(v: string) {
     return LogLevel.hasOwnProperty(v);
   }
 

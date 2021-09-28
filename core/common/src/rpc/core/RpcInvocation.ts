@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyStatus, getErrorProps, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -145,7 +145,7 @@ export class RpcInvocation {
    */
   public static logRpcException(activity: RpcActivity, operationName: string, error: unknown) {
     const props = {
-      error: getErrorProps(error),
+      error: BentleyError.getErrorProps(error),
       activity: {
         activityId: activity.activityId,
         sessionId: activity.sessionId,

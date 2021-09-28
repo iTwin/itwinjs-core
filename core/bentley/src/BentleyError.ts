@@ -730,7 +730,6 @@ export class BentleyError extends Error {
     return undefined;
   }
 
-
   /** Returns a new `ErrorProps` object representing an unknown error value.  Useful for logging or wrapping/re-throwing caught errors.
    * @note Unlike `Error` objects (which lose messages and call stacks when serialized to JSON), objects
    *       returned by this are plain old JavaScript objects, and can be easily logged/serialized to JSON.

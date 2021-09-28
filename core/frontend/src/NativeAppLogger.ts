@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BentleyError, ExceptionMetaData, GetMetaDataFunction, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, ExceptionMetaData, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IpcApp } from "./IpcApp";
 
 /**
