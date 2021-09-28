@@ -12,6 +12,7 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 The following dependencies of iTwin.js have been updated;
 
 - `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
+- `electron` updated to from `^11.1.0` -> `^14.0.0`,
 
 ## Build tools changes
 
