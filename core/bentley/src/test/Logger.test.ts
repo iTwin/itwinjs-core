@@ -85,8 +85,8 @@ describe("Logger", () => {
 
   it("static logger metadata", () => {
     const expectedA = `{"a":"hello"}`;
-    const expectedMeta1 = `{"prop1":"test1","prop2":"test2","prop3":"test3"}`;
-    const expectedMeta2 = `{"meta2":"v2"}`;
+    const expectedMeta1 = `meta1:{"prop1":"test1","prop2":"test2","prop3":"test3"}`;
+    const expectedMeta2 = `meta2:{"value2":"v2"}`;
 
     let out = Logger.formatMetaData({ a: "hello" });
     assert.equal(out, ` ${expectedA}`);
@@ -100,7 +100,7 @@ describe("Logger", () => {
     out = Logger.formatMetaData({ a: "hello" });
     assert.equal(out, ` ${expectedA},${expectedMeta1}`);
 
-    Logger.staticMetaData.set("meta2", { meta2: "v2" });
+    Logger.staticMetaData.set("meta2", { value2: "v2" });
 
     out = Logger.formatMetaData({ a: "hello" });
     assert.equal(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);

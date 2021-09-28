@@ -121,9 +121,9 @@ export class Logger {
     const metaObj = BentleyError.getMetaData(metaData);
     let msg = metaObj ? ` ${JSON.stringify(metaObj)}` : "";
     for (const meta of Logger.staticMetaData) {
-      const globalObj = BentleyError.getMetaData(meta[1]);
-      if (globalObj)
-        msg = `${msg},${JSON.stringify(globalObj)}`;
+      const val = BentleyError.getMetaData(meta[1]);
+      if (val)
+        msg = `${msg},${meta[0]}:${JSON.stringify(val)}`;
     }
     return msg;
   }
