@@ -6,17 +6,25 @@
  * @module Authentication
  */
 
-import { GrantBody, TokenSet } from "openid-client";
+import { ClientMetadata, custom, GrantBody, Issuer, Client as OpenIdClient, TokenSet } from "openid-client";
 import { AccessToken, AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
-import { AuthorizationClient } from "@bentley/itwin-client";
-import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
+import { AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 
 /**
  * Configuration of clients for agent or service applications.
  * @see [[AgentAuthorizationClient]] for notes on registering an application
  * @beta
  */
-export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
+export interface AgentAuthorizationClientConfiguration {
+  /** Client application's identifier as registered with the Bentley IMS OIDC/OAuth2 provider. */
+  readonly clientId: string;
+  /** Client application's secret key as registered with the Bentley IMS OIDC/OAuth2 provider. */
+  readonly clientSecret: string;
+  /** List of space separated scopes to request access to various resources. */
+  readonly scope: string;
+  /** The URL of the OIDC/OAuth2 provider. If left undefined, the iTwin Platform authority (`ims.bentley.com`) will be used by default. */
+  readonly authority?: string;
+}
 
 /**
  * Utility to generate OIDC/OAuth tokens for agent or agent applications
@@ -29,12 +37,56 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
  * with the appropriate role that includes the required access permissions.
  * @beta
  */
-export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
+export class AgentAuthorizationClient extends ImsAuthorizationClient implements AuthorizationClient {
+  protected _configuration: AgentAuthorizationClientConfiguration;
   private _accessToken?: AccessToken;
   private _expiresAt?: Date;
+  private _issuer?: Issuer<OpenIdClient>;
 
   constructor(agentConfiguration: AgentAuthorizationClientConfiguration) {
-    super(agentConfiguration);
+    super();
+
+    custom.setHttpOptionsDefaults({
+      timeout: RequestGlobalOptions.timeout.response,
+      retry: RequestGlobalOptions.maxRetries,
+      agent: {
+        https: RequestGlobalOptions.httpsProxy,
+      },
+    });
+
+    this._configuration = agentConfiguration;
+  }
+
+  private async getIssuer(): Promise<Issuer<OpenIdClient>> {
+    if (this._issuer)
+      return this._issuer;
+
+    const url = await this.getUrl();
+    this._issuer = await Issuer.discover(url);
+    return this._issuer;
+  }
+
+  /**
+   * Discover the endpoints of the service
+   */
+  public async discoverEndpoints(): Promise<Issuer<OpenIdClient>> {
+    return this.getIssuer();
+  }
+
+  private _client?: OpenIdClient;
+  protected async getClient(): Promise<OpenIdClient> {
+    if (this._client)
+      return this._client;
+
+    const clientConfiguration: ClientMetadata = {
+      client_id: this._configuration.clientId, // eslint-disable-line @typescript-eslint/naming-convention
+      client_secret: this._configuration.clientSecret, // eslint-disable-line @typescript-eslint/naming-convention
+    };
+
+    const issuer = await this.getIssuer();
+    this._client = new issuer.Client(clientConfiguration);
+
+    return this._client;
   }
 
   private async generateAccessToken(): Promise<AccessToken> {

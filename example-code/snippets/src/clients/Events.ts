@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { AccessToken, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
 
@@ -14,7 +14,7 @@ if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
 if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
   throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
 
-const clientConfig: BackendAuthorizationClientConfiguration = {
+const clientConfig: AgentAuthorizationClientConfiguration = {
   clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
   clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
   scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",

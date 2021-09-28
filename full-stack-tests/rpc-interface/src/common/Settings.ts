@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
+import { AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
@@ -62,7 +62,7 @@ export class Settings {
   public gprid?: string;
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
-  public clientConfiguration?: BackendAuthorizationClientConfiguration;
+  public clientConfiguration?: AgentAuthorizationClientConfiguration;
 
   public iModels: IModelData[] = [];
   public get iModel(): IModelData { return this.iModels[0]; }
