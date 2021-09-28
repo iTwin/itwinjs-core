@@ -11,40 +11,6 @@ import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 
-/** Controls whether the user has exclusive or shared access to a local briefcase
- * @alpha
- */
-export enum RealityDataProvider {
-  /** The logger category used by iModelHub clients */
-  TilesetUrl = "TilesetUrl",   // This is the legacy mode where the access to the 3d tiles is harcoded in tilesetUrl property.
-  ContextShare = "ContextShare", // Will resolve tilesetUrl from realityDataId and iTwinId on contextShare.
-}
-
-/** JSON representation of the reality data reference attachment properties.
- * @alpha
- */
-export interface RealityDataSourceProps {
-  /** The provider that supplies the 3d tiles for displaying the reality model. */
-  provider: RealityDataProvider;
-  /** The reality data id that identify a reality data for the provider. */
-  realityDataId?: string;
-  /** The iTwin id that identify the "context" for the provider. */
-  iTwinId?: GuidString;
-  /** The URL that supplies the 3d tiles for displaying the reality model*/
-  tilesetUrl?: string;
-}
-export interface RealityDataConnectionProps {
-  /** The provider that supplies the 3d tiles for displaying the reality model. */
-  provider: RealityDataProvider;
-  /** The reality data id that identify a reality data for the provider. */
-  realityDataId?: string;
-  /** The iTwin id that identify the "context" for the provider. */
-  iTwinId?: GuidString;
-  /** The reality data type of this reality data meaningful to the provider. */
-  realityDataType?: string;
-  /** The URL that supplies the 3d tiles for displaying the reality model*/
-  tilesetUrl: string;
-}
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
  */
@@ -56,12 +22,54 @@ export interface OrbitGtBlobProps {
   accountName: string;
 }
 
+/** Controls whether the user has exclusive or shared access to a local briefcase
+ * @alpha
+ */
+export enum RealityDataProvider {
+  TilesetUrl = "TilesetUrl",   // This is the legacy mode where the access to the 3d tiles is harcoded in tilesetUrl property.
+  ContextShare = "ContextShare", // Will resolve tilesetUrl from realityDataId and iTwinId on contextShare.
+  ContextShareOrbitGt = "ContextShareOrbitGt", // Will resolve tilesetUrl from realityDataId and iTwinId on contextShare but use OrbitGt TileTree implementation
+}
+
+// Key used by ContextShare RealityDataProvider
+export interface RealityDataSourceContextShareKey {
+  /** The provider that supplies the 3d tiles for displaying the reality model. */
+  provider: RealityDataProvider;
+  /** The reality data id that identify a reality data for the provider. */
+  realityDataId: string;
+  /** The iTwin id that identify the "context" for the provider. If undefined, will use current context (iTwinId) */
+  iTwinId?: GuidString;
+}
+
+// Key used by TilesetUrl RealityDataProvider
+export interface RealityDataSourceURLKey {
+  /** The provider that supplies the 3d tiles for displaying the reality model. */
+  provider: RealityDataProvider;
+  /** The URL that supplies the 3d tiles for displaying the reality model*/
+  tilesetUrl: string;
+}
+
+export type RealityDataSourceKey = RealityDataSourceContextShareKey | RealityDataSourceURLKey;
+
+/** JSON representation of the reality data reference attachment properties.
+ * @alpha
+ */
+export interface RealityDataSourceProps {
+  /** The source key that identify a reality data for the provider. */
+  sourceKey: RealityDataSourceKey;
+}
+export interface RealityDataConnectionProps {
+  /** The source key that identify a reality data for the provider. */
+  sourceKey: RealityDataSourceKey;
+  /** The URL that supplies the 3d tiles for displaying the reality model*/
+  tilesetUrl: string;
+}
 /** JSON representation of a [[ContextRealityModel]].
  * @public
  */
 export interface ContextRealityModelProps {
   /** The source that supplies the 3d tiles for displaying the reality model.*/
-  rdConnection?: RealityDataConnectionProps;
+  rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   tilesetUrl: string;
   /** @see [[ContextRealityModel.orbitGtBlob]].
@@ -90,8 +98,8 @@ export namespace ContextRealityModelProps {
     // We want to make deep copies, omit undefined properties and empty strings, and require tilesetUrl to be defined.
     const output: ContextRealityModelProps = { tilesetUrl: input.tilesetUrl ?? "" };
 
-    if (input.rdConnection)
-      output.rdConnection = { ...input.rdConnection };
+    if (input.rdSourceKey)
+      output.rdSourceKey = { ...input.rdSourceKey };
 
     if (input.name)
       output.name = input.name;

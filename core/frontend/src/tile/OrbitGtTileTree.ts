@@ -11,7 +11,7 @@ import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature,
   FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
-  Quantization, RealityDataConnectionProps, ViewFlagOverrides,
+  Quantization, RealityDataProvider, RealityDataSourceContextShareKey, RealityDataSourceKey, RealityDataSourceURLKey, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import {
@@ -25,7 +25,7 @@ import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityDataConnection } from "../RealityDataConnection";
+import { RealityDataConnection, RealityDataSource } from "../RealityDataConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -43,7 +43,7 @@ const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
 
 interface OrbitGtTreeId {
-  rdConnection: RealityDataConnectionProps;
+  rdSourceKey: RealityDataSourceKey;
   orbitGtProps: OrbitGtBlobProps;
   modelId: Id64String;
 }
@@ -54,18 +54,21 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: OrbitGtTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, treeId.rdConnection, iModel, treeId.modelId);
+    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, treeId.rdSourceKey, iModel, treeId.modelId);
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
-    let cmp = compareStringsOrUndefined(lhs.rdConnection.provider.toString(), rhs.rdConnection.provider.toString());
-    if (0 === cmp) {
-      cmp = compareStringsOrUndefined(lhs.rdConnection.realityDataId, rhs.rdConnection.realityDataId);
-      if (0 === cmp) {
-        cmp = compareStringsOrUndefined(lhs.rdConnection.tilesetUrl, rhs.rdConnection.tilesetUrl);
-        if (0 === cmp)
-          cmp = compareStringsOrUndefined(lhs.rdConnection.iTwinId, rhs.rdConnection.iTwinId);
-      }
+    const lhsSourceKey = lhs.rdSourceKey as RealityDataSourceContextShareKey;
+    const rhsSourceKey = rhs.rdSourceKey as RealityDataSourceContextShareKey;
+    const lhsSourceURLKey = lhs.rdSourceKey as RealityDataSourceURLKey;
+    const rhsSourceURLKey = rhs.rdSourceKey as RealityDataSourceURLKey;
+    let cmp: number = 0;
+    if (lhsSourceKey && rhsSourceKey) {
+      cmp = compareStringsOrUndefined(lhsSourceKey.realityDataId, rhsSourceKey.realityDataId);
+      if (0 === cmp)
+        cmp = compareStringsOrUndefined(lhsSourceKey.iTwinId, rhsSourceKey.iTwinId);
+    } else if (lhsSourceURLKey && rhsSourceURLKey) {
+      cmp = compareStringsOrUndefined(lhsSourceURLKey.tilesetUrl, rhsSourceURLKey.tilesetUrl);
     }
     if (0 === cmp)
       cmp = compareStrings(lhs.orbitGtProps.accountName, rhs.orbitGtProps.accountName);
@@ -471,8 +474,8 @@ export namespace OrbitGtTileTree {
     return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.contextId);
   }
 
-  export async function createOrbitGtTileTree(props: OrbitGtBlobProps, rdConnectionProps: RealityDataConnectionProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.createFromProps(rdConnectionProps);
+  export async function createOrbitGtTileTree(props: OrbitGtBlobProps, rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey);
 
     if (await initializeOrbitGtBlobProps(props, rdConnection, iModel) === false)
       return undefined;
@@ -548,26 +551,17 @@ export namespace OrbitGtTileTree {
  */
 class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
-  protected _rdConnection: RealityDataConnection;
+  protected _rdSourceKey: RealityDataSourceKey;
   public override get castsShadows() { return false; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
-    // Default legacy behavior is to use tilesetUrl (props.url);
     if (props.orbitGtBlob.rdsUrl)
-      this._rdConnection = RealityDataConnection.fromUrl(props.orbitGtBlob.rdsUrl);
+      this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl, RealityDataProvider.ContextShareOrbitGt);
     else
-      this._rdConnection = RealityDataConnection.fromUrl(props.orbitGtBlob.blobFileName);
-    if (props.rdConnection) {
-      // If rdConnection props is provided, instantiate an RealityDataConnection and resolved the connection now
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      RealityDataConnection.createFromProps(props.rdConnection).then((rdConnection) => {
-        if (rdConnection)
-          this._rdConnection = rdConnection;
-      });
-    }
+      this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.blobFileName, RealityDataProvider.ContextShareOrbitGt);
 
-    const ogtTreeId: OrbitGtTreeId = { rdConnection: this._rdConnection.toProps(), orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
+    const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
   }
 
