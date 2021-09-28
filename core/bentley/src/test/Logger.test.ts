@@ -89,7 +89,7 @@ describe("Logger", () => {
     const expectedMeta2 = `{"meta2":"v2"}`;
 
     let out = Logger.formatMetaData({ a: "hello" });
-    assert.include(out, expectedA);
+    assert.equal(out, ` ${expectedA}`);
 
     Logger.staticMetaData.set("meta1", () => ({
       prop1: "test1",
@@ -98,21 +98,22 @@ describe("Logger", () => {
     })
     );
     out = Logger.formatMetaData({ a: "hello" });
-    assert.include(out, ` ${expectedA},${expectedMeta1}`);
+    assert.equal(out, ` ${expectedA},${expectedMeta1}`);
 
-    Logger.staticMetaData.set("meta2", {
-      meta2: "v2",
-    });
+    Logger.staticMetaData.set("meta2", { meta2: "v2" });
 
     out = Logger.formatMetaData({ a: "hello" });
-    assert.include(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
+    assert.equal(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
 
     out = Logger.formatMetaData(() => ({ a: "hello" }));
-    assert.include(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
+    assert.equal(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
 
     Logger.staticMetaData.delete("meta2");
     out = Logger.formatMetaData({ a: "hello" });
-    assert.include(out, ` ${expectedA},${expectedMeta1}`);
+    assert.equal(out, ` ${expectedA},${expectedMeta1}`);
+    Logger.staticMetaData.delete("meta1");
+    out = Logger.formatMetaData({ a: "hello" });
+    assert.equal(out, ` ${expectedA}`);
   });
 
   it("levels", () => {
