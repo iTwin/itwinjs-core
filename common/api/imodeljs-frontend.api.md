@@ -20,6 +20,7 @@ import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
+import { BackgroundMapProviderProps } from '@bentley/imodeljs-common';
 import { BackgroundMapSettings } from '@bentley/imodeljs-common';
 import { BaseLayerSettings } from '@bentley/imodeljs-common';
 import { BaseQuantityDescription } from '@bentley/ui-abstract';
@@ -60,6 +61,7 @@ import { ContextRealityModel } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
+import { DeprecatedBackgroundMapProps } from '@bentley/imodeljs-common';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemValue } from '@bentley/ui-abstract';
@@ -2350,6 +2352,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     get baseMapTransparency(): number;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
+    changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     // @internal (undocumented)
     changeBaseMapProps(props: MapLayerProps | ColorDef): void;
     // @internal (undocumented)
@@ -5302,7 +5305,7 @@ export class MapLayerSource {
     // (undocumented)
     formatId: string;
     // (undocumented)
-    static fromBackgroundMapProps(props: BackgroundMapProps): MapLayerSource | undefined;
+    static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): MapLayerSource | undefined;
     // (undocumented)
     static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined;
     // (undocumented)
@@ -12097,6 +12100,7 @@ export abstract class Viewport implements IDisposable {
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
     changeBackgroundMapProps(props: BackgroundMapProps): void;
+    changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;

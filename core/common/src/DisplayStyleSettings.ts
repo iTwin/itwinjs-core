@@ -619,12 +619,8 @@ export class DisplayStyleSettings {
     }
   }
 
-  /** Get the map imagery for this display style.  Map imagery includes the background map base as well as background layers and overlay layers.
-   * In earlier versions only a background map image was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
-   * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
-   * the settings are compatible.  The map imagery typically only should be modified only through  [DisplayStyleState]($frontend) methods.
-   * Map imagery should only be modified from backend, changes to map imagery from front end should be handled only through [DisplayStyleState]($frontend) methods.
-   * @alpha
+  /** Settings defining the map imagery layers to be displayed within the view.
+   * @beta
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
 

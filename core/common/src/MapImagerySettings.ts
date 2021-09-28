@@ -10,7 +10,7 @@ import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
-/** The JSON representation of base layer properties -- these can be represented by either a full map layer or a simple color.
+/** JSON representation of a [[BaseLayerSettings]].
  * @beta
  */
 export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
@@ -28,13 +28,16 @@ export interface MapImageryProps {
   overlayLayers?: MapLayerProps[];
 }
 
-/** Normalized representation of base layer properties -- these can be represented by either a full map layer or a simple color.
+/** The base layer for a [[MapImagerySettings]].
+ * @see [[MapImagerySettings.backgroundBase]].
  * @beta
  */
 export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 
+/** @beta */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace BaseLayerSettings {
+  /** Create a base layer from its JSON representation. */
   export function fromJSON(props: BaseLayerProps): BaseLayerSettings | undefined {
     return typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
   }

@@ -159,6 +159,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Modify a subset of the background map display settings.
    * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   * @see [[changeBackgroundMapProvider]] to change the type of map imagery displayed.
    *
    * Example that changes only the elevation, leaving the provider and type unchanged:
    * ``` ts
@@ -170,6 +171,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.backgroundMapSettings = newSettings;
   }
 
+  /** Change aspects of the [BackgroundMapProvider]($common) from which background map imagery is obtained.
+   * Any properties not explicitly specified by `props` will retain their current values.
+   * @public
+   */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
     const provider = BackgroundMapProvider.fromJSON(props);
     const base = this.settings.mapImagery.backgroundBase;

@@ -258,6 +258,7 @@ export class MapLayerSettings {
     return clone;
   }
 
+  /** @internal */
   protected cloneProps(changedProps: MapLayerProps): MapLayerProps {
     return {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
@@ -347,15 +348,32 @@ export class MapLayerSettings {
   }
 }
 
+/** JSON representation of a [[BaseMapLayerSettings]].
+ * @beta
+ */
 export interface BaseMapLayerProps extends MapLayerProps {
   provider?: BackgroundMapProviderProps;
 }
 
+/** A [[MapLayerSettings]] that can serve as the base layer for a [[MapImagerySettings]].
+ * The base layer supports all of the same options as any other layer, but also allows for simplified configuration based
+ * on a small set of known supported [[BackgroundMapProviders]] like [Bing Maps](https://www.microsoft.com/en-us/maps).
+ * If the base layer was configured from such a provider, that information will be preserved and can be queried; this allows
+ * the imagery provider and/or type to be easily modified.
+ * @see [[MapImagerySettings.backgroundBase]].
+ * @beta
+ */
 export class BaseMapLayerSettings extends MapLayerSettings {
   private _provider?: BackgroundMapProvider;
 
+  /** The provider from which this base layer was configured, if any. */
   public get provider(): BackgroundMapProvider | undefined { return this._provider; }
 
+  /** Create a base layer from its JSON representation.
+   * TODO: This, MapLayerSettings.fromJSON, and MapSubLayerSettings.fromJSON should never return undefined.
+   * That means they should not accept undefined for props and should define props such that it fully describes the
+   * layer - e.g., url and name must be defined.
+   */
   public static override fromJSON(props?: BaseMapLayerProps): BaseMapLayerSettings | undefined {
     const settings = super.fromJSON(props);
     if (!settings)
@@ -368,6 +386,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     return settings;
   }
 
+  /** Convert this layer to its JSON representation. */
   public override toJSON(): BaseMapLayerProps {
     const props = super.toJSON() as BaseMapLayerProps;
     if (this.provider)
@@ -376,6 +395,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     return props;
   }
 
+  /** @internal */
   public override cloneProps(changedProps: MapLayerProps): BaseMapLayerProps {
     const props = super.cloneProps(changedProps) as BaseMapLayerProps;
     if (this.provider)
@@ -384,6 +404,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     return props;
   }
 
+  /** Create a copy of this layer. */
   public override clone(changedProps: MapLayerProps): BaseMapLayerSettings {
     const prevUrl = this.url;
     const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
@@ -394,6 +415,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     return clone;
   }
 
+  /** Create a base layer from a BackgroundMapProvider. */
   public static fromProvider(provider: BackgroundMapProvider, options?: { invisible?: boolean, transparency?: number }): BaseMapLayerSettings {
     let formatId: string, url: string, name: string;
     switch (provider.name) {
