@@ -65,5 +65,9 @@ export class BackgroundMapProvider {
     // eslint-disable-next-line deprecation/deprecation
     return this.fromJSON({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
   }
+
+  public equals(other: BackgroundMapProvider): boolean {
+    return this.name === other.name && this.type === other.type;
+  }
 }
 

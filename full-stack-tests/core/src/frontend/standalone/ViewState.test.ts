@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
@@ -148,11 +148,13 @@ describe("ViewState", () => {
         name: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         type: mt,
       });
+      vs0DisplayStyle3d.changeBackgroundMapProps({ useDepthBuffer: !oldBackgroundMap.useDepthBuffer });
     } else {
       vs0DisplayStyle3d.changeBackgroundMapProvider({
         name: "BingProvider",
         type: BackgroundMapType.Aerial,
       });
+      vs0DisplayStyle3d.changeBackgroundMapProps({ useDepthBuffer: true });
     }
     const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
 
@@ -206,20 +208,18 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.blurSigma, vs1AOSettings.blurSigma, "clone should copy displayStyle.ambientOcclusionSettings.blurSigma");
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
-    assert.isDefined(vs0BackgroundMap);
-    // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs0BackgroundMap.toPersistentJSON().providerData?.mapType);
-    assert.isDefined(vs1BackgroundMap);
-    // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs1BackgroundMap.toPersistentJSON().providerData?.mapType);
-    // eslint-disable-next-line deprecation/deprecation
-    assert.equal(vs0BackgroundMap.toPersistentJSON().providerData?.mapType, vs1BackgroundMap.toPersistentJSON().providerData?.mapType, "clone should copy displayStyle.backgroundMap.mapType");
-    // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs0BackgroundMap.toPersistentJSON().providerName);
-    // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs1BackgroundMap.toPersistentJSON().providerName);
-    // eslint-disable-next-line deprecation/deprecation
-    assert.equal(vs0BackgroundMap.toPersistentJSON().providerName, vs1BackgroundMap.toPersistentJSON().providerName, "clone should copy displayStyle.backgroundMap.providerName");
+
+    const vs0BackgroundBase = vs0.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
+    expect(vs0BackgroundBase).instanceof(BaseMapLayerSettings);
+    const vs1BackgroundBase = vs1.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
+    expect(vs1BackgroundBase).instanceof(BaseMapLayerSettings);
+
+    expect(vs0BackgroundBase.provider).not.to.be.undefined;
+    expect(vs1BackgroundBase.provider!.equals(vs0BackgroundBase.provider!)).to.be.true;
+
+    expect(vs0BackgroundMap.useDepthBuffer).not.to.equal(oldBackgroundMap?.useDepthBuffer ?? false);
+    expect(vs1BackgroundMap.useDepthBuffer).to.equal(vs0BackgroundMap.useDepthBuffer);
+
     assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
     assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });
