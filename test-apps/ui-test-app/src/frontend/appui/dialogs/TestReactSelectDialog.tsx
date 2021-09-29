@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, LabeledThemedSelect, ThemedSelect } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
-import { DialogButtonType } from "@bentley/ui-abstract";
+import { Dialog, LabeledThemedSelect, ThemedSelect } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 enum ColorOptions {
   Red,

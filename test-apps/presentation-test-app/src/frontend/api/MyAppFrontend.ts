@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AsyncMethodsOf, Guid, Id64Arg, Logger, OpenMode, PromiseReturnType } from "@bentley/bentleyjs-core";
-import { ElementProps, IModelError, ViewQueryParams } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelConnection, IpcApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { AsyncMethodsOf, Guid, Id64Arg, Logger, OpenMode, PromiseReturnType } from "@itwin/core-bentley";
+import { ElementProps, IModelError, ViewQueryParams } from "@itwin/core-common";
+import { BriefcaseConnection, IModelConnection, IpcApp, SnapshotConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, SampleIpcInterface } from "../../common/SampleIpcInterface";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 

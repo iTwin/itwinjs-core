@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "rename to @itwin/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

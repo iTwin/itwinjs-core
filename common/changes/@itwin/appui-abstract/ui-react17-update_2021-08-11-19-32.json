@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Update to React 17",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

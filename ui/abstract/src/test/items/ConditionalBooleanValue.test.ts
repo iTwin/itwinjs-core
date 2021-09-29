@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ConditionalBooleanValue } from "../../ui-abstract";
+import { ConditionalBooleanValue } from "../../appui-abstract";
 
 const trueFunc = () => true;
 const falseFunc = () => false;

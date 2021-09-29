@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { isArrowKey, SpecialKey } from "../../ui-abstract";
+import { isArrowKey, SpecialKey } from "../../appui-abstract";
 
 describe("isArrowKey", () => {
   it("should return true if Up key", () => {

@@ -6,9 +6,9 @@
  * @module RPC
  */
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
+import { IModelRpcProps } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON,
   DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
@@ -17,7 +17,7 @@ import {
   Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
   PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
   SelectionScope, SelectionScopeRpcRequestOptions,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";

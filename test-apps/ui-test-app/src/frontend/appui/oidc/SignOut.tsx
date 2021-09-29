@@ -8,12 +8,12 @@
 
 import "./SignOut.scss";
 import * as React from "react";
-import {  Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { getUserColor } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { getUserColor } from "@itwin/core-react";
 import { Button } from "@itwin/itwinui-react";
-import { FrontstageManager, ModalFrontstageInfo, UiFramework, UserInfo } from "@bentley/ui-framework";
+import { FrontstageManager, ModalFrontstageInfo, UiFramework, UserInfo } from "@itwin/appui-react";
 
 // cSpell:Ignore userprofile signoutprompt
 

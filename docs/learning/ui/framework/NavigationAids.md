@@ -1,7 +1,7 @@
 # Navigation Aids
 
 A **Navigation Aid** is a user interface control that moves the user's perspective around within a specific Content View.
-There are two navigation aids provided in the `@bentley/ui-framework` package:
+There are two navigation aids provided in the `@itwin/appui-react` package:
 
 |Navigation Aid|Description
 |-----|-----
@@ -10,9 +10,9 @@ There are two navigation aids provided in the `@bentley/ui-framework` package:
 
 ## Active Navigation Aid
 
-The active Navigation Aid is determined by the active Content View. The [ContentControl]($ui-framework) class contains a `navigationAidControl` property
+The active Navigation Aid is determined by the active Content View. The [ContentControl]($appui-react) class contains a `navigationAidControl` property
 that indicates the ID of the associated Navigation Aid. The default Navigation Aid is blank.
-When a Viewport is the active content, the [ViewportContentControl]($ui-framework) class determines the associated Navigation Aid based on the
+When a Viewport is the active content, the [ViewportContentControl]($appui-react) class determines the associated Navigation Aid based on the
 `viewport.view.classFullName` property of the active Viewport.
 If you are developing your own Navigation Aid for a particular content type, you will also more than likely develop your own ContentControl subclass,
 and that custom ContentControl will indicate the associated Navigation Aid in the `navigationAidControl` property.
@@ -26,7 +26,7 @@ A Navigation Aid is comprised of two parts:
 
 ### NavigationAidControl
 
-The [NavigationAidControl]($ui-framework) class is the base class for the first part of a Navigation Aid, the Navigation Aid control.
+The [NavigationAidControl]($appui-react) class is the base class for the first part of a Navigation Aid, the Navigation Aid control.
 The `reactNode` property returns the React component part of the Navigation Aid as a `React.ReactNode`.
 The `getSize` method optionally overrides the default size of "64px".
 
@@ -39,7 +39,7 @@ Each NavigationAidControl subclass should be registered by calling the `Configur
 ```
 
 The `ConfigurableUiManager.initialize` function calls `ConfigurableUiManager.registerControl` for the
-two navigation aids provided in the `@bentley/ui-framework` package:
+two navigation aids provided in the `@itwin/appui-react` package:
 
 ```ts
     ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
@@ -82,8 +82,8 @@ export class SampleNavigationAidControl extends NavigationAidControl {
 }
 ```
 
-The [NavigationWidgetComposer]($ui-framework) and the [NavigationAidHost]($ui-framework) pass the current iModelConnection and active Viewport to the NavigationAidControl subclass when it's created.
-Events such as [ViewportComponentEvents.onViewRotationChangeEvent]($ui-imodel-components) and [ViewManager.onSelectedViewportChanged]($imodeljs-frontend) provide an updated Viewport.
+The [NavigationWidgetComposer]($appui-react) and the [NavigationAidHost]($appui-react) pass the current iModelConnection and active Viewport to the NavigationAidControl subclass when it's created.
+Events such as [ViewportComponentEvents.onViewRotationChangeEvent]($imodel-components-react) and [ViewManager.onSelectedViewportChanged]($core-frontend) provide an updated Viewport.
 
 The React component part of our Navigation Aid might look something like this:
 
@@ -107,5 +107,5 @@ export function SampleNavigationAid(props: SampleNavigationAidProps) {
 
 ## API Reference
 
-- [NavigationAids in ui-framework]($ui-framework:NavigationAids)
-- [NavigationAids in ui-imodel-components]($ui-imodel-components:NavigationAids)
+- [NavigationAids in ui-framework]($appui-react:NavigationAids)
+- [NavigationAids in ui-imodel-components]($imodel-components-react:NavigationAids)

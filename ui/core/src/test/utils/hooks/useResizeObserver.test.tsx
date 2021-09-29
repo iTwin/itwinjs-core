@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
-import { ElementResizeObserver, ResizableContainerObserver, useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
+import * as ResizeObserverModule from "../../../core-react/utils/hooks/ResizeObserverPolyfill";
+import { ElementResizeObserver, ResizableContainerObserver, useResizeObserver } from "../../../core-react/utils/hooks/useResizeObserver";
 import TestUtils from "../../TestUtils";
 import { render } from "@testing-library/react";
 import { expect } from "chai";

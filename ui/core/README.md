@@ -1,10 +1,10 @@
-# @bentley/ui-core
+# @itwin/core-react
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/ui-core__ package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
+The __@itwin/core-react__ package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
 
 ## Documentation
 

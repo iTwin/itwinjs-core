@@ -6,9 +6,9 @@
  * @module Telemetry
  */
 
-import { BentleyError, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { ClientTelemetryEvent, TelemetryClient, TelemetryEvent } from "@bentley/telemetry-client";
-import { RpcActivity } from "@bentley/imodeljs-common";
+import { RpcActivity } from "@itwin/core-common";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIntrospectionManager";
 

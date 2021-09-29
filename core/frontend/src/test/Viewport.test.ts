@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnalysisStyle } from "@bentley/imodeljs-common";
+import { AnalysisStyle } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";

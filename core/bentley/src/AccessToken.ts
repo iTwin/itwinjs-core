@@ -12,4 +12,3 @@
  * @beta
  */
 export type AccessToken = string;
-

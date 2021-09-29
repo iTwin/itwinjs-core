@@ -14,7 +14,7 @@ import * as path from "path";
 import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
-import { AsyncMutex, BeEvent, BentleyError, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { AsyncMutex, BeEvent, BentleyError, BriefcaseStatus } from "@itwin/core-bentley";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 
 /** Configure download task

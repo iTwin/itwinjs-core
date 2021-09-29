@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef, LightSettings, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, LightSettings, RgbColor } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
 import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";

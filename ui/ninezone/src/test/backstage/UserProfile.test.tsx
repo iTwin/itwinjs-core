@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { SafeAreaInsets, UserProfile } from "../../ui-ninezone";
+import { SafeAreaInsets, UserProfile } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<UserProfile />", () => {

@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
-import { HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
-import { ToolSettingsContent } from "../../ui-framework/widgets/ToolSettingsContent";
+import { HorizontalAnchor, ToolSettingsWidgetMode } from "@itwin/appui-layout-react";
+import { ToolSettingsContent } from "../../appui-react/widgets/ToolSettingsContent";
 import { mount } from "../TestUtils";
-import { ResizableContainerObserver } from "@bentley/ui-core";
+import { ResizableContainerObserver } from "@itwin/core-react";
 
 describe("ToolSettingsContent", () => {
   it("should render in tab mode", () => {

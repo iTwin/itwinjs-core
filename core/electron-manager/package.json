@@ -1,10 +1,10 @@
 {
-  "name": "@bentley/electron-manager",
-  "version": "3.0.0-dev.70",
+  "name": "@itwin/electron-manager",
+  "version": "3.0.0-dev.71",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -30,23 +30,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.70",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.70",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.70",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.71",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.71",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.71",
     "electron": "^11.1.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@types/node": "14.14.31",
     "electron": "^11.1.0",
     "eslint": "^7.11.0",
@@ -60,8 +60,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

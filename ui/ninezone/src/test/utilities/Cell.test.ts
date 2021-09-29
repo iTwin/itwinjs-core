@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Cell } from "../../ui-ninezone";
+import { Cell } from "../../appui-layout-react";
 
 describe("Cell", () => {
   it("should create Cell from CellProps", () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { SnapModePanel } from "../../../ui-ninezone";
+import { SnapModePanel } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<SnapModePanel />", () => {

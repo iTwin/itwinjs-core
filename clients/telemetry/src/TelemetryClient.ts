@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { BentleyError, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, GuidString, Logger } from "@itwin/core-bentley";
 import { RpcActivity } from "@bentley/imodeljs-common";
 import { TelemetryClientLoggerCategory } from "./TelemetryClientLoggerCategory";
 

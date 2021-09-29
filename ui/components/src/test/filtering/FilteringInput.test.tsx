@@ -8,8 +8,8 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Key } from "ts-key-enum";
-import { FilteringInput, FilteringInputStatus } from "../../ui-components/filtering/FilteringInput";
-import { ResultSelector } from "../../ui-components/filtering/ResultSelector";
+import { FilteringInput, FilteringInputStatus } from "../../components-react/filtering/FilteringInput";
+import { ResultSelector } from "../../components-react/filtering/ResultSelector";
 import TestUtils from "../TestUtils";
 
 describe("FilteringInput", () => {
@@ -145,7 +145,7 @@ describe("FilteringInput", () => {
         onFilterCancel={cancelCallback}
         onFilterClear={() => { }}
         onFilterStart={() => { }}
-        status = {FilteringInputStatus.ReadyToFilter}/>);
+        status={FilteringInputStatus.ReadyToFilter} />);
 
     const searchBar = filteringInput.container.querySelector('[class="components-filtering-input-input"]')?.firstChild;
     const searchIcon = filteringInput.container.querySelector('[class="icon icon-search"]');
@@ -216,7 +216,7 @@ describe("FilteringInput", () => {
         onFilterClear={() => { }}
         onFilterStart={() => { }}
         resultSelectorProps={{ onSelectedChanged: () => { }, resultCount: 5 }}
-        status={FilteringInputStatus.FilteringFinished}/>);
+        status={FilteringInputStatus.FilteringFinished} />);
 
     expect(filteringInput.getByText("1")).to.exist;
     const nextButton = filteringInput.container.querySelector('[class="components-result-selector-button icon icon-chevron-right"]');
@@ -231,7 +231,7 @@ describe("FilteringInput", () => {
         onFilterClear={() => { }}
         onFilterStart={() => { }}
         resultSelectorProps={{ onSelectedChanged: () => { }, resultCount: 5 }}
-        status={FilteringInputStatus.FilteringFinished}/>);
+        status={FilteringInputStatus.FilteringFinished} />);
 
     expect(filteringInput.getByText("1")).to.exist;
   });

@@ -32,7 +32,6 @@
 .PropertiesWidget > .ContentContainer {
   flex: 1 0;
   min-height: 0;
-  margin-left: -3px;
   grid-column-start: 1;
   grid-column-end: span 2;
 }

@@ -6,7 +6,7 @@ The Status Bar contains one or more Status Fields.
 
 ## Defining a Status Bar Widget
 
-The Status Bar is defined by a class derived from StatusBarWidgetControl. This class must implement the method getReactNode to return the ReactNode that is the container control for all status bar items (also referred to as status fields). This container control should be the [StatusBarComposer]($ui-framework) control.  Below is an example of populating the StatusBarComposer.
+The Status Bar is defined by a class derived from StatusBarWidgetControl. This class must implement the method getReactNode to return the ReactNode that is the container control for all status bar items (also referred to as status fields). This container control should be the [StatusBarComposer]($appui-react) control.  Below is an example of populating the StatusBarComposer.
 
 ```tsx
 export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -52,4 +52,4 @@ ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl)
 
 ## API Reference
 
-- [StatusBar]($ui-framework:StatusBar)
+- [StatusBar]($appui-react:StatusBar)

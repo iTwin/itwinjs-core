@@ -9,8 +9,8 @@
 
 import {
   ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
-} from "@bentley/imodeljs-common";
-import { IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";

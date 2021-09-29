@@ -570,7 +570,7 @@
 		415D589B23E38D0C00907B7B /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "imodeljs-test-app-Bridging-Header.h"; sourceTree = "<group>"; };
 		415D58B623E4ACAA00907B7B /* AssetHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetHandler.swift; sourceTree = "<group>"; };
-		4180D5302472EEBB00EF5E14 /* IModelJsNative.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IModelJsNative.framework; path = "../../node_modules/@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/imodeljs-ios-arm64//IModelJsNative.framework"; sourceTree = SOURCE_ROOT; };
+		4180D5302472EEBB00EF5E14 /* IModelJsNative.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IModelJsNative.framework; path = "../../node_modules/@itwin/core-backend/node_modules/@bentley/imodeljs-native/imodeljs-ios-arm64//IModelJsNative.framework"; sourceTree = SOURCE_ROOT; };
 		4181096E24BCFA190084E76E /* FlatBuffers.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = FlatBuffers.xcodeproj; sourceTree = "<group>"; };
 		418114B424BCFA1D0084E76E /* IModelJsNative.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = IModelJsNative.xcodeproj; sourceTree = "<group>"; };
 		418114BA24BCFA1E0084E76E /* AppAuth.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = AppAuth.xcodeproj; sourceTree = "<group>"; };

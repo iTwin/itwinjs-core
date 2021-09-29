@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { getJson } from "@bentley/itwin-client";
-import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@bentley/geometry-core";
-import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
+import { Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
+import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapProps, Cartographic, IModel, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+} from "@itwin/core-common";
 
 class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
@@ -86,7 +86,7 @@ function parseDisplayMode(defaultDisplay: number, option?: string) {
   }
 }
 
-export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: BackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
+export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: PersistentBackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
   const name = inputName ? inputName : url;
   const classificationFlags = {
     inside: parseDisplayMode(SpatialClassifierInsideDisplay.ElementColor, inside),

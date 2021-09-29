@@ -1,0 +1,44 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+ @import "../icons/variables";
+ @import "../style/colors";
+ @import "../style/themecolors";
+ @import "../style/baseline";
+
+.core-message-box-container {
+  display: flex;
+  color: $buic-foreground-body;
+
+  .core-message-box-icon {
+    flex: 0 0;
+    font-size: $uicore-icons-medium;
+    padding: 0 $uicore-unbordered-padding $uicore-unbordered-padding $uicore-unbordered-padding;
+    margin-top: 10px;
+  }
+
+  .core-message-box-content {
+    flex: 1 1;
+  }
+}
+
+.core-message-box-success {
+  color: $buic-foreground-success;
+}
+.core-message-box-information {
+  color: $buic-foreground-primary;
+}
+.core-message-box-question {
+  color: $uicore-yellow;
+}
+.core-message-box-warning {
+  color: $buic-foreground-warning;
+}
+.core-message-box-error, .core-message-box-fatal {
+  color: $buic-foreground-alert;
+}
+
+.notifymessage-icon {
+  margin-right: 6px;
+}

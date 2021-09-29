@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import {
   getDefaultNineZoneStagePanelManagerProps, HorizontalAnchor, NineZoneStagePanelManager, NineZoneStagePanelManagerProps,
   NineZoneStagePanelPaneManager, StagePanelType, VerticalAnchor,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 
 describe("NineZoneStagePanelManager", () => {
   describe("getHorizontalAnchor", () => {

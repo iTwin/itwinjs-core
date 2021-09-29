@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import {
   StageUsage, UiItemsManager,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { DefaultStatusbarItems, StandardStatusbarItemsProvider } from "../../ui-framework/ui-items-provider/StandardStatusbarItemsProvider";
+import { MockRender } from "@itwin/core-frontend";
+import { DefaultStatusbarItems, StandardStatusbarItemsProvider } from "../../appui-react/ui-items-provider/StandardStatusbarItemsProvider";
 
 const testArray: DefaultStatusbarItems[] = [
   {

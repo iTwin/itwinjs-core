@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { AccessToken, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Angle } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { Angle } from "@itwin/core-geometry";
+import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@itwin/core-common";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelApp } from "./IModelApp";

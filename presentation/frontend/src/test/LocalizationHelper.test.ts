@@ -5,12 +5,12 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { Content, Item, LabelDefinition } from "@bentley/presentation-common";
-import { createTestContentDescriptor } from "@bentley/presentation-common/lib/test/_helpers/Content";
+import { I18N } from "@itwin/core-i18n";
+import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
+import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
 import {
   createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common/lib/test/_helpers/random";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
 import { Presentation } from "../presentation-frontend/Presentation";
 

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, IModelHubFrontend, SectionDrawingModelState } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, IModelHubFrontend, SectionDrawingModelState } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";
 

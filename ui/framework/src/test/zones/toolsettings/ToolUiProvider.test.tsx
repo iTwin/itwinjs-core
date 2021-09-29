@@ -8,10 +8,10 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs,
   ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
-} from "../../../ui-framework";
-import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
+} from "../../../appui-react";
+import { ToolInformation } from "../../../appui-react/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
-import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
+import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin/appui-abstract";
 import { Input, Slider } from "@itwin/itwinui-react";
 
 describe("ToolUiProvider", () => {

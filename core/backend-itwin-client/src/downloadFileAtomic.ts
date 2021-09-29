@@ -5,7 +5,7 @@
 import got from "got";
 import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
-import { BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus } from "@itwin/core-bentley";
 import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
 import { BufferedStream } from "./imodelhub/AzureFileHandler";
 

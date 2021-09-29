@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as PresentationFrontendDiagnostics from "@bentley/presentation-frontend/lib/presentation-frontend/Diagnostics";
+import * as PresentationFrontendDiagnostics from "@itwin/presentation-frontend/lib/presentation-frontend/Diagnostics";
 import { createDiagnosticsOptions } from "../../presentation-components/common/Diagnostics";
 
 describe("createDiagnosticsOptions", () => {

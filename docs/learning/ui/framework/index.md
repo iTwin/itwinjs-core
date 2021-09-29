@@ -5,7 +5,7 @@ Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panel
 
 ## Application UI Configuration
 
-There are numerous TypeScript classes and React components in the `@bentley/ui-framework` package for configuring the application user interface.
+There are numerous TypeScript classes and React components in the `@itwin/appui-react` package for configuring the application user interface.
 The following constructs are defined using these components and classes:
 
 - [Frontstages and Zones](./Frontstages.md)
@@ -23,7 +23,7 @@ The following constructs are defined using these components and classes:
 - [Dialogs](./Dialogs.md)
 - [UI Settings](./UiSettings.md)
 - [AccuDraw UI](./AccuDraw.md)
-- [KeyboardShortcuts]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
+- [KeyboardShortcuts]($appui-react:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 
 ## Other Topics
 

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 import * as chai from "chai";
 import { ITwinAccessClient } from "../../ContextRegistryClient";
 import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";

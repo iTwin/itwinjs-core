@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 import { SessionProps } from "./SessionProps";
 

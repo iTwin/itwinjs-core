@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point, Rectangle } from "@bentley/ui-core";
-import { ResizeGrip, ResizeHandle, ToolSettings, ToolSettingsProps } from "../../ui-ninezone";
+import { Point, Rectangle } from "@itwin/core-react";
+import { ResizeGrip, ResizeHandle, ToolSettings, ToolSettingsProps } from "../../appui-layout-react";
 import { createRect, mount } from "../Utils";
 
 describe("<ToolSettings />", () => {

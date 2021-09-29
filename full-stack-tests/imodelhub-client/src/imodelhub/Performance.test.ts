@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, GuidString, Id64, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Id64, Logger } from "@itwin/core-bentley";
 import {
   AuthenticationError, Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType,
 } from "@bentley/imodelhub-client";

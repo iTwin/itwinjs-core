@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton";
+import { UnderlinedButton } from "../../core-react/button/UnderlinedButton";
 
 describe("<UnderlinedButton />", () => {
   it("renders content", () => {

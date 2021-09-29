@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, BeTimePoint, ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, Pixel, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Id64 } from "@itwin/core-bentley";
+import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
+import { IModelApp, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 // Set of tests require a BingMap key to be defined

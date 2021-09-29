@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { ConditionalStringValue } from "@bentley/ui-abstract";
-import { IconHelper } from "../../ui-core/utils/IconHelper";
+import { ConditionalStringValue } from "@itwin/appui-abstract";
+import { IconHelper } from "../../core-react/utils/IconHelper";
 
 describe("IconHelper", () => {
 
