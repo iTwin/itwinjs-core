@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./oidc";
-export * from "./telemetry";
 export * from "./BackendITwinClientLoggerCategory";
 export * from "./HttpRequestHost";
 export * from "./imodelhub/LocalhostFileHandler";
