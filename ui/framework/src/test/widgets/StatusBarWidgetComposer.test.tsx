@@ -5,14 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   WidgetState,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
 import {
   ConfigurableUiControlType, FrontstageManager, StatusBarWidgetComposerControl, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("StatusBarComposerControl", () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { MinimalTile } from "../../ui-core";
+import { MinimalTile } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

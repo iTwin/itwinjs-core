@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
+import { PropertyRecord, SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render, RenderResult, waitFor } from "@testing-library/react";
-import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
-import { BreadcrumbNode, BreadcrumbNodeProps } from "../../ui-components/breadcrumb/Breadcrumb";
-import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../components-react";
+import { BreadcrumbNode, BreadcrumbNodeProps } from "../../components-react/breadcrumb/Breadcrumb";
+import { TreeNodeItem } from "../../components-react/tree/TreeDataProvider";
 import { waitForUpdate } from "../test-helpers/misc";
 import TestUtils from "../TestUtils";
 import {
@@ -42,7 +42,7 @@ describe("Breadcrumb", () => {
       it("should call onRootNodesLoaded correctly", async () => {
         const onRootNodesLoadedSpy = sinon.spy();
         render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} onRootNodesLoaded={onRootNodesLoadedSpy} />);
-        await waitFor(()=>expect(onRootNodesLoadedSpy).to.have.been.calledOnce);
+        await waitFor(() => expect(onRootNodesLoadedSpy).to.have.been.calledOnce);
       });
       it("should call onChildrenLoaded correctly", async () => {
         const onChildrenLoadedSpy = sinon.spy();
@@ -98,7 +98,7 @@ describe("Breadcrumb", () => {
         it("rerenders when `onTreeNodeChanged` is broadcasted with undefined", async () => {
           const node2 = (await mockMutableInterfaceTreeDataProvider.getNodes())[1];
           const node22 = (await mockMutableInterfaceTreeDataProvider.getNodes(node2))[1];
-          await waitFor (() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockMutableInterfaceTreeDataProvider} initialCurrent={node22} />));
+          await waitFor(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockMutableInterfaceTreeDataProvider} initialCurrent={node22} />));
           const breadcrumbNodes = renderedComponent.getAllByTestId("components-breadcrumb-node");
           expect(breadcrumbNodes.length).to.eq(3);
 

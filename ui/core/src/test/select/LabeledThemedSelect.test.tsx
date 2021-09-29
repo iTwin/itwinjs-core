@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { InputStatus, LabeledThemedSelect } from "../../ui-core";
+import { InputStatus, LabeledThemedSelect } from "../../core-react";
 
 describe("<LabeledThemedSelect />", () => {
   enum ColorOptions {

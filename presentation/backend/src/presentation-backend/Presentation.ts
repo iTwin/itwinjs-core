@@ -6,10 +6,10 @@
  * @module Core
  */
 
-import { DisposeFunc, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";
+import { DisposeFunc, Logger } from "@itwin/core-bentley";
+import { IModelHost } from "@itwin/core-backend";
+import { RpcManager } from "@itwin/core-common";
+import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
@@ -77,7 +77,7 @@ interface ClientStoreItem {
  * Basically what it does is:
  * - Register a RPC implementation
  * - Create a singleton [[PresentationManager]] instance
- * - Subscribe for [IModelHost.onBeforeShutdown]($imodeljs-backend) event and terminate
+ * - Subscribe for [IModelHost.onBeforeShutdown]($core-backend) event and terminate
  *   the presentation manager when that happens.
  *
  * @public
@@ -101,7 +101,7 @@ export class Presentation {
    *
    * See [this]($docs/presentation/Setup/index.md#backend) for an example.
    *
-   * **Important:** The method should be called after a call to [IModelHost.startup]($imodeljs-backend)
+   * **Important:** The method should be called after a call to [IModelHost.startup]($core-backend)
    *
    * @param props Optional properties for [[PresentationManager]]
    */
@@ -139,7 +139,7 @@ export class Presentation {
 
   /**
    * Terminates Presentation. Consumers don't need to call this as it's automatically
-   * called on [IModelHost.onBeforeShutdown]($imodeljs-backend) event.
+   * called on [IModelHost.onBeforeShutdown]($core-backend) event.
    */
   public static terminate(): void {
     if (this._clientsStorage) {

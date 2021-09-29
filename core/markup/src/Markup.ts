@@ -6,11 +6,11 @@
  * @module MarkupApp
  */
 
-import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY } from "@bentley/geometry-core";
-import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { getErrorProps, Logger } from "@itwin/core-bentley";
+import { Point3d, XAndY } from "@itwin/core-geometry";
+import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { I18NNamespace } from "@itwin/core-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";

@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { WidgetMenu } from "../../ui-ninezone";
+import { WidgetMenu } from "../../appui-layout-react";
 
 describe("WidgetMenu ", () => {
   it("should render", () => {

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Primitives } from "@bentley/ui-abstract";
-import { isPromiseLike } from "@bentley/ui-core";
-import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../ui-components";
-import { TypeConverter } from "../../ui-components/converters/TypeConverter";
-import { TypeConverterManager } from "../../ui-components/converters/TypeConverterManager";
+import { Primitives } from "@itwin/appui-abstract";
+import { isPromiseLike } from "@itwin/core-react";
+import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../components-react";
+import { TypeConverter } from "../../components-react/converters/TypeConverter";
+import { TypeConverterManager } from "../../components-react/converters/TypeConverterManager";
 import TestUtils from "../TestUtils";
 
 describe("Point2dTypeConverter", () => {

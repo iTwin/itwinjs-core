@@ -6,7 +6,7 @@
  * @module iTwinServiceClients
  */
 import * as https from "https";
-import { AccessToken, BentleyError, GetMetaDataFunction } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyError, GetMetaDataFunction } from "@itwin/core-bentley";
 import { ProgressCallback } from "./Request";
 
 /** Interface to cancel a request

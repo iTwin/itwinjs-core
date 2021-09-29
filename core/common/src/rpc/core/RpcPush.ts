@@ -9,7 +9,7 @@
  * @module RpcInterface
  */
 
-import { assert, BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
 
 /** @alpha */

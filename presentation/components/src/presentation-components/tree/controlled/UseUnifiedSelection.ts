@@ -10,14 +10,14 @@ import { useCallback } from "react";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { tap } from "rxjs/internal/operators/tap";
 import { Subject } from "rxjs/internal/Subject";
-import { Guid, IDisposable } from "@bentley/bentleyjs-core";
-import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@bentley/presentation-frontend";
+import { Guid, IDisposable } from "@itwin/core-bentley";
+import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
+import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper } from "@itwin/presentation-frontend";
 import {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, toRxjsObservable, TreeEditingParams, TreeEventHandler, TreeModelChanges,
   TreeModelSource, TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
+} from "@itwin/components-react";
+import { useDisposable } from "@itwin/core-react";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**

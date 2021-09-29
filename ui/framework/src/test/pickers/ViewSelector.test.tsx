@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ViewSelector } from "../../ui-framework";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ViewSelector } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 // cSpell:ignore Spatials
@@ -55,7 +55,7 @@ describe("ViewSelector", () => {
     const wrapper = mount(
       <ViewSelector imodel={imodelMock.object} />,
     );
-    wrapper.setProps({imodel:imodelMock2.object});
+    wrapper.setProps({ imodel: imodelMock2.object });
     await TestUtils.flushAsyncOperations();
   });
 

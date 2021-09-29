@@ -7,12 +7,12 @@ import * as React from "react";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
 import {
   ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, Widget, Zone,
-} from "../../../ui-framework";
+} from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 describe("DefaultToolUiSettingsProvider", () => {

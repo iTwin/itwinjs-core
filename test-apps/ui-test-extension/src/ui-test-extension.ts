@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18N, I18NNamespace } from "@itwin/core-i18n";
 import { ExtensionUiItemsProvider } from "./ui/ExtensionUiItemsProvider";
 import { TraceUiItemsProvider } from "./ui/NetworkTraceUIProvider";
-import { UiItemsManager } from "@bentley/ui-abstract";
+import { UiItemsManager } from "@itwin/appui-abstract";
 import { SampleTool } from "./ui/tools/SampleTool";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUiManager } from "@itwin/appui-react";
 import { ExtensionFrontstage } from "./ui/Frontstage";
 import { SampleContentControl } from "./ui/content/SampleContentControl";
 import { GenericTool } from "./ui/tools/GenericTool";

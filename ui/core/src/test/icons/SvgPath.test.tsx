@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { SvgPath } from "../../ui-core";
+import { SvgPath } from "../../core-react";
 
 describe("<SvgPath />", () => {
   it("should render", () => {

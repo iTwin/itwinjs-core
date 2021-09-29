@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 
 /** Describes timing statistics for a single rendered frame. Aside from `frameId`, `totalFrameTime`, and `totalSceneTime`, the other entries may represent operations that are not performed every frame and may contain an expected value of zero.
  * @note By default, the display system does not render frames continuously. The display system will render a new frame only when the view changes. Therefore, the data contained within this interface cannot directly be used to compute a representative framerate.

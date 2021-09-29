@@ -1,4 +1,4 @@
-# Change Log - @bentley/imodeljs-frontend
+# Change Log - @itwin/core-frontend
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 

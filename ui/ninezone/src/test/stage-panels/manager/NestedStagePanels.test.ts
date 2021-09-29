@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import {
   getDefaultStagePanelsManagerProps, NestedStagePanelsManager, NestedStagePanelsManagerProps, StagePanelsManager, StagePanelsManagerProps,
   StagePanelType,
-} from "../../../ui-ninezone";
+} from "../../../appui-layout-react";
 
 interface CustomPanelsProps extends StagePanelsManagerProps {
   readonly isVisible: boolean;

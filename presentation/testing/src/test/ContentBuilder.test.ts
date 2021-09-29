@@ -6,13 +6,13 @@ import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { BeEvent, Guid, Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
   PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);

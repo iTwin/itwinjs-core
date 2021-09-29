@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { getClassName } from "../../ui-abstract";
+import { getClassName } from "../../appui-abstract";
 
 describe("getClassName", () => {
   class NamedClass {

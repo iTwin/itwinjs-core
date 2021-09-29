@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Tests of area analysis for road section project.  Shared-edge annotation from constructAllXYRegions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

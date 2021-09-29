@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/geometry-core",
-  "version": "3.0.0-dev.70",
-  "description": "Bentley Core Geometry library",
-  "main": "lib/geometry-core.js",
-  "typings": "lib/geometry-core",
+  "name": "@itwin/core-geometry",
+  "version": "3.0.0-dev.71",
+  "description": "iTwin.js Core Geometry library",
+  "main": "lib/core-geometry.js",
+  "typings": "lib/core-geometry",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -12,9 +12,9 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
     "test": "mocha",
-    "extract-api": "betools extract-api --entry=geometry-core",
-    "extract-api-test": "betools extract-api --entry=geometry-core",
-    "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
+    "extract-api": "betools extract-api --entry=core-geometry",
+    "extract-api-test": "betools extract-api --entry=core-geometry",
+    "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
     "cover": "nyc npm -s test",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
@@ -31,12 +31,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
@@ -54,7 +54,7 @@
     "flatbuffers": "~1.12.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 85,
     "functions": 85,
@@ -63,9 +63,9 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "@typescript-eslint/indent": "off"
     }

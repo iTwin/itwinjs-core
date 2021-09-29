@@ -6,13 +6,13 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { Logger } from "@itwin/core-bentley";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import {
   BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps,
   FrontstageProvider, SyncUiEventDispatcher, TaskLaunchBackstageItem, TaskPropsList, WorkflowManager, WorkflowPropsList,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */

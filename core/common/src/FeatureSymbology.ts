@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature } from "./FeatureTable";
 import { ColorDef } from "./ColorDef";
 import { GeometryClass } from "./GeometryParams";
@@ -132,7 +132,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   }
 
   public toJSON(): FeatureAppearanceProps {
-    const props: FeatureAppearanceProps = { };
+    const props: FeatureAppearanceProps = {};
     if (this.rgb)
       props.rgb = this.rgb.toJSON();
 
@@ -248,7 +248,7 @@ export interface FeatureAppearanceSource {
    * @param type The type of batch to which the feature belongs.
    * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
-   * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
+   * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
   getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
@@ -410,7 +410,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
 
   /** Returns a feature's appearance overrides, or undefined if the feature is not visible.
    * Takes Id64s as pairs of unsigned 32-bit integers for efficiency, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
-   * @see [[getFeatureAppearance]] for an equivalent function that accepts [Id64String]($bentleyjs-core)s instead of integer pairs.
+   * @see [[getFeatureAppearance]] for an equivalent function that accepts [Id64String]($core-bentley)s instead of integer pairs.
    */
   public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
     if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
@@ -627,7 +627,7 @@ export interface FeatureAppearanceProvider {
    * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [[FeatureAppearanceSource.getAppearance]] to forward the request to the source.
-   * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
+   * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
   getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }

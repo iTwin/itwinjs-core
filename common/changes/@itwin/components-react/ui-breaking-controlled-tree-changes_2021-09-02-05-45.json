@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Change `ControlledTree` to take `TreeModel` instead of `VisibleTreeNodes`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Replace `useVisibleTreeNodes` with `useTreeModel` since consumers don't need to create `VisibleTreeNodes` anymore.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

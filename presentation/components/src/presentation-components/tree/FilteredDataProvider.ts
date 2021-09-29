@@ -7,11 +7,11 @@
  */
 
 import memoize from "micro-memoize";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodeKey, NodePathElement } from "@itwin/presentation-common";
 import {
   ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, TreeNodeItem,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "./Utils";
 

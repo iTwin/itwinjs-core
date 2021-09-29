@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { Timer } from "../../ui-core/utils/Timer";
+import { Timer } from "../../core-react/utils/Timer";
 
 describe("Timer", () => {
   it("should create timer with specified delay", () => {

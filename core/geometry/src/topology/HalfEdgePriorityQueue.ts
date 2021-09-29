@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Topology
  */
-import { OrderedComparator, PriorityQueue } from "@bentley/bentleyjs-core";
+import { OrderedComparator, PriorityQueue } from "@itwin/core-bentley";
 import { HalfEdge } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
 

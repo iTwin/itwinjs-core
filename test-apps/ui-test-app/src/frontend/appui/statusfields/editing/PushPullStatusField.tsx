@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PushPullField.scss";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
 import {
   BriefcaseConnection, IModelApp, IModelHubFrontend, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
-import { Icon } from "@bentley/ui-core";
-import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+} from "@itwin/core-frontend";
+import { Icon } from "@itwin/core-react";
+import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 
@@ -61,7 +61,7 @@ class SyncManager {
           // Once the initial state of the briefcase is known, register for events announcing new changesets
           const changeSetSubscription = await IModelHubFrontend.iModelClient.events.subscriptions.create(accessToken, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
 
-          IModelHubFrontend.iModelClient.events.createListener( async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
+          IModelHubFrontend.iModelClient.events.createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
             if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
               this.state.changesOnServer.push(receivedEvent.changeSetId);
               this.onStateChange.raiseEvent();

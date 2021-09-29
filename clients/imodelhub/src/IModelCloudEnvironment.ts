@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";

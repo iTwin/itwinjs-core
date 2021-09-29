@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/bentleyjs-core",
-  "version": "3.0.0-dev.70",
+  "name": "@itwin/core-bentley",
+  "version": "3.0.0-dev.71",
   "description": "Bentley JavaScript core components",
-  "main": "lib/bentleyjs-core.js",
-  "typings": "lib/bentleyjs-core",
+  "main": "lib/core-bentley.js",
+  "typings": "lib/core-bentley",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -14,9 +14,9 @@
     "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "extract-api": "betools extract-api --entry=bentleyjs-core",
+    "extract-api": "betools extract-api --entry=core-bentley",
     "test": "mocha",
-    "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "nyc npm -s test",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
@@ -31,8 +31,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
@@ -46,12 +46,12 @@
     "typescript": "~4.4.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -10,11 +10,11 @@ import sinon from "sinon";
 import * as React from "react";
 import {
   BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams, SpecialKey, StandardEditorNames,
-} from "@bentley/ui-abstract";
-import { SliderEditor } from "../../ui-components/editors/SliderEditor";
+} from "@itwin/appui-abstract";
+import { SliderEditor } from "../../components-react/editors/SliderEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer } from "../../ui-components/editors/EditorContainer";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<SliderEditor />", () => {
   before(async () => {

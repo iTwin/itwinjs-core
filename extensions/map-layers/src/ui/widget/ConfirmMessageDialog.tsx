@@ -5,10 +5,10 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { CommonProps, Dialog } from "@bentley/ui-core";
+import { CommonProps, Dialog } from "@itwin/core-react";
 
 import "./MapUrlDialog.scss";
-import { DialogButtonType } from "@bentley/ui-abstract";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 interface ConfirmMessageDialogProps extends CommonProps {
 

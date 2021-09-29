@@ -10,9 +10,9 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@bentley/bentleyjs-core";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, SessionProps } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
@@ -71,7 +71,7 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
-/** Configuration of imodeljs-backend.
+/** Configuration of core-backend.
  * @public
  */
 export class IModelHostConfiguration {
@@ -256,7 +256,7 @@ export class IModelHost {
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
+    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
@@ -515,7 +515,7 @@ export class KnownLocations {
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): string { return IModelHost.platform.DgnDb.getAssetsDir(); }
 
-  /** The directory where the imodeljs-backend assets are stored. */
+  /** The directory where the core-backend assets are stored. */
   public static get packageAssetsDir(): string {
     return path.join(__dirname, "assets");
   }

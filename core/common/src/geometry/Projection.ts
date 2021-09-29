@@ -7,7 +7,7 @@
  */
 // cspell:ignore Albers, Krovak, OSTN, Cassini, Grinten, Mollweide, Eckert, Homolosine, Carree, Winkel, Tripel, Polyconic
 
-import { Geometry } from "@bentley/geometry-core";
+import { Geometry } from "@itwin/core-geometry";
 
 /** This enum contains the list of all projection methods that can be represented as part of the HorizontalCRS
  *  class. The None method indicates there is no projection and thus the CRS is longitude/latitude based

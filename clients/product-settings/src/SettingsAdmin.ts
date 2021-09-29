@@ -6,7 +6,7 @@
  * @module Settings
  */
 
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 
 /** Possible values for SettingsResults.status
  * @beta

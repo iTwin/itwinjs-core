@@ -10,11 +10,11 @@ import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import {
   IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, SpecialKey,
-} from "@bentley/ui-abstract";
-import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+} from "@itwin/appui-abstract";
+import { CustomNumberEditor } from "../../components-react/editors/CustomNumberEditor";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 // cSpell:ignore customnumber
 

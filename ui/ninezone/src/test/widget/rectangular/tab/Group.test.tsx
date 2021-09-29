@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { HandleMode, HandleModeHelpers, HorizontalAnchor, TabGroup, VerticalAnchor } from "../../../../ui-ninezone";
+import { HandleMode, HandleModeHelpers, HorizontalAnchor, TabGroup, VerticalAnchor } from "../../../../appui-layout-react";
 import { mount } from "../../../Utils";
 
 describe("<TabGroup />", () => {

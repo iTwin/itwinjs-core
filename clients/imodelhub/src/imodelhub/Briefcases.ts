@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { IModelClient } from "../IModelClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";

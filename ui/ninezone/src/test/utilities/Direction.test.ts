@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Direction, DirectionHelpers, OrthogonalDirection } from "../../ui-ninezone";
+import { Direction, DirectionHelpers, OrthogonalDirection } from "../../appui-layout-react";
 
 describe("Direction", () => {
   describe("CLASS_NAME", () => {

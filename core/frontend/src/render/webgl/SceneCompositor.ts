@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
   Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
-} from "@bentley/imodeljs-common";
-import { DepthType, RenderType } from "@bentley/webgl-compatibility";
+} from "@itwin/core-common";
+import { DepthType, RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";
 import { ViewRect } from "../../ViewRect";
