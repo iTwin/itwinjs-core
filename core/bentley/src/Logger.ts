@@ -89,12 +89,13 @@ export class Logger {
 
   /** stringify the metadata for a log message by merging the supplied metadata with all static metadata into one object that is then `JSON.stringify`ed. */
   public static stringifyMetaData(metaData?: LoggingMetaData): string {
-    const metaObj = { ...BentleyError.getMetaData(metaData) };
+    const metaObj = {};
     for (const meta of Logger.staticMetaData) {
       const val = BentleyError.getMetaData(meta[1]);
       if (val)
         Object.assign(metaObj, val);
     }
+    Object.assign(metaObj, BentleyError.getMetaData(metaData)); // do this last so user supplied values take precedence
     return Object.keys(metaObj).length > 0 ? JSON.stringify(metaObj) : "";
   }
 
