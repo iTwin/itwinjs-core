@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/imodeljs-backend",
+      "packageName": "@itwin/core-backend",
       "comment": "Add GeometryClass to ExportGraphics",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/imodeljs-backend"
+  "packageName": "@itwin/core-backend"
 }

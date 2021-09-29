@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/imodeljs-backend",
+      "packageName": "@itwin/core-backend",
       "comment": "Do not reopen connection on schema change",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/imodeljs-backend",
+  "packageName": "@itwin/core-backend",
   "email": "khanaffan@users.noreply.github.com"
 }

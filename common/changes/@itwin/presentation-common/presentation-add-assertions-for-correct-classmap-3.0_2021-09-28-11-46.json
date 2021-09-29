@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/presentation-common",
+      "packageName": "@itwin/presentation-common",
       "comment": "Update `SelectClassInfo.pathFromInputToSelectClass` type definition to match reality - the relationship may not always be set.",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/presentation-common"
+  "packageName": "@itwin/presentation-common"
 }
