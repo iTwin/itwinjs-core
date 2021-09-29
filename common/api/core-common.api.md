@@ -183,7 +183,7 @@ export class AnalysisStyle {
     static fromJSON(props?: AnalysisStyleProps): AnalysisStyle;
     readonly normalChannelName?: string;
     // (undocumented)
-    readonly scalar?: AnalysisStyleScalar;
+    readonly thematic?: AnalysisStyleThematic;
     toJSON(): AnalysisStyleProps;
 }
 
@@ -206,22 +206,22 @@ export interface AnalysisStyleDisplacementProps {
 export interface AnalysisStyleProps {
     displacement?: AnalysisStyleDisplacementProps;
     normalChannelName?: string;
-    scalar?: AnalysisStyleScalarProps;
+    scalar?: AnalysisStyleThematicProps;
 }
 
 // @public
-export class AnalysisStyleScalar {
+export class AnalysisStyleThematic {
     readonly channelName: string;
-    equals(other: AnalysisStyleScalar): boolean;
-    static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar;
+    equals(other: AnalysisStyleThematic): boolean;
+    static fromJSON(props: AnalysisStyleThematicProps): AnalysisStyleThematic;
     get gradient(): Gradient.Symb;
     readonly range: Readonly<Range1d>;
     readonly thematicSettings: ThematicGradientSettings;
-    toJSON(): AnalysisStyleScalarProps;
+    toJSON(): AnalysisStyleThematicProps;
 }
 
 // @public
-export interface AnalysisStyleScalarProps {
+export interface AnalysisStyleThematicProps {
     channelName: string;
     range: Range1dProps;
     thematicSettings?: ThematicGradientSettingsProps;
