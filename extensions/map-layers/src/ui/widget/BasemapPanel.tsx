@@ -5,7 +5,7 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
+import { BaseMapLayerSettings, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "@bentley/imodeljs-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-imodel-components";
 import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
@@ -78,7 +78,7 @@ export function BasemapPanel() {
   const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:ColorDialog.Title"));
   const selectedBaseMapValue = React.useMemo(() => {
     if (baseIsMap) {
-      const mapName = (selectedBaseMap! as MapLayerProps).name!;
+      const mapName = (selectedBaseMap! as MapLayerProps).name;
       const foundItem = baseMapOptions.find((value) => value.label === mapName);
       if (foundItem)
         return foundItem;
@@ -89,7 +89,10 @@ export function BasemapPanel() {
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
     ModalDialogManager.closeDialog();
     if (activeViewport) {
-      activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
+      // change color and make sure previously set transparency is not lost.
+      const viewportBase = activeViewport.displayStyle.settings.mapImagery.backgroundBase;
+      const curTransparency = viewportBase instanceof ColorDef ? viewportBase.getTransparency() : 0;
+      activeViewport.displayStyle.settings.mapImagery.backgroundBase = bgColorDef.withTransparency(curTransparency);
       activeViewport.invalidateRenderPlan();
       setSelectedBaseMap(bgColorDef.toJSON());
     }
@@ -108,14 +111,20 @@ export function BasemapPanel() {
   const handleBaseMapSelection = React.useCallback((value: ValueType<BaseOption>, action: ActionMeta<BaseOption>) => {
     if (bases && activeViewport && action.action === "select-option" && value) {
       const baseMap = bases.find((map) => map.name === (value as BaseOption).label);
+      const viewportBase = activeViewport.displayStyle.settings.mapImagery.backgroundBase;
       if (baseMap) {
         const baseProps: MapLayerProps = baseMap.toJSON();
-        activeViewport.displayStyle.changeBaseMapProps(baseProps);
+        if (viewportBase instanceof BaseMapLayerSettings) {
+          activeViewport.displayStyle.settings.mapImagery.backgroundBase = viewportBase.clone(baseProps);
+        } else {
+          activeViewport.displayStyle.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromJSON(baseProps);
+        }
         activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(baseProps);
       } else {
         const bgColorDef = ColorDef.fromJSON(bgColor);
-        activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
+        const curTransparency = viewportBase instanceof ColorDef ? viewportBase.getTransparency() : 0;
+        activeViewport.displayStyle.settings.mapImagery.backgroundBase = bgColorDef.withTransparency(curTransparency);
         activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(bgColorDef.toJSON());
       }
@@ -132,7 +141,11 @@ export function BasemapPanel() {
   const handleVisibilityChange = React.useCallback(() => {
     if (activeViewport) {
       const newState = !baseMapVisible;
-      activeViewport.displayStyle.changeBaseMapProps({ visible: newState });
+      const viewportBase = activeViewport.displayStyle.settings.mapImagery.backgroundBase;
+      // BaseMap visibility is only support when backgroundBase is an instance of BaseMapLayerSettings (i.e not a color)...
+      if (viewportBase instanceof BaseMapLayerSettings) {
+        activeViewport.displayStyle.settings.mapImagery.backgroundBase = viewportBase.clone({ visible: newState });
+      }
       activeViewport.invalidateRenderPlan();
       setBaseMapVisible(newState);
     }

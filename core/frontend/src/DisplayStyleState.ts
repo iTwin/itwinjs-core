@@ -408,37 +408,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
-  /** @internal */
-  public changeBaseMapProps(props: Partial<MapLayerProps>| ColorDef): boolean {
-    let changed = true;
-    if (props instanceof ColorDef) {
-      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
-    } else {
-      if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
-        this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
-      else {
-        changed = false;
-      }
-    }
-
-    if (changed) {
-      this._synchBackgroundMapImagery();
-    }
-    return changed;
-  }
-
-  public setBaseMapProps(props: MapLayerProps| ColorDef) {
-    if (props instanceof ColorDef) {
-      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
-    } else {
-      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromJSON(props);
-    }
-
-    this._synchBackgroundMapImagery();
-  }
-
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
@@ -450,10 +419,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
-      this._synchBackgroundMapImagery();
     } else {
-      this.changeBaseMapProps({ transparency });
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
     }
+    this._synchBackgroundMapImagery();
   }
 
   /** @internal */

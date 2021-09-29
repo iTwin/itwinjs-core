@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { BaseMapLayerSettings, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -25,9 +25,8 @@ class AttachMapLayerBaseTool extends Tool {
 
     source.validateSource().then((validation) => {
       if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
-
         if (this._isBase) {
-          vp.displayStyle.changeBaseMapProps({ ...source, subLayers: validation.subLayers });
+          vp.displayStyle.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
         } else {
           const layerSettings = source.toLayerSettings(validation.subLayers);
           if (layerSettings) {
@@ -421,7 +420,9 @@ export class MapBaseColorTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeBaseMapProps(color);
+    const viewportBase = vp.displayStyle.settings.mapImagery.backgroundBase;
+    const curTransparency = viewportBase instanceof ColorDef ? viewportBase.getTransparency() : 0;
+    vp.displayStyle.settings.mapImagery.backgroundBase = color.withTransparency(curTransparency);
     vp.invalidateRenderPlan();
 
     return true;
@@ -482,10 +483,10 @@ export class MapBaseVisibilityTool extends Tool {
    */
   public override async run(visible: boolean) {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.isSpatialView())
+    if (undefined === vp || !vp.view.isSpatialView() || vp.displayStyle.settings.mapImagery.backgroundBase instanceof ColorDef)
       return false;
 
-    vp.displayStyle.changeBaseMapProps({ visible });
+    vp.displayStyle.settings.mapImagery.backgroundBase =  vp.displayStyle.settings.mapImagery.backgroundBase.clone({ visible });
     vp.invalidateRenderPlan();
 
     return true;
