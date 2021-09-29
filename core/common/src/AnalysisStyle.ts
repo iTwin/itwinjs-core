@@ -138,7 +138,9 @@ export class AnalysisStyleThematic {
 export interface AnalysisStyleProps {
   /** @see [[AnalysisStyle.displacement]]. */
   displacement?: AnalysisStyleDisplacementProps;
-  /** @see [[AnalysisStyle.thematic]]. */
+  /** JSON representation of [[AnalysisStyle.thematic]].
+   * @note The name "scalar" is used instead of "thematic" for backwards compatibility.
+   */
   scalar?: AnalysisStyleThematicProps;
   /** @see [[AnalysisStyle.normalChannelName]]. */
   normalChannelName?: string;
