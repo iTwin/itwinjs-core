@@ -146,7 +146,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  * Arguments:
  *  * `all`: include all settings.
  *  * `imodel`: include iModel-specific settings.
- *  * `itwin`: include iTwin-specific settings.
+ *  * `project`: include iTwin-specific (formerly known as project) settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
  *  * `copy`: copy result to system clipboarad.
