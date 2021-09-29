@@ -6,13 +6,20 @@
  * @module Editing
  */
 
-import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { BeDuration, BeEvent, BentleyError } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
-import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@itwin/core-frontend";
-import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
-import { BeDuration, BeEvent, getErrorMessage } from "@itwin/core-bentley";
-import { EditTools } from "../EditTool";
+import {
+  BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
+  IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport,
+  Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport,
+} from "@itwin/core-frontend";
+import {
+  Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d,
+  Transform, Vector3d,
+} from "@itwin/core-geometry";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { EditTools } from "../EditTool";
+import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
 function translateMessageBold(key: string) { return `<b>${translateMessage(key)}:</b> `; }
@@ -960,7 +967,7 @@ export class ProjectLocationSaveTool extends Tool {
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);
