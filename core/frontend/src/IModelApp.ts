@@ -222,7 +222,7 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[I18N]] for this session. */
+  /** The [[i18n]] for this session. */
   public static get i18n(): I18N { return this._i18n; }
   /** The [[SettingsAdmin]] for this session. */
   public static get settings(): SettingsAdmin { return this._settings; }
