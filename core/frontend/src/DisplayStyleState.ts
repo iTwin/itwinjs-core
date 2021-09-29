@@ -142,8 +142,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
-  /** @internal */
-  public get backgroundMapBase(): BaseLayerSettings | undefined { return this.settings.mapImagery.backgroundBase; }
+  /** @beta */
+  public get backgroundMapBase(): BaseLayerSettings { return this.settings.mapImagery.backgroundBase; }
+
+  /** @beta */
+  public set backgroundMapBase(base: BaseLayerSettings) {
+    this.settings.mapImagery.backgroundBase = base;
+    this._synchBackgroundMapImagery();
+  }
 
   /** @internal */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }

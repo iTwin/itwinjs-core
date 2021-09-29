@@ -111,20 +111,19 @@ export function BasemapPanel() {
   const handleBaseMapSelection = React.useCallback((value: ValueType<BaseOption>, action: ActionMeta<BaseOption>) => {
     if (bases && activeViewport && action.action === "select-option" && value) {
       const baseMap = bases.find((map) => map.name === (value as BaseOption).label);
-      const viewportBase = activeViewport.displayStyle.settings.mapImagery.backgroundBase;
       if (baseMap) {
         const baseProps: MapLayerProps = baseMap.toJSON();
-        if (viewportBase instanceof BaseMapLayerSettings) {
-          activeViewport.displayStyle.settings.mapImagery.backgroundBase = viewportBase.clone(baseProps);
+        if (activeViewport.displayStyle.backgroundMapBase instanceof BaseMapLayerSettings) {
+          activeViewport.displayStyle.backgroundMapBase = activeViewport.displayStyle.backgroundMapBase.clone(baseProps);
         } else {
-          activeViewport.displayStyle.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromJSON(baseProps);
+          activeViewport.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON(baseProps);
         }
         activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(baseProps);
       } else {
         const bgColorDef = ColorDef.fromJSON(bgColor);
-        const curTransparency = viewportBase instanceof ColorDef ? viewportBase.getTransparency() : 0;
-        activeViewport.displayStyle.settings.mapImagery.backgroundBase = bgColorDef.withTransparency(curTransparency);
+        const curTransparency = activeViewport.displayStyle.backgroundMapBase instanceof ColorDef ? activeViewport.displayStyle.backgroundMapBase.getTransparency() : 0;
+        activeViewport.displayStyle.backgroundMapBase = bgColorDef.withTransparency(curTransparency);
         activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(bgColorDef.toJSON());
       }
@@ -141,10 +140,9 @@ export function BasemapPanel() {
   const handleVisibilityChange = React.useCallback(() => {
     if (activeViewport) {
       const newState = !baseMapVisible;
-      const viewportBase = activeViewport.displayStyle.settings.mapImagery.backgroundBase;
       // BaseMap visibility is only support when backgroundBase is an instance of BaseMapLayerSettings (i.e not a color)...
-      if (viewportBase instanceof BaseMapLayerSettings) {
-        activeViewport.displayStyle.settings.mapImagery.backgroundBase = viewportBase.clone({ visible: newState });
+      if (activeViewport.displayStyle.backgroundMapBase instanceof BaseMapLayerSettings) {
+        activeViewport.displayStyle.backgroundMapBase = activeViewport.displayStyle.backgroundMapBase.clone({ visible: newState });
         activeViewport.invalidateRenderPlan();
       }
       setBaseMapVisible(newState);
