@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Removed `test` and `test-tsnode` scripts from betools. Please use mocha directly instead.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

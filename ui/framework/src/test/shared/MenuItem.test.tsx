@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BadgeType } from "@bentley/ui-abstract";
-import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
+import { BadgeType } from "@itwin/appui-abstract";
+import { ContextMenuItem, ContextSubMenu } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../ui-framework/shared/MenuItem";
+import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../appui-react/shared/MenuItem";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("MenuItem", () => {

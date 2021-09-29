@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
-import { SelectTool } from "@bentley/imodeljs-markup";
+import { EventHandled, IModelApp } from "@itwin/core-frontend";
+import { SelectTool } from "@itwin/core-markup";
 
 async function getSvgFile(uri: string): Promise<string> {
   const xhr = new XMLHttpRequest();

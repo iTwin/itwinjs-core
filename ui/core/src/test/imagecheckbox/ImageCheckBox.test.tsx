@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ImageCheckBox } from "../../ui-core";
+import { ImageCheckBox } from "../../core-react";
 
 describe("<ImageCheckBox />", () => {
   it("should render", () => {

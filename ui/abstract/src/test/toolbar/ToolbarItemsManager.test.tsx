@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition, ToolbarItemsManager, ToolbarItemUtilities,
-} from "../../ui-abstract";
+} from "../../appui-abstract";
 
 describe("ToolbarItemsManager", () => {
 

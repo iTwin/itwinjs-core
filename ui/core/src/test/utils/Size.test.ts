@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Size } from "../../ui-core";
+import { Size } from "../../core-react";
 
 describe("Size", () => {
   it("unspecified size should be 0", () => {

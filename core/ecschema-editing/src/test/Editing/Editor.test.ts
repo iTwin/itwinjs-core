@@ -6,7 +6,7 @@ import { expect } from "chai";
 import {
   ECVersion, EntityClass, PrimitiveType, Schema,
   SchemaContext, SchemaItemKey, SchemaKey,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 /* eslint-disable @typescript-eslint/naming-convention */

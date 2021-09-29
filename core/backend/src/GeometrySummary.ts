@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { getErrorMessage, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { getErrorMessage, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
   InterpolationCurve3d,
   LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
   TransitionSpiral3d, UVSelect,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IpcWebSocketBackend } from "@bentley/imodeljs-common";
+import { IpcWebSocketBackend } from "@itwin/core-common";
 import { MobileDevice, MobileHost, MobileHostOpts } from "./MobileHost";
 
 /** @beta */

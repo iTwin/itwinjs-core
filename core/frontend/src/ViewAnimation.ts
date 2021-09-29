@@ -6,10 +6,10 @@
  * @module Views
  */
 
-import { EasingFunction } from "@bentley/imodeljs-common";
+import { EasingFunction } from "@itwin/core-common";
 import { ViewStatus } from "./ViewStatus";
 import { MarginPercent } from "./MarginPercent";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new

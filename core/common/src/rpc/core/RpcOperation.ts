@@ -6,12 +6,12 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { RpcInvocationCallback } from "./RpcInvocation";
 import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
 import {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
@@ -34,7 +34,7 @@ export class RpcOperationPolicy {
   public sentCallback: RpcRequestCallback_T = (_request) => { };
 
   /** Called for every operation invocation on the backend. */
-  public invocationCallback: RpcInvocationCallback_T = (_invocation) => { };
+  public invocationCallback: RpcInvocationCallback = (_invocation) => { };
 
   /**
    * Determines if caching is permitted for an operation response.

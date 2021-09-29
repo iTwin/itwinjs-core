@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { IModelHost, IModelHostConfiguration, KnownLocations } from "../../IModelHost";
 import { BriefcaseManager } from "../../BriefcaseManager";
-import { RpcRegistry } from "@bentley/imodeljs-common";
+import { RpcRegistry } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Schemas } from "../../Schema";
 import sinon = require("sinon");

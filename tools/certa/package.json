@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/certa",
-  "version": "3.0.0-dev.68",
+  "name": "@itwin/certa",
+  "version": "3.0.0-dev.71",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -42,8 +42,8 @@
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/detect-port": "~1.1.0",
     "@types/express": "^4.16.1",
@@ -53,14 +53,14 @@
     "@types/puppeteer": "2.0.1",
     "@types/uuid": "^7.0.2",
     "@types/yargs": "^12.0.5",
-    "electron": "^11.1.0",
+    "electron": "^14.0.0",
     "eslint": "^7.11.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"
   },
   "peerDependencies": {
-    "electron": "^11.1.0"
+    "electron": "^14.0.0"
   },
   "peerDependenciesMeta": {
     "electron": {
@@ -69,9 +69,9 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-var-requires": "off",

@@ -1,0 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+$close-button-size: 35px;
+
+.uifw-statusbar-sticky-message {
+  max-height: 100px;
+  transition: max-height 0.5s ease;
+
+  &.uifw-closing {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .uifw-statusbar-sticky-close {
+    min-width:    $close-button-size;
+    min-height:   $close-button-size;
+  }
+}
+

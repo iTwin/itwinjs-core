@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@bentley/imodeljs-common";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@itwin/core-common";
 import { CloudStorageService, CloudStorageServiceCredentials, CloudStorageUploadOptions } from "./CloudStorageBackend";
 
 declare class OSS {

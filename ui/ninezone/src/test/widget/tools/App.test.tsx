@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { AppButton } from "../../../ui-ninezone";
+import { AppButton } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<AppButton  />", () => {

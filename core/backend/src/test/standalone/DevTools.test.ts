@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as os from "os";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { DevTools, DevToolsStatsFormatter } from "../../imodeljs-backend";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { DevTools, DevToolsStatsFormatter } from "../../core-backend";
 
 interface StringIndexedObject<T> {
   [index: string]: T;

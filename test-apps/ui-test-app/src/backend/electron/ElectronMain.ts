@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
 
 const mainWindowName = "mainWindow";

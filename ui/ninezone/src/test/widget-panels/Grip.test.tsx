@@ -5,13 +5,13 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@bentley/ui-core";
+import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, NineZoneProvider, NineZoneProviderProps } from "../Providers";
 
 describe("WidgetPanelGrip", () => {

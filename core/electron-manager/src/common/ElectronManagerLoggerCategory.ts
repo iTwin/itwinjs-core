@@ -7,7 +7,7 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-backend` prefix.
+ * @note All logger categories in this package start with the `core-backend` prefix.
  * @see [Logger]($bentley)
  * @public
  */

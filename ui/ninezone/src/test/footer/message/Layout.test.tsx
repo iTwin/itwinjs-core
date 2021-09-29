@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MessageLayout } from "../../../ui-ninezone";
+import { MessageLayout } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<MessageLayout />", () => {

@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { ViewFlagOverrides } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";

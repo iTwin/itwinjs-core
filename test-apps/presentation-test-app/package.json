@@ -30,24 +30,24 @@
     "cover": ""
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
-    "@bentley/express-server": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
+    "@itwin/express-server": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
-    "@bentley/presentation-backend": "workspace:*",
-    "@bentley/presentation-frontend": "workspace:*",
-    "@bentley/presentation-components": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
-    "@bentley/ui-components": "workspace:*",
-    "@bentley/ui-imodel-components": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@itwin/presentation-backend": "workspace:*",
+    "@itwin/presentation-frontend": "workspace:*",
+    "@itwin/presentation-components": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-react": "workspace:*",
+    "@itwin/components-react": "workspace:*",
+    "@itwin/imodel-components-react": "workspace:*",
     "@itwin/itwinui-css": "^0.27.0",
     "@itwin/itwinui-react": "^1.16.2",
     "react": "^17.0.0",
@@ -57,8 +57,8 @@
     "semver": "^5.5.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/bunyan": "^1.8.4",
     "@types/react": "^17.0.0",
@@ -69,7 +69,7 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^11.1.0",
+    "electron": "^14.0.0",
     "eslint": "^7.11.0",
     "npm-run-all": "^4.1.5",
     "postcss-flexbugs-fixes": "4.1.0",
@@ -91,9 +91,9 @@
   ],
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/ui",
+    "extends": "plugin:@itwin/ui",
     "parserOptions": {
       "project": [
         "tsconfig.json",

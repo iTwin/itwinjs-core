@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fix frustum translate method.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

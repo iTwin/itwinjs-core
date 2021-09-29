@@ -6,7 +6,7 @@
  * @module Diagnostic
  */
 
-import { AnyClass, AnyECType, AnyProperty, CustomAttributeContainerProps, RelationshipConstraint, Schema, SchemaItem } from "@bentley/ecschema-metadata";
+import { AnyClass, AnyECType, AnyProperty, CustomAttributeContainerProps, RelationshipConstraint, Schema, SchemaItem } from "@itwin/ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/no-shadow */
 

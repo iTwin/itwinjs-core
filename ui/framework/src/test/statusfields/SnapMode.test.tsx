@@ -6,13 +6,13 @@ import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import * as sinon from "sinon";
-import { SnapMode } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
-import { FooterPopup } from "@bentley/ui-ninezone";
+import { SnapMode } from "@itwin/core-frontend";
+import { WidgetState } from "@itwin/appui-abstract";
+import { FooterPopup } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
   WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("SnapModeField", () => {

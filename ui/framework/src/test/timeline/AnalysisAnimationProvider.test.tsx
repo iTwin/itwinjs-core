@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { AnalysisStyle } from "@bentley/imodeljs-common";
-import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
-import { AnalysisAnimationTimelineDataProvider } from "../../ui-framework/timeline/AnalysisAnimationProvider";
+import { AnalysisStyle } from "@itwin/core-common";
+import { ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { AnalysisAnimationTimelineDataProvider } from "../../appui-react/timeline/AnalysisAnimationProvider";
 
 describe("AnalysisAnimationTimelineDataProvider", () => {
 

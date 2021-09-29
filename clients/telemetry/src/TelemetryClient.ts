@@ -6,8 +6,8 @@
  * @module Telemetry
  */
 
-import { getErrorProps, GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { getErrorProps, GuidString, Logger } from "@itwin/core-bentley";
+import { RpcActivity } from "@itwin/core-common";
 import { TelemetryClientLoggerCategory } from "./TelemetryClientLoggerCategory";
 
 /**
@@ -56,7 +56,7 @@ export class TelemetryEvent {
 
 /** @alpha */
 export interface TelemetryClient {
-  postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+  postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 /** @alpha */
@@ -67,7 +67,7 @@ export class TelemetryManager {
     this._clients = new Set<TelemetryClient>(clients);
   }
 
-  public async postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void> {
+  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
     const postPerClient = async (subClient: TelemetryClient) => {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);

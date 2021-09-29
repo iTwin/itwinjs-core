@@ -7,12 +7,12 @@
  */
 
 import { join } from "path";
-import { AuthStatus, BeEvent, ClientRequestContext, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
-  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, SessionProps, StorageValue,
+} from "@itwin/core-common";
+import { AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -20,7 +20,7 @@ import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /** @internal */
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
   protected _accessToken?: AccessToken;
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
@@ -34,10 +34,6 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     this.config = config;
   }
 
-  public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
-  }
-
   public setAccessToken(token?: AccessToken) {
     if (token === this._accessToken)
       return;
@@ -45,13 +41,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     NativeHost.onUserStateChanged.raiseEvent(token);
   }
 
-  public async getAccessToken(): Promise<AccessToken> {
-    if (!this.isAuthorized)
+  public async getAccessToken(): Promise<AccessToken | undefined> {
+    if (!this._accessToken)
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken!;
+    return this._accessToken;
   }
-
-  public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
 
   public async initialize(config?: NativeAppAuthorizationConfiguration) {
     this.config = config ?? this.config;
@@ -69,8 +63,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  public async setAccessTokenProps(token: AccessTokenProps) {
-    NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
+  public async setAccessToken(token: AccessToken) {
+    NativeHost.authorization.setAccessToken(token);
+  }
+  public async getAccessToken(): Promise<AccessToken | undefined> {
+    return NativeHost.authorization.getAccessToken();
   }
   public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
     IModelHost.session.applicationId = props.applicationId;
@@ -85,9 +82,6 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
   public async signOut(): Promise<void> {
     return NativeHost.authorization.signOut();
-  }
-  public async getAccessTokenProps(): Promise<AccessTokenProps> {
-    return (await NativeHost.authorization.getAccessToken()).toJSON();
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -136,7 +130,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAuthorizedContext());
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAccessToken());
   }
 
   public async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
@@ -239,7 +233,7 @@ export class NativeHost {
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
       this.onUserStateChanged.addListener((token?: AccessToken) =>
-        NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+        NativeHost.notifyNativeFrontend("notifyUserStateChanged", token));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 

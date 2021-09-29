@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d } from "@bentley/geometry-core";
-import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";

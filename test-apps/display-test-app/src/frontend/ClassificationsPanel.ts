@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStringsOrUndefined, GuidString } from "@bentley/bentleyjs-core";
-import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@bentley/frontend-devtools";
+import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
+import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
   CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -33,10 +33,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private _selectedSpatialClassifiersIndex: number = 0;
   private _modelComboBox?: ComboBox;
   private _models: { [modelId: string]: ModelProps } = {};
-  // for SVT_ITWIN_ID to work it should be define in your environment and you should be in signin mode with correct BUDDI region set
-  //  SVT_STANDALONE_SIGNIN=true
-  //  IMJS_BUDDI_RESOLVE_URL_USING_REGION=102
-  //  SVT_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
+  // for IMJS_ITWIN_ID to work it should be define in your environment and you should be in signin mode
+  //  IMJS_STANDALONE_SIGNIN=true
+  //  IMJS_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
   private _iTwinId: GuidString | undefined = DisplayTestApp.iTwinId;
 
   private get _selectedClassifier(): SpatialClassifier | undefined {
@@ -102,7 +101,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
         available = await queryRealityData({ iTwinId: this._iTwinId, range });
     } catch (_error) {
       // eslint-disable-next-line no-console
-      console.error("Error in query RealitydataList, you need to set SVT_STANDALONE_SIGNIN=true, and are your SVT_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");
+      console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID set?");
     }
     for (const entry of available) {
       const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;

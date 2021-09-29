@@ -15,21 +15,21 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-transformer": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "fs-extra": "^8.1.0",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/fs-extra": "^4.0.7",
@@ -43,8 +43,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

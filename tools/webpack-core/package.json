@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/webpack-tools-core",
-  "version": "3.0.0-dev.68",
+  "name": "@itwin/core-webpack-tools",
+  "version": "3.0.0-dev.71",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -38,8 +38,8 @@
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "14.14.31",
@@ -63,9 +63,9 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "@typescript-eslint/no-misused-promises": "off",
       "@typescript-eslint/no-var-requires": "off",
@@ -80,13 +80,13 @@
       "lib/test/coverage/**/*"
     ],
     "reporter": [
-      "node_modules/@bentley/build-tools/mocha-reporter"
+      "node_modules/@itwin/build-tools/mocha-reporter"
     ],
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"
     ]
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

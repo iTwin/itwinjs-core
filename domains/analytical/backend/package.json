@@ -1,11 +1,11 @@
 {
-  "name": "@bentley/analytical-backend",
-  "version": "3.0.0-dev.68",
+  "name": "@itwin/analytical-backend",
+  "version": "3.0.0-dev.71",
   "main": "lib/analytical-backend.js",
   "typings": "lib/analytical-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -32,20 +32,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.68"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
@@ -66,12 +66,12 @@
     "@bentley/analytical-schema": "~1.0.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

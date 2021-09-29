@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/presentation-frontend",
-  "version": "3.0.0-dev.68",
+  "name": "@itwin/presentation-frontend",
+  "version": "3.0.0-dev.71",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/presentation-frontend.js",
   "typings": "lib/presentation-frontend",
@@ -40,24 +40,24 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.68",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.68"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.71",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.71",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -87,11 +87,11 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 100,
     "functions": 100,
-    "branches": 100,
+    "branches": 98,
     "lines": 100,
     "require": [
       "jsdom-global/register"
@@ -104,8 +104,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MapUrlDialog } from "../ui/widget/MapUrlDialog";
 import { TestUtils } from "./TestUtils";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { Select } from "@itwin/itwinui-react";
 
 describe("MapUrlDialog", () => {

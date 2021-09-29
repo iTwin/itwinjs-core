@@ -1,11 +1,11 @@
 # UiItemsProvider
 
-The [UiItemsProvider]($ui-abstract:UiItemsProvider) classes and interfaces are used for specifying UI items to be provided at runtime.
+The [UiItemsProvider]($appui-abstract:UiItemsProvider) classes and interfaces are used for specifying UI items to be provided at runtime.
 Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage. Widgets may also be provided at runtime.
 
 ## UiItemsProvider Interface
 
-Below is an excerpt from the [UiItemsProvider]($ui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface.
+Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface.
 
 ```ts
 export interface UiItemsProvider {
@@ -95,7 +95,7 @@ class TestUiProvider implements UiItemsProvider {
 
 ## UiItemsManager Class
 
-The [UiItemsManager]($ui-abstract) class has a few responsibilities,
+The [UiItemsManager]($appui-abstract) class has a few responsibilities,
 
 1. Used to register UiItemsProviders
 2. Informs listeners that the list of registered UiItemsProviders has changed when a provider is registered or unregistered.
@@ -109,12 +109,12 @@ UiItemsManager.register( new TestUiProvider());
 
 ## UiItemsArbiter
 
-The [UiItemsArbiter]($ui-abstract) class is used by the application to
+The [UiItemsArbiter]($appui-abstract) class is used by the application to
 arbitrate or negotiate between the application and a UiItemsProvider.
 
 The application can either allow, disallow or update provided items from a UiItemsProvider.
-These actions are defined by [UiItemsApplicationAction]($ui-abstract).
-The application implements the [UiItemsApplication]($ui-abstract) and provides
+These actions are defined by [UiItemsApplicationAction]($appui-abstract).
+The application implements the [UiItemsApplication]($appui-abstract) and provides
 one or more of the following optional functions to validate items:
 
 - validateToolbarButtonItem -  Validate and optionally update a Toolbar button item
@@ -129,7 +129,7 @@ which may only be set once:
 UiItemsArbiter.uiItemsApplication = new ExampleUiItemsApplication();
 ```
 
-A [UiItemsProvider]($ui-abstract) can listen for the actions taken by the application by defining the following optional methods:
+A [UiItemsProvider]($appui-abstract) can listen for the actions taken by the application by defining the following optional methods:
 
 - onToolbarButtonItemArbiterChange - Called if the application changes the Toolbar button item
 - onStatusBarItemArbiterChange - Called if the application changes the StatusBar item
@@ -181,4 +181,4 @@ class ExampleUiItemsApplication implements UiItemsApplication {
 
 ## API Reference
 
-- [UiItemsProvider]($ui-abstract:UiItemsProvider)
+- [UiItemsProvider]($appui-abstract:UiItemsProvider)

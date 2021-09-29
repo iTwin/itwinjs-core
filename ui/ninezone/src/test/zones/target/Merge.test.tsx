@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MergeTarget } from "../../../ui-ninezone";
+import { MergeTarget } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<MergeTarget />", () => {

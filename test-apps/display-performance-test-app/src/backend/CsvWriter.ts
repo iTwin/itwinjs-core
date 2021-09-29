@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { IModelJsFs } from "@bentley/imodeljs-backend";
+import { IModelJsFs } from "@itwin/core-backend";
 
 export function createFilePath(filePath: string) {
   // ###TODO: Make this function platform independent
