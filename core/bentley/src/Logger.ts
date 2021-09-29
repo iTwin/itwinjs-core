@@ -101,7 +101,7 @@ export class Logger {
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
     const doLog = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
-      console.log(`${level} | ${category} | ${message}${Logger.formatMetaData(metaData)}`); // eslint-disable-line no-console
+      console.log(`${level} | ${category} | ${message}${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
 
     Logger.initialize(doLog("Error"), doLog("Warning"), doLog("Info"), doLog("Trace"));
   }
@@ -115,10 +115,8 @@ export class Logger {
     return Logger._logExceptionCallstacks;
   }
 
-  /** Format the metadata for a log message.
-   * @returns a JSON string for metadata, including static metadata.
-   */
-  public static formatMetaData(metaData?: LoggingMetaData): string {
+  /** stringify the metadata for a log message by merging the supplied metadata with all static metadata into one object that is then `JSON.stringify`ed. */
+  public static stringifyMetaData(metaData?: LoggingMetaData): string {
     const metaObj = { ...BentleyError.getMetaData(metaData) };
     for (const meta of Logger.staticMetaData) {
       const val = BentleyError.getMetaData(meta[1]);

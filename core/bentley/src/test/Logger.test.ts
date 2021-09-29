@@ -88,7 +88,7 @@ describe("Logger", () => {
     const meta1Props = `"prop1":"test1","prop2":"test2","prop3":"test3"`;
     const meta2Props = `"value2":"v2"`;
 
-    let out = Logger.formatMetaData({ a: "hello" });
+    let out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps}}`);
 
     Logger.staticMetaData.set("meta1", () => ({
@@ -97,29 +97,29 @@ describe("Logger", () => {
       prop3: "test3",
     })
     );
-    out = Logger.formatMetaData({ a: "hello" });
+    out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps},${meta1Props}}`);
 
     Logger.staticMetaData.set("meta2", { value2: "v2" });
 
-    out = Logger.formatMetaData({ a: "hello" });
+    out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps},${meta1Props},${meta2Props}}`);
 
-    out = Logger.formatMetaData();
+    out = Logger.stringifyMetaData();
     assert.equal(out, `{${meta1Props},${meta2Props}}`);
 
-    out = Logger.formatMetaData(() => ({ a: "hello" }));
+    out = Logger.stringifyMetaData(() => ({ a: "hello" }));
     assert.equal(out, `{${aProps},${meta1Props},${meta2Props}}`);
 
     Logger.staticMetaData.delete("meta1");
-    out = Logger.formatMetaData({ a: "hello" });
+    out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps},${meta2Props}}`);
 
     Logger.staticMetaData.delete("meta2");
-    out = Logger.formatMetaData({ a: "hello" });
+    out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps}}`);
 
-    out = Logger.formatMetaData();
+    out = Logger.stringifyMetaData();
     assert.equal(out, "");
   });
 
