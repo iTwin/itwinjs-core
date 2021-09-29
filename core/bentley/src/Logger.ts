@@ -116,16 +116,16 @@ export class Logger {
   }
 
   /** Format the metadata for a log message.
+   * @returns a JSON string for metadata, including static metadata.
    */
   public static formatMetaData(metaData?: LoggingMetaData): string {
-    const metaObj = BentleyError.getMetaData(metaData);
-    let msg = metaObj ? ` ${JSON.stringify(metaObj)}` : "";
+    const metaObj = { ...BentleyError.getMetaData(metaData) };
     for (const meta of Logger.staticMetaData) {
       const val = BentleyError.getMetaData(meta[1]);
       if (val)
-        msg = `${msg},${meta[0]}:${JSON.stringify(val)}`;
+        Object.assign(metaObj, val);
     }
-    return msg;
+    return Object.keys(metaObj).length > 0 ? JSON.stringify(metaObj) : "";
   }
 
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */

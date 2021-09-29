@@ -83,13 +83,13 @@ describe("Logger", () => {
     assert.isFalse(Logger.isEnabled("test", LogLevel.Trace));
   });
 
-  it("static logger metadata", () => {
-    const expectedA = `{"a":"hello"}`;
-    const expectedMeta1 = `meta1:{"prop1":"test1","prop2":"test2","prop3":"test3"}`;
-    const expectedMeta2 = `meta2:{"value2":"v2"}`;
+  it.only("static logger metadata", () => {
+    const aProps = `"a":"hello"`;
+    const meta1Props = `"prop1":"test1","prop2":"test2","prop3":"test3"`;
+    const meta2Props = `"value2":"v2"`;
 
     let out = Logger.formatMetaData({ a: "hello" });
-    assert.equal(out, ` ${expectedA}`);
+    assert.equal(out, `{${aProps}}`);
 
     Logger.staticMetaData.set("meta1", () => ({
       prop1: "test1",
@@ -98,22 +98,29 @@ describe("Logger", () => {
     })
     );
     out = Logger.formatMetaData({ a: "hello" });
-    assert.equal(out, ` ${expectedA},${expectedMeta1}`);
+    assert.equal(out, `{${aProps},${meta1Props}}`);
 
     Logger.staticMetaData.set("meta2", { value2: "v2" });
 
     out = Logger.formatMetaData({ a: "hello" });
-    assert.equal(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
+    assert.equal(out, `{${aProps},${meta1Props},${meta2Props}}`);
+
+    out = Logger.formatMetaData();
+    assert.equal(out, `{${meta1Props},${meta2Props}}`);
 
     out = Logger.formatMetaData(() => ({ a: "hello" }));
-    assert.equal(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
+    assert.equal(out, `{${aProps},${meta1Props},${meta2Props}}`);
+
+    Logger.staticMetaData.delete("meta1");
+    out = Logger.formatMetaData({ a: "hello" });
+    assert.equal(out, `{${aProps},${meta2Props}}`);
 
     Logger.staticMetaData.delete("meta2");
     out = Logger.formatMetaData({ a: "hello" });
-    assert.equal(out, ` ${expectedA},${expectedMeta1}`);
-    Logger.staticMetaData.delete("meta1");
-    out = Logger.formatMetaData({ a: "hello" });
-    assert.equal(out, ` ${expectedA}`);
+    assert.equal(out, `{${aProps}}`);
+
+    out = Logger.formatMetaData();
+    assert.equal(out, "");
   });
 
   it("levels", () => {
