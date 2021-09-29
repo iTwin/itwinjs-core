@@ -24,9 +24,13 @@ export type TextureOwnership = TextureCacheKey | "external";
 
 export type TextureImageSource = HTMLImageElement | HTMLCanvasElement | ImageBuffer;
 
+export interface TextureImage {
+  source: TextureImageSource;
+  transparency?: TextureTransparency;
+}
+
 export interface CreateTextureArgs {
   type?: RenderTexture.Type;
-  image: TextureImageSource;
-  transparency?: TextureTransparency;
+  image: TextureImage;
   ownership?: TextureOwnership;
 }

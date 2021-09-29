@@ -22,7 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { RenderSystem, OldTextureImage } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
@@ -1027,7 +1027,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
-    const promises = new Array<Promise<TextureImage | undefined>>();
+    const promises = new Array<Promise<OldTextureImage | undefined>>();
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 

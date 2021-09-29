@@ -32,6 +32,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { CreateTextureArgs } from "./RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -53,11 +54,11 @@ export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 /** Describes a texture loaded from an HTMLImageElement
  * @internal
  */
-export interface TextureImage {
+export interface OldTextureImage {
   /** The HTMLImageElement containing the texture's image data */
-  image: HTMLImageElement | undefined;
+  image: HTMLImageElement;
   /** The format of the texture's image data */
-  format: ImageSourceFormat | undefined;
+  format: ImageSourceFormat;
 }
 
 /** @internal */
@@ -499,7 +500,7 @@ export abstract class RenderSystem implements IDisposable {
       const image = await this.loadTextureImage(id, iModel);
       if (undefined !== image) {
         // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
-        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format, iModel, new RenderTexture.Params(id.toString()));
+        texture = this.createTextureFromImage(image.image, ImageSourceFormat.Png === image.format, iModel, new RenderTexture.Params(id.toString()));
       }
     }
 
@@ -514,7 +515,7 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderSystem.loadTexture]]
    * @internal
    */
-  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined> {
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
       return undefined;
@@ -558,6 +559,10 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
   public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
+
+  public createTexture(_args: CreateTextureArgs): RenderTexture | undefined {
+    return undefined;
+  }
 
   /** Create a new texture from a cube of HTML images.
    * @internal
