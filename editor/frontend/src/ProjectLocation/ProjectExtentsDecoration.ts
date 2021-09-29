@@ -7,20 +7,19 @@
  */
 
 import { BeDuration, BeEvent, BentleyError } from "@itwin/core-bentley";
-import {
-import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
-  Transform, Vector3d,
-} from "@bentley/geometry-core";
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
-import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@itwin/core-frontend";
-import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 import {
   BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
   IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport,
   Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport,
-} from "@bentley/imodeljs-frontend";
-import { EditTools } from "../EditTool";
+} from "@itwin/core-frontend";
+import {
+  Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d,
+  Transform, Vector3d,
+} from "@itwin/core-geometry";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { EditTools } from "../EditTool";
+import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
 function translateMessageBold(key: string) { return `<b>${translateMessage(key)}:</b> `; }

@@ -5,6 +5,7 @@
 import { assert } from "chai";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
 import { using } from "../Disposable";
+import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
 
 let outerr: any[];

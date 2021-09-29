@@ -112,7 +112,6 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
-import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GlobeMode } from '@itwin/core-common';
 import { GltfBufferData } from '@itwin/core-common';
 import { GltfBufferView } from '@itwin/core-common';
@@ -156,6 +155,7 @@ import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
+import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -6496,13 +6496,13 @@ export class NativeAppLogger {
     // (undocumented)
     static initialize(): void;
     // (undocumented)
-    static logError(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logError(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logInfo(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logInfo(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logTrace(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logTrace(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logWarning(category: string, message: string, metaData: LoggingMetaData): void;
     }
 
 // @public
