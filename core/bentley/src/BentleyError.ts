@@ -315,8 +315,7 @@ export enum IModelHubStatus {
 
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
-  // SWB What does context mean here?
-  ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
+  ITwinDoesNotExist = IMODELHUBERROR_BASE + 47,
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
@@ -686,8 +685,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.FailedToGetITwinById: return "Failed to query iTwin by its id";
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
-      // SWB What does context mean here?
-      case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
+      case IModelHubStatus.ITwinDoesNotExist: return "ITwin does not exist";
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";

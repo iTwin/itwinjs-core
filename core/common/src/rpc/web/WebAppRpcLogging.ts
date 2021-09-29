@@ -59,8 +59,8 @@ export class WebAppRpcLogging {
 
     const tokens = path.split("/");
     for (let i = 0; i !== tokens.length; ++i) {
-      // SWB How is this regex being used, what else needs to be renamed to match it?
-      if ((/^context$/i).test(tokens[i])) {
+      // For backwards compatibility, find old "context" on current "iTwin" terminology
+      if ((/^context$/i).test(tokens[i]) || (/^itwin$/i).test(tokens[i])) {
         iTwinId = tokens[i + 1] || "";
       }
 
