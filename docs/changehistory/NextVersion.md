@@ -695,6 +695,9 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ----------------------------------- | -------------------------------------------- |
 | `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
 | `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
+| `BackendAuthorizationClient`        | *removed*                                    |
+| `DelegationAuthorizationClient`     | *removed*                                    |
+| `IntrospectionClient`               | moved to iTwin/auth-clients                  |
 
 ### @itwin/appui-abstract
 
@@ -933,6 +936,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ---------------------------------- | ------------------------------ |
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
+
+### @bentley/frontend-authorization-client
+
+| Removed                            | Replacement                    |
+| ---------------------------------- | ------------------------------ |
+| `FrontendAuthorizationClient`      | *removed*                      |
 
 <!---
 User Interface Changes - section to comment below

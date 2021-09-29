@@ -40,7 +40,7 @@ export interface BrowserAuthorizationCallbackHandlerConfiguration {
 }
 
 // @beta (undocumented)
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements AuthorizationClient, IDisposable {
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -123,21 +123,13 @@ export class BrowserAuthorizationLogger implements Logger {
     warn(message?: any, ...optionalParams: any[]): void;
 }
 
-// @beta (undocumented)
-export interface FrontendAuthorizationClient extends AuthorizationClient {
-    readonly hasSignedIn: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(): Promise<void>;
-    signOut(): Promise<void>;
-}
-
 // @beta
 export enum FrontendAuthorizationClientLoggerCategory {
     Authorization = "frontend-authorization-client.Authorization"
 }
 
 // @beta
-export const isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient;
+export const isBrowserAuthorizationClient: (client: AuthorizationClient | undefined) => client is BrowserAuthorizationClient;
 
 // @beta (undocumented)
 export enum OidcCallbackResponseMode {

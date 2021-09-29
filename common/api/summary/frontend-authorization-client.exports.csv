@@ -8,7 +8,6 @@ beta;BrowserAuthorizationClientConfiguration
 internal;BrowserAuthorizationClientRedirectState
 public;BrowserAuthorizationClientRequestOptions
 beta;BrowserAuthorizationLogger 
-beta;FrontendAuthorizationClient 
 beta;FrontendAuthorizationClientLoggerCategory
-beta;isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
+beta;isBrowserAuthorizationClient: (client: AuthorizationClient | undefined) => client is BrowserAuthorizationClient
 beta;OidcCallbackResponseMode
