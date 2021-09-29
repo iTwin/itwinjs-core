@@ -4,8 +4,8 @@
 
 ```ts
 
-import { GuidString } from '@bentley/bentleyjs-core';
-import { RpcActivity } from '@bentley/imodeljs-common';
+import { GuidString } from '@itwin/core-bentley';
+import { RpcActivity } from '@itwin/core-common';
 
 // @alpha
 export class ClientTelemetryEvent extends TelemetryEvent {

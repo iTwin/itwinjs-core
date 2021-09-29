@@ -5,12 +5,12 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { AccessToken, DbResult, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, GuidString, Id64String } from "@itwin/core-bentley";
+import { IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@itwin/core-common";
 import {
   BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

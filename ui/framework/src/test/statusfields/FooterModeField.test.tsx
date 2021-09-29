@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+import { WidgetState } from "@itwin/appui-abstract";
+import { FooterSeparator } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("FooterModeField", () => {

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, assert, BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, assert, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks } from "openid-client";
 import * as os from "os";

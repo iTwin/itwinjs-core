@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { compareStrings, getErrorMessage } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
+import { compareStrings, getErrorMessage } from "@itwin/core-bentley";
+import { Point2d } from "@itwin/core-geometry";
 import {
   BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";

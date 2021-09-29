@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
   ActionItemButton, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
   NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewportControl as App_IModelViewport } from "../contentviews/IModelViewport";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";

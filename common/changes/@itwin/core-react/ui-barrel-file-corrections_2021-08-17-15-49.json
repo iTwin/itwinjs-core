@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Add missing public/beta types to the barrel file.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

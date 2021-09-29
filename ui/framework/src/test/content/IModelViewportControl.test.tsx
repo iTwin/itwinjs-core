@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
 import { render } from "@testing-library/react";
-import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, IModelViewportControl, IModelViewportControlOptions,
   NavigationWidget, SupportsViewSelectorChange, Widget, Zone,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;

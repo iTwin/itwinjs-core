@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { GeoServiceStatus } from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+import { GeoServiceStatus } from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 
 /** @public */
 export enum GeoCoordStatus {

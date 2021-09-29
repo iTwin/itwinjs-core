@@ -8,8 +8,8 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { ThemedEnumEditor } from "../../ui-components/editors/ThemedEnumEditor";
+import { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { ThemedEnumEditor } from "../../components-react/editors/ThemedEnumEditor";
 import TestUtils from "../TestUtils";
 
 describe("<ThemedEnumEditor />", () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LoadingPrompt } from "../../ui-core";
+import { LoadingPrompt } from "../../core-react";
 
 describe("<LoadingPrompt />", () => {
   it("should render", () => {

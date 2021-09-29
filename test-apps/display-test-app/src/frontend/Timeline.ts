@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range1d } from "@bentley/geometry-core";
-import { calculateSunriseOrSunset, Cartographic } from "@bentley/imodeljs-common";
-import { Viewport } from "@bentley/imodeljs-frontend";
+import { Point3d, Range1d } from "@itwin/core-geometry";
+import { calculateSunriseOrSunset, Cartographic } from "@itwin/core-common";
+import { Viewport } from "@itwin/core-frontend";
 import { createToolButton, ToolBarDropDown } from "./ToolBar";
 
 interface TimelineProvider {

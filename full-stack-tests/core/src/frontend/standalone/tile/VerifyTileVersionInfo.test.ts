@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { CurrentImdlVersion, IModelTileRpcInterface } from "@bentley/imodeljs-common";
+import { CurrentImdlVersion, IModelTileRpcInterface } from "@itwin/core-common";
 
 describe("iMdl format version", () => {
   it("should match between frontend and backend", async () => {

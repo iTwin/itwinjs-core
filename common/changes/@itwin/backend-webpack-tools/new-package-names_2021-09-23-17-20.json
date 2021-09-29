@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/backend-webpack-tools",
+      "comment": "rename to @itwin/backend-webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/backend-webpack-tools"
+}

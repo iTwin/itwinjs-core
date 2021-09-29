@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
-import { CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "..";
 
 /* eslint-disable deprecation/deprecation */

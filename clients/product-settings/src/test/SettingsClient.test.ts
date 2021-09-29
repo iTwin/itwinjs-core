@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AccessToken, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
 import { ConnectSettingsClient } from "../SettingsClient";
 import { TestConfig } from "./TestConfig";

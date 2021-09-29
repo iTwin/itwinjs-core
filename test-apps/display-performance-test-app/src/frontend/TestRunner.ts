@@ -6,16 +6,16 @@
 import * as path from "path";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { System } from "@bentley/imodeljs-frontend/lib/webgl";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+} from "@itwin/core-frontend";
+import { System } from "@itwin/core-frontend/lib/webgl";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,

@@ -8,11 +8,11 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { ImageCheckBoxEditor } from "../../ui-components/editors/ImageCheckBoxEditor";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { ImageCheckBoxEditor } from "../../components-react/editors/ImageCheckBoxEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<ImageCheckBoxEditor />", () => {
   it("should render", () => {

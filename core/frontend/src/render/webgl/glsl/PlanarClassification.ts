@@ -7,9 +7,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Matrix4d } from "@bentley/geometry-core";
-import { SpatialClassifierInsideDisplay } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Matrix4d } from "@itwin/core-geometry";
+import { SpatialClassifierInsideDisplay } from "@itwin/core-common";
 import { Matrix4 } from "../Matrix";
 import { PlanarClassifierContent } from "../PlanarClassifier";
 import { TextureUnit } from "../RenderFlags";

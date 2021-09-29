@@ -5,13 +5,13 @@
 
 import { expect } from "chai";
 import * as React from "react";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+import { MockRender } from "@itwin/core-frontend";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 class TableExampleContentControl extends ContentControl {

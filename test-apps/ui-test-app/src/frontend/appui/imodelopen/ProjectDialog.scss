@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/icons/variables";
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/core-react/icons/variables";
+@import "~@itwin/core-react/lib/core-react/style/colors";
+@import "~@itwin/core-react/lib/core-react/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 /* The Modal (background) */
@@ -12,15 +12,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  position: fixed; /* Stay in place */
-  z-index: 10; /* Sit on top */
+  position: fixed;
+  /* Stay in place */
+  z-index: 10;
+  /* Sit on top */
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  width: 100%;
+  /* Full width */
+  height: 100%;
+  /* Full height */
+  overflow: auto;
+  /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0);
+  /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4);
+  /* Black w/ opacity */
 }
 
 /* dialog box */
@@ -59,7 +66,7 @@
   color: $uicore-icons-dark;
   cursor: pointer;
   -webkit-transition: color 0.3s;
-	transition: color 0.3s;
+  transition: color 0.3s;
 }
 
 /* close button hover */
@@ -96,7 +103,8 @@
   font-family: arial, sans-serif;
   border-collapse: collapse;
 
-  th, td {
+  th,
+  td {
     border-bottom: 1px solid $buic-background-control-stroke;
     cursor: pointer;
   }
@@ -117,7 +125,9 @@
     color: dimgray;
   }
 
-  tr:hover {background-color: #f5f5f5}
+  tr:hover {
+    background-color: #f5f5f5
+  }
 }
 
 /* search box */
@@ -125,7 +135,7 @@
   margin-left: 3em;
   -webkit-transition: opacity 0.3s;
   -o-transition: opacity 0.3;
-	transition: opacity 0.3s;
+  transition: opacity 0.3s;
 }
 
 .projects .projects-content .tabs-searchbox.hidden {
@@ -137,7 +147,7 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,7 +159,7 @@
   white-space: nowrap;
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
 }
 
 /* Add Zoom Animation */
@@ -159,11 +169,21 @@
 }
 
 @-webkit-keyframes animatezoom {
-  from {-webkit-transform: scale(0)}
-  to {-webkit-transform: scale(1)}
+  from {
+    -webkit-transform: scale(0)
+  }
+
+  to {
+    -webkit-transform: scale(1)
+  }
 }
 
 @keyframes animatezoom {
-  from {transform: scale(0)}
-  to {transform: scale(1)}
+  from {
+    transform: scale(0)
+  }
+
+  to {
+    transform: scale(1)
+  }
 }

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
-import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
-import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { IModelDb, IModelHost, IModelJsFs } from "@itwin/core-backend";
+import { V1CheckpointManager } from "@itwin/core-backend/lib/CheckpointManager";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 

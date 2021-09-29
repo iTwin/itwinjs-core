@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ArrayValue } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { ArrayValue } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer";
+import { TableArrayValueRenderer } from "../../../../../components-react/properties/renderers/value/table/ArrayValueRenderer";
 import TestUtils from "../../../../TestUtils";
 
 describe("ArrayValueRenderer", () => {

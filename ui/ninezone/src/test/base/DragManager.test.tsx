@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../ui-ninezone";
+import { DragManager, DragManagerContext, useIsDraggedType, usePanelTarget, useTabTarget, useWidgetTarget } from "../../appui-layout-react";
 import { createDragItemInfo, createDragStartArgs, setRefValue } from "../Providers";
 
 describe("DragManager", () => {

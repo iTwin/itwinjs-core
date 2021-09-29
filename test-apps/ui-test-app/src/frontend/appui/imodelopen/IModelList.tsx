@@ -5,8 +5,8 @@
 import "./IModelList.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SearchBox } from "@bentley/ui-core";
-import { IModelInfo } from "@bentley/ui-framework";
+import { SearchBox } from "@itwin/core-react";
+import { IModelInfo } from "@itwin/appui-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
 import { ProjectDialog } from "./ProjectDialog";

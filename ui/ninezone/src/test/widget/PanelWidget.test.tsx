@@ -9,7 +9,7 @@ import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget, TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 
 /* eslint-disable jsdoc/require-jsdoc */

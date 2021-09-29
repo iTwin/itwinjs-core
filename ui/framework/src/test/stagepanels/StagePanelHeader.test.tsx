@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { StagePanelLocation } from "@bentley/ui-abstract";
-import { FrontstageManager, StagePanelDef, StagePanelHeader, StagePanelState } from "../../ui-framework";
+import { StagePanelLocation } from "@itwin/appui-abstract";
+import { FrontstageManager, StagePanelDef, StagePanelHeader, StagePanelState } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 describe("StagePanelHeader", () => {

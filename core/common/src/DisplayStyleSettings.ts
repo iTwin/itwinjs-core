@@ -10,8 +10,8 @@
 
 import {
   assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
-} from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
@@ -137,7 +137,7 @@ export interface DisplayStyleSettingsProps {
   mapImagery?: MapImageryProps;
   /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core). */
+  /** Style applied by the view's [ClipVector]($core-geometry). */
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
@@ -831,7 +831,7 @@ export class DisplayStyleSettings {
     this.onExcludedElementsChanged.raiseEvent();
   }
 
-  /** The style applied to the view's [ClipVector]($geometry-core). */
+  /** The style applied to the view's [ClipVector]($core-geometry). */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
   }

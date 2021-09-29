@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Gap } from "../../ui-core";
+import { Gap } from "../../core-react";
 
 describe("<Gap />", () => {
   it("should render", () => {

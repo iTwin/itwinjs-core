@@ -704,7 +704,7 @@ Thu, 14 Mar 2019 14:26:49 GMT
 
 ### Updates
 
-- Add missing peerDependencies on @bentley/geometry-core and @bentley/imodeljs-clients
+- Add missing peerDependencies on @itwin/core-geometry and @bentley/imodeljs-clients
 - Allow mobile webpack to skip node dependent module
 - Replaced OidcAgentClient with OidcAgentClientV2.
 - Reverted changes to OidcAgentClient.

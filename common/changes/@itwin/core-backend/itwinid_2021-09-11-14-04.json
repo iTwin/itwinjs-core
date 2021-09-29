@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "rename contextId -> iTwinId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

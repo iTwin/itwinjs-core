@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
-import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("InputFieldMessage", () => {

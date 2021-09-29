@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
 import { UniformHandle } from "../UniformHandle";

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";

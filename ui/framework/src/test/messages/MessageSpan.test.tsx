@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { UnderlinedButton } from "@bentley/ui-core";
-import { MessageDiv, MessageSpan } from "../../ui-framework/messages/MessageSpan";
+import { UnderlinedButton } from "@itwin/core-react";
+import { MessageDiv, MessageSpan } from "../../appui-react/messages/MessageSpan";
 
 describe("MessageSpan & MessageDiv", () => {
 

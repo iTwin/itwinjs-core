@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import { ArrayPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/ArrayPropertyValueRenderer";
-import { TableNonPrimitiveValueRenderer } from "../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
-import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
+import { Orientation } from "@itwin/core-react";
+import { ArrayPropertyValueRenderer } from "../../../../components-react/properties/renderers/value/ArrayPropertyValueRenderer";
+import { TableNonPrimitiveValueRenderer } from "../../../../components-react/properties/renderers/value/table/NonPrimitiveValueRenderer";
+import { PropertyContainerType } from "../../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 
 describe("ArrayPropertyValueRenderer", () => {

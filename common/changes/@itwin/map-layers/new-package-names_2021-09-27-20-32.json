@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "rename to @itwin/map-layers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

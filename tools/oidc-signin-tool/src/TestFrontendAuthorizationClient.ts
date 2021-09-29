@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
 /**

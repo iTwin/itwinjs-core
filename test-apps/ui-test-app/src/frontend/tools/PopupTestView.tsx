@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { AbstractMenuItemProps } from "@bentley/ui-abstract";
-import { useActiveIModelConnection } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { AbstractMenuItemProps } from "@itwin/appui-abstract";
+import { useActiveIModelConnection } from "@itwin/appui-react";
 import ViewportContentComponent from "../appui/childwindows/ViewportContentControl";
 
 import "./PopupTestView.scss";

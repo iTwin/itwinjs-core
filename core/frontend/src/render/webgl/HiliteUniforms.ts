@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Hilite } from "@bentley/imodeljs-common";
+import { Hilite } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
 import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";

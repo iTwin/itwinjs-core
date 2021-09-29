@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, MutableTreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { BeEvent } from "@itwin/core-bentley";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, MutableTreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
 
 export enum TreeDragTypes {
   Parent = "parent",

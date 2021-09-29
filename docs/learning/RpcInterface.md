@@ -83,7 +83,7 @@ The `interfaceName` property specifies the immutable name of the interface. This
 
 See [below](#rpcinterface-versioning) for more on interface versioning.
 
-The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
+The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@itwin/core-common`.
 
 A best practice is that an interface definition class should be marked as `abstract`. That tells the developer of the client that the definition class is never instantiated or used directly. Instead, callers use the [client stub](#client-stub) for the interface when making calls.
 

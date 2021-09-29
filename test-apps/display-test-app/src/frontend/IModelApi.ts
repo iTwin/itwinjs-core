@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { CheckpointConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { IModelVersion } from "@itwin/core-common";
+import { CheckpointConnection, IModelHubFrontend } from "@itwin/core-frontend";
 
 export class IModelApi {
 

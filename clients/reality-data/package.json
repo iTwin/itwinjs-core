@@ -36,7 +36,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "deep-assign": "^2.0.0",
     "lodash": "^4.17.10"
   },
@@ -44,13 +44,13 @@
     "@bentley/itwin-client": "workspace:^3.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/jsonpath": "^0.2.0",
@@ -73,8 +73,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -7,10 +7,10 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
-import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@itwin/core-bentley";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
@@ -18,7 +18,7 @@ import {
   GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
   MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
   SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import { BriefcaseDb } from "../../IModelDb";
@@ -31,7 +31,7 @@ import {
   InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
   ViewDefinition,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

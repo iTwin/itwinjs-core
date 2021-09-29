@@ -5,11 +5,11 @@
 
 import * as chai from "chai";
 import * as fs from "fs";
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
   Briefcase, ChangeSet, CheckpointV2, CheckpointV2ErrorId, CheckpointV2Query, CheckpointV2State, IModelClient,
 } from "@bentley/imodelhub-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { workDir } from "./TestConstants";

@@ -1,23 +1,23 @@
 {
-  "name": "@bentley/imodeljs-transformer",
+  "name": "@itwin/core-transformer",
   "version": "3.0.0-dev.71",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
-  "main": "lib/imodeljs-transformer.js",
-  "typings": "lib/imodeljs-transformer",
+  "main": "lib/core-transformer.js",
+  "typings": "lib/core-transformer",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-transformer/file.json --tsIndexFile=./imodeljs-transformer.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-transformer/file.json --tsIndexFile=./core-transformer.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc npm test",
     "cover:integration": "nyc npm run test:integration",
-    "extract-api": "betools extract-api --entry=imodeljs-transformer",
+    "extract-api": "betools extract-api --entry=core-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha --grep=\"#integration\" --invert",
     "test:integration": "mocha --grep=\"#integration\""
@@ -38,11 +38,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.71",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.71",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.71",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.71",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.71",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.71"
   },
   "//devDependencies": [
@@ -50,13 +50,13 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -79,12 +79,12 @@
     "semver": "^5.5.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -11,11 +11,11 @@ import * as React from "react";
 import {
   BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
   RangeEditorParams, SpecialKey, StandardEditorNames,
-} from "@bentley/ui-abstract";
-import { NumericInputEditor } from "../../ui-components/editors/NumericInputEditor";
+} from "@itwin/appui-abstract";
+import { NumericInputEditor } from "../../components-react/editors/NumericInputEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<NumericInputEditor />", () => {
   before(async () => {

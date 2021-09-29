@@ -23,33 +23,33 @@
   "repository": {},
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/express-server": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/hypermodeling-frontend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/express-server": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/hypermodeling-frontend": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-editor-backend": "workspace:*",
-    "@bentley/imodeljs-editor-frontend": "workspace:*",
-    "@bentley/imodeljs-editor-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-markup": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/editor-backend": "workspace:*",
+    "@itwin/editor-frontend": "workspace:*",
+    "@itwin/editor-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-markup": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "fs-extra": "^8.1.0",
     "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -70,16 +70,17 @@
     "typescript": "~4.4.0",
     "nyc": "^15.1.0",
     "webpack": "4.42.0",
+    "webpack-cli": "^3.1.0",
     "webpack-core": "0.6.9",
     "serve-handler": "^6.1.2"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

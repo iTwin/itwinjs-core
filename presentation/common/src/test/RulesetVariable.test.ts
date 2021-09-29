@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BooleanRulesetVariable, BooleanRulesetVariableJSON, Id64RulesetVariable, Id64RulesetVariableJSON, Id64sRulesetVariable, Id64sRulesetVariableJSON,
   IntRulesetVariable, IntRulesetVariableJSON, IntsRulesetVariable, IntsRulesetVariableJSON, RulesetVariable, StringRulesetVariable,
