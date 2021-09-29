@@ -1,22 +1,22 @@
 sep=;
 Release Tag;API Item
-beta;AlphaSlider 
-beta;AlphaSliderProps 
+public;AlphaSlider 
+public;AlphaSliderProps 
 public;AnimationFractionChangeHandler = (animationFraction: number) => void
 alpha;BaseSolarDataProvider 
 alpha;BaseTimelineDataProvider 
-beta;ColorEditor 
-beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
-beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
-beta;ColorPickerDialogProps
+public;ColorEditor 
+public;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
+public;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
+public;ColorPickerDialogProps
 public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
 public;ColorPickerPanelProps
 public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 public;ColorPickerPopupProps 
-beta;ColorPickerProps 
-beta;ColorPropertyEditor 
-beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
-beta;ColorSwatchProps 
+public;ColorPickerProps 
+public;ColorPropertyEditor 
+public;ColorSwatch(props: ColorSwatchProps): JSX.Element
+public;ColorSwatchProps 
 internal;ContextMenu 
 deprecated;ContextMenu 
 internal;ContextMenuItem 
@@ -36,8 +36,8 @@ public;CubeProps
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 internal;CustomThumb(): JSX.Element
-beta;DrawingNavigationAid 
-beta;DrawingNavigationAidProps 
+public;DrawingNavigationAid 
+public;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
 public;DrawingViewportChangeEvent 
@@ -65,11 +65,11 @@ internal;HitBoxY
 deprecated;HitBoxY
 internal;HitBoxZ
 deprecated;HitBoxZ
-beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
-beta;HueSliderProps 
+public;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
+public;HueSliderProps 
 internal;InlineEdit 
-beta;LineWeightSwatch 
-beta;LineWeightSwatchProps 
+public;LineWeightSwatch 
+public;LineWeightSwatchProps 
 internal;MapMode
 internal;MenuItem
 deprecated;MenuItem
@@ -92,8 +92,8 @@ beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | nul
 beta;QuantityNumberInputProps 
 beta;QuantityProps 
 internal;RailMarkers({ showToolTip, percent, tooltipText, markDate }:
-beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
-beta;SaturationPickerProps 
+public;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
+public;SaturationPickerProps 
 internal;Scrubber(props: ScrubberProps): JSX.Element
 internal;ScrubberProps 
 alpha;SolarDataProvider
@@ -124,7 +124,7 @@ public;ViewportProps
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
-beta;WeightEditor 
-beta;WeightPickerButton 
-beta;WeightPickerProps 
-beta;WeightPropertyEditor 
+public;WeightEditor 
+public;WeightPickerButton 
+public;WeightPickerProps 
+public;WeightPropertyEditor 
