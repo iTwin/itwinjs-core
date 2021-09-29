@@ -59,9 +59,11 @@ import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SnapDetail } from '@bentley/imodeljs-frontend';
 import { SolidModelingCommandIpc } from '@bentley/imodeljs-editor-common';
+import { SubEntityFilter } from '@bentley/imodeljs-editor-common';
 import { SubEntityGeometryProps } from '@bentley/imodeljs-editor-common';
 import { SubEntityLocationProps } from '@bentley/imodeljs-editor-common';
 import { SubEntityProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityType } from '@bentley/imodeljs-editor-common';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
@@ -666,6 +668,60 @@ export class ElementGeometryGraphicsProvider {
 }
 
 // @alpha
+export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected _acceptedSubEntity?: SubEntityLocationProps;
+    // (undocumented)
+    protected applyAgendaOperation(_ev: BeButtonEvent, _isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected clearSubEntityGraphic(): void;
+    // (undocumented)
+    protected _currentSubEntity?: SubEntityData;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
+    // (undocumented)
+    protected doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    protected getLocateAperture(ev: BeButtonEvent): number;
+    // (undocumented)
+    protected getMaximumSubEntityHits(type: SubEntityType): 0 | 25;
+    // (undocumented)
+    protected getMaxRayDistance(ev: BeButtonEvent, aperture: number): number;
+    // (undocumented)
+    protected getSubEntityFilter(): SubEntityFilter | undefined;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    protected pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined>;
+    // (undocumented)
+    processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected setCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    protected updateSubEntityGraphic(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantAgendaAppearanceOverride(): boolean;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
+// @alpha
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
@@ -680,55 +736,23 @@ export class MoveElementsTool extends TransformElementsTool {
 }
 
 // @alpha
-export class OffsetFacesTool extends ElementGeometryCacheTool {
-    // (undocumented)
-    protected _acceptedSubEntity?: SubEntityLocationProps;
+export class OffsetFacesTool extends LocateSubEntityTool {
     // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
-    protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
-    // (undocumented)
-    protected clearSubEntityGraphic(): void;
-    // (undocumented)
-    protected _currentSubEntity?: SubEntityData;
-    // (undocumented)
-    decorate(context: DecorateContext): void;
-    // (undocumented)
-    protected doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
-    // (undocumented)
-    protected doPickSubEntities(id: Id64String, boresite: Ray3d): Promise<SubEntityLocationProps | undefined>;
-    // (undocumented)
-    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
-    // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
-    // (undocumented)
-    protected getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined>;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onCleanup(): Promise<void>;
-    // (undocumented)
     onRestartTool(): Promise<void>;
-    // (undocumented)
-    processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
-    protected setCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
-    // (undocumented)
-    protected setupAndPromptForNextAction(): void;
+    protected setupAccuDraw(): void;
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
-    // (undocumented)
-    protected updateSubEntityGraphic(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
     protected get wantAccuSnap(): boolean;
-    // (undocumented)
-    protected get wantAdditionalInput(): boolean;
-    // (undocumented)
-    protected get wantAgendaAppearanceOverride(): boolean;
     // (undocumented)
     protected get wantDynamics(): boolean;
 }

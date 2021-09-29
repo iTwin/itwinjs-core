@@ -20,6 +20,7 @@ import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
 import { IModelStatus } from '@bentley/bentleyjs-core';
+import { LocateSubEntityProps } from '@bentley/imodeljs-editor-common';
 import { Matrix3dProps } from '@bentley/geometry-core';
 import { OffsetFacesProps } from '@bentley/imodeljs-editor-common';
 import { Range3dProps } from '@bentley/geometry-core';
@@ -108,6 +109,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     getClosestFace(id: Id64String, point: XYZProps, direction?: XYZProps): Promise<SubEntityLocationProps | undefined>;
     // (undocumented)
     getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+    // (undocumented)
+    locateSubEntities(id: Id64String, point: XYZProps, direction: XYZProps, options: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     }
