@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { RequestBasicCredentials } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
 import {

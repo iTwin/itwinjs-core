@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/presentation-backend",
+  "name": "@itwin/presentation-backend",
   "version": "3.0.0-dev.71",
   "description": "Backend of iModel.js Presentation library",
   "license": "MIT",
@@ -37,20 +37,20 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.71",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.71",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -87,7 +87,7 @@
     "semver": "^5.5.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 100,
     "functions": 100,
@@ -96,8 +96,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

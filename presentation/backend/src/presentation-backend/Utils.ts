@@ -7,9 +7,9 @@
  */
 
 import { parse as parseVersion } from "semver";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Element, IModelDb } from "@bentley/imodeljs-backend";
-import { InstanceKey } from "@bentley/presentation-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Element, IModelDb } from "@itwin/core-backend";
+import { InstanceKey } from "@itwin/presentation-common";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {

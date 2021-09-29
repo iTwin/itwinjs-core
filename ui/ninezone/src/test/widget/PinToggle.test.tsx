@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../ui-ninezone";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 
 describe("PinToggle", () => {

@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
-import { NavigationValue } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@itwin/core-bentley";
+import { NavigationValue } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */

@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelJsExpressServer } from "@itwin/express-server";
+import { IModelHost } from "@itwin/core-backend";
+import { BentleyCloudRpcManager, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 
 /**
  * Initializes Web Server backend

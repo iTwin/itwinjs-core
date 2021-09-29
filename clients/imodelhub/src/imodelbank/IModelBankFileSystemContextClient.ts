@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { AccessToken, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";

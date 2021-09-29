@@ -6,7 +6,7 @@
  * @module Compatibility
  */
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 import {
   GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
 } from "./RenderCompatibility";
@@ -91,7 +91,7 @@ export class Capabilities {
 
   private _isWebGL2: boolean = false;
   private _isMobile: boolean = false;
-  private _driverBugs: GraphicsDriverBugs = { };
+  private _driverBugs: GraphicsDriverBugs = {};
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -231,7 +231,7 @@ export class Capabilities {
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._supportsCreateImageBitmap = typeof createImageBitmap === "function" && ProcessDetector.isChromium && !ProcessDetector.isIOSBrowser;
-    this._maxTexSizeAllow = Math.min (this._maxTextureSize, maxTexSizeAllowed);
+    this._maxTexSizeAllow = Math.min(this._maxTextureSize, maxTexSizeAllowed);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     this._maxVertAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
@@ -289,7 +289,7 @@ export class Capabilities {
     const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
     const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
-    this._driverBugs = { };
+    this._driverBugs = {};
     if (undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 

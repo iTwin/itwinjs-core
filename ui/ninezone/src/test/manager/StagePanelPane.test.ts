@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { getDefaultNineZoneStagePanelPaneManagerProps, NineZoneStagePanelPaneManager, NineZoneStagePanelPaneManagerProps } from "../../ui-ninezone";
+import { getDefaultNineZoneStagePanelPaneManagerProps, NineZoneStagePanelPaneManager, NineZoneStagePanelPaneManagerProps } from "../../appui-layout-react";
 
 const defaultProps = getDefaultNineZoneStagePanelPaneManagerProps();
 

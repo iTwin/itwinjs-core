@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolAssistanceDialog } from "../../../ui-ninezone";
+import { ToolAssistanceDialog } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<ToolAssistanceDialog />", () => {

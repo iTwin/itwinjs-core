@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update Tool Setting for UI 1.0 to fix refresh bug.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

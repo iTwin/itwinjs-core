@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Outline } from "../../ui-framework/zones/Outline";
+import { Outline } from "../../appui-react/zones/Outline";
 import { mount } from "../TestUtils";
 
 describe("Outline", () => {

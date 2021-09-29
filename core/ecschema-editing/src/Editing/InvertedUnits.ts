@@ -9,7 +9,7 @@
 import {
   DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, InvertedUnitProps, SchemaItemKey,
   SchemaItemType, SchemaKey, Unit, UnitSystem,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Columns } from "../../../../../ui-ninezone";
+import { Columns } from "../../../../../appui-layout-react";
 import { mount } from "../../../../Utils";
 
 describe("<Columns />", () => {

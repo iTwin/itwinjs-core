@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@itwin/core-bentley";
 import { GeometryClass } from "./GeometryParams";
 
 /** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { BodyText } from "../../ui-core";
+import { BodyText } from "../../core-react";
 
 describe("<BodyText />", () => {
   it("should render", () => {

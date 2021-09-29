@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { containHorizontally, containVertically, withContainIn } from "../../ui-ninezone";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
+import { containHorizontally, containVertically, withContainIn } from "../../appui-layout-react";
 import { createRect, mount } from "../Utils";
 
 const component = () => <div></div>;

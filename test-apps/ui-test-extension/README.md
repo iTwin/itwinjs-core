@@ -2,7 +2,7 @@
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-An iTwin.js Extension that demonstrates how to use the DialogItem and related interfaces in @bentley/ui-abstract to create user interfaces without writing any React code.
+An iTwin.js Extension that demonstrates how to use the DialogItem and related interfaces in @itwin/appui-abstract to create user interfaces without writing any React code.
 
 This extension is an example of an extension that can be added to iTwin.js host applications.
 See http://itwinjs.org for comprehensive documentation on the iTwin.js API and the various constructs used in this sample.

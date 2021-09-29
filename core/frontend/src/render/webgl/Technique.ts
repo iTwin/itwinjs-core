@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, dispose, using } from "@bentley/bentleyjs-core";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { assert, dispose, using } from "@itwin/core-bentley";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";

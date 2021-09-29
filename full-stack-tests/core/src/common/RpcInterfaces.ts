@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import {
   DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
   WipRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 
 export interface CloudEnvProps {
   iModelBank?: {

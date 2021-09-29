@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { renderHook } from "@testing-library/react-hooks";
-import { addPanelWidget, addTab, createNineZoneState, NineZoneContext, TabIdContext } from "@bentley/ui-ninezone";
-import { useWidgetDirection } from "../../ui-framework";
-import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
+import { addPanelWidget, addTab, createNineZoneState, NineZoneContext, TabIdContext } from "@itwin/appui-layout-react";
+import { useWidgetDirection } from "../../appui-react";
+import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
 import TestUtils from "../TestUtils";
 
 describe("useWidgetDirection", () => {

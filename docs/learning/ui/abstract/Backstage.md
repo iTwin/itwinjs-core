@@ -1,11 +1,11 @@
 # Backstage
 
-The [Backstage]($ui-abstract:Backstage) category in the `@bentley/ui-abstract` package includes abstractions used by the `@bentley/ui-framework` package to create and manage the display of Backstage menu items.
+The [Backstage]($appui-abstract:Backstage) category in the `@itwin/appui-abstract` package includes abstractions used by the `@itwin/appui-react` package to create and manage the display of Backstage menu items.
 The Backstage is a menu used to open frontstages and launch tasks and commands. It can also open full-screen overlays, or modal stages, presenting application settings and data management to the user.
 
 ## Backstage Item Utilities
 
-[BackstageItemUtilities]($ui-abstract) is a utility class for creating abstract Backstage item definitions used to create entries in the Backstage menu.
+[BackstageItemUtilities]($appui-abstract) is a utility class for creating abstract Backstage item definitions used to create entries in the Backstage menu.
 
 The following shows an example of defining an item to create an item that opens a primary stage.
 
@@ -25,4 +25,4 @@ See additional example in [Backstage](../../../learning/ui/framework/Backstage.m
 
 ## API Reference
 
-- [Backstage]($ui-abstract:Backstage)
+- [Backstage]($appui-abstract:Backstage)

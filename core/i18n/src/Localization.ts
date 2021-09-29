@@ -9,7 +9,7 @@
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 
 /** @public */
 export interface I18NOptions {

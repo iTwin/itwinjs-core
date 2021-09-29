@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackstageManager, useIsBackstageOpen } from "../../ui-framework/backstage/BackstageManager";
+import { BackstageManager, useIsBackstageOpen } from "../../appui-react/backstage/BackstageManager";
 import { mount } from "../TestUtils";
 
 describe("BackstageManager", () => {

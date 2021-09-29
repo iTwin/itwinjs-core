@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Matrix3d, Point3d, Transform } from "@bentley/geometry-core";
-import { IModelApp, ModelDisplayTransformProvider, Tool } from "@bentley/imodeljs-frontend";
-import { parseArgs } from "@bentley/frontend-devtools";
+import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
+import { IModelApp, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }

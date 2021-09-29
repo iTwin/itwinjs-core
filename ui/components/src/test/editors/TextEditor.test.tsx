@@ -11,11 +11,11 @@ import * as React from "react";
 import {
   IconEditorParams, InputEditorSizeParams, MessageSeverity, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, SpecialKey,
-} from "@bentley/ui-abstract";
-import { TextEditor } from "../../ui-components/editors/TextEditor";
+} from "@itwin/appui-abstract";
+import { TextEditor } from "../../components-react/editors/TextEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<TextEditor />", () => {
   before(async () => {

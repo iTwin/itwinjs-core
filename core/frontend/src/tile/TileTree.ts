@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { BeDuration, BeTimePoint, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { Matrix4d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeDuration, BeTimePoint, dispose, Id64String } from "@itwin/core-bentley";
+import { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";

@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";

@@ -5,8 +5,8 @@
 import { ECSchemaToTs } from "../ecschema2ts";
 import { assert } from "chai";
 import * as utils from "./utilities/utils";
-import { SchemaContext } from "@bentley/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 
 describe("BisCore test correct inheritance", () => {
   let ecschema2ts: ECSchemaToTs;
@@ -44,8 +44,8 @@ describe("BisCore test correct inheritance", () => {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
-import { EntityProps } from "@bentley/imodeljs-common";
+      `import { Entity, IModelDb } from "@itwin/core-backend";
+import { EntityProps } from "@itwin/core-common";
 import { DerivedElementProps } from "./BisCoreElementProps";
 
 export abstract class Element extends Entity {
@@ -75,7 +75,7 @@ export class DerivedElement extends Element implements DerivedElementProps {
 }\n\n`;
 
     const expectedPropsSchemaString =
-      `import { ElementProps } from "@bentley/imodeljs-common";
+      `import { ElementProps } from "@itwin/core-common";
 
 export interface DerivedElementProps extends ElementProps {
   derivedTestProp?: string;
@@ -118,8 +118,8 @@ export interface DerivedElementProps extends ElementProps {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
-import { EntityProps, ElementProps } from "@bentley/imodeljs-common";
+      `import { Entity, IModelDb } from "@itwin/core-backend";
+import { EntityProps, ElementProps } from "@itwin/core-common";
 
 export abstract class Element extends Entity {
   public static get className(): string { return "Element"; }
@@ -202,8 +202,8 @@ export class DerivedElement extends Element {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
-import { EntityProps, ElementProps } from "@bentley/imodeljs-common";
+      `import { Entity, IModelDb } from "@itwin/core-backend";
+import { EntityProps, ElementProps } from "@itwin/core-common";
 import { SubjectProps } from "./BisCoreElementProps";
 
 export abstract class Element extends Entity {
@@ -249,7 +249,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
 }\n\n`;
 
     const expectedPropSchemaString =
-      `import { ElementProps } from "@bentley/imodeljs-common";
+      `import { ElementProps } from "@itwin/core-common";
 
 export interface IParentElement {
 }
@@ -284,8 +284,8 @@ describe("Referencing BisCore", () => {
 </ECSchema>`;
 
     const expectedElementSchemaString =
-      `import { DefinitionModel, IModelDb } from "@bentley/imodeljs-backend";
-import { ModelProps } from "@bentley/imodeljs-common";
+      `import { DefinitionModel, IModelDb } from "@itwin/core-backend";
+import { ModelProps } from "@itwin/core-common";
 
 /**
  * The singleton container of SchemaDef Elements

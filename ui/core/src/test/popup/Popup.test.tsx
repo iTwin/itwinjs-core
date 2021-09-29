@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition } from "@itwin/appui-abstract";
 import { fireEvent, render, RenderResult } from "@testing-library/react";
-import { Popup, PopupProps } from "../../ui-core";
+import { Popup, PopupProps } from "../../core-react";
 
 function NestedPopup() {
   const [showPopup, setShowPopup] = React.useState(false);

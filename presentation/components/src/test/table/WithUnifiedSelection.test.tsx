@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { InstanceKey, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { IModelConnection } from "@itwin/core-frontend";
+import { InstanceKey, KeySet } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomECInstanceKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager,
-} from "@bentley/presentation-frontend";
-import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@bentley/ui-components";
+} from "@itwin/presentation-frontend";
+import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@itwin/components-react";
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 

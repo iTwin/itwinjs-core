@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Group } from "../../../../../ui-ninezone";
+import { Group } from "../../../../../appui-layout-react";
 import { mount } from "../../../../Utils";
 
 describe("<Group />", () => {

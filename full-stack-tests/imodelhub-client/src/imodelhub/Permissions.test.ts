@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { IModelClient, IModelPermissions } from "@bentley/imodelhub-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 import { RequestType, ResponseBuilder } from "../ResponseBuilder";

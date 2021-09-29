@@ -2,13 +2,13 @@
 
 ## Property Description
 
-A [PropertyDescription]($ui-abstract:Properties) describes the metadata associated with a property that can be used to display and edit it in the UI.
+A [PropertyDescription]($appui-abstract:Properties) describes the metadata associated with a property that can be used to display and edit it in the UI.
 
 Included in the metadata are the type and format of the property's value, its editor type and parameters.
 
 ## Property Editor Params
 
-Property Editor Params are used to specify the type of editor shown in the UI for the property. The [BasePropertyEditorParams]($ui-abstract:Properties) handles strings:
+Property Editor Params are used to specify the type of editor shown in the UI for the property. The [BasePropertyEditorParams]($appui-abstract:Properties) handles strings:
 
 ```ts
 // ------------- text based edit field ---------------
@@ -22,7 +22,7 @@ private static _getCityDescription = (): PropertyDescription => {
 }
 ```
 
-The size of the input field can be controlled with [InputEditorSizeParams]($ui-abstract:Properties):
+The size of the input field can be controlled with [InputEditorSizeParams]($appui-abstract:Properties):
 
 ```ts
 // ------------- text based edit field ---------------
@@ -44,9 +44,9 @@ private static _getStateDescription = (): PropertyDescription => {
 }
 ```
 
-For any editor type, the label can be suppressed using [SuppressLabelEditorParams]($ui-abstract:Properties).
+For any editor type, the label can be suppressed using [SuppressLabelEditorParams]($appui-abstract:Properties).
 
-Numeric values can be formatted with custom formatters using [CustomFormattedNumberParams]($ui-abstract:Properties).
+Numeric values can be formatted with custom formatters using [CustomFormattedNumberParams]($appui-abstract:Properties).
 
 Enums can be edited as a selection list:
 
@@ -71,7 +71,7 @@ private static _getEnumAsPicklistDescription = (): PropertyDescription => {
 }
 ```
 
-or using as button group with [ButtonGroupEditorParams]($ui-abstract:Properties):
+or using as button group with [ButtonGroupEditorParams]($appui-abstract:Properties):
 
 ```ts
 private static _methodsName = "selectionMethods";
@@ -107,7 +107,7 @@ private static _getMethodsDescription(): PropertyDescription {
 }
 ```
 
-Colors may be edited in a color picker by specifying the available colors as an enum and using the [ColorEditorParams]($ui-abstract:Properties):
+Colors may be edited in a color picker by specifying the available colors as an enum and using the [ColorEditorParams]($appui-abstract:Properties):
 
 ```ts
 private static _colorName = "color";
@@ -140,8 +140,8 @@ private static _getColorDescription = (): PropertyDescription => {
 
 ## Property Record
 
-A [PropertyRecord]($ui-abstract:Properties) contains instance data about a Property. [EditorContainer]($ui-components) can use the data from a PropertyRecord to create a PropertyEditor React component that converts the instance data using a [TypeConverter]($ui-components:TypeConverters).
+A [PropertyRecord]($appui-abstract:Properties) contains instance data about a Property. [EditorContainer]($components-react) can use the data from a PropertyRecord to create a PropertyEditor React component that converts the instance data using a [TypeConverter]($components-react:TypeConverters).
 
 ## API Reference
 
-[Properties]($ui-abstract:Properties)
+[Properties]($appui-abstract:Properties)

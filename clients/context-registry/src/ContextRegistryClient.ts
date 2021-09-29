@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 import { RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";

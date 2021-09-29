@@ -7,12 +7,12 @@
  */
 
 import * as React from "react";
-import {  ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { SignInBase } from "./SignInBase";
-import { CommonProps } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { CommonProps } from "@itwin/core-react";
+import { UiFramework } from "@itwin/appui-react";
 
 /** Properties for the [[SignIn]] component
  * @public

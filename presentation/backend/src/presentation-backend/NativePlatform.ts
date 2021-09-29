@@ -6,12 +6,12 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
-import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { IDisposable } from "@itwin/core-bentley";
+import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */

@@ -14,7 +14,7 @@ import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
 
-/* eslint-disable @bentley/prefer-get */
+/* eslint-disable @itwin/prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -294,7 +294,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
    */
   public isAlmostEqual(other: Matrix3d, tol?: number): boolean {
-      return Geometry.isDistanceWithinTol(this.maxDiff(other), tol);
+    return Geometry.isDistanceWithinTol(this.maxDiff(other), tol);
   }
   /** Test if `this` and `other` have almost equal Z column and have X and Y columns differing only by a rotation around that Z.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
@@ -310,7 +310,7 @@ export class Matrix3d implements BeJSONFunctions {
       const columnY = this.columnY();
       const columnZ = this.columnZ();
       let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
-      if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)){
+      if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)) {
         column = Vector3d.createRotateVectorAroundVector(columnY, columnZ, angle)!;
         return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol);
       }
@@ -318,14 +318,14 @@ export class Matrix3d implements BeJSONFunctions {
     return false;
   }
 
-  public isAlmostEqualColumn(columnIndex: AxisIndex, other: Matrix3d, tol?: number): boolean{
+  public isAlmostEqualColumn(columnIndex: AxisIndex, other: Matrix3d, tol?: number): boolean {
     const a = Geometry.maxAbsXYZ(
       this.coffs[columnIndex] - other.coffs[columnIndex],
       this.coffs[columnIndex + 3] - other.coffs[columnIndex + 3],
       this.coffs[columnIndex + 6] - other.coffs[columnIndex + 6]);
     return Geometry.isDistanceWithinTol(a, tol);
   }
-  public isAlmostEqualColumnXYZ(columnIndex: AxisIndex, ax: number, ay: number, az: number, tol?: number): boolean{
+  public isAlmostEqualColumnXYZ(columnIndex: AxisIndex, ax: number, ay: number, az: number, tol?: number): boolean {
     const a = Geometry.maxAbsXYZ(
       this.coffs[columnIndex] - ax,
       this.coffs[columnIndex + 3] - ay,

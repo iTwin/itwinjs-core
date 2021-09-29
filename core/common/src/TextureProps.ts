@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";
 import { Base64EncodedString } from "./Base64EncodedString";

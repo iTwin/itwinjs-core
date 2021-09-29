@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorByName } from "@bentley/imodeljs-common";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { ColorByName } from "@itwin/core-common";
+import { I18N } from "@itwin/core-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
-} from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@bentley/ui-components";
-import { UiIModelComponents } from "../ui-imodel-components/UiIModelComponents";
+} from "@itwin/appui-abstract";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/components-react";
+import { UiIModelComponents } from "../imodel-components-react/UiIModelComponents";
 
 // cSpell:ignore buttongroup
 

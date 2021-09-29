@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 
 export class TestRpcManager {
   public static initializeClient(interfaces: RpcInterfaceDefinition[]) {

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@bentley/imodeljs-common";
+import { Point3d } from "@itwin/core-geometry";
+import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
   CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, MockRender, PanViewTool,
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs

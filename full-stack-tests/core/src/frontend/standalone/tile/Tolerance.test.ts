@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d, Range3dProps } from "@bentley/geometry-core";
+import { ByteStream } from "@itwin/core-bentley";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
   TileMetadata, TileProps, TileTreeMetadata,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { fakeViewState } from "./TileIO.test";
 
 describe("Tile tolerance", () => {

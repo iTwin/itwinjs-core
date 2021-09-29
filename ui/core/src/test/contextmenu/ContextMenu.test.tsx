@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
-import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
-import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
-import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
+import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../core-react";
+import { TildeFinder } from "../../core-react/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {

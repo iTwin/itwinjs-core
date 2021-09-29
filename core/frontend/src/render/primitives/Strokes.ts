@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Transform } from "@itwin/core-geometry";
 import { DisplayParams } from "./DisplayParams";
 
 /** @internal */

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Spinner, SpinnerSize } from "../../ui-core";
+import { Spinner, SpinnerSize } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

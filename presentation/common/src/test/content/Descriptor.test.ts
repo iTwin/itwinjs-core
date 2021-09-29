@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "../../presentation-common/content/Category";
 import {
   Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,

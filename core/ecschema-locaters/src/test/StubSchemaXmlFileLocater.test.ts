@@ -6,7 +6,7 @@
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import * as EC from "@bentley/ecschema-metadata";
+import * as EC from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
 import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
 

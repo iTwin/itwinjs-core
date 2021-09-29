@@ -11,15 +11,15 @@ import {
   SessionStateActionId,
   SyncUiEventId,
   ToolWidget, UiFramework, Widget, Zone, ZoneState,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 

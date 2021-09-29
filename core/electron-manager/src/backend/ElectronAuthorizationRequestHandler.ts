@@ -9,7 +9,7 @@
  */
 
 import * as open from "open";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   AuthorizationError, AuthorizationErrorJson, AuthorizationRequest, AuthorizationRequestHandler, AuthorizationRequestResponse, AuthorizationResponse,
   AuthorizationResponseJson, AuthorizationServiceConfiguration, BasicQueryStringUtils,

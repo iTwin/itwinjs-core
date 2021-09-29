@@ -23,7 +23,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Angle, Matrix3d, Point3dArray, Transform } from "../../geometry-core";
+import { Angle, Matrix3d, Point3dArray, Transform } from "../../core-geometry";
 
 /* eslint-disable no-console */
 
