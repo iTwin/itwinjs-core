@@ -1,6 +1,6 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "3.0.0-dev.70",
+  "version": "3.0.0-dev.71",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "typings": "lib/hypermodeling-frontend",
@@ -35,12 +35,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.70",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.70",
-    "@itwin/core-common": "workspace:^3.0.0-dev.70",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.70",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.70",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.70"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.71",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.71"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
