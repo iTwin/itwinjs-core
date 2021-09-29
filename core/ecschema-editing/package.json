@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-editing",
-  "version": "3.0.0-dev.70",
+  "version": "3.0.0-dev.71",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/ecschema-editing.js",
@@ -62,9 +62,9 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.70",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.70"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.71",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.71",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.71"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"
