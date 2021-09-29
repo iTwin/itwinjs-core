@@ -4257,7 +4257,7 @@ export class IModelApp {
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     // @internal
-    static get hubAccess(): FrontendHubAccess;
+    static get hubAccess(): FrontendHubAccess | undefined;
     static get i18n(): I18N;
     // @internal (undocumented)
     static get initialized(): boolean;
