@@ -5,19 +5,21 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, IModelStatus } from "@bentley/bentleyjs-core";
 import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import {
+  ImageryMapTile,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
   WmsUtilities, WmtsCapabilities, WmtsCapability,
 } from "../../internal";
 
+interface PreferredLayerMatrixSet { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
 /** @internal */
 export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _baseUrl: string;
   private _capabilities?: WmtsCapabilities;
-  private _preferredLayerTileMatrixSet = new Map<string, WmtsCapability.TileMatrixSet>();
+  private _preferredLayerTileMatrixSet = new Map<string, PreferredLayerMatrixSet>();
   private _preferredLayerStyle = new Map<string, WmtsCapability.Style>();
 
   public override get mutualExclusiveSubLayer(): boolean { return true; }
@@ -54,14 +56,14 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   // We have to pick one for each layer: for now we look for a Google Maps compatible tile tree.
   private initPreferredTileMatrixSet() {
     const googleMapsTms = this._capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
-
     const wellGoogleKnownTms = googleMapsTms?.find((tms) => { return tms.wellKnownScaleSet?.toLowerCase().includes(WmtsCapability.Constants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME); });
 
     this._capabilities?.contents?.layers.forEach((layer) => {
+      let preferredTms: WmtsCapability.TileMatrixSet | undefined;
 
       if (wellGoogleKnownTms && layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === wellGoogleKnownTms.identifier); })) {
         // Favor tile matrix set that was explicitly marked as GoogleMaps compatible
-        this._preferredLayerTileMatrixSet.set(layer.identifier, wellGoogleKnownTms);
+        preferredTms =  wellGoogleKnownTms;
       } else {
         // Search all compatible tile set matrix if previous attempt didn't work.
         // If more than one candidate is found, pick the tile set with the most LODs.
@@ -69,15 +71,18 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
           return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
         });
 
-        let preferredTms: WmtsCapability.TileMatrixSet | undefined;
         if (tileMatrixSets && tileMatrixSets.length === 1)
           preferredTms = tileMatrixSets[0];
         else if (tileMatrixSets && tileMatrixSets?.length > 1)
           preferredTms = tileMatrixSets.reduce((prev, current) => (prev.tileMatrix.length > current.tileMatrix.length) ? prev : current);
 
-        if (preferredTms)
-          this._preferredLayerTileMatrixSet.set(layer.identifier, preferredTms);
       }
+
+      if (preferredTms !== undefined) {
+        const tmsLink= layer.tileMatrixSetLinks.find((tmsl) => tmsl.tileMatrixSet === preferredTms!.identifier);
+        this._preferredLayerTileMatrixSet.set(layer.identifier, { tileMatrixSet: preferredTms, limits: tmsLink?.tileMatrixSetLimits } );
+      }
+
     });
   }
 
@@ -112,24 +117,50 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       }
     });
   }
+  private getPreferredTileMatrixSet(): PreferredLayerMatrixSet | undefined {
+    // WMTS support a single layer per tile request, so we pick the first visible layer.
+    const layerString = this._settings.subLayers.find((subLayer) => subLayer.visible)?.name;
+    return layerString ? this._preferredLayerTileMatrixSet.get(layerString) : undefined;
+  }
+
+  public override testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) {
+    const preferredTileMatrixSet = this.getPreferredTileMatrixSet();
+    if (!preferredTileMatrixSet) {
+      assert(false);    // Must always hava a matrix set.
+      return;
+    }
+    let availability: boolean[] | undefined;
+    const level = tile.quadId.level + 1;
+    const limits = preferredTileMatrixSet.limits?.[level]?.limits;
+    if (limits) {
+      const startCol = tile.quadId.column * 2;
+      const startRow = tile.quadId.row * 2;
+
+      availability = new Array<boolean>();
+      for (let row = 0, k = 0;  row < 2; row++)
+        for (let col = 0; col < 2; col++)
+          availability[k++] = limits.containsXY(startCol + col, startRow + row);
+    }
+    resolveChildren(availability);
+  }
 
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     // WMTS support a single layer per tile request, so we pick the first visible layer.
     const layerString = this._settings.subLayers.find((subLayer) => subLayer.visible)?.name;
-    let tileMatrix, tileMatrixSet, style;
+    let tileMatrix, preferredSet, style;
     if (layerString) {
-      tileMatrixSet = this._preferredLayerTileMatrixSet.get(layerString);
+      preferredSet = this._preferredLayerTileMatrixSet.get(layerString);
 
       style = this._preferredLayerStyle.get(layerString);
 
       // Matrix identifier might be something other than standard 0..n zoom level,
       // so lookup the matrix identifier just in case.
-      if (tileMatrixSet && tileMatrixSet.tileMatrix.length > zoomLevel)
-        tileMatrix = tileMatrixSet.tileMatrix[zoomLevel].identifier;
+      if (preferredSet && preferredSet.tileMatrixSet.tileMatrix.length > zoomLevel)
+        tileMatrix = preferredSet.tileMatrixSet.tileMatrix[zoomLevel].identifier;
     }
 
-    if (layerString !== undefined && tileMatrix !== undefined && tileMatrixSet !== undefined && style !== undefined)
-      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${layerString}&style=${style.identifier}&TileMatrixSet=${tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
+    if (layerString !== undefined && tileMatrix !== undefined && preferredSet !== undefined && style !== undefined && (preferredSet.limits === undefined ||  preferredSet.limits[zoomLevel] === undefined || preferredSet.limits[zoomLevel].limits?.containsXY(column, row)))
+      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${layerString}&style=${style.identifier}&TileMatrixSet=${preferredSet.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
     else
       return "";
 

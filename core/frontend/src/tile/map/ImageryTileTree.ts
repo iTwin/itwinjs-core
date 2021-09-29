@@ -88,7 +88,7 @@ export class ImageryMapTile extends RealityTile {
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
 
     const imageryTree = this.imageryTree;
-    const resolveChildren = () => {
+    const resolveChildren = (availability?: boolean[]) => {
       const columnCount = 2, rowCount = 2;
       const level = this.quadId.level + 1;
       const column = this.quadId.column * 2;
@@ -101,13 +101,15 @@ export class ImageryMapTile extends RealityTile {
       // they will be marked as not found and their descendant will never be displayed.
       const childrenAreDisabled = (this.depth + 1) < imageryTree.minDepth;
       const tilingScheme = imageryTree.tilingScheme;
-      for (let j = 0; j < rowCount; j++) {
+      for (let j = 0, k = 0; j < rowCount; j++) {
         for (let i = 0; i < columnCount; i++) {
-          const quadId = new QuadId(level, column + i, row + j);
-          const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
-          const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-          const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
-          children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
+          if (!availability || availability[k++]) {
+            const quadId = new QuadId(level, column + i, row + j);
+            const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
+            const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
+            const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
+            children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
+          }
         }
       }
       resolve(children);
@@ -188,7 +190,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
-  public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) { return this._imageryProvider.testChildAvailability(tile, resolveChildren); }
+  public testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) { return this._imageryProvider.testChildAvailability(tile, resolveChildren); }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> { assert(false); return undefined; }

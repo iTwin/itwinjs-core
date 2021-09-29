@@ -6,7 +6,7 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { xml2json } from "xml-js";
-import { MapCartoRectangle, WmsUtilities  } from "../internal"; // WmsUtilities needed for getBaseUrl
+import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
 
 /** @packageDocumentation
  * @module Views
@@ -294,12 +294,26 @@ export namespace WmtsCapability {
     }
   }
 
+  export class TileMatrixSetLimits {
+    public limits?: Range2d;
+    public tileMatrix?: string;
+
+    constructor(_json: any) {
+      this.tileMatrix = _json.TileMatrix;
+      if (_json.MinTileRow !== undefined && _json.MaxTileRow !== undefined && _json.MinTileCol !== undefined && _json.MaxTileCol)
+        this.limits = Range2d.createXYXY(Number(_json.MinTileCol._text), Number(_json.MinTileRow._text), Number(_json.MaxTileCol._text), Number(_json.MaxTileRow._text));
+    }
+  }
+
   export class TileMatrixSetLink {
     public readonly tileMatrixSet: string;
-    // TODO: TileMatrixSetLimits
+    public readonly tileMatrixSetLimits = new Array<TileMatrixSetLimits>();
 
     constructor(_json: any) {
       this.tileMatrixSet = (_json?.TileMatrixSet?._text ? _json.TileMatrixSet._text : "");
+      const tileMatrixLimits  = _json?.TileMatrixSetLimits?.TileMatrixLimits;
+      if (Array.isArray(tileMatrixLimits))
+        tileMatrixLimits.forEach((tml: any) => this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tml)));
     }
   }
 

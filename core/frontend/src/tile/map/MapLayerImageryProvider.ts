@@ -17,6 +17,9 @@ import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId, WebMerca
 
 const tileImageSize = 256, untiledImageSize = 256;
 
+// eslint-disable-next-line prefer-const
+let doDebugToolTips = true;
+
 /** @internal */
 export enum MapLayerImageryProviderStatus {
   Valid,
@@ -54,7 +57,7 @@ export abstract class MapLayerImageryProvider {
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
   protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
-  protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: () => void) { resolveChildren(); }
+  protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: (availability?: boolean[]) => void) { resolveChildren(); }
 
   public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
     if (tile.depth >= this.maximumZoomLevel || (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))) {
@@ -64,7 +67,11 @@ export abstract class MapLayerImageryProvider {
     this._testChildAvailability(tile, resolveChildren);
   }
 
-  public async getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+  public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+    if (doDebugToolTips) {
+      const range = quadId.getLatLongRange(tree.tilingScheme);
+      strings.push(`QuadId: ${quadId.debugString}, Lat: ${range.low.x} - ${range.high.x} Long: ${range.low.y} - ${range.high.y}`);
+    }
   }
 
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {

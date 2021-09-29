@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import {NotifyMessageDetails, OutputMessagePriority} from "../../../NotificationManager";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
 import {
   ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
@@ -19,7 +19,6 @@ import {
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
-const scratchQuadId = new QuadId(0, 0, 0);
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -28,7 +27,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
-  private _availabilityMap = new Dictionary<QuadId, boolean>((lhs: QuadId, rhs: QuadId) => lhs.compare(rhs));
   public serviceJson: any;
   constructor(settings: MapLayerSettings) {
     super(settings, false);
@@ -93,7 +91,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
               const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
             }
-
           }
 
           return undefined;
@@ -108,47 +105,25 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       return undefined;
     }
   }
-  protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
+  protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) {
     if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel)) {
       resolveChildren();
       return;
     }
 
     const quadId = tile.quadId;
-    let availability;
-    if (undefined !== (availability = this._availabilityMap.get(tile.quadId))) {
-      if (availability)
-        resolveChildren();
-
-      return;
-    }
-
     const row = quadId.row * 2;
     const column = quadId.column * 2;
     const level = quadId.level + 1;
-    const queryDim = Math.min(1 << level, 32), queryDimHalf = queryDim / 2;
-    const queryRow = Math.max(0, row - queryDimHalf);
-    const queryColumn = Math.max(0, column - queryDimHalf);
 
-    getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${queryRow}/${queryColumn}/${queryDim}/${queryDim}?f=json`).then((json) => {
-      availability = true;
+    getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${row}/${column}/2/2?f=json`).then((json) => {
+      let available: boolean[] | undefined;
       if (Array.isArray(json.data)) {
-        let index = 0;
         const data = json.data;
-        for (let iCol = 0; iCol < queryDim; iCol++) {
-          for (let iRow = 0; iRow < queryDim; iRow++) {
-            scratchQuadId.level = quadId.level;
-            scratchQuadId.column = (queryColumn + iCol) / 2;
-            scratchQuadId.row = (queryRow + iRow) / 2;
-            if (0 === quadId.compare(scratchQuadId))
-              availability = data[index];
-            this._availabilityMap.set(scratchQuadId, data[index++]);
-          }
-        }
+        if (Array.isArray(data))
+          data.forEach((entry: number) => available?.push(entry !== 0));
       }
-      if (availability)
-        resolveChildren();
-
+      resolveChildren(available);
     }).catch((_error) => {
       resolveChildren();
     });
