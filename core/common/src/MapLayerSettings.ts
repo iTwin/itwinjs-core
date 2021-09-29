@@ -120,12 +120,12 @@ export class MapSubLayerSettings {
 export interface MapLayerProps {
   /** Controls visibility of layer. Defaults to 'true'. */
   visible?: boolean;
-  /** Identifies the map layers source. Defaults to 'WMS'. */
-  formatId?: string;
+  /** Identifies the map layers source.*/
+  formatId: string;
   /** Name */
-  name?: string;
+  name: string;
   /** URL */
-  url?: string;
+  url: string;
   /** Source layers. If undefined all layers are displayed. */
   subLayers?: MapSubLayerProps[];
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
@@ -175,7 +175,7 @@ export class MapLayerSettings {
   }
 
   /** @internal */
-  protected constructor(url: string, name: string, formatId: string = "WMS", visible = true,
+  protected constructor(url: string, name: string, formatId: string, visible = true,
     jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
     transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
     this.formatId = formatId;
@@ -204,40 +204,32 @@ export class MapLayerSettings {
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined {
-    if (json === undefined || json.url === undefined || undefined === json.name)
-      return undefined;
-
+  public static fromJSON(json: MapLayerProps): MapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
     return new this(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, undefined, undefined, json.accessKey);
   }
 
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
-    const props: MapLayerProps = {};
-    if (this.subLayers.length > 0) {
-      props.subLayers = [];
-      this.subLayers.forEach((subLayer) => {
-        const subLayerJson = subLayer.toJSON();
-        if (subLayerJson)
-          props.subLayers!.push(subLayerJson);
-      });
+
+    let subLayers: MapSubLayerProps[] | undefined;
+    if (this.subLayers) {
+      subLayers = [];
+      for (const subLayer of this.subLayers) {
+        subLayers.push(subLayer.toJSON());
+      }
     }
 
-    props.formatId = this.formatId;
-    props.name = this.name;
-    props.url = this.url;
-    if (0 !== this.transparency)
-      props.transparency = this.transparency;
-
-    if (this.transparentBackground === false)
-      props.transparentBackground = this.transparentBackground;
-
-    if (this.isBase === true)
-      props.isBase = this.isBase;
-
-    props.visible = this.visible;
-    return props;
+    return {
+      name: this.name,
+      formatId: this.formatId,
+      visible: this.visible,
+      url: this.url,
+      transparency: this.transparency,
+      transparentBackground: this.transparentBackground,
+      subLayers,
+      accessKey: this.accessKey,
+    };
   }
 
   /** @internal */
@@ -257,8 +249,8 @@ export class MapLayerSettings {
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    */
-  public clone(changedProps: MapLayerProps): MapLayerSettings {
-    const clone = MapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
+  public clone(changedProps: Partial<MapLayerProps>): MapLayerSettings {
+    const clone = MapLayerSettings.fromJSON(this.cloneProps(changedProps));
 
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
@@ -269,7 +261,7 @@ export class MapLayerSettings {
   }
 
   /** @internal */
-  protected cloneProps(changedProps: MapLayerProps): MapLayerProps {
+  protected cloneProps(changedProps: Partial<MapLayerProps>): MapLayerProps {
     return {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
       formatId: undefined !== changedProps.formatId ? changedProps.formatId : this.formatId,
@@ -384,13 +376,10 @@ export class BaseMapLayerSettings extends MapLayerSettings {
    * That means they should not accept undefined for props and should define props such that it fully describes the
    * layer - e.g., url and name must be defined.
    */
-  public static override fromJSON(props?: BaseMapLayerProps): BaseMapLayerSettings | undefined {
+  public static override fromJSON(props: BaseMapLayerProps): BaseMapLayerSettings {
     const settings = super.fromJSON(props);
-    if (!settings)
-      return undefined;
-
     assert(settings instanceof BaseMapLayerSettings);
-    if (props?.provider)
+    if (props.provider)
       settings._provider = BackgroundMapProvider.fromJSON(props.provider);
 
     return settings;
@@ -406,7 +395,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
   }
 
   /** @internal */
-  public override cloneProps(changedProps: MapLayerProps): BaseMapLayerProps {
+  public override cloneProps(changedProps: Partial<MapLayerProps>): BaseMapLayerProps {
     const props = super.cloneProps(changedProps) as BaseMapLayerProps;
     if (this.provider)
       props.provider = this.provider.toJSON();
@@ -415,7 +404,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
   }
 
   /** Create a copy of this layer. */
-  public override clone(changedProps: MapLayerProps): BaseMapLayerSettings {
+  public override clone(changedProps: Partial<MapLayerProps>): BaseMapLayerSettings {
     const prevUrl = this.url;
     const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
 

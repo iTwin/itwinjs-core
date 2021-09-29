@@ -409,7 +409,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public changeBaseMapProps(props: MapLayerProps | ColorDef) {
+  public changeBaseMapProps(props: Partial<MapLayerProps>| ColorDef): boolean {
+    let changed = true;
     if (props instanceof ColorDef) {
       const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
       this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
@@ -417,10 +418,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
         this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
       else {
-        const backgroundLayerSettings = BaseMapLayerSettings.fromJSON(props);
-        if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
+        changed = false;
       }
+    }
+
+    if (changed) {
+      this._synchBackgroundMapImagery();
+    }
+    return changed;
+  }
+
+  public setBaseMapProps(props: MapLayerProps| ColorDef) {
+    if (props instanceof ColorDef) {
+      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
+      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
+    } else {
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromJSON(props);
     }
 
     this._synchBackgroundMapImagery();
@@ -444,7 +457,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean) {
+  public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
