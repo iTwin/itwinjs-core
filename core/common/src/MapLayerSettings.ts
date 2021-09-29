@@ -20,7 +20,7 @@ export type SubLayerId = string | number;
  * @beta
  */
 export interface MapSubLayerProps {
-  name?: string;
+  name: string;
   title?: string;
   visible?: boolean;
   id?: SubLayerId;
@@ -60,12 +60,11 @@ export class MapSubLayerSettings {
   }
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings | undefined {
-    if (undefined === json || undefined === json.name)
-      return undefined;
     return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
   }
   public toJSON(): MapSubLayerProps {
     const props: MapSubLayerProps = { name: this.name, visible: this.visible };
+
     if (undefined !== this.id && this.id !== this.name)
       props.id = this.id;
 
@@ -82,7 +81,7 @@ export class MapSubLayerSettings {
   }
 
   /** Creating a copy of this MapSubLayer, optionally modifying some if its properties */
-  public clone(changedProps: MapSubLayerProps): MapSubLayerSettings {
+  public clone(changedProps: Partial<MapSubLayerProps>): MapSubLayerSettings {
     if (undefined === changedProps)
       return this;
 

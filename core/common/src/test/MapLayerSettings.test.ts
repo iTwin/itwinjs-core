@@ -28,10 +28,7 @@ describe("MapSubLayerSettings", () => {
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: MapSubLayerProps | undefined, expected: MapSubLayerProps | "input") => {
-      if (!input)
-        input = {};
-
+    const roundTrip = (input: MapSubLayerProps, expected: MapSubLayerProps | "input") => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
       const settings = MapSubLayerSettings.fromJSON(input)!;
@@ -44,7 +41,7 @@ describe("MapSubLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: MapSubLayerProps, changed: MapSubLayerProps, expected: MapSubLayerProps) => {
+    const clone = (input: MapSubLayerProps, changed: Partial<MapSubLayerProps>, expected: MapSubLayerProps) => {
       const settings = MapSubLayerSettings.fromJSON(input);
       const output = settings!.clone(changed);
       expectMatch(output.toJSON(), expected);
@@ -88,9 +85,7 @@ describe("MapLayerSettings", () => {
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: MapLayerProps | undefined, expected: MapLayerProps | "input") => {
-      if (!input)
-        input = {};
+    const roundTrip = (input: MapLayerProps, expected: MapLayerProps | "input") => {
 
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as MapLayerProps;
@@ -111,9 +106,9 @@ describe("MapLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: MapLayerProps, changed: MapLayerProps, expected: MapLayerProps) => {
+    const clone = (input: MapLayerProps, changed: Partial<MapLayerProps>, expected: MapLayerProps) => {
       const settings = MapLayerSettings.fromJSON(input);
-      const output = settings!.clone(changed);
+      const output = settings.clone(changed);
       expectMatches(output.toJSON(), expected);
     };
     const cloneSettings = (input: MapLayerSettings) => {
