@@ -83,7 +83,7 @@ describe("Logger", () => {
     assert.isFalse(Logger.isEnabled("test", LogLevel.Trace));
   });
 
-  it.only("static logger metadata", () => {
+  it("static logger metadata", () => {
     const aProps = `"a":"hello"`;
     const meta1Props = `"prop1":"test1","prop2":"test2","prop3":"test3"`;
     const meta2Props = `"value2":"v2"`;
@@ -92,12 +92,8 @@ describe("Logger", () => {
     assert.equal(out, `{${aProps}}`);
 
     // use a function for static metadata
-    Logger.staticMetaData.set("meta1", () => ({
-      prop1: "test1",
-      prop2: "test2",
-      prop3: "test3",
-    })
-    );
+    Logger.staticMetaData.set("meta1", () => ({ prop1: "test1", prop2: "test2", prop3: "test3" }));
+
     out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps},${meta1Props}}`);
 
