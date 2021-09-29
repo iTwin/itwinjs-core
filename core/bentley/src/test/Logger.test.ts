@@ -91,6 +91,7 @@ describe("Logger", () => {
     let out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps}}`);
 
+    // use a function for static metadata
     Logger.staticMetaData.set("meta1", () => ({
       prop1: "test1",
       prop2: "test2",
@@ -100,25 +101,32 @@ describe("Logger", () => {
     out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps},${meta1Props}}`);
 
+    // use an object for static metadata
     Logger.staticMetaData.set("meta2", { value2: "v2" });
 
+    // metadata from an object
     out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${aProps},${meta1Props},${meta2Props}}`);
 
-    out = Logger.stringifyMetaData();
-    assert.equal(out, `{${meta1Props},${meta2Props}}`);
-
+    // metadata from a function
     out = Logger.stringifyMetaData(() => ({ a: "hello" }));
     assert.equal(out, `{${aProps},${meta1Props},${meta2Props}}`);
 
+    // even if there's no metadata, you should still get static metadata
+    out = Logger.stringifyMetaData();
+    assert.equal(out, `{${meta1Props},${meta2Props}}`);
+
+    // delete static metadata
     Logger.staticMetaData.delete("meta1");
     out = Logger.stringifyMetaData({ a: "hello" });
-    assert.equal(out, `{${aProps},${meta2Props}}`);
+    assert.equal(out, `{${aProps},${meta2Props}}`, "meta2 still exists");
 
     Logger.staticMetaData.delete("meta2");
     out = Logger.stringifyMetaData({ a: "hello" });
+    // no static metadata
     assert.equal(out, `{${aProps}}`);
 
+    // no metadata at all
     out = Logger.stringifyMetaData();
     assert.equal(out, "");
   });
