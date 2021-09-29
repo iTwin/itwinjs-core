@@ -8,12 +8,13 @@
 
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import {
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
 } from "@itwin/core-backend";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, QueryParams,
+  QueryRowFormat, SubjectProps,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
@@ -128,7 +129,7 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    for await (const row of this._imodel.query(query, { rulesetId: ruleset.id })) {
+    for await (const row of this._imodel.query(query, QueryParams.from({ rulesetId: ruleset.id }), QueryRowFormat.UseJsPropertyNames)) {
       const existingRulesetElementId: Id64String = row.id;
       const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
       rulesetsWithSameId.push({

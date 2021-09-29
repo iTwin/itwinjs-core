@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
@@ -642,7 +643,7 @@ describe("FavoritePropertiesManager", () => {
         { classFullName: "S:B", baseClassFullName: "S:B" },
         { classFullName: "S:B", baseClassFullName: "S:A" },
       ];
-      imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames)).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
@@ -658,7 +659,7 @@ describe("FavoritePropertiesManager", () => {
       await manager.changeFieldPriority(imodelMock.object, b, a, allFields);
       expect(orderInfos[0]).to.eq(oldOrderInfo[0]); // a
       expect(orderInfos[1]).to.eq(oldOrderInfo[1]); // b
-      imodelMock.verify((x) => x.query(moq.It.isAnyString()), moq.Times.once());
+      imodelMock.verify((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames), moq.Times.once());
     });
 
     it("does not change the order of irrelevant properties", async () => {
@@ -689,7 +690,7 @@ describe("FavoritePropertiesManager", () => {
         { classFullName: "S:C", baseClassFullName: "S:C" },
         { classFullName: "S:C", baseClassFullName: "S:A" },
       ];
-      imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames)).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
@@ -735,7 +736,7 @@ describe("FavoritePropertiesManager", () => {
         { classFullName: "S:C", baseClassFullName: "S:C" },
         { classFullName: "S:C", baseClassFullName: "S:A" },
       ];
-      imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames)).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
@@ -781,7 +782,7 @@ describe("FavoritePropertiesManager", () => {
         { classFullName: "S:C", baseClassFullName: "S:C" },
         { classFullName: "S:C", baseClassFullName: "S:A" },
       ];
-      imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames)).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
@@ -830,7 +831,7 @@ describe("FavoritePropertiesManager", () => {
         { classFullName: "S:C", baseClassFullName: "S:C" },
         { classFullName: "S:C", baseClassFullName: "S:A" },
       ];
-      imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames)).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));
@@ -893,7 +894,7 @@ describe("FavoritePropertiesManager", () => {
         { classFullName: "S:C", baseClassFullName: "S:C" },
         { classFullName: "S:C", baseClassFullName: "S:A" },
       ];
-      imodelMock.setup((x) => x.query(moq.It.isAnyString())).returns(() => createAsyncIterator(classBaseClass));
+      imodelMock.setup((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames)).returns(() => createAsyncIterator(classBaseClass));
 
       const fieldInfos = getFieldsInfos(allFields);
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny(), moq.It.isAny())).returns(async () => new Set<PropertyFullName>(fieldInfos));

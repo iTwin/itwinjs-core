@@ -14,6 +14,7 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { TreeNodeItem } from "@itwin/components-react";
 import { UiFramework } from "../../UiFramework";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { QueryParams } from "@itwin/core-common";
 
 /**
  * Visibility tree node types.
@@ -543,7 +544,7 @@ class GroupedElementIdsProvider extends RulesetDrivenIdsProvider {
     const elementIds = await this.getResultIds();
     let modelId, categoryId;
     const query = `SELECT Model.Id AS modelId, Category.Id AS categoryId FROM bis.GeometricElement3d WHERE ECInstanceId = ? LIMIT 1`;
-    for await (const modelAndCategoryIds of this.imodel.query(query, [elementIds[0]])) {
+    for await (const modelAndCategoryIds of this.imodel.query(query, QueryParams.from([elementIds[0]]))) {
       modelId = modelAndCategoryIds.modelId;
       categoryId = modelAndCategoryIds.categoryId;
     }
