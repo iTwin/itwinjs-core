@@ -6,11 +6,23 @@ Object {
     "class": "Subject",
     "id": "0x1",
     "items": Object {
-      "$élêçtèd Ítêm(s)": Object {
+      "Selected Item(s)": Object {
         "items": Object {
-          "$óúrçè Íñfórmâtíöñ": Object {
+          "Code": Object {
+            "type": "primitive",
+            "value": "DgnV8Bridge",
+          },
+          "Description": Object {
+            "type": "primitive",
+            "value": "",
+          },
+          "Model": Object {
+            "type": "primitive",
+            "value": "Not specified",
+          },
+          "Source Information": Object {
             "items": Object {
-              "Mòdél $õürçê": Object {
+              "Model Source": Object {
                 "items": Object {
                   "Repository Link": Object {
                     "type": "array",
@@ -22,18 +34,6 @@ Object {
               },
             },
             "type": "category",
-          },
-          "Code": Object {
-            "type": "primitive",
-            "value": "DgnV8Bridge",
-          },
-          "Description": Object {
-            "type": "primitive",
-            "value": "",
-          },
-          "Model": Object {
-            "type": "primitive",
-            "value": "Ñót spêçìfíêd",
           },
           "User Label": Object {
             "type": "primitive",

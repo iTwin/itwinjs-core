@@ -44,7 +44,7 @@ const copyBentleyBackendAssets = (outputDir: string) => {
   const bentleyPackagesPath = "node_modules/@bentley";
   fs.readdirSync(bentleyPackagesPath).map((packageName) => {
     const packagePath = path.resolve(bentleyPackagesPath, packageName);
-    return path.join(packagePath, "lib", "assets");
+    return path.join(packagePath, "lib", "cjs", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
   }).forEach((src) => {
@@ -56,7 +56,7 @@ const copyBentleyFrontendAssets = (outputDir: string) => {
   const bentleyPackagesPath = "node_modules/@bentley";
   fs.readdirSync(bentleyPackagesPath).map((packageName) => {
     const packagePath = path.resolve(bentleyPackagesPath, packageName);
-    return path.join(packagePath, "lib", "public");
+    return path.join(packagePath, "lib", "cjs", "public");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
   }).forEach((src) => {
@@ -89,7 +89,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
     localeDirectories: [path.join(libDir, "assets", "locales")],
-    defaultLocale: "en-PSEUDO",
+    defaultLocale: "en",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
@@ -100,7 +100,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
-      activeLocale: "en-PSEUDO",
+      activeLocale: "en",
     },
   };
 
