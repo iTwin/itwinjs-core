@@ -985,20 +985,17 @@ export type LogFunction = (category: string, message: string, metaData: LoggingM
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static getLevel(category: string): LogLevel | undefined;
-    static initialize(logError: LogFunction | undefined, logWarning: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
+    static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logError: LogFunction | undefined;
     static logException(category: string, err: any, log?: LogFunction): void;
-    static set logExceptionCallstacks(b: boolean);
-    static get logExceptionCallstacks(): boolean;
+    static logExceptionCallstacks: boolean;
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
-    // @internal
-    static logRaw(level: LogLevel, category: string, message: string, metaData?: LoggingMetaData): void;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;
@@ -1008,7 +1005,7 @@ export class Logger {
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
-    // @internal (undocumented)
+    // @internal
     static staticMetaData: Map<string, LoggingMetaData>;
     static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;

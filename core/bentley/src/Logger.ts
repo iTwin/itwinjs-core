@@ -58,12 +58,18 @@ export class Logger {
   protected static _logTrace: LogFunction | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
-  private static _logExceptionCallstacks = false;
-  /** @internal */
+
+  /** Should the call stack be included when an exception is logged?  */
+  public static logExceptionCallstacks = false;
+
+  /** All static metadata is combined with per-call metadata and stringified in every log message.
+   * Static metadata can either be an object or a function that returns an object.
+   * Use a key to identify entries in the map so the can be removed individually.
+   * @internal */
   public static staticMetaData = new Map<string, LoggingMetaData>();
 
   /** Initialize the logger streams. Should be called at application initialization time. */
-  public static initialize(logError: LogFunction | undefined, logWarning: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
+  public static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void {
     Logger._logError = logError;
     Logger._logWarning = logWarning;
     Logger._logInfo = logInfo;
@@ -73,46 +79,12 @@ export class Logger {
     Logger.staticMetaData.clear();
   }
 
-  /**
-   * Gets raw callbacks which can be use to forward logging
-   * @internal
-   */
-  public static logRaw(level: LogLevel, category: string, message: string, metaData?: LoggingMetaData): void {
-    switch (level) {
-      case LogLevel.Error:
-        if (this._logError)
-          this._logError(category, message, metaData);
-        break;
-      case LogLevel.Info:
-        if (this._logInfo)
-          this._logInfo(category, message, metaData);
-        break;
-      case LogLevel.Trace:
-        if (this._logTrace)
-          this._logTrace(category, message, metaData);
-        break;
-      case LogLevel.Warning:
-        if (this._logWarning)
-          this._logWarning(category, message, metaData);
-        break;
-    }
-  }
-
-  /** Initialize the logger streams to the console. Should be called at application initialization time. */
+  /** Initialize the logger to output to the console. */
   public static initializeToConsole(): void {
-    const doLog = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
-      console.log(`${level} | ${category} | ${message}${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+    const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
+      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
 
-    Logger.initialize(doLog("Error"), doLog("Warning"), doLog("Info"), doLog("Trace"));
-  }
-
-  public static set logExceptionCallstacks(b: boolean) {
-    Logger._logExceptionCallstacks = b;
-  }
-
-  /** Should the callstack be included when an exception is logged?  */
-  public static get logExceptionCallstacks(): boolean {
-    return Logger._logExceptionCallstacks;
+    Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
   }
 
   /** stringify the metadata for a log message by merging the supplied metadata with all static metadata into one object that is then `JSON.stringify`ed. */
@@ -201,7 +173,7 @@ export class Logger {
 
     // Fall back on the level set for the parent of this category.
     const parent = category.lastIndexOf(".");
-    if ((parent !== undefined) && (parent !== -1))
+    if (parent !== -1)
       return Logger.getLevel(category.slice(0, parent));
 
     // Fall back on the default level.

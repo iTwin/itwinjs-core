@@ -181,8 +181,22 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
-    Logger.logRaw(level, category, message, () => metaData);
+    switch (level) {
+      case LogLevel.Error:
+        Logger.logError(category, message, metaData);
+        break;
+      case LogLevel.Info:
+        Logger.logInfo(category, message, metaData);
+        break;
+      case LogLevel.Trace:
+        Logger.logTrace(category, message, metaData);
+        break;
+      case LogLevel.Warning:
+        Logger.logWarning(category, message, metaData);
+        break;
+    }
   }
+
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
