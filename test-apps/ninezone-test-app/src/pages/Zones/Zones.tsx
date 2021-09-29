@@ -5,9 +5,9 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import "./Zones.scss";
 import * as React from "react";
-import { ActionButton, GroupButton, BadgeType } from "@bentley/ui-abstract";
-import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@bentley/ui-components";
-import { Point, BadgeUtilities } from "@bentley/ui-core";
+import { ActionButton, GroupButton, BadgeType } from "@itwin/appui-abstract";
+import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@itwin/components-react";
+import { Point, BadgeUtilities } from "@itwin/core-react";
 import {
   NineZone,
   addPanelWidget,
@@ -36,7 +36,7 @@ import {
   TabStateContext,
   createVerticalPanelState,
   isHorizontalPanelSide,
-} from "@bentley/ui-ninezone";
+} from "@itwin/appui-layout-react";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
 

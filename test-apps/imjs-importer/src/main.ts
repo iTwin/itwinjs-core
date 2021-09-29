@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */

@@ -6,16 +6,15 @@
 import * as path from "path";
 
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
-} from "@bentley/imodeljs-backend";
-import { ColorByName, IModel, LocalFileName } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+} from "@itwin/core-backend";
+import { ColorByName, IModel, LocalFileName } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";
@@ -54,14 +53,24 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function queryITwinIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-  return (new ContextRegistryClient()).getProject(requestContext, {
-    $select: "*",
-    $filter: `Name+eq+'${projectName}'`,
+async function getITwinByName(requestContext: AccessToken, name: string): Promise<ITwin> {
+  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+    search: {
+      searchString: name,
+      propertyName: ITwinSearchableProperty.Name,
+      exactMatch: true,
+    },
   });
+
+  if (iTwinList.length === 0)
+    throw new Error(`ITwin ${name} was not found for the user.`);
+  else if (iTwinList.length > 1)
+    throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+  return iTwinList[0];
 }
 
-async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
+async function createIModel(user: AccessToken, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
   try {
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
     if (iModelId !== undefined)
@@ -75,12 +84,12 @@ async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidS
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
-async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId: GuidString, iTwinId: GuidString, assetsDir: string) {
+async function runBridgeFirstTime(user: AccessToken, iModelId: GuidString, iTwinId: GuidString, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
 
   const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
-  const briefcase = await BriefcaseDb.open({ user, fileName: props.fileName });
+  const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
 
   // I. Import the schema.
   await briefcase.importSchemas([path.join(assetsDir, "RobotWorld.ecschema.xml")]);
@@ -142,15 +151,15 @@ async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId
 
 describe.skip("Bridge", async () => {
 
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
   let testITwinId: GuidString;
   let revision0: LocalFileName;
   let iModelId: GuidString;
 
   before(async () => {
     await IModelHost.startup();
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testITwinId = (await queryITwinIdByName(user, "iModelJsIntegrationTest")).wsgId;
+    user = await TestUtility.getAccessToken(TestUsers.superManager);
+    testITwinId = (await getITwinByName(user, "iModelJsIntegrationTest")).id;
     revision0 = path.join(KnownTestLocations.assetsDir, "empty.bim");
     iModelId = await createIModel(user, testITwinId, "BridgeTest", revision0);
     await IModelHost.shutdown();

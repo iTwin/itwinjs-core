@@ -6,13 +6,13 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { DrawingViewState, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { AxisIndex, Matrix3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { DrawingViewState, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";
-import { CubeHover, CubeNavigationAid, CubeNavigationHitBoxX, CubeNavigationHitBoxY, CubeNavigationHitBoxZ, FaceCell, NavCubeFace } from "../../ui-imodel-components/navigationaids/CubeNavigationAid";
-import { ViewportComponentEvents } from "../../ui-imodel-components/viewport/ViewportComponentEvents";
-import { Face } from "../../ui-imodel-components/navigationaids/Cube";
+import { CubeHover, CubeNavigationAid, CubeNavigationHitBoxX, CubeNavigationHitBoxY, CubeNavigationHitBoxZ, FaceCell, NavCubeFace } from "../../imodel-components-react/navigationaids/CubeNavigationAid";
+import { ViewportComponentEvents } from "../../imodel-components-react/viewport/ViewportComponentEvents";
+import { Face } from "../../imodel-components-react/navigationaids/Cube";
 
 describe("CubeNavigationAid", () => {
 

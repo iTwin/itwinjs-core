@@ -6,14 +6,13 @@ import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Size } from "@bentley/ui-core";
+import { Size } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
-} from "../../ui-ninezone";
-import { createDOMRect } from "../Utils";
+} from "../../appui-layout-react";
 import { createDragItemInfo, NineZoneProvider, setRefValue } from "../Providers";
 
 describe("WidgetPanelProvider", () => {
@@ -160,7 +159,7 @@ describe("WidgetPanelProvider", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
-    sinon.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 300 }));
     render(
       <NineZoneProvider
         state={nineZone}
@@ -218,8 +217,8 @@ describe("WidgetPanelProvider", () => {
     });
 
     sinon.stub(panel, "getBoundingClientRect")
-      .onFirstCall().returns(createDOMRect({ width: 200 }))
-      .onSecondCall().returns(createDOMRect({ width: 300 }));
+      .onFirstCall().returns(DOMRect.fromRect({ width: 200 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 300 }));
 
     rerender(<WidgetPanelProvider
       side="left"
@@ -260,8 +259,8 @@ describe("WidgetPanelProvider", () => {
     });
 
     sinon.stub(panel, "getBoundingClientRect")
-      .onFirstCall().returns(createDOMRect({ width: 200 }))
-      .onSecondCall().returns(createDOMRect({ width: 300 }));
+      .onFirstCall().returns(DOMRect.fromRect({ width: 200 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 300 }));
 
     rerender(<WidgetPanelProvider
       side="left"
@@ -298,8 +297,8 @@ describe("WidgetPanelProvider", () => {
     });
 
     sinon.stub(panel, "getBoundingClientRect")
-      .onFirstCall().returns(createDOMRect({ width: 200 }))
-      .onSecondCall().returns(createDOMRect({ width: 300 }));
+      .onFirstCall().returns(DOMRect.fromRect({ width: 200 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 300 }));
 
     rerender(<WidgetPanelProvider
       side="left"
@@ -321,7 +320,7 @@ describe("WidgetPanelProvider", () => {
       draft.panels.left.size = 200;
     });
 
-    const stub = sinon.stub(HTMLElement.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
+    const stub = sinon.stub(HTMLElement.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 100 }));
     const dispatch: NineZoneDispatch = (action) => {
       if (action.type === "PANEL_INITIALIZE") {
         nineZone = produce(nineZone, (draft) => {
@@ -330,8 +329,8 @@ describe("WidgetPanelProvider", () => {
 
         stub.reset();
         stub
-          .onFirstCall().returns(createDOMRect({ width: 200 }))
-          .returns(createDOMRect({ width: 400 }));
+          .onFirstCall().returns(DOMRect.fromRect({ width: 200 }))
+          .returns(DOMRect.fromRect({ width: 400 }));
 
         rerender(<WidgetPanelProvider
           side="left"
@@ -436,8 +435,8 @@ describe("WidgetPanelProvider", () => {
     });
     const stub = sinon.stub(panel, "getBoundingClientRect");
     stub
-      .onFirstCall().returns(createDOMRect({ width: 200 }))
-      .onSecondCall().returns(createDOMRect({ width: 0 }));
+      .onFirstCall().returns(DOMRect.fromRect({ width: 200 }))
+      .onSecondCall().returns(DOMRect.fromRect({ width: 0 }));
 
     rerender(<WidgetPanelProvider
       side="left"
@@ -450,7 +449,7 @@ describe("WidgetPanelProvider", () => {
     panel.style.width.should.eq("0px");
 
     stub.reset();
-    stub.returns(createDOMRect({ width: 400 }));
+    stub.returns(DOMRect.fromRect({ width: 400 }));
     nineZone = produce(nineZone, (draft) => {
       draft.panels.left.size = 400;
     });
@@ -486,7 +485,7 @@ describe("WidgetPanelProvider", () => {
     nineZone = produce(nineZone, (draft) => {
       draft.panels.left.size = 300;
     });
-    sinon.stub(panel, "getBoundingClientRect").returns(createDOMRect({ width: 200 }));
+    sinon.stub(panel, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 200 }));
 
     rerender(<WidgetPanelProvider
       side="left"
@@ -520,8 +519,8 @@ describe("WidgetPanelProvider", () => {
       draft.panels.top.collapsed = true;
     });
     sinon.stub(panel, "getBoundingClientRect")
-      .onFirstCall().returns(createDOMRect({ height: 200 }))
-      .onSecondCall().returns(createDOMRect({ height: 0 }));
+      .onFirstCall().returns(DOMRect.fromRect({ height: 200 }))
+      .onSecondCall().returns(DOMRect.fromRect({ height: 0 }));
     rerender(<WidgetPanelProvider
       side="top"
     />);

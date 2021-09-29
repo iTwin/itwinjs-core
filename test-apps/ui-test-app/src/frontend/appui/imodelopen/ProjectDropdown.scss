@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@itwin/core-react/lib/core-react/style/colors";
+@import "~@itwin/core-react/lib/core-react/scrollbar";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $separator-background: #F0F0F0;
@@ -69,7 +69,7 @@ $pp-max-dropdown-width: 450px;
   }
 
   /* current project number & name */
-  > div {
+  >div {
     font-size: $iui-font-size-leading;
     display: flex;
     justify-content: center;
@@ -146,7 +146,7 @@ $pp-max-dropdown-width: 450px;
       box-sizing: border-box;
 
       /* project number & name */
-      .pp-details{
+      .pp-details {
         flex: 1;
         display: flex;
         justify-content: center;
@@ -154,18 +154,18 @@ $pp-max-dropdown-width: 450px;
         overflow: hidden;
 
         /* clip the number & name */
-        span{
+        span {
           @extend .text-clip;
         }
 
         /* number is a larger font size than name */
-        span:first-child{
+        span:first-child {
           font-size: $iui-font-size;
           font-weight: 550;
         }
 
         /* name is a smaller font size and space the number/name */
-        span:last-child{
+        span:last-child {
           margin-top: .4em;
           font-size: $iui-font-size-small;
           font-weight: 300;
@@ -173,7 +173,7 @@ $pp-max-dropdown-width: 450px;
       }
 
       /* hover */
-      &:hover{
+      &:hover {
         background-color: #eee;
       }
     }

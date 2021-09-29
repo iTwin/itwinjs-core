@@ -8,36 +8,36 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import {
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { FrontendDevTools } from "@itwin/frontend-devtools";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
+import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection,
-  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
-  WebViewerApp, WebViewerAppOpts,
-} from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
-import { MapLayersUI } from "@bentley/map-layers";
-import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
-import { getClassName } from "@bentley/ui-abstract";
-import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool,
+  SnapMode, ToolAdmin, ViewClipByPlaneTool,
+} from "@itwin/core-frontend";
+import { I18NNamespace } from "@itwin/core-i18n";
+import { MarkupApp } from "@itwin/core-markup";
+import { MapLayersUI } from "@itwin/map-layers";
+import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/MobileFrontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
+import { getClassName } from "@itwin/appui-abstract";
+import { BeDragDropContext } from "@itwin/components-react";
+import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw,
-  FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
-  FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
-  ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
-} from "@bentley/ui-framework";
-import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import { BeDragDropContext } from "@bentley/ui-components";
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
+  FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
+} from "@itwin/appui-react";
+import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -52,16 +52,17 @@ import { AppSettingsTabsProvider } from "./appui/uiproviders/AppSettingsTabsProv
 import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { EditingScopeTool } from "./tools/editing/EditingTools";
+import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
-  OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool,
-  RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
+  OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
+  SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import { ProgressInfo } from "@bentley/itwin-client";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -168,23 +169,37 @@ export class SampleAppIModelApp {
   }
 
   public static getUiSettingsStorage(): UiSettings {
-    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    const authorized = !!IModelApp.authorizationClient;
     if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
       return SampleAppIModelApp._localUiSettings;
     }
     return SampleAppIModelApp._UserUiSettingsStorage;
   }
 
-  public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
+  public static async startup(opts: NativeAppOpts): Promise<void> {
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
-    } else if (ProcessDetector.isAndroidAppFrontend)
+    } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
-    else
-      await WebViewerApp.startup(opts);
+    } else {
+      const redirectUri = "http://localhost:3000/signin-callback";
+      const urlObj = new URL(redirectUri);
+      if (urlObj.pathname === window.location.pathname) {
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+        return;
+      }
+
+      const rpcParams: BentleyCloudRpcParams =
+        undefined !== process.env.IMJS_GP_BACKEND ?
+          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3000" };
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
+
+      await IModelApp.startup(opts.iModelApp);
+    }
 
     window.onerror = function (error) {
       // eslint-disable-next-line no-console
@@ -434,20 +449,30 @@ export class SampleAppIModelApp {
       const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
-      const requestContext = await AuthorizedFrontendRequestContext.create();
-      const project = await (new ContextRegistryClient()).getProject(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${projectName}'`,
+      const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
+        search: {
+          searchString: projectName,
+          propertyName: ITwinSearchableProperty.Name,
+          exactMatch: true,
+        },
       });
 
-      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
+      if (iTwinList.length === 0)
+        throw new Error(`ITwin ${projectName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+
+      const project: ITwin = iTwinList[0];
+
+      const iModel = (await (new IModelHubClient()).iModels.get(accessToken, project.id, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(project.id, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(project.id, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
@@ -567,26 +592,41 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     super(props);
 
     AppUi.initialize();
+    this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
-
+    const authorized = !!IModelApp.authorizationClient;
     this.state = {
       authorized,
       uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
     };
   }
 
-  private _initializeSignin = async (authorized: boolean): Promise<void> => {
+  private _initializeSignin = async (): Promise<void> => {
+    let authorized = !!IModelApp.authorizationClient;
+    if (!authorized) {
+      const auth = new BrowserAuthorizationClient({
+        clientId: "imodeljs-spa-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.join(" "),
+        responseType: "code",
+      });
+      try {
+        await auth.signInSilent();
+      } catch (err) { }
+
+      authorized = auth.isAuthorized;
+      if (authorized)
+        IModelApp.authorizationClient = auth;
+    }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
   private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
-    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    const authorized = !!IModelApp.authorizationClient;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
     this.setState({ authorized, uiSettingsStorage });
-    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
@@ -648,12 +688,7 @@ const baseOidcScopes = [
   "email",
   "profile",
   "organization",
-  "imodelhub",
-  "context-registry-service:read-only",
-  "product-settings-service",
-  "projectwise-share",
-  "urlps-third-party",
-  "imodel-extension-service-api",
+  "itwinjs",
 ];
 
 // main entry point.
@@ -670,19 +705,19 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration = {};
   const envVar = "IMJS_TESTAPP_SNAPSHOT_FILEPATH";
   SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env[envVar];
+  SampleAppIModelApp.testAppConfiguration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+  SampleAppIModelApp.testAppConfiguration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
+  SampleAppIModelApp.testAppConfiguration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
   SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_START_WITH_SNAPSHOTS");
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
-  let rpcParams: BentleyCloudRpcParams;
-  if (process.env.IMJS_GP_BACKEND) {
-    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${undefined === process.env.IMJS_URL_PREFIX ? "" : process.env.IMJS_URL_PREFIX}api.bentley.com` };
-  } else {
-    rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-  }
-
-  const opts: WebViewerAppOpts & NativeAppOpts = {
+  const mapLayerOpts = {
+    BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
+    Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
+  };
+  const opts: NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
       toolAdmin: new FrameworkToolAdmin(),
@@ -692,15 +727,8 @@ async function main() {
       viewManager: new AppViewManager(true),  // Favorite Properties Support
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-    },
-    webViewerApp: {
-      rpcParams,
-      authConfig: {
-        clientId: "imodeljs-spa-test",
-        redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
-        responseType: "code",
-      },
+      mapLayerOptions: mapLayerOpts,
+      tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };
 

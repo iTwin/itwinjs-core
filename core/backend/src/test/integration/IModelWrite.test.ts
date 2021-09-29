@@ -5,17 +5,17 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { DbResult, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson, Point3d } from "@bentley/geometry-core";
+import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometryStreamProps, IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DrawingCategory } from "../../Category";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
+  BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -36,8 +36,8 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 }
 
 describe("IModelWriteTest (#integration)", () => {
-  let managerUser: AuthorizedBackendRequestContext;
-  let superUser: AuthorizedBackendRequestContext;
+  let managerUser: AccessToken;
+  let superUser: AccessToken;
   let testITwinId: string;
   let readWriteTestIModelId: GuidString;
 
@@ -47,9 +47,8 @@ describe("IModelWriteTest (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("IModelWriteTest");
 
-    managerUser = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    superUser = await IModelTestUtils.getUserContext(TestUserType.Super);
-    (superUser as any).activityId = "IModelWriteTest (#integration)";
+    managerUser = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    superUser = await IModelTestUtils.getAccessToken(TestUserType.Super);
 
     testITwinId = await HubUtility.getTestITwinId(managerUser);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
@@ -70,7 +69,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should handle undo/redo (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ user: adminRequestContext, iTwinId: testITwinId, iModelName });
@@ -260,7 +259,7 @@ describe("IModelWriteTest (#integration)", () => {
     /* User "manager" upgrades the briefcase */
 
     // Validate the original state of the BisCore schema in the briefcase
-    let iModel = await BriefcaseDb.open({ user: managerUser, fileName: managerBriefcaseProps.fileName });
+    let iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -271,10 +270,10 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas
-    await BriefcaseDb.upgradeSchemas({ user: managerUser, ...managerBriefcaseProps });
+    await BriefcaseDb.upgradeSchemas(managerBriefcaseProps);
 
     // Validate state after upgrade
-    iModel = await BriefcaseDb.open({ user: managerUser, fileName: managerBriefcaseProps.fileName });
+    iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -299,7 +298,7 @@ describe("IModelWriteTest (#integration)", () => {
     // assert.strictEqual(result, IModelHubStatus.PullIsRequired);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.open({ user: superUser, fileName: superBriefcaseProps.fileName });
+    const superIModel = await BriefcaseDb.open({ fileName: superBriefcaseProps.fileName });
     (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ user: superUser });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
@@ -312,11 +311,11 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpToDate);
 
     // Upgrade the schemas - ensure this is a no-op
-    await BriefcaseDb.upgradeSchemas({ user: superUser, ...superBriefcaseProps });
+    await BriefcaseDb.upgradeSchemas(superBriefcaseProps);
     await IModelHost.hubAccess.deleteIModel({ user: managerUser, iTwinId, iModelId });
   });
   it("changeset size and ec schema version change", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
     const iTwinId = await HubUtility.getTestITwinId(adminRequestContext);
     const iModelName = HubUtility.generateUniqueName("changeset_size");
     const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", user: adminRequestContext });
@@ -389,8 +388,8 @@ describe("IModelWriteTest (#integration)", () => {
     rwIModel.close();
   });
   it("clear cache on schema changes", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
-    const userRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
+    const adminRequestContext = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
+    const userRequestContext = await IModelTestUtils.getAccessToken(TestUserType.Super);
     const iTwinId = await HubUtility.getTestITwinId(adminRequestContext);
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = HubUtility.generateUniqueName("SchemaChanges");

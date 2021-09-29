@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Fix plane constructions on xy clipper from polyline offset",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry",
+  "email": "69321059+EarlinLutz@users.noreply.github.com"
+}

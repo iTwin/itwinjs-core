@@ -6,12 +6,11 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId,
-  ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion,
-  LocalDirName, LocalFileName,
-} from "@bentley/imodeljs-common";
+  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
+  IModelVersion, LocalDirName, LocalFileName,
+} from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 import { UserArg } from "./IModelDb";
 
@@ -27,6 +26,21 @@ export enum LockState {
    * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
    */
   Exclusive = 2,
+}
+
+/** Exception thrown if lock cannot be acquired.
+ * @beta
+*/
+export class LockConflict extends IModelError {
+  public constructor(
+    /** Id of Briefcase holding lock */
+    public readonly briefcaseId: BriefcaseId,
+    /** Alias of Briefcase holding lock */
+    public readonly briefcaseAlias: string,
+    msg: "shared lock is held" | "exclusive lock is already held"
+  ) {
+    super(IModelHubStatus.LockOwnedByAnotherBriefcase, msg);
+  }
 }
 
 /**
@@ -69,6 +83,15 @@ export interface ITwinIdArg {
  */
 export interface IModelIdArg extends UserArg {
   readonly iModelId: GuidString;
+}
+
+/**
+ * Argument for acquiring a new BriefcaseId
+ * @public
+ */
+export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
+  /** A string to be reported to other users to identify this briefcase, for example in the case of conflicts or lock collisions. */
+  readonly briefcaseAlias?: string;
 }
 
 /** Argument for methods that must supply an IModel name and iTwinId
@@ -151,7 +174,7 @@ export interface BackendHubAccess {
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
-  acquireNewBriefcaseId(arg: IModelIdArg): Promise<BriefcaseId>;
+  acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 
@@ -192,16 +215,6 @@ export interface BackendHubAccess {
    * @internal
    */
   releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-
-  /** Query codes
-   * @internal
-   */
-  queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-  /**
-   * release codes
-   * @internal
-   */
-  releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;

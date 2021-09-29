@@ -6,8 +6,8 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
+import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcManager } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
@@ -71,7 +71,7 @@ export class RpcRequestsHandler implements IDisposable {
 
   private async requestRepeatedly<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: (logs: DiagnosticsScopeLogs[]) => void, repeatCount: number = 1): Promise<TResult> {
     let diagnostics: DiagnosticsScopeLogs[] | undefined;
-    let error: Error | undefined;
+    let error: unknown | undefined;
     let shouldRepeat = false;
     try {
       const response = await func();

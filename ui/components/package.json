@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/ui-components",
-  "version": "3.0.0-dev.64",
+  "name": "@itwin/components-react",
+  "version": "3.0.0-dev.71",
   "description": "iModel.js UI complex components",
-  "main": "lib/ui-components.js",
-  "typings": "lib/ui-components",
+  "main": "lib/components-react.js",
+  "typings": "lib/components-react",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -17,9 +17,9 @@
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-components/file.json --tsIndexFile=./ui-components.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/components-react/file.json --tsIndexFile=./components-react.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "extract-api": "betools extract-api --entry=ui-components",
+    "extract-api": "betools extract-api --entry=components-react",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.64",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.71",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.71",
+    "@itwin/core-react": "workspace:^3.0.0-dev.71",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -45,12 +45,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@testing-library/user-event": "^13.2.1",
@@ -86,7 +86,7 @@
     "eslint": "^7.11.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
-    "jsdom": "^16.7.0",
+    "typescript": "^17.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
@@ -102,12 +102,12 @@
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "typemoq": "^2.1.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+    "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
@@ -134,7 +134,7 @@
     "ts-key-enum": "^2.0.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [
       "ignore-styles",
       "jsdom-global/register",
@@ -149,11 +149,11 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
     "extends": [
-      "plugin:@bentley/ui",
-      "plugin:@bentley/jsdoc"
+      "plugin:@itwin/ui",
+      "plugin:@itwin/jsdoc"
     ]
   }
 }

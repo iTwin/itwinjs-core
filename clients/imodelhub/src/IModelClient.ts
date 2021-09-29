@@ -61,7 +61,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[HubIModel]] instances.
-   * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
+   * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[ITwin]] workflow.
    */
   public get iModels(): IModelsHandler {
     return new IModelsHandler(this._handler, this._fileHandler);

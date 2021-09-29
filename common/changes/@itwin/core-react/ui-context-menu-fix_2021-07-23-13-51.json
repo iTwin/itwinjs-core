@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Fix infinite loop crash in ContextMenu when the menu is too large to fit in the parent window.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

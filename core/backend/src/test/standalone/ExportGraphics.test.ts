@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point3d, Range3d, Sphere } from "@bentley/geometry-core";
-import { Code, ColorDef, DbResult, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, IModel, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Box, LineString3d, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
+import { Code, ColorDef, DbResult, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, IModel, PhysicalElementProps } from "@itwin/core-common";
 import { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, PhysicalObject, SnapshotDb,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometryPart } from "../../Element";
 

@@ -6,9 +6,9 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
@@ -626,7 +626,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const addNext = (undefined !== hit && !this.agenda.has(hit.sourceId));
     this.agenda.popGroup();
 
-    if (!addNext || !await this.buildLocateAgenda(hit!))
+    if (!addNext || !await this.buildLocateAgenda(hit))
       await this.onAgendaModified(); // only change was popGroup...
 
     return true;

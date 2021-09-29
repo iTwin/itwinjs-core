@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/frontend";
 
 export class IModelHubUserMgr implements FrontendAuthorizationClient {
   private _token: AccessToken | undefined;
 
-  public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
+  public constructor(private _userCredentials: any) {
   }
 
   public async signIn(): Promise<void> {

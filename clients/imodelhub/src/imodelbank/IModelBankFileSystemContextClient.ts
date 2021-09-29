@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import { Asset, Project } from "@bentley/context-registry-client";
-import { AuthorizedClientRequestContext, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { AccessToken, IModelHubStatus, Logger } from "@itwin/core-bentley";
+import { ITwin } from "@bentley/context-registry-client";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgError, WSStatus } from "../wsg/WsgClient";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
@@ -30,7 +30,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
   constructor(public baseUri: string) {
   }
 
-  private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
+  private async queryContextProps(accessToken: AccessToken, projectName: string): Promise<IModelFileSystemContextProps[]> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
     Logger.logInfo(loggerCategory, `Sending GET request to ${url}`);
 
@@ -41,12 +41,12 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
       qs: queryOptions,
       accept: "application/json",
     };
 
-    const res: Response = await request(requestContext, url, options);
+    const res: Response = await request(url, options);
     if (!res.body || !res.body.instances) {
       throw new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`);
     }
@@ -63,24 +63,14 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     return props.map((value) => value.properties as IModelFileSystemContextProps);
   }
 
-  public async queryAssetByName(requestContext: AuthorizedClientRequestContext, assetName: string): Promise<Asset> {
-    const props = await this.queryContextProps(requestContext, assetName);
-    const asset = new Asset();
-    asset.wsgId = asset.ecId = props[0].id;
-    asset.name = props[0].name;
-    return asset;
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+    const props = await this.queryContextProps(accessToken, name);
+
+    // Get first context
+    return props[0] as ITwin;
   }
 
-  public async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-    const props = await this.queryContextProps(requestContext, projectName);
-
-    const project = new Project();
-    project.wsgId = project.ecId = props[0].id;
-    project.name = props[0].name;
-    return project;
-  }
-
-  public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+  public async createContext(accessToken: AccessToken, name: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
 
     Logger.logInfo(loggerCategory, `Sending POST request to ${url}`);
@@ -89,22 +79,22 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
       body,
     };
 
-    await request(requestContext, url, options);
+    await request(url, options);
   }
 
-  public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
+  public async deleteContext(accessToken: AccessToken, contextId: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${contextId}`;
     Logger.logInfo(loggerCategory, `Sending DELETE request to ${url}`);
 
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
     };
 
-    await request(requestContext, url, options);
+    await request(url, options);
   }
 }

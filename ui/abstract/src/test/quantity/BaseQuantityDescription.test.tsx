@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BaseQuantityDescription, ParseResults } from "../../ui-abstract";
+import { BaseQuantityDescription, ParseResults } from "../../appui-abstract";
 
 describe("BaseQuantityDescription", () => {
   it("mock quantity", () => {

@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
-import { ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 

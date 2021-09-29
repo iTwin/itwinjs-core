@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
-import { DefaultNavigationWidget } from "../../ui-framework/widgets/DefaultNavigationWidget";
+import { CommandItemDef } from "../../appui-react/shared/CommandItemDef";
+import { ItemList } from "../../appui-react/shared/ItemMap";
+import { DefaultNavigationWidget } from "../../appui-react/widgets/DefaultNavigationWidget";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("DefaultNavigationWidget", () => {

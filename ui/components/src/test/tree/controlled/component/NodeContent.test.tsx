@@ -6,13 +6,13 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { CheckBoxState } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
-import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { PropertyValueRendererManager } from "../../../../components-react/properties/ValueRendererManager";
+import { TreeNodeContent } from "../../../../components-react/tree/controlled/component/NodeContent";
+import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import { TestUtils } from "../../../TestUtils";
 
 describe("NodeContent", () => {

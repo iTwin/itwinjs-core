@@ -8,17 +8,15 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import {
-  BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
-} from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
+import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
+import { I18N, I18NOptions } from "@itwin/core-i18n";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
+import { UiAdmin } from "@itwin/appui-abstract";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
@@ -100,10 +98,10 @@ export interface IModelAppOptions {
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
-  /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
+  /** If present, supplies the [[i18n]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: FrontendAuthorizationClient;
+  authorizationClient?: AuthorizationClient;
   /** If present, supplies security options for the frontend. */
   security?: FrontendSecurityOptions;
   /** @internal */
@@ -156,7 +154,7 @@ interface IModelAppForDebugger {
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Before any interactive operations may be performed by the `@bentley/imodeljs-frontend package`, [[IModelApp.startup]] must be called.
+ * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called.
  * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
  *
  * @public
@@ -190,7 +188,7 @@ export class IModelApp {
   protected constructor() { }
 
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: FrontendAuthorizationClient;
+  public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
@@ -224,7 +222,7 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[I18N]] for this session. */
+  /** The [[i18n]] for this session. */
   public static get i18n(): I18N { return this._i18n; }
   /** The [[SettingsAdmin]] for this session. */
   public static get settings(): SettingsAdmin { return this._settings; }
@@ -490,29 +488,22 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
-      let authorization: string | undefined;
-      let userId: string | undefined;
-      if (IModelApp.authorizationClient?.hasSignedIn) {
-        // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
+      let authorization: AccessToken | undefined;
+      if (IModelApp.authorizationClient) {
         try {
-          const accessToken = await IModelApp.authorizationClient.getAccessToken();
-          authorization = accessToken.toTokenString();
-          const userInfo = accessToken.getUserInfo();
-          if (userInfo)
-            userId = userInfo.id;
+          authorization = await IModelApp.authorizationClient.getAccessToken();
         } catch (err) {
           // The application may go offline
         }
       }
-      const serialized: SerializedClientRequestContext = {
+      const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization,
-        userId,
+        authorization: authorization ?? "",
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;

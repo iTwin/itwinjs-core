@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/bentleyjs-core",
-  "version": "3.0.0-dev.64",
+  "name": "@itwin/core-bentley",
+  "version": "3.0.0-dev.71",
   "description": "Bentley JavaScript core components",
-  "main": "lib/bentleyjs-core.js",
-  "typings": "lib/bentleyjs-core",
+  "main": "lib/core-bentley.js",
+  "typings": "lib/core-bentley",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -14,11 +14,10 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "extract-api": "betools extract-api --entry=bentleyjs-core",
-    "test": "betools test",
-    "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-bentley",
+    "test": "mocha",
+    "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "nyc npm test",
-    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
@@ -32,27 +31,27 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

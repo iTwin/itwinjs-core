@@ -5,9 +5,8 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, Logger } from "@itwin/core-bentley";
 import * as deepAssign from "deep-assign";
-import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { request, RequestOptions } from "./Request";
 
@@ -100,15 +99,15 @@ export abstract class Client {
   }
 
   /** used by clients to send delete requests */
-  protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
+  protected async delete(accessToken: AccessToken, relativeUrlPath: string): Promise<void> {
     const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
     };
     await this.setupOptionDefaults(options);
-    await request(requestContext, url, options);
+    await request(url, options);
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 }

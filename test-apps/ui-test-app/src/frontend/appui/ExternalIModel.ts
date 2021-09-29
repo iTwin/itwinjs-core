@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "..";
 
 /* eslint-disable deprecation/deprecation */
@@ -38,23 +38,29 @@ export class ExternalIModel {
     const projectName = this.projectName;
     const imodelName = this.imodelName;
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
 
-    const connectClient = new ContextRegistryClient();
-    let project: Project;
-    try {
-      project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
-    } catch (e) {
-      throw new Error(`Project with name "${projectName}" does not exist`);
-    }
+    const connectClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await connectClient.getAll(accessToken, {
+      search: {
+        searchString: projectName,
+        propertyName: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      },
+    });
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${projectName} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
 
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, project.wsgId, imodelQuery);
+    const imodels = await IModelHubFrontend.iModelClient.iModels.get(accessToken, iTwinList[0].id, imodelQuery);
     if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
     }
-    return { projectId: project.wsgId, imodelId: imodels[0].wsgId };
+    return { projectId: iTwinList[0].id, imodelId: imodels[0].wsgId };
   }
 
   /** Handle iModel open event */

@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { ClipVector, ClipVectorProps } from "@bentley/geometry-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { ClipVector, ClipVectorProps } from "@itwin/core-geometry";
 
 /** JSON representation of a [[ModelClipGroup]].
  * @public
@@ -15,11 +15,11 @@ import { ClipVector, ClipVectorProps } from "@bentley/geometry-core";
 export interface ModelClipGroupProps {
   /** The Ids of the models in the group. */
   models?: Id64Array;
-  /** JSON representation of the [ClipVector]($geometry-core) applied to the group. */
+  /** JSON representation of the [ClipVector]($core-geometry) applied to the group. */
   clip?: ClipVectorProps;
 }
 
-/** Describes how to clip a group of models in the context of a [ViewDefinition3d]($backend) by applying a single [ClipVector]($geometry-core] to each model in the group.
+/** Describes how to clip a group of models in the context of a [ViewDefinition3d]($backend) by applying a single [ClipVector]($core-geometry] to each model in the group.
  * @see [[ModelClipGroups]] to define multiple groups of models with different clip vectors.
  * @public
  */
@@ -71,7 +71,7 @@ export class ModelClipGroup {
 }
 
 /** Describes how to clip groups of models in the context of a [ViewDefinition3d]($backend) or [ViewState3d]($frontend).
- * Each group will be clipped by the [ClipVector]($geometry-core) associated with the group to which it belongs.
+ * Each group will be clipped by the [ClipVector]($core-geometry) associated with the group to which it belongs.
  * A model belongs to the first group in the list for which `ModelClipGroup.includesModel()` returns `true`.
  * A catch-all group can be defined by a ModelClipGroup with an `undefined` array of model Ids; any model whose Id does not appear in any group's list would belong to this group. If a catch-all group exists, it should appear last in the list.
  * A group of models can be exempted from clipping by a ModelClipGroup with an `undefined` ClipVector.

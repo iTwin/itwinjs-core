@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@bentley/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
 

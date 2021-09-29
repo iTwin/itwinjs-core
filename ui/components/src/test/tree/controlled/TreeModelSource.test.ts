@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { MutableTreeModel, TreeModelNodeInput } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelChanges, TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { BeEvent } from "@itwin/core-bentley";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { MutableTreeModel, TreeModelNodeInput } from "../../../components-react/tree/controlled/TreeModel";
+import { TreeModelChanges, TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
+import { ITreeDataProvider, TreeDataChangesListener } from "../../../components-react/tree/TreeDataProvider";
 import TestUtils from "../../TestUtils";
 
 describe("TreeModelSource", () => {

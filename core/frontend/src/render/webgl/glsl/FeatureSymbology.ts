@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
@@ -332,7 +332,7 @@ const computeHiliteColor = `
 const computeSurfaceHiliteColor = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
     return vec4(0.0);
-${  computeHiliteColor}`;
+${computeHiliteColor}`;
 
 const computeHiliteOverrides = `
   vec4 value = getFirstFeatureRgba();
@@ -656,6 +656,14 @@ const applyFeatureColor = `
   float alpha = mix(baseColor.a, feature_alpha, step(0.0, feature_alpha));
   return vec4(rgb, alpha);
 `;
+
+// feature_rgb.r = -1.0 if rgb color not overridden for feature, else mix based on u_overrrideColorMix.
+// feature_alpha = -1.0 if alpha not overridden for feature.
+export const mixFeatureColor = `
+  vec3 rgb = mix(baseColor.rgb, mix(baseColor.rgb, feature_rgb.rgb, u_overrideColorMix), step(0.0, feature_rgb.r));
+  float alpha = mix(baseColor.a, feature_alpha, step(0.0, feature_alpha));
+  return vec4(rgb, alpha);
+  `;
 
 const applyFlash = `
   float flashHilite = floor(v_feature_emphasis + 0.5);

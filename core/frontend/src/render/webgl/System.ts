@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
-} from "@bentley/imodeljs-common";
-import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
+} from "@itwin/core-common";
+import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
@@ -549,10 +549,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createAreaPattern(params: PatternGraphicParams): PatternBuffers | undefined {
-    // ###TODO? The "shared" flag on PatternBuffers is always true, because the buffers can be shared amongst any number of RenderGraphics
-    // Unless we can figure out how to track those references we'll have to rely on garbage collection to dispose of it, and
-    // we won't be able to accurately report GPU memory usage (we can either report none for patterns, or count each occurrence of each pattern).
-    return PatternBuffers.create(params, true);
+    return PatternBuffers.create(params);
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {

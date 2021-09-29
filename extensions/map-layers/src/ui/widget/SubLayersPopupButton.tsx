@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@bentley/ui-core";
+import { ScreenViewport } from "@itwin/core-frontend";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@itwin/core-react";
 import { SubLayersPanel } from "./SubLayersTree";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";

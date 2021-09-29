@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, RuledSweep, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
   ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
@@ -19,8 +19,8 @@ import {
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+} from "@itwin/core-common";
+import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -849,7 +849,7 @@ describe("GeometryStream", () => {
     try {
       fontProps = imodel.embedFont(fontProps); // throws Error
       assert.isTrue(fontProps.id !== 0);
-    } catch (error) {
+    } catch (error: any) {
       if ("win32" === Platform.platformName)
         assert.fail("Font embed failed");
       return; // failure expected if not windows, skip remainder of test...
@@ -1499,7 +1499,7 @@ describe("ElementGeometry", () => {
     try {
       fontProps = imodel.embedFont(fontProps); // throws Error
       assert.isTrue(fontProps.id !== 0);
-    } catch (error) {
+    } catch (error: any) {
       if ("win32" === Platform.platformName)
         assert.fail("Font embed failed");
       return; // failure expected if not windows, skip remainder of test...
@@ -1941,7 +1941,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -1952,7 +1952,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -1962,7 +1962,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -1974,7 +1974,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2013,7 +2013,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2023,7 +2023,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2035,7 +2035,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2073,7 +2073,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2105,21 +2105,21 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Subtract;
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Intersect;
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2141,7 +2141,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2166,7 +2166,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2189,7 +2189,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2198,7 +2198,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2207,7 +2207,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2216,7 +2216,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2239,7 +2239,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2250,7 +2250,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
@@ -2261,7 +2261,7 @@ describe("BRepGeometry", () => {
 
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2282,21 +2282,21 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { backDistance: 0.25 };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { frontDistance: 0.1, backDistance: 0.1 };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2317,7 +2317,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2338,7 +2338,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2359,7 +2359,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2380,7 +2380,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2404,7 +2404,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2425,7 +2425,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });
@@ -2475,7 +2475,7 @@ describe("BRepGeometry", () => {
     };
     try {
       assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
-    } catch (error) {
+    } catch (error: any) {
       assert(false, error.message);
     }
   });

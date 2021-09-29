@@ -6,35 +6,34 @@
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
-import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
   ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
   PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   IModelExporter,
   IModelTransformer, TransformerLoggerCategory,
-} from "../../imodeljs-transformer";
-import { HubMock } from "@bentley/imodeljs-backend/lib/test/HubMock";
-import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+} from "../../core-transformer";
+import { HubMock } from "@itwin/core-backend/lib/test/HubMock";
+import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/test/IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
-import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUtility";
+import { KnownTestLocations } from "@itwin/core-backend/lib/test/KnownTestLocations";
+import { HubUtility } from "@itwin/core-backend/lib/test/integration/HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
   let iTwinId: GuidString;
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
 
   before(async () => {
     HubMock.startup("IModelTransformerHub");
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Regular);
     iTwinId = HubUtility.iTwinId!;
 
     // initialize logging

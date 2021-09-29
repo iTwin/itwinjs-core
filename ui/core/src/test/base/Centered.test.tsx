@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Centered } from "../../ui-core";
+import { Centered } from "../../core-react";
 
 describe("<Centered />", () => {
   it("should render", () => {

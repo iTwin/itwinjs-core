@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { Node, SparseArray, SparseTree } from "../../../../ui-components/tree/controlled/internal/SparseTree";
+import { Node, SparseArray, SparseTree } from "../../../../components-react/tree/controlled/internal/SparseTree";
 import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "../RandomTreeNodesHelpers";
 
 describe("SparseTree", () => {

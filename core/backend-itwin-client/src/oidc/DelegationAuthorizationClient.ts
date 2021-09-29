@@ -6,7 +6,8 @@
  * @module Authentication
  */
 
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { AccessToken } from "@itwin/core-bentley";
+import { removeAccessTokenPrefix } from "@bentley/itwin-client";
 import { GrantBody, TokenSet } from "openid-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
@@ -27,26 +28,22 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     super(configuration);
   }
 
-  private async exchangeToJwtToken(accessToken: AccessToken, grantType: string): Promise<AccessToken> {
+  private async exchangeToJwtToken(accessToken: AccessToken | undefined, grantType: string): Promise<AccessToken | undefined> {
 
     const grantParams: GrantBody = {
       grant_type: grantType, // eslint-disable-line @typescript-eslint/naming-convention
       scope: this._configuration.scope,
-      assertion: accessToken.toTokenString(IncludePrefix.No),
+      assertion: removeAccessTokenPrefix(accessToken),
     };
 
     const client = await this.getClient();
     const tokenSet: TokenSet = await client.grant(grantParams);
-
-    const exchangedToken = AccessToken.fromTokenResponseJson(tokenSet);
-    const userInfo = accessToken.getUserInfo();
-    if (userInfo !== undefined)
-      accessToken.setUserInfo(userInfo);
-    return exchangedToken;
+    const accessTokenString = `Bearer ${tokenSet.access_token}`;
+    return accessTokenString;
   }
 
   /** Get a delegation JWT for a new scope from another JWT */
-  public async getJwtFromJwt(accessToken: AccessToken): Promise<AccessToken> {
+  public async getJwtFromJwt(accessToken?: AccessToken): Promise<AccessToken | undefined> {
     return this.exchangeToJwtToken(accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
   }
 

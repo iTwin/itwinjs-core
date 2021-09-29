@@ -6,10 +6,10 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@itwin/core-common";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -337,7 +337,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
    */
-  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
 
   private createGraphicFromGeometry(
     createGeometry: (viewIndependentOrigin?: Point3d) => RenderGeometry | undefined,
@@ -350,7 +350,7 @@ export abstract class RenderSystem implements IDisposable {
       instances = instancesOrOrigin;
 
     const geom = createGeometry(viOrigin);
-    return geom ? this.createRenderGraphic(geom, instances, true) : undefined;
+    return geom ? this.createRenderGraphic(geom, instances) : undefined;
   }
 
   /** @internal */
@@ -387,7 +387,7 @@ export abstract class RenderSystem implements IDisposable {
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
 
   /** @internal */
-  public createPlanarGrid(_frustum: Frustum,_grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
+  public createPlanarGrid(_frustum: Frustum, _grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */

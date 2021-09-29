@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Vector3d } from "@bentley/geometry-core";
+import { Vector3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
 import { LightSettings, LightSettingsProps, SolarLightProps } from "../LightSettings";

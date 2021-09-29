@@ -1,10 +1,10 @@
-# @bentley/ui-components
+# @itwin/components-react
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/ui-components__ package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
+The __@itwin/components-react__ package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
 
 ## Documentation
 

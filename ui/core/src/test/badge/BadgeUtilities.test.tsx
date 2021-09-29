@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { BadgeType } from "@bentley/ui-abstract";
-import { BadgeUtilities } from "../../ui-core/badge/BadgeUtilities";
+import { BadgeType } from "@itwin/appui-abstract";
+import { BadgeUtilities } from "../../core-react/badge/BadgeUtilities";
 
 describe("BadgeUtilities", () => {
 

@@ -5,8 +5,8 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { CheckpointConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;

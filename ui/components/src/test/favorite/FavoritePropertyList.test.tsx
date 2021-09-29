@@ -6,12 +6,12 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
-import { FavoritePropertyList } from "../../ui-components/favorite/FavoritePropertyList";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyCategory, PropertyData } from "../../components-react/propertygrid/PropertyDataProvider";
+import { FavoritePropertyList } from "../../components-react/favorite/FavoritePropertyList";
 import TestUtils from "../TestUtils";
-import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
-import { PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager";
+import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import { PropertyValueRendererManager } from "../../components-react/properties/ValueRendererManager";
 
 describe("FavoritePropertyList", () => {
 

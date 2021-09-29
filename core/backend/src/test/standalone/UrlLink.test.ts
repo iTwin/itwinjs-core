@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-import { IModel, RepositoryLinkProps } from "@bentley/imodeljs-common";
+import { IModel, RepositoryLinkProps } from "@itwin/core-common";
 import { RepositoryLink } from "../../Element";
 import { SnapshotDb } from "../../IModelDb";
 

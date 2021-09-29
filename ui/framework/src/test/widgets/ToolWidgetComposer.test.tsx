@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
-import { BackstageAppButton, ToolWidgetComposer } from "../../ui-framework/widgets/ToolWidgetComposer";
+import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
+import { BackstageAppButton, ToolWidgetComposer } from "../../appui-react/widgets/ToolWidgetComposer";
 import TestUtils, { mount, storageMock } from "../TestUtils";
 
 describe("FrameworkAccuDraw localStorage Wrapper", () => {

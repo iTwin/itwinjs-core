@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
+import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions,
   ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs,
@@ -17,14 +17,14 @@ import {
   FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement,
   Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
   SelectionScopeRequestOptions, VariableValueTypes,
-} from "@bentley/presentation-common";
-import { createTestContentDescriptor, createTestSelectClassInfo } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+} from "@itwin/presentation-common";
+import { createTestContentDescriptor, createTestSelectClassInfo } from "@itwin/presentation-common/lib/test/_helpers/Content";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
   createRandomNodePathElement, createRandomSelectionScope,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { ElementTooltip } from "../../ui-framework";
+import { ElementTooltip } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ElementTooltip", () => {

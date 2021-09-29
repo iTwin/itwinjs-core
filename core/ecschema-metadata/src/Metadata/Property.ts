@@ -587,7 +587,7 @@ export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty
   /**
    * Save this PrimitiveArrayProperty's properties to an object for serializing to JSON.
    */
-  public toJSON(): PrimitiveArrayPropertyProps {
+  public override toJSON(): PrimitiveArrayPropertyProps {
     return super.toJSON();
   }
 

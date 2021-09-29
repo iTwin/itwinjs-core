@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { ArrayValue, PropertyRecord } from "@bentley/ui-abstract";
-import { FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../ui-components";
-import { FilteringPropertyDataProvider } from "../../../ui-components/propertygrid/dataproviders/FilteringDataProvider";
+import { ArrayValue, PropertyRecord } from "@itwin/appui-abstract";
+import { FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../components-react";
+import { FilteringPropertyDataProvider } from "../../../components-react/propertygrid/dataproviders/FilteringDataProvider";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components/propertygrid/PropertyDataProvider";
+} from "../../../components-react/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../TestUtils";
 
 describe("FilteringDataProvider", () => {

@@ -5,23 +5,23 @@
 /* eslint-disable deprecation/deprecation */
 
 import * as React from "react";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
-} from "@bentley/imodeljs-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
   IntlFormatter, ParsedInput, Table, TableDataChangeEvent, TableDataProvider,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import {
   ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, LineWeightSwatch,
   QuantityInput, QuantityNumberInput, WeightPickerButton,
-} from "@bentley/ui-imodel-components";
+} from "@itwin/imodel-components-react";
 import {
   AutoSuggest,
   AutoSuggestData,
@@ -31,8 +31,8 @@ import {
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
+} from "@itwin/core-react";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -44,6 +44,22 @@ import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
 import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+
+function DualColorPickers() {
+  const [colorDef, setColorDef] = React.useState(ColorDef.green);
+  const onPopupClose = (color: ColorDef) => {
+    setColorDef(color);
+    const msg = `popup color value: ${color.toRgbaString()}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "4px" }}>
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="RGB" />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="HSL" showCaret />
+    </div>
+  );
+}
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -410,7 +426,8 @@ export function ColorPickerToggle() {
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
-      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
+      colorInputType="RGB" />);
   }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
 
   return (
@@ -521,9 +538,10 @@ export class ComponentExamplesProvider {
   }
 
   private static get colorSamples(): ComponentExampleCategory {
-    const colorDef = ColorDef.blue;
+    let colorDef = ColorDef.blue;
     const handleColorPick = (color: ColorDef) => {
       console.log(`color picked: ${color.toRgbaString()}`);
+      colorDef = color;
     };
 
     const onPopupClose = (color: ColorDef) => {
@@ -549,6 +567,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
+        createComponentExample("Dual Color Pickers", "test update initialColor", <DualColorPickers />),
       ],
     };
   }

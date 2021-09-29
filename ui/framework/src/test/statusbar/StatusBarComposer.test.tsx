@@ -5,18 +5,17 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
   UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
   StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
-import { createDOMRect } from "../Utils";
 
 describe("StatusBarComposer", () => {
   class TestUiProvider implements UiItemsProvider {
@@ -353,14 +352,14 @@ describe("StatusBarComposer", () => {
       // make sure we have enough size to render without overflow
       sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
-          return createDOMRect({ width: 1000 });
+          return DOMRect.fromRect({ width: 1000 });
         } else if (this.classList.contains("uifw-statusbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         } else if (this.classList.contains("uifw-statusbar-overflow")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
 
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const items: StatusBarItem[] = [
@@ -389,14 +388,14 @@ describe("StatusBarComposer", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
-          return createDOMRect({ width: 168 }); // 4*42
+          return DOMRect.fromRect({ width: 168 }); // 4*42
         } else if (this.classList.contains("uifw-statusbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         } else if (this.classList.contains("uifw-statusbar-overflow")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
 
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const items: StatusBarItem[] = [
@@ -425,14 +424,14 @@ describe("StatusBarComposer", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
-          return createDOMRect({ width: 84 }); // 2*42
+          return DOMRect.fromRect({ width: 84 }); // 2*42
         } else if (this.classList.contains("uifw-statusbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         } else if (this.classList.contains("uifw-statusbar-overflow")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
 
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const items: StatusBarItem[] = [

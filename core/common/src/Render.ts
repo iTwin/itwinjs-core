@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 
 // cSpell:ignore vals

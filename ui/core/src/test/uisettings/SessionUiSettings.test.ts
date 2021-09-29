@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SessionSettingsStorage, SessionUiSettings, UiSettingsStatus } from "../../ui-core";
+import { SessionSettingsStorage, SessionUiSettings, UiSettingsStatus } from "../../core-react";
 
 import { storageMock } from "../TestUtils";
 

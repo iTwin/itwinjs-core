@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, ModalFrontstage, ModalFrontstageInfo, SettingsModalFrontstage } from "../../ui-framework";
+import { CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, ModalFrontstage, ModalFrontstageInfo, SettingsModalFrontstage } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@bentley/ui-core";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { UiFramework } from "../../appui-react/UiFramework";
+import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@itwin/core-react";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
+import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 

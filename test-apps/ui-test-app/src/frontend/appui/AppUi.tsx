@@ -19,18 +19,16 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
+import { FillCentered } from "@itwin/core-react";
+import { IModelApp } from "@itwin/core-frontend";
 
 import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
-  AccuDrawUiSettings,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
-  FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
@@ -38,7 +36,7 @@ import {
   WidgetDef,
   WidgetProvider,
   ZoneLocation,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
@@ -50,12 +48,11 @@ import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFron
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 
 // cSpell:ignore uitestapp
 
-/** Example Ui Configuration for an iModelJS App
+/** Example Ui Configuration for an iTwin.js App
  */
 export class AppUi {
 
@@ -67,8 +64,6 @@ export class AppUi {
     // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
     // use to test WidgetProvider API - Note: this is different from UiItemsProvider
     AppUi.defineDynamicWidgets();
-
-    // AppUi.setAccuDrawUiSettings();
   }
 
   /** Define Frontstages
@@ -296,23 +291,5 @@ export class AppUi {
       },
     };
     UiFramework.widgetManager.addWidgetProvider(provider);
-  }
-
-  private static setAccuDrawUiSettings() {
-    const iconTest = "icon-placeholder";
-
-    const appSettings: AccuDrawUiSettings = {
-      xBackgroundColor: "var(--buic-background-control)",
-      xForegroundColor: "var(--buic-foreground-body)",
-      xLabel: "-X-",
-      xIcon: iconTest,
-    };
-
-    const userSettings: AccuDrawUiSettings = {
-      yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
-      yLabel: "-Y-",
-    };
-
-    FrameworkAccuDraw.uiSettings = { ...appSettings, ...userSettings };
   }
 }

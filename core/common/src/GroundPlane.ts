@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@itwin/core-bentley";
 import { ColorByName } from "./ColorByName";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";

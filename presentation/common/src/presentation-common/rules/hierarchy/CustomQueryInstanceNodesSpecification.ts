@@ -14,7 +14,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  *
  * **Note:** this specification is formerly known as `SearchResultInstanceNodesSpecification`.
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/CustomQueryInstanceNodes.md)
+ * @see [More details]($docs/presentation/Hierarchies/CustomQueryInstanceNodes.md)
  * @public
  */
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {

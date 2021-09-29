@@ -8,7 +8,7 @@
  * @module Authentication
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 
 /** @internal */

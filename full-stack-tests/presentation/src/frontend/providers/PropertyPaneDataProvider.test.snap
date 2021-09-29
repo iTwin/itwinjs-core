@@ -1539,7 +1539,7 @@ Object {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
           "displayLabel": "Ñámê",
-          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
+          "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
         "value": Object {
@@ -1552,7 +1552,7 @@ Object {
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
           "displayLabel": "Pàth",
-          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
+          "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
         "value": Object {
@@ -3275,7 +3275,7 @@ Object {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
           "displayLabel": "Ñámê",
-          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
+          "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
         "value": Object {
@@ -3288,7 +3288,7 @@ Object {
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
           "displayLabel": "Pàth",
-          "name": "rc_generic_PhysicalObject_bis_Model_bis_InformationContentElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
+          "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
         "value": Object {
