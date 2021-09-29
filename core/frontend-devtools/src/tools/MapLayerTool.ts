@@ -27,6 +27,7 @@ class AttachMapLayerBaseTool extends Tool {
       if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
         if (this._isBase) {
           vp.displayStyle.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
+          vp.invalidateRenderPlan();
         } else {
           const layerSettings = source.toLayerSettings(validation.subLayers);
           if (layerSettings) {

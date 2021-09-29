@@ -145,8 +145,8 @@ export function BasemapPanel() {
       // BaseMap visibility is only support when backgroundBase is an instance of BaseMapLayerSettings (i.e not a color)...
       if (viewportBase instanceof BaseMapLayerSettings) {
         activeViewport.displayStyle.settings.mapImagery.backgroundBase = viewportBase.clone({ visible: newState });
+        activeViewport.invalidateRenderPlan();
       }
-      activeViewport.invalidateRenderPlan();
       setBaseMapVisible(newState);
     }
   }, [baseMapVisible, activeViewport]);
