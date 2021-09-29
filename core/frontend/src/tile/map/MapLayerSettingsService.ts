@@ -7,7 +7,7 @@ import { MapLayerSource } from "../internal";
 import { IModelApp } from "../../IModelApp";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { AccessToken, AuthStatus, BeEvent, BentleyError, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, BentleyError, GuidString } from "@itwin/core-bentley";
 
 /** @internal */
 export interface MapLayerSetting {

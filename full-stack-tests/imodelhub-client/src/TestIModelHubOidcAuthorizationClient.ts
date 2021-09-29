@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { TestUtility } from "@bentley/oidc-signin-tool";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import { TestUtility } from "@itwin/oidc-signin-tool";
 import { AuthorizationClient } from "@bentley/itwin-client";
 
 export class TestIModelHubOidcAuthorizationClient implements AuthorizationClient {

@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { BeTimePoint, dispose } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, Frustum } from "@bentley/imodeljs-common";
+import { BeTimePoint, dispose } from "@itwin/core-bentley";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -118,7 +118,7 @@ export class RealityTile extends Tile {
       /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM) then we must add step-children to display the geometry as an overly large
          tile cannot be reprojected accurately.  */
       if (this.useAdditiveRefinementStepchildren())
-        this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
+        this.loadAdditiveRefinementChildren((stepChildren: Tile[]) => { children = children ? children?.concat(stepChildren) : stepChildren; });
 
       if (children)
         this.realityRoot.reprojectAndResolveChildren(this, children, resolve);   /* Potentially reprojecect and resolve these children */
@@ -337,7 +337,7 @@ export class RealityTile extends Tile {
 
     const maximumSize = this.maximumSize;
     const rangeDiagonal = corners[0].distance(corners[3]);
-    const isLeaf = rangeDiagonal < additiveRefinementThreshold || this.depth  > additiveRefinementDepthLimit;
+    const isLeaf = rangeDiagonal < additiveRefinementThreshold || this.depth > additiveRefinementDepthLimit;
 
     const stepChildren = new Array<AdditiveRefinementStepChild>();
     const latitudeDelta = (region.maxLatitude - region.minLatitude) / 2;
@@ -384,7 +384,7 @@ export class RealityTile extends Tile {
  * These step children are subdivided until they are small enough to be accurately reprojected - this is controlled by the additiveRefinementThreshold (currently 2KM).
  * The stepchildren do not contain any tile graphics - they just create a branch with clipping and reprojection to display their additive refinement ancestor graphics.
  */
-class AdditiveRefinementStepChild  extends RealityTile {
+class AdditiveRefinementStepChild extends RealityTile {
   public override get isStepChild() { return true; }
   private _loadableTile: RealityTile;
 
@@ -412,11 +412,11 @@ class AdditiveRefinementStepChild  extends RealityTile {
 
       const branch = new GraphicBranch(false);
       branch.add(parentGraphics);
-      const renderSystem =  IModelApp.renderSystem;
+      const renderSystem = IModelApp.renderSystem;
       const branchOptions: GraphicBranchOptions = {};
       if (this.rangeCorners) {
         const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
-        branchOptions.clipVolume =  renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
+        branchOptions.clipVolume = renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
       }
       this._graphic = renderSystem.createGraphicBranch(branch, this._reprojectionTransform, branchOptions);
     }
@@ -428,7 +428,7 @@ class AdditiveRefinementStepChild  extends RealityTile {
     args.markUsed(this._loadableTile);
   }
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
-    this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  {
+    this.loadAdditiveRefinementChildren((stepChildren: Tile[]) => {
       if (stepChildren)
         this.realityRoot.reprojectAndResolveChildren(this, stepChildren, resolve);
     });

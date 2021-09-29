@@ -7,7 +7,7 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@bentley/imodeljs-common";
+import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcHost } from "./IpcHost";
 import { IModelHostConfiguration } from "./IModelHost";
 

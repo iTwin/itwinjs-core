@@ -1,10 +1,10 @@
-# @bentley/ui-imodel-components
+# @itwin/imodel-components-react
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/ui-imodel-components__ package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
+The __@itwin/imodel-components-react__ package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
 
 ## Documentation
 

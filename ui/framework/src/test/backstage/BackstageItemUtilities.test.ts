@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { BackstageItemUtilities } from "../../ui-framework/backstage/BackstageItemUtilities";
+import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { BackstageItemUtilities } from "../../appui-react/backstage/BackstageItemUtilities";
 
 describe("BackstageItemUtilities", () => {
   it("createStageLauncher should create a valid launcher", () => {

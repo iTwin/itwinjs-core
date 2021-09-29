@@ -7,7 +7,7 @@
  */
 
 import { ClientMetadata, custom, GrantBody, Issuer, Client as OpenIdClient, TokenSet } from "openid-client";
-import { AccessToken, AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BentleyError } from "@itwin/core-bentley";
 import { AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 
 /**

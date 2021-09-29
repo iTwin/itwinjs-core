@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

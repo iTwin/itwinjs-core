@@ -8,8 +8,8 @@ import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
   PanelStateContext, PanelWidget, PanelWidgetDragStartAction, Widget, WidgetIdContext, WidgetStateContext,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
+} from "../../appui-layout-react";
+import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { NineZoneProvider } from "../Providers";
 import { defaultProps } from "./PanelWidget.test";
 

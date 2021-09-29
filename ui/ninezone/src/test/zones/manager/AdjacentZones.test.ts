@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../ui-ninezone";
-import { AdjacentZonesStrategy, BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../appui-layout-react";
+import { AdjacentZonesStrategy, BottomZones, LeftZones, RightZones, TopZones } from "../../../appui-layout-react/zones/manager/AdjacentZones";
 
 describe("AdjacentZonesStrategy", () => {
   class AdjacentZones extends AdjacentZonesStrategy {

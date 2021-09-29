@@ -8,10 +8,10 @@ import {
   AlternateDateFormats, BasePropertyEditorParams, InputEditorSizeParams, PropertyDescription,
   PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat, RangeEditorParams,
   SliderEditorParams, StandardEditorNames, StandardTypeNames, TimeDisplay,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import {
   ColumnDescription, FilterRenderer, RowItem, SimpleTableDataProvider, TableDataProvider,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 
 // cSpell:ignore datetime
 

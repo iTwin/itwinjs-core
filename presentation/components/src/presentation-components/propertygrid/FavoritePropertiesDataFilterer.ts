@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@bentley/ui-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@itwin/components-react";
 import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 /**

@@ -11,8 +11,8 @@ import * as assert from "assert";
 import {
   createMatches, fuzzyScore, fuzzyScoreGraceful, fuzzyScoreGracefulAggressive, FuzzyScorer, IFilter, IMatch, matchesCamelCase,
   matchesContiguousSubString, matchesFuzzy, matchesFuzzy2, matchesPrefix, matchesStrictPrefix, matchesSubString, matchesWords, or,
-} from "../../ui-abstract/utils/filter/filters";
-import { equalsIgnoreCase, startsWithIgnoreCase } from "../../ui-abstract/utils/filter/strings";
+} from "../../appui-abstract/utils/filter/filters";
+import { equalsIgnoreCase, startsWithIgnoreCase } from "../../appui-abstract/utils/filter/strings";
 
 function filterNotOk(filter: IFilter, word: string, wordToMatchAgainst: string) {
   assert(!filter(word, wordToMatchAgainst), `${word} matched ${wordToMatchAgainst}`);

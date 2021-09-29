@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import {
   Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, IModelHubFrontend, SpatialViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+} from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 function countTileTrees(view: ViewState): number {

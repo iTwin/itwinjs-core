@@ -5,7 +5,7 @@
 
 import {
   FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
 /** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */

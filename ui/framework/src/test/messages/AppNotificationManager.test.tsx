@@ -9,8 +9,8 @@ import * as sinon from "sinon";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
-import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
+} from "@itwin/core-frontend";
+import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("AppNotificationManager", () => {

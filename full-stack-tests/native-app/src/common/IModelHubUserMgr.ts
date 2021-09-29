@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/frontend";
 import { AuthorizationClient } from "@bentley/itwin-client";
 
 export class IModelHubUserMgr implements AuthorizationClient {

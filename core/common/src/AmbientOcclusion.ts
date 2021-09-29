@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@itwin/core-bentley";
 
 /** Namespace containing types controlling how ambient occlusion should be drawn.
  * @public

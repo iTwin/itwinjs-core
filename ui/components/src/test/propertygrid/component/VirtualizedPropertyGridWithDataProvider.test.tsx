@@ -8,19 +8,19 @@ import * as React from "react";
 import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
 import { act, fireEvent, getByTitle, render, waitFor } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
+import { HighlightingComponentProps } from "../../../components-react/common/HighlightingComponentProps";
 import {
   VirtualizedPropertyGridWithDataProvider, VirtualizedPropertyGridWithDataProviderProps,
-} from "../../../ui-components/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
-import { FilteredType } from "../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
-import * as FlatPropertyRendererExports from "../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
-import { PropertyCategoryRendererManager } from "../../../ui-components/propertygrid/PropertyCategoryRendererManager";
+} from "../../../components-react/propertygrid/component/VirtualizedPropertyGridWithDataProvider";
+import { FilteredType } from "../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+import * as FlatPropertyRendererExports from "../../../components-react/propertygrid/internal/flat-properties/FlatPropertyRenderer";
+import { PropertyCategoryRendererManager } from "../../../components-react/propertygrid/PropertyCategoryRendererManager";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components/propertygrid/PropertyDataProvider";
+} from "../../../components-react/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 

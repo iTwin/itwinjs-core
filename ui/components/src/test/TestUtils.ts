@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
-} from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../ui-components";
-import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
+} from "@itwin/appui-abstract";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../components-react";
+import { TableFilterDescriptorCollection } from "../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup
 
@@ -37,9 +37,9 @@ export class TestUtils {
       TestUtils._uiComponentsInitialized = true;
 
       const mp: MessagePresenter = {
-        displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => {},
-        displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => {},
-        closeInputFieldMessage: (): void => {},
+        displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => { },
+        displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
+        closeInputFieldMessage: (): void => { },
       };
       UiAbstract.messagePresenter = mp;
     }
@@ -387,7 +387,7 @@ export class TestFilterableTable implements FilterableTable {
 /** @internal */
 export class MineDataController extends DataControllerBase {
   public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-    return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test"} };
+    return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test" } };
   }
 }
 

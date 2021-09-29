@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import { IModelApp, IModelAppOptions, MockRender, Tool } from "@bentley/imodeljs-frontend";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { IModelApp, IModelAppOptions, MockRender, Tool } from "@itwin/core-frontend";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../ui-framework";
+import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
-import { UiSettingsStatus } from "@bentley/ui-core";
+import { UiSettingsStatus } from "@itwin/core-react";
 
 const myLocalStorage = storageMock();
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
@@ -188,7 +188,7 @@ describe("<KeyinPalettePanel>", () => {
       sinon.stub(IModelApp.tools, "parseKeyin").callsFake((keyin: string) => {
         if (keyin === "bogus")
           return { ok: false, error: 1 };
-        return { ok: true, args:[], tool: TestImmediate};
+        return { ok: true, args: [], tool: TestImmediate };
       });
     });
 

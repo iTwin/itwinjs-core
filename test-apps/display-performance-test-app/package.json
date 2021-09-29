@@ -36,28 +36,28 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
-    "@bentley/mobile-manager": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
+    "@itwin/mobile-manager": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/hypermodeling-frontend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/hypermodeling-frontend": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
-    "@bentley/perf-tools": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/perf-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
@@ -68,7 +68,7 @@
     "cpx": "^1.5.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^11.1.0",
+    "electron": "^14.0.0",
     "eslint": "^7.11.0",
     "express": "^4.16.3",
     "internal-tools": "workspace:*",
@@ -92,9 +92,9 @@
   ],
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "parserOptions": {
       "project": [
         "tsconfig.json",

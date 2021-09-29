@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@bentley/bentleyjs-core";
-import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { MapLayerSettings, ServerError } from "@itwin/core-common";
 import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,

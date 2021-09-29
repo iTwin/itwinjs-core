@@ -1046,7 +1046,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Add missing peerDependencies on @bentley/geometry-core and @bentley/imodeljs-clients"
+            "comment": "Add missing peerDependencies on @itwin/core-geometry and @bentley/imodeljs-clients"
           },
           {
             "comment": "Allow mobile webpack to skip node dependent module"

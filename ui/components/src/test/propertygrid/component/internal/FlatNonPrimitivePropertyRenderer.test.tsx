@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import { FlatNonPrimitivePropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer";
+import { Orientation } from "@itwin/core-react";
+import { FlatNonPrimitivePropertyRenderer } from "../../../../components-react/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer";
 import { TestUtils } from "../../../TestUtils";
 import sinon from "sinon";
-import { NonPrimitivePropertyLabelRenderer } from "../../../../ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
+import { NonPrimitivePropertyLabelRenderer } from "../../../../components-react/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 
 describe("FlatNonPrimitivePropertyRenderer", () => {
   before(async () => {

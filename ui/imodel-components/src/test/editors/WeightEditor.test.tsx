@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@bentley/ui-components";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@itwin/components-react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { WeightEditor } from "../../ui-imodel-components/editors/WeightEditor";
+import { WeightEditor } from "../../imodel-components-react/editors/WeightEditor";
 import { MineDataController, TestUtils } from "../TestUtils";
 
 describe("<WeightEditor />", () => {

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";

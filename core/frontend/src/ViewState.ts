@@ -6,17 +6,17 @@
  * @module Views
  */
 
-import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
   XYAndZ, XYZ, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
   ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
   ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";

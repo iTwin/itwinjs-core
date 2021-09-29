@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ModelessDialog, ModelessDialogManager } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
 
 export interface SampleModelessDialogProps {
   opened: boolean;

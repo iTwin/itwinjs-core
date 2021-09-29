@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { TestConfig } from "./TestConfig";
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 
 chai.should();
 

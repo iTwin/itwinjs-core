@@ -2,7 +2,7 @@
 
 Although the presentation framework itself is thoroughly tested, consumers
 should still verify they get expected results for their iModel + ruleset
-combinations. The **@bentley/presentation-testing** package is delivered
+combinations. The **@itwin/presentation-testing** package is delivered
 purely for that reason.
 
 The package delivers an API that allows creating hierarchies for supplied
@@ -15,7 +15,7 @@ code might be difficult
 
 ## Example
 
-An example of setting up snapshot tests with the **@bentley/presentation-testing** package:
+An example of setting up snapshot tests with the **@itwin/presentation-testing** package:
 
 ``` ts
 [[include:Presentation.Testing.Rulesets]]

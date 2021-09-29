@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CalculatorEngine, CalculatorOperator } from "../../ui-framework/accudraw/CalculatorEngine";
+import { CalculatorEngine, CalculatorOperator } from "../../appui-react/accudraw/CalculatorEngine";
 
 describe("CalculatorEngine", () => {
   let engine: CalculatorEngine;

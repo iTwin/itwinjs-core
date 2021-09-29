@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
   TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
-} from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+} from "@itwin/components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@itwin/appui-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export class TreeExampleContentControl extends ContentControl {

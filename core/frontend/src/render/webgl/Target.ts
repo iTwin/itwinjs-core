@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";

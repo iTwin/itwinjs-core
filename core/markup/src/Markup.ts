@@ -6,11 +6,11 @@
  * @module MarkupApp
  */
 
-import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY } from "@bentley/geometry-core";
-import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { BentleyError, Logger } from "@itwin/core-bentley";
+import { Point3d, XAndY } from "@itwin/core-geometry";
+import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { I18NNamespace } from "@itwin/core-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
@@ -326,7 +326,7 @@ export class MarkupApp {
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
     } catch (e) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => getErrorProps(e));
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", BentleyError.getErrorProps(e));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Range2d } from "@bentley/geometry-core";
-import { CartographicRange } from "@bentley/imodeljs-common";
-import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Range2d } from "@itwin/core-geometry";
+import { CartographicRange } from "@itwin/core-common";
+import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 
 describe("Cartographic range tests", () => {
   let imodel: SnapshotConnection;

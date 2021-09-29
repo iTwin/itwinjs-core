@@ -5,7 +5,7 @@
 
 import * as deepAssign from "deep-assign";
 import { once } from "lodash";
-import { AccessToken, GetMetaDataFunction, HttpStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, GetMetaDataFunction, HttpStatus, Logger } from "@itwin/core-bentley";
 import {
   Client, DefaultRequestOptionsProvider, request, RequestGlobalOptions, RequestOptions, RequestQueryOptions, RequestTimeoutOptions, Response,
   ResponseError,

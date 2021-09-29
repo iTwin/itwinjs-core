@@ -6,13 +6,13 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { StagePanelLocation, StagePanelSection, WidgetState } from "@bentley/ui-abstract";
-import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { StagePanelLocation, StagePanelSection, WidgetState } from "@itwin/appui-abstract";
+import { getDefaultZonesManagerProps } from "@itwin/appui-layout-react";
 import {
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, WidgetProvider, ZoneDef, ZoneDefProvider,
   ZoneLocation,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 

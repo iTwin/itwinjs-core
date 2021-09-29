@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";

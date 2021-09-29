@@ -1,9 +1,10 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
-## Update minimum requirements
+## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
 
@@ -12,22 +13,87 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 The following dependencies of iTwin.js have been updated;
 
 - `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
+- `electron` updated to from `^11.1.0` -> `^14.0.0`,
+
+## Package name changes
+
+A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
+| Current                                | New                                  |
+|----------------------------------------|--------------------------------------|
+| @bentley/imodeljs-backend              | @itwin/core-backend                  |
+| @bentley/imodeljs-common               | @itwin/core-common                   |
+| @bentley/imodeljs-frontend             | @itwin/core-frontend                 |
+| @bentley/geometry-core                 | @itwin/core-geometry                 |
+| @bentley/ecschema-metadata             | @itwin/ecschema-metadata             |
+| @bentley/ecschema-locaters             | @itwin/ecschema-locaters             |
+| @bentley/ecschema-editing              | @itwin/ecschema-editing              |
+| @bentley/bentleyjs-core                | @itwin/core-bentley                  |
+| @bentley/orbitgt-core                  | @itwin/core-orbitgt                  |
+| @bentley/frontend-devtools             | @itwin/frontend-devtools             |
+| @bentley/webgl-compatibility           | @itwin/webgl-compatibility           |
+| @bentley/imodeljs-transformer          | @itwin/core-transformer              |
+| @bentley/imodeljs-markup               | @itwin/core-markup                   |
+| @bentley/imodeljs-editor-common        | @itwin/editor-common                 |
+| @bentley/imodeljs-editor-backend       | @itwin/editor-backend                |
+| @bentley/imodeljs-editor-frontend      | @itwin/editor-frontend               |
+| @bentley/analytical-backend            | @itwin/analytical-backend            |
+| @bentley/linear-referencing-backend    | @itwin/linear-referencing-backend    |
+| @bentley/linear-referencing-common     | @itwin/linear-referencing-common     |
+| @bentley/physical-material-backend     | @itwin/physical-material-backend     |
+| @bentley/presentation-backend          | @itwin/presentation-backend          |
+| @bentley/presentation-common           | @itwin/presentation-common           |
+| @bentley/presentation-frontend         | @itwin/presentation-frontend         |
+| @bentley/presentation-components       | @itwin/presentation-components       |
+| @bentley/presentation-testing          | @itwin/presentation-testing          |
+| @bentley/ui-abstract                   | @itwin/appui-abstract                |
+| @bentley/ui-components                 | @itwin/components-react              |
+| @bentley/ui-core                       | @itwin/core-react                    |
+| @bentley/ui-imodel-components          | @itwin/imodel-components-react       |
+| @bentley/ui-ninezone                   | @itwin/appui-layout-react            |
+| @bentley/ui-framework                  | @itwin/appui-react                   |
+| @bentley/ecschema2ts                   | @itwin/ecschema2ts                   |
+| @bentley/webpack-tools-core            | @itwin/core-webpack-tools            |
+| @bentley/backend-webpack-tools         | @itwin/backend-webpack-tools         |
+| @bentley/build-tools                   | @itwin/build-tools                   |
+| @bentley/eslint-plugin                 | @itwin/eslint-plugin                 |
+| @bentley/imodeljs-quantity             | @itwin/core-quantity                 |
+| @bentley/imodeljs-i18n                 | @itwin/core-i18n                     |
+| @bentley/hypermodeling-frontend        | @itwin/hypermodeling-frontend        |
+| @bentley/electron-manager              | @itwin/electron-manager              |
+| @bentley/mobile-manager                | @itwin/mobile-manager                |
+| @bentley/express-server                | @itwin/express-server                |
+| @bentley/ecschema-rpcinterface-common  | @itwin/ecschema-rpcinterface-common  |
+| @bentley/ecschema-rpcinterface-impl    | @itwin/ecschema-rpcinterface-impl    |
+| @bentley/ecschema-rpcinterface-tests   | @itwin/ecschema-rpcinterface-tests   |
+| @bentley/certa                         | @itwin/certa                         |
+| @bentley/perf-tools                    | @itwin/perf-tools                    |
+| @bentley/oidc-signin-tool              | @itwin/oidc-signin-tool              |
+| @bentley/geonames-extension            | @itwin/geonames-extension            |
+| @bentley/map-layers                    | @itwin/map-layers                    |
+| @bentley/rpcinterface-full-stack-tests | @itwin/rpcinterface-full-stack-tests |
+| @bentley/imodelhub-client-tests        | @itwin/imodelhub-client-tests        |
 
 ## Build tools changes
 
-- Removed `test` and `test-tsnode` scripts from `@bentley/build-tools`.  Please use mocha directly instead.
-- Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
-- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
+- Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
+- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
 ## BentleyError constructor no longer logs
 
-In V2, the constructor of the base exception class [BentleyError]($bentleyjs-core) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
+In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
 
-The [BentleyError]($bentleyjs-core) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
+The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`metaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two. Also, the previous version of the constructor required the metaData argument to be a function that returns an object. It may now also just be an object.
+
+## Logger functions
+
+The optional `metaData` argument for the [Logger]($core-bentley) functions was previously a function returning an object or undefined. That was to permit cases where it may be expensive to create the metadata to be elided when logging is turned off. However, there are many cases where the metaData object is directly available, so creating a function to return it created overhead whether or not logging is enabled. It may now also be just an object so you don't have to make a function.
 
 ## ClientRequestContext and AuthorizedClientRequestContext have been removed
 
-The classes `ClientRequestContext` and `AuthorizedClientRequestContext` existed to identify RPC requests between a web frontend and a cloud backend. They have been removed. Most places that previously used an `AuthorizedClientRequestContext` should now be replaced with [AccessToken]($bentleyjs-core).
+The classes `ClientRequestContext` and `AuthorizedClientRequestContext` existed to identify RPC requests between a web frontend and a cloud backend. They have been removed. Most places that previously used an `AuthorizedClientRequestContext` should now be replaced with [AccessToken]($core-bentley).
+
+If you have code that has something like this:
 
 ```ts
 requestContext.enter();
@@ -65,26 +131,54 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
 ```ts
-  viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
+viewState.lookAt(
+  eye,
+  target,
+  upVector,
+  newExtents,
+  undefined,
+  backDistance,
+  opts
+);
 ```
 
 can become:
 
 ```ts
-  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector, newExtents, backDistance, opts} );
+viewState.lookAt({
+  eyePoint: eye,
+  targetPoint: target,
+  upVector,
+  newExtents,
+  backDistance,
+  opts,
+});
 ```
 
 likewise
 
 ```ts
-    viewState.lookAtUsingLensAngle(eye, target, up, lens, frontDistance, backDistance);
+viewState.lookAtUsingLensAngle(
+  eye,
+  target,
+  up,
+  lens,
+  frontDistance,
+  backDistance
+);
 ```
 
 can become:
 
 ```ts
-  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
-
+viewState.lookAt({
+  eyePoint: eye,
+  targetPoint: target,
+  upVector: up,
+  lensAngle: lens,
+  frontDistance,
+  backDistance,
+});
 ```
 
 ### OnViewExtentsError and MarginOptions Separated from ViewChangeOptions
@@ -100,29 +194,29 @@ There is now a separate interface [OnViewExtentsError]($frontend) that `ViewStat
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
 
 ```ts
-  function turnOnShadows(vp: Viewport) {
-    vp.viewFlags.shadows = true;
-  }
+function turnOnShadows(vp: Viewport) {
+  vp.viewFlags.shadows = true;
+}
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
 
 ```ts
-  function turnOnShadows(vp: Viewport) {
-    const vf = vp.viewFlags.clone();
-    vf.shadows = true;
-    vp.viewFlags = vf;
-  }
+function turnOnShadows(vp: Viewport) {
+  const vf = vp.viewFlags.clone();
+  vf.shadows = true;
+  vp.viewFlags = vf;
+}
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
 
 ```ts
-  function turnOnShadows(vp: Viewport) {
-    vp.viewFlags = vp.viewFlags.with("shadows", true);
-    // or, equivalently, but less efficiently in this case:
-    vp.viewFlags = vp.viewFlags.copy({ shadows: true });
-  }
+function turnOnShadows(vp: Viewport) {
+  vp.viewFlags = vp.viewFlags.with("shadows", true);
+  // or, equivalently, but less efficiently in this case:
+  vp.viewFlags = vp.viewFlags.copy({ shadows: true });
+}
 ```
 
 Methods that mutate a ViewFlags object have been removed.
@@ -133,29 +227,29 @@ Methods that mutate a ViewFlags object have been removed.
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
 
 ```ts
-  // Replace this...
-  viewport.viewFlags.clipVolume = true;
-  // ...with this:
-  viewport.viewFlags = viewFlags.with("clipVolume", true);
+// Replace this...
+viewport.viewFlags.clipVolume = true;
+// ...with this:
+viewport.viewFlags = viewFlags.with("clipVolume", true);
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
 
 ```ts
-  // Replace this...
-  viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
-  // ...with this:
-  viewport.viewFlags = viewport.viewFlags.copy({ shadows: true, lighting: true });
+// Replace this...
+viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
+// ...with this:
+viewport.viewFlags = viewport.viewFlags.copy({ shadows: true, lighting: true });
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
 
 ```ts
-  // Replace this...
-  const vf = new ViewFlags();
-  vf.shadows = vf.lighting = true;
-  // ...with this:
-  const vf = ViewFlags.create({ shadows: true, lighting: true });
+// Replace this...
+const vf = new ViewFlags();
+vf.shadows = vf.lighting = true;
+// ...with this:
+const vf = ViewFlags.create({ shadows: true, lighting: true });
 ```
 
 ### Removal of unused properties
@@ -177,68 +271,116 @@ This cumbersome, inefficient class has been replaced with the identically-named 
 Upgrade instructions:
 
 ```ts
-  let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
-  let ovrs = { }; // New code
+let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
+let ovrs = {}; // New code
 
-  let ovrs = new ViewFlagOverrides(viewFlags); // Old code - override everything according to a ViewFlags
-  let ovrs = { ...viewFlags }; // New code
+let ovrs = new ViewFlagOverrides(viewFlags); // Old code - override everything according to a ViewFlags
+let ovrs = { ...viewFlags }; // New code
 
-  ovrs.overrideAll(viewFlags); // Old code - override everything according to a ViewFlags
-  ovrs = { ...viewFlags }; // New code.
+ovrs.overrideAll(viewFlags); // Old code - override everything according to a ViewFlags
+ovrs = { ...viewFlags }; // New code.
 
-  ovrs.setThematicDisplay(true); // Old code - override thematic display to be true.
-  ovrs.thematicDisplay = true; // New code
+ovrs.setThematicDisplay(true); // Old code - override thematic display to be true.
+ovrs.thematicDisplay = true; // New code
 
-  ovrs.clone(other); // Old code - make other be a copy of ovrs
-  other = { ...other }; // New code
+ovrs.clone(other); // Old code - make other be a copy of ovrs
+other = { ...other }; // New code
 
-  ovrs.copyFrom(other); // Old code - make ovrs be a copy of other
-  ovrs = { ...other }; // New code
+ovrs.copyFrom(other); // Old code - make ovrs be a copy of other
+ovrs = { ...other }; // New code
 
-  if (ovrs.isPresent(ViewFlagPresence.ThematicDisplay)) // Old code
-  if (undefined !== ovrs.thematicDisplay) // New code
+if (ovrs.isPresent(ViewFlagPresence.ThematicDisplay))
+  if (undefined !== ovrs.thematicDisplay)
+    // Old code
+    // New code
 
-  ovrs.setPresent(ViewFlagPresence.ThematicDisplay) // Old code
-  ovrs.thematicDisplay = value; // New code, where "value" is whatever value thematicDisplay was set to in the old code
+    ovrs.setPresent(ViewFlagPresence.ThematicDisplay); // Old code
+ovrs.thematicDisplay = value; // New code, where "value" is whatever value thematicDisplay was set to in the old code
 
-  ovrs.clearPresent(ViewFlagPresence.ThematicDisplay) // Old code
-  ovrs.thematicDisplay = undefined; // New code
+ovrs.clearPresent(ViewFlagPresence.ThematicDisplay); // Old code
+ovrs.thematicDisplay = undefined; // New code
 
-  if (ovrs.anyOverridden()); // Old code - determine if any flags are overridden
-  if (JsonUtils.isNonEmptyObject(ovrs)); // New code
+if (ovrs.anyOverridden()); // Old code - determine if any flags are overridden
+if (JsonUtils.isNonEmptyObject(ovrs)); // New code
 
-  ovrs.clear(); // Old code - mark all flags as not overridden
-  ovrs = { }; // New code
+ovrs.clear(); // Old code - mark all flags as not overridden
+ovrs = {}; // New code
 
-  ovrs.clearClipVolume(); // Old code - mark clip volume as not overridden
-  ovrs.clipVolume = undefined; // New code
+ovrs.clearClipVolume(); // Old code - mark clip volume as not overridden
+ovrs.clipVolume = undefined; // New code
 
-  const vf = ovrs.apply(viewFlags); // Old code - create a ViewFlags by applying the overrides to the input ViewFlags
-  const vf = viewFlags.override(ovrs); // New code
+const vf = ovrs.apply(viewFlags); // Old code - create a ViewFlags by applying the overrides to the input ViewFlags
+const vf = viewFlags.override(ovrs); // New code
 
-  const props = ovrs.toJSON(); // Old code - obtain JSON representation
-  const props = ovrs; // New code
+const props = ovrs.toJSON(); // Old code - obtain JSON representation
+const props = ovrs; // New code
 
-  let ovrs = ViewFlagOverrides.fromJSON(props); // Old code - create from JSON representation
-  let ovrs = { ...props }; // New code
+let ovrs = ViewFlagOverrides.fromJSON(props); // Old code - create from JSON representation
+let ovrs = { ...props }; // New code
 ```
+
+## Breaking map imagery API changes
+
+Originally, the type of imagery to be displayed for the background map was defined by `BackgroundMapSettings.providerName` and `BackgroundMapSettings.mapType`. Later, support for any number of map layers from any source was added in the form of [MapImagerySettings]($common). The [BackgroundMapSettings]($common) properties therefore became redundant with (and more limited than) [MapImagerySettings.backgroundBase]($common).
+
+MapImagerySettings is now fully responsible for specifying the background map imagery; BackgroundMapSettings controls only how that imagery is applied to the view. The corresponding JSON properties have been removed from [BackgroundMapProps]($common); for backwards compatibility, they continue to exist in [PersistentBackgroundMapProps]($common) and will be used as the background imagery if no background imagery is specified by [MapImageryProps.backgroundBase]($common).
+
+Previously, most code would change the map imagery using [Viewport.changeBackgroundMapProps]($frontend) or [DisplayStyleState.changeBackgroundMapProps]($frontend). Such code will no longer compile - it should instead use [Viewport.changeBackgroundMapProvider]($frontend) or [DisplayStyleState.changeBackgroundMapProvider]($frontend). For example:
+
+```ts
+  // Replace this:
+  viewport.changeBackgroundMapProps({ providerName: "BingMapProvider", providerData: { mapType: BackgroundMapType.Street } });
+  // With this:
+  viewport.changeBackgroundMapProvider({ name: "BingMapProvider", type: BackgroundMapType.Street });
+```
+
+Because a [BaseLayerSettings]($common) can be either a [BaseMapLayerSettings]($common) or a solid [ColorDef]($common), and the former can be configured to use a [BackgroundMapProvider]($common) or any other imagery source, querying the current provider is now more complicated:
+
+```ts
+  // Replace this:
+  const providerName: BackgroundMapProviderName = displayStyleSettings.backgroundMap.providerName;
+  // With something like:
+  let providerName: BackgroundMapProviderName | undefined;
+  if (displayStyleSettings.mapImagery.backgroundBase instanceof BaseMapLayerSettings)
+    providerName = displayStyleSettings.mapImagery.backgroundBase.provider?.name;
+```
+
+If you are producing JSON from a [BackgroundMapSettings]($common) to be persisted as a [DisplayStyleSettingsProps]($common) object, change your code as follows:
+
+```ts
+  // Replace this (no longer compiles):
+  displayStyleSettingsProps.backgroundMap = backgroundMapSettings.toJSON();
+  // With this:
+  displayStyleSettingsProps.backgroundMap = backgroundMapSettings.toPersistentJSON();
+
+Likewise if you are reading a [BackgroundMapSettings]($common) directly from a persistent [DisplayStyleSettingsProps]($common), change your code as follows:
+```ts
+  // Replace this (no longer compiles):
+  const mapSettings = BackgroundMapSettings.fromJSON(displayStyleSettings.backgroundMap);
+  // With this:
+  const mapSettings = BackgroundMapSettings.fromPersistentJSON(displayStyleSettings.backgroundMap);
+```
+
+[DisplayStyleSettings.onBackgroundMapChanged]($common) will no longer be raised when changing the imagery provider. Use [DisplayStyleSettings.onMapImageryChanged]($common) instead.
 
 ## Moved utility types
 
-The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
+The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
 
 ## Removed default API keys
 
-Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
+Previous versions of `@itwin/core-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
 
-A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
+A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapProvider.name]($common) set to "MapBoxProvider".
 
 A valid [Bing Maps](https://www.bing.com/maps) key is required for:
-- Display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "BingProvider".
+
+- Display of map imagery in views with [BackgroundMapProvider.name]($common) set to "BingProvider".
 - Location services supplied by [BingLocationProvider]($frontend), along with tools that use these services like [ViewGlobeLocationTool]($frontend).
 - Elevation services supplied by [BingElevationProvider]($frontend), including accurate 3d terrain display.
 
 A valid [Cesium ION](https://cesium.com/platform/cesium-ion/) key is required for:
+
 - Display of 3d terrain in views with [TerrainSettings.providerName]($common) set to "CesiumWorldTerrain".
 - Display of OpenStreetMap buildings.
 
@@ -274,7 +416,7 @@ See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learn
 
 ## ITwinId
 
-Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean *the iTwin for this iModel* are now replaced by `iTwinId`.
+Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the _project or asset_ to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean _the iTwin for this iModel_ are now replaced by `iTwinId`.
 
 This is a breaking change for places like `IModel.contextId`. However, it should be a straightforward search-and-replace `contextId` -> `iTwinId` anywhere you get compilation errors in your code.
 
@@ -311,13 +453,13 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
-## `NodeKey` in `@bentley/presentation-common`
+## `NodeKey` in `@itwin/presentation-common`
 
 The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
-## Changes to `Presentation` initialization in `@bentley/presentation-backend`
+## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
 - [PresentationManagerProps]($presentation-backend) have been restructured to make attributes' purpose clearer. This affects calls to constructor of [PresentationManager]($presentation-backend) and [Presentation.initialize]($presentation-backend). Typical migration:
 
@@ -339,8 +481,8 @@ In `3.0` changes have been made that changed the way this attribute is calculate
 
     // removed in favor of `workerThreadsCount`
     taskAllocationsMap: {
-        [RequestPriority.Preload]: 1,
-        [RequestPriority.Max]: 2,
+      [RequestPriority.Preload]: 1,
+      [RequestPriority.Max]: 2,
     },
   });
   ```
@@ -365,7 +507,7 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   });
   ```
 
-## Changes to `Presentation` initialization in `@bentley/presentation-frontend`
+## Changes to `Presentation` initialization in `@itwin/presentation-frontend`
 
 - [Presentation.initialize]($presentation-frontend) used to take [PresentationManagerProps]($presentation-frontend) as an argument. Now it takes [PresentationProps]($presentation-frontend) which allows supplying props not only to [PresentationManager]($presentation-frontend), but also [SelectionManager]($presentation-frontend) and [FavoritePropertiesManager]($presentation-frontend). Typical migration:
 
@@ -404,7 +546,9 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   await Presentation.initialize({
     favorites: {
       // by default the no-op storage is used, but we can choose another option (or provide our own implementation)
-      storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      storage: createFavoritePropertiesStorage(
+        DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage
+      ),
     },
   });
   ```
@@ -413,13 +557,14 @@ It is no longer necessary to supply a [Viewport]($frontend) when creating a [Gra
 
 ## Changed return types
 
-The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($bentleyjs-core). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($core-bentley). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
 
 ## Default minimum level of detail for spatial views
 
 [TileAdmin.Props.minimumSpatialTolerance]($frontend) specifies the minimum level of detail to produce for views of spatial models. Previously, the default was `undefined`, indicating no minimum. The default has been changed to 1 millimeter. This means that when zooming in extremely closely, geometry that contains details on the order of 1mm or smaller will not refine further. This prevents the display system from requesting extraordinarily detailed graphics, improving performance.
 
 To change the minimum, supply a different value at startup. For example, the following code sets the minimum to 1 centimeter:
+
 ```ts
 await IModelApp.startup({
   tileAdmin: { minimumSpatialTolerance: 0.01 },
@@ -434,38 +579,41 @@ The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and 
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
 
-### @bentley/imodeljs-backend
+### @itwin/core-backend
 
 | Removed                                                      | Replacement                                    |
 | ------------------------------------------------------------ | ---------------------------------------------- |
-| `AutoPush`                                                   | *eliminated*                                   |
+| `AutoPush`                                                   | _eliminated_                                   |
 | `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
 | `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @bentley/imodeljs-common |
-| `BriefcaseManager.getCompatibilityFileName`                  | *eliminated*                                   |
-| `BriefcaseManager.getCompatibilityPath`                      | *eliminated*                                   |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common       |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                   |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                   |
 | `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | *eliminated*                                   |
-| `DocumentCarrier`                                            | *eliminated*                                   |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                   |
+| `DocumentCarrier`                                            | _eliminated_                                   |
 | `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
 | `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
 | `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
 | `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
-| `InformationCarrierElement`                                  | *eliminated*                                   |
+| `InformationCarrierElement`                                  | _eliminated_                                   |
 | `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
 | `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
 | `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
 | `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
 | `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
-| `Texture.width, height, flags`                               | *eliminated*                                   |
-| `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
+| `Texture.width, height, flags`                               | _eliminated_                                   |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common              |
 | `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
 
-### @bentley/imodeljs-common
+### @itwin/core-common
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                       | `AnalysisStyle.thematic`                                       |
+| `AnalysisStyleScalar`                        | `AnalysisStyleThematic`                                        |
+| `AnalysisStyleScalarProps`                   | `AnalysisStyleThematicProps`                                   |
 | `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
 | `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |
@@ -477,30 +625,30 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
-| `LatAndLong`                                 | *eliminated*                                                   |
+| `LatAndLong`                                 | _eliminated_                                                   |
 | `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
 | `TerrainSettings.locatable`                  | `BackgroundMapSettings.locatable`                              |
 | `TerrainSettingsProps.nonLocatable`          | `BackgroundMapProps.nonLocatable`                              |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
-| `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
-| `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
+| `ViewFlagProps.edgeMask`                     | _eliminated_                                                   |
+| `ViewFlagProps.hlMatColors`                  | _eliminated_                                                   |
 | `ViewFlags.clone`                            | [ViewFlags.copy]($common)                                      |
-| `ViewFlags.edgeMask`                         | *eliminated*                                                   |
-| `ViewFlags.hLineMaterialColors`              | *eliminated*                                                   |
+| `ViewFlags.edgeMask`                         | _eliminated_                                                   |
+| `ViewFlags.hLineMaterialColors`              | _eliminated_                                                   |
 | `ViewFlags.noCameraLights`                   | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noGeometryMap`                    | *eliminated*                                                   |
+| `ViewFlags.noGeometryMap`                    | _eliminated_                                                   |
 | `ViewFlags.noSolarLight`                     | [ViewFlags.lighting]($common)                                  |
 | `ViewFlags.noSourceLights`                   | [ViewFlags.lighting]($common)                                  |
 
-### @bentley/imodeljs-frontend
+### @itwin/core-frontend
 
 | Removed                                       | Replacement                                                        |
 | --------------------------------------------- | ------------------------------------------------------------------ |
 | `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
-| `AsyncMethodsOf`                              | [AsyncMethodsOf]($bentleyjs-core)                                  |
-| `AsyncFunction`                               | [AsyncFunction]($bentleyjs-core)                                   |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                    |
+| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                     |
 | `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
-| `PromiseReturnType`                           | [PromiseReturnType]($bentleyjs-core)                               |
+| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                                 |
 | `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
 | `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
@@ -528,7 +676,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 | `WebAppViewer`                                | *eliminated*                                                       |
 
-### @bentley/geometry-core
+### @itwin/core-geometry
 
 | Removed                                         | Replacement                                                |
 | ----------------------------------------------- | ---------------------------------------------------------- |
@@ -548,35 +696,35 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
 | `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
 
-### @bentley/ui-abstract
+### @itwin/appui-abstract
 
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | *eliminated* |
 
-### @bentley/ui-core
+### @itwin/core-react
 
-| Removed                              | Replacement                                            |
-| ------------------------------------ | ------------------------------------------------------ |
-| `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @bentley/ui-core |
-| `NumericInput` component             | `NumberInput` component in @bentley/ui-core            |
-| `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @bentley/ui-core          |
+| Removed                              | Replacement                                                |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
+| `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
+| `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
 
-### @bentley/ui-components
+### @itwin/components-react
 
 | Removed                                                    | Replacement                                                                                                                   |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                  | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
-| `StandardEditorNames`                                      | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
-| `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
-| `StandardTypeNames`                                        | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
-| `Timeline`                                                 | `TimelineComponent` in @bentley/ui-components                                                                                 |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                          |
+| `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                |
+| `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
+| `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
+| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                             |
 | `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
 | `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @bentley/ui-components                                                                               |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                           |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
-| `SignIn`                                                   | *eliminated*                                                                                                                  |
+| `SignIn`                                                   | _eliminated_                                                                                                                  |
 | All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |
 | `PropertyValueRendererContext.decoratedTextElement`        | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
@@ -587,7 +735,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `hasLinks`                                                 | `!!PropertyRecord.links?.length`                                                                                              |
 | `PropertyListProps.onListWidthChanged`                     | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
 
-### @bentley/ui-framework
+### @itwin/appui-react
 
 | Removed                                    | Replacement                                                                                                                   |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -612,9 +760,9 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
 | `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
 | `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                             | `ReactMessage` in @bentley/ui-core                                                                                            |
-| `SpecialKey`                               | `SpecialKey` in @bentley/ui-abstract                                                                                          |
-| `WidgetState`                              | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
+| `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
+| `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
 | `UserProfileBackstageItem`                 | *eliminated*                                                                                                                  |
 | `SignIn`                                   | *eliminated*                                                                                                                  |
 | `SignOutModalFrontstage`                   | *eliminated*                                                                                                                  |
@@ -624,17 +772,17 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
-| `ContentLayoutProps`                       | `ContentLayoutProps` in @bentley/ui-abstract                                                                                  |
+| `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
 | All drag & drop related APIs               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
-### @bentley/bentleyjs-core
+### @itwin/core-bentley
 
 | Removed         | Replacement                                                |
 | --------------- | ---------------------------------------------------------- |
 | `Config`        | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst` | *eliminated*                                               |
 
-### @bentley/presentation-common
+### @itwin/presentation-common
 
 | Removed                                                         | Replacement                                                                                                                                                    |
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -699,7 +847,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SelectClassInfoJSON.pathToPrimaryClass`                        | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
 | `SelectClassInfoJSON.relatedInstanceClasses`                    | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
 
-### @bentley/presentation-backend
+### @itwin/presentation-backend
 
 | Removed                                       | Replacement                                                                                                               |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -708,73 +856,73 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `PresentationManager.getContentAndSize`       | `PresentationManager.getContent` and `getContentSetSize`                                                                  |
 | `PresentationManager.getDistinctValues`       | `PresentationManager.getPagedDistinctValues`                                                                              |
 | `PresentationManager.getNodesAndCount`        | `PresentationManager.getNodes` and `getNodesCount`                                                                        |
-| `PresentationManager.loadHierarchy`           | *eliminated*                                                                                                              |
+| `PresentationManager.loadHierarchy`           | _eliminated_                                                                                                              |
 | `PresentationManagerProps.activeLocale`       | `PresentationManagerProps.defaultLocale`                                                                                  |
 | `PresentationManagerProps.activeUnitSystem`   | Renamed to `PresentationManagerProps.defaultUnitSystem` and changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 | `PresentationManagerProps.cacheConfig`        | `PresentationManagerProps.caching.hierarchies`                                                                            |
 | `PresentationManagerProps.contentCacheSize`   | `PresentationManagerProps.caching.content.size`                                                                           |
 | `PresentationManagerProps.taskAllocationsMap` | `PresentationManagerProps.workerThreadsCount`                                                                             |
 | `UnitSystemFormat.unitSystems`                | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                                                         |
-| `WithClientRequestContext<T>`                 | *eliminated*                                                                                                              |
+| `WithClientRequestContext<T>`                 | _eliminated_                                                                                                              |
 
-### @bentley/presentation-frontend
+### @itwin/presentation-frontend
 
 | Removed                                     | Replacement                                                   |
 | ------------------------------------------- | ------------------------------------------------------------- |
 | `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
-| `PresentationManager.compareHierarchies`    | *eliminated*                                                  |
+| `PresentationManager.compareHierarchies`    | _eliminated_                                                  |
 | `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                  |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                  |
+| `PresentationManager.loadHierarchy`         | _eliminated_                                                  |
 | `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 
-### @bentley/presentation-components
+### @itwin/presentation-components
 
 | Removed                                                | Replacement                                     |
 | ------------------------------------------------------ | ----------------------------------------------- |
 | `ContentDataProvider.configureContentDescriptor`       | `ContentDataProvider.getDescriptorOverrides`    |
 | `ContentDataProvider.isFieldHidden`                    | `ContentDataProvider.getDescriptorOverrides`    |
-| `ContentDataProvider.shouldConfigureContentDescriptor` | *eliminated*                                    |
+| `ContentDataProvider.shouldConfigureContentDescriptor` | _eliminated_                                    |
 | `ContentDataProvider.shouldExcludeFromDescriptor`      | `ContentDataProvider.getDescriptorOverrides`    |
 | `ControlledTreeFilteringProps`                         | `ControlledPresentationTreeFilteringProps`      |
-| `DEPRECATED_controlledTreeWithFilteringSupport`        | *eliminated*                                    |
-| `DEPRECATED_controlledTreeWithVisibleNodes`            | *eliminated*                                    |
+| `DEPRECATED_controlledTreeWithFilteringSupport`        | _eliminated_                                    |
+| `DEPRECATED_controlledTreeWithVisibleNodes`            | _eliminated_                                    |
 | `DEPRECATED_treeWithFilteringSupport`                  | `useControlledPresentationTreeFiltering`        |
 | `DEPRECATED_treeWithUnifiedSelection`                  | `useUnifiedSelectionTreeEventHandler`           |
-| `FilteredPresentationTreeDataProvider.loadHierarchy`   | *eliminated*                                    |
-| `IPresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                    |
-| `PresentationTreeDataProvider.loadHierarchy`           | *eliminated*                                    |
-| `PresentationTreeNodeLoaderProps.preloadingEnabled`    | *eliminated*                                    |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`   | _eliminated_                                    |
+| `IPresentationTreeDataProvider.loadHierarchy`          | _eliminated_                                    |
+| `PresentationTreeDataProvider.loadHierarchy`           | _eliminated_                                    |
+| `PresentationTreeNodeLoaderProps.preloadingEnabled`    | _eliminated_                                    |
 | `propertyGridWithUnifiedSelection`                     | `usePropertyDataProviderWithUnifiedSelection`   |
 | `PropertyGridWithUnifiedSelectionProps`                | `PropertyDataProviderWithUnifiedSelectionProps` |
 | `TreeWithFilteringSupportProps`                        | `ControlledPresentationTreeFilteringProps`      |
 | `TreeWithUnifiedSelectionProps`                        | `UnifiedSelectionTreeEventHandlerParams`        |
 | `useControlledTreeFiltering`                           | `useControlledPresentationTreeFiltering`        |
 
-### @bentley/ecschema-metadata
+### @iwin/ecschema-metadata
 
 | Removed                                  | Replacement                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
-| `IDiagnostic`                            | `IDiagnostic` in @bentley/ecschema-editing                   |
-| `BaseDiagnostic`                         | `BaseDiagnostic` in @bentley/ecschema-editing                |
-| `DiagnosticType`                         | `DiagnosticType` in @bentley/ecschema-editing                |
-| `DiagnosticCategory`                     | `DiagnosticCategory` in @bentley/ecschema-editing            |
-| `DiagnosticCodes`                        | `DiagnosticCodes` in @bentley/ecschema-editing               |
-| `Diagnostics`                            | `Diagnostics` in @bentley/ecschema-editing                   |
-| `IDiagnosticReporter`                    | `IDiagnosticReporter` in @bentley/ecschema-editing           |
-| `SuppressionDiagnosticReporter`          | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
-| `FormatDiagnosticReporter`               | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
-| `LoggingDiagnosticReporter`              | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
-| `IRuleSet`                               | `IRuleSet` in @bentley/ecschema-editing                      |
-| `ECRuleSet`                              | `ECRuleSet` in @bentley/ecschema-editing                     |
-| `ISuppressionRule`                       | `ISuppressionRule` in @bentley/ecschema-editing              |
-| `BaseSuppressionRule`                    | `BaseSuppressionRule` in @bentley/ecschema-editing           |
-| `IRuleSuppressionMap`                    | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
-| `BaseRuleSuppressionMap`                 | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
-| `IRuleSuppressionSet`                    | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
-| `SchemaCompareCodes`                     | `SchemaCompareCodes` in @bentley/ecschema-editing            |
-| `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
-| `SchemaValidater`                        | `SchemaValidater` in @bentley/ecschema-editing               |
-| `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| `IDiagnostic`                            | `IDiagnostic` in @itwin/ecschema-editing                   |
+| `BaseDiagnostic`                         | `BaseDiagnostic` in @itwin/ecschema-editing                |
+| `DiagnosticType`                         | `DiagnosticType` in @itwin/ecschema-editing                |
+| `DiagnosticCategory`                     | `DiagnosticCategory` in @itwin/ecschema-editing            |
+| `DiagnosticCodes`                        | `DiagnosticCodes` in @itwin/ecschema-editing               |
+| `Diagnostics`                            | `Diagnostics` in @itwin/ecschema-editing                   |
+| `IDiagnosticReporter`                    | `IDiagnosticReporter` in @itwin/ecschema-editing           |
+| `SuppressionDiagnosticReporter`          | `SuppressionDiagnosticReporter` in @itwin/ecschema-editing |
+| `FormatDiagnosticReporter`               | `FormatDiagnosticReporter` in @itwin/ecschema-editing      |
+| `LoggingDiagnosticReporter`              | `LoggingDiagnosticReporter` in @itwin/ecschema-editing     |
+| `IRuleSet`                               | `IRuleSet` in @itwin/ecschema-editing                      |
+| `ECRuleSet`                              | `ECRuleSet` in @itwin/ecschema-editing                     |
+| `ISuppressionRule`                       | `ISuppressionRule` in @itwin/ecschema-editing              |
+| `BaseSuppressionRule`                    | `BaseSuppressionRule` in @itwin/ecschema-editing           |
+| `IRuleSuppressionMap`                    | `IRuleSuppressionMap` in @itwin/ecschema-editing           |
+| `BaseRuleSuppressionMap`                 | `BaseRuleSuppressionMap` in @itwin/ecschema-editing        |
+| `IRuleSuppressionSet`                    | `IRuleSuppressionSet` in @itwin/ecschema-editing           |
+| `SchemaCompareCodes`                     | `SchemaCompareCodes` in @itwin/ecschema-editing            |
+| `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @itwin/ecschema-editing      |
+| `SchemaValidater`                        | `SchemaValidater` in @itwin/ecschema-editing               |
+| `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @itwin/ecschema-editing       |
 | `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                            |
 | `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                        |
 | `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                              |
@@ -783,7 +931,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                            | Replacement                    |
 | ---------------------------------- | ------------------------------ |
-| `UserInfo`                         | Moved to @bentley/ui-framework |
+| `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
 <!---
@@ -792,12 +940,12 @@ User Interface Changes - section to comment below
 
 ## User Interface Changes
 
-Several changes were made in the @bentley/ui-* packages.
-Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
-A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
-A new @bentley/ui-imodel-components package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
+Several changes were made in the @itwin ui packages.
+Some components in @itwin/core-react were deprecated in favor of components in @itwinui-react.
+A few constructs were deprecated in @itwin/core-react package with alternatives elsewhere.
+A new @itwin/imodel-components-react package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
-The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
+The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
@@ -805,18 +953,18 @@ For migration purposes, React 16 is included in the peerDependencies for the pac
 
 | Class/Component                                  | Description                                                                                      |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| [StandardFrontstageProvider]($ui-framework)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
-| [StandardContentToolsProvider]($ui-framework)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
-| [StandardNavigationToolsProvider]($ui-framework) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
-| [StandardStatusbarItemsProvider]($ui-framework)  | UiItemsProvider that will add common statusbar items.                                            |
-| [ContentToolWidgetComposer]($ui-framework)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
-| [ViewToolWidgetComposer]($ui-framework)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
-| [StandardContentLayouts]($ui-abstract)           | Provides standard view layouts that can be used when defining a ContentGroup.                    |
-| [ContentGroupProvider]($ui-framework)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
+| [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
+| [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
+| [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
+| [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
+| [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
+| [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
+| [StandardContentLayouts]($appui-abstract)           | Provides standard view layouts that can be used when defining a ContentGroup.                    |
+| [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
 ### New Timeline Date Marker
 
-The [TimelineComponent]($ui-imodel-components) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components) in the new markDate member of [TimelineComponentProps]($ui-imodel-components). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
+The [TimelineComponent]($imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($imodel-components-react) in the new markDate member of [TimelineComponentProps]($imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
 
 ### New Floating Widget Capabilities
 
@@ -901,67 +1049,67 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 
-Several UI components in the @bentley/ui-core and @bentley/ui-components packages have been deprecated.
+Several UI components in the @itwin/core-react and @itwin/components-react packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
-| Deprecated in @bentley/ui-core | Use from @itwin/itwinui-react instead          |
-| ------------------------------ | ---------------------------------------------- |
-| Button                         | Button                                         |
-| ButtonSize                     | `size` prop for itwinui-react Button           |
-| ButtonType                     | `styleType` prop for itwinui-react Button      |
-| Checkbox                       | Checkbox                                       |
-| ExpandableBlock                | ExpandableBlock                                |
-| Headline                       | Headline                                       |
-| HorizontalTabs                 | HorizontalTabs                                 |
-| Input                          | Input                                          |
-| LabeledInput                   | LabeledInput                                   |
-| LabeledSelect                  | LabeledSelect                                  |
-| LabeledTextarea                | LabeledTextarea                                |
-| LabeledToggle                  | ToggleSwitch with `labelPosition="right"` prop |
-| LeadingText                    | Leading                                        |
-| ProgressBar                    | ProgressLinear                                 |
-| ProgressSpinner                | ProgressRadial                                 |
-| Radio                          | Radio                                          |
-| Select                         | Select                                         |
-| SelectOption                   | SelectOption                                   |
-| Slider                         | Slider                                         |
-| SmallText                      | Small                                          |
-| Spinner                        | ProgressRadial with `indeterminate` prop       |
-| SpinnerSize                    | `size` prop in ProgressRadialProps             |
-| SplitButton                    | SplitButton                                    |
-| Subheading                     | Subheading                                     |
-| Textarea                       | Textarea                                       |
-| Tile                           | Tile                                           |
-| Title                          | Title                                          |
-| Toggle                         | ToggleSwitch                                   |
-| Tooltip                        | Tooltip                                        |
-| TooltipPlacement               | Placement                                      |
+| Deprecated in @itwin/core-react | Use from @itwin/itwinui-react instead          |
+| ---------------------------------- | ---------------------------------------------- |
+| Button                             | Button                                         |
+| ButtonSize                         | `size` prop for itwinui-react Button           |
+| ButtonType                         | `styleType` prop for itwinui-react Button      |
+| Checkbox                           | Checkbox                                       |
+| ExpandableBlock                    | ExpandableBlock                                |
+| Headline                           | Headline                                       |
+| HorizontalTabs                     | HorizontalTabs                                 |
+| Input                              | Input                                          |
+| LabeledInput                       | LabeledInput                                   |
+| LabeledSelect                      | LabeledSelect                                  |
+| LabeledTextarea                    | LabeledTextarea                                |
+| LabeledToggle                      | ToggleSwitch with `labelPosition="right"` prop |
+| LeadingText                        | Leading                                        |
+| ProgressBar                        | ProgressLinear                                 |
+| ProgressSpinner                    | ProgressRadial                                 |
+| Radio                              | Radio                                          |
+| Select                             | Select                                         |
+| SelectOption                       | SelectOption                                   |
+| Slider                             | Slider                                         |
+| SmallText                          | Small                                          |
+| Spinner                            | ProgressRadial with `indeterminate` prop       |
+| SpinnerSize                        | `size` prop in ProgressRadialProps             |
+| SplitButton                        | SplitButton                                    |
+| Subheading                         | Subheading                                     |
+| Textarea                           | Textarea                                       |
+| Tile                               | Tile                                           |
+| Title                              | Title                                          |
+| Toggle                             | ToggleSwitch                                   |
+| Tooltip                            | Tooltip                                        |
+| TooltipPlacement                   | Placement                                      |
 
-| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead |
-| ------------------------------------ | ------------------------------------- |
-| Breadcrumb                           | Breadcrumbs                           |
+| Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
+| ---------------------------------------- | ------------------------------------- |
+| Breadcrumb                               | Breadcrumbs                           |
 
 #### Slider
 
-The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+The deprecated [Slider]($core-react) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 
-A few constructs were deprecated in @bentley/ui-core package.
-Some were copied to the @bentley/ui-abstract package.
-Some have replacements within the @bentley/ui-core package.
+A few constructs were deprecated in @itwin/core-react package.
+Some were copied to the @itwin/appui-abstract package.
+Some have replacements within the @itwin/core-react package.
 
-| Deprecated                            | Replacement                                |
-| ------------------------------------- | ------------------------------------------ |
-| DialogButtonDef in @bentley/ui-core   | DialogButtonDef in @bentley/ui-abstract    |
-| DialogButtonStyle in @bentley/ui-core | DialogButtonStyle in @bentley/ui-abstract  |
-| DialogButtonType in @bentley/ui-core  | DialogButtonType in @bentley/ui-abstract   |
-| LocalUiSettings in @bentley/ui-core   | LocalSettingsStorage in @bentley/ui-core   |
-| SessionUiSettings in @bentley/ui-core | SessionSettingsStorage in @bentley/ui-core |
+| Deprecated                                | Replacement                                    |
+| ----------------------------------------- | ---------------------------------------------- |
+| DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
+| DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
+| DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
+| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react   |
+| SessionUiSettings in @itwin/core-react | SessionSettingsStorage in @itwin/core-react |
 
-### New @bentley/ui-imodel-components package
+### New @itwin/imodel-components-react package
 
-A new @bentley/ui-imodel-components package has been added, and some items were moved from @bentley/ui-core and @bentley/ui-components into this new package.
+A new @itwin/imodel-components-react package has been added, and some items were moved from @itwin/core-react and @itwin/components-react into this new package.
 The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
 Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
 The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
@@ -993,17 +1141,17 @@ The cli tool has been deprecated due to an impending change of Extensions and th
 
 The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
 
-## @bentley/geometry-core
+## @itwin/core-geometry
 
 The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
 
 The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
 
-## new @bentley/imodeljs-transformer package split out of backend package
+## new @itwin/core-transformer package split out of backend package
 
 The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
-were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.
+were removed from the `@itwin/core-backend` package and moved to a new package, `@itwin/core-transformer`.
 
-## @bentley/imodeljs-common
+## @itwin/core-common
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.

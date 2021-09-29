@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as utils from "./utilities/utils";
-import { SchemaContext } from "@bentley/ecschema-metadata";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 
 const assetDir: string = utils.getAssetsDir();
 const ec32ReferenceDir: string = path.join(assetDir, "schema3.2");

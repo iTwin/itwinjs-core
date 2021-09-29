@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { act, fireEvent, render } from "@testing-library/react";
-import { WidgetOverflow, WidgetTabsEntryContext } from "../../ui-ninezone";
+import { WidgetOverflow, WidgetTabsEntryContext } from "../../appui-layout-react";
 
 describe("WidgetOverflow", () => {
   it("should render", () => {

@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointProps } from "@bentley/ui-abstract";
-import { DragHandle, HorizontalAnchor, PointerCaptor, Tab, TabMode, TabModeHelpers, VerticalAnchor } from "../../../../ui-ninezone";
+import { PointProps } from "@itwin/appui-abstract";
+import { DragHandle, HorizontalAnchor, PointerCaptor, Tab, TabMode, TabModeHelpers, VerticalAnchor } from "../../../../appui-layout-react";
 import { createRect, mount } from "../../../Utils";
 
 describe("<Tab />", () => {

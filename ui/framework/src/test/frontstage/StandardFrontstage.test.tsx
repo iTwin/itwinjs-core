@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
   ContentGroup,
@@ -14,9 +14,9 @@ import {
   ContentGroupProvider,
   ContentProps,
   CoreTools, FrontstageManager, FrontstageProps,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { StandardFrontstageProps, StandardFrontstageProvider } from "../../ui-framework/frontstage/StandardFrontstageProvider";
+import { StandardFrontstageProps, StandardFrontstageProvider } from "../../appui-react/frontstage/StandardFrontstageProvider";
 
 async function getSavedViewLayoutProps() {
   return Promise.resolve({

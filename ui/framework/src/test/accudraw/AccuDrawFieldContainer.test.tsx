@@ -6,16 +6,16 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { ColorByName, ColorDef } from "@itwin/core-common";
+import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
 import TestUtils from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { AccuDrawUiSettings } from "../../ui-framework/accudraw/AccuDrawUiSettings";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { AccuDrawFieldContainer } from "../../appui-react/accudraw/AccuDrawFieldContainer";
+import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
+import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
+import { AccuDrawUiSettings } from "../../appui-react/accudraw/AccuDrawUiSettings";
 
 // cspell:ignore uiadmin
 

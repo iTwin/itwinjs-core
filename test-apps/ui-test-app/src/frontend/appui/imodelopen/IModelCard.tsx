@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelCard.scss";
 import * as React from "react";
-import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { IModelInfo, UiFramework } from "@itwin/appui-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 
 // import { IModelViewPicker } from "./IModelViewPicker";

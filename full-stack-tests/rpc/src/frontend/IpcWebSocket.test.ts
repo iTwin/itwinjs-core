@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { IpcWebSocketFrontend } from "@bentley/imodeljs-common";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { IpcWebSocketFrontend } from "@itwin/core-common";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 

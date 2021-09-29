@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@bentley/ui-abstract";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
+import { I18N } from "@itwin/core-i18n";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
-import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
+import { IModelApp } from "@itwin/core-frontend";
 import { MapLayerOptions } from "./Interfaces";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {

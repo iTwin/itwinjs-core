@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";

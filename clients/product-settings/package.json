@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "3.0.0-dev.70",
+  "version": "3.0.0-dev.71",
   "description": "iModel.js Product Settings Client",
   "main": "lib/product-settings-client.js",
   "typings": "lib/product-settings-client",
@@ -36,18 +36,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.70"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.71"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
@@ -64,8 +64,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

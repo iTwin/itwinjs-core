@@ -8,7 +8,7 @@ import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
   StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager,
   UiItemsProvider,
-} from "../ui-abstract";
+} from "../appui-abstract";
 
 const testStageUsage = StageUsage.General;
 

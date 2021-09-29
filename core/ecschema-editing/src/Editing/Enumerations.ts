@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { AnyEnumerator, ECObjectsError, ECObjectsStatus, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaKey } from "@bentley/ecschema-metadata";
+import { AnyEnumerator, ECObjectsError, ECObjectsStatus, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 

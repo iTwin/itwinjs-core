@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AccessToken, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
 import { BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { Briefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { IModelApp, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelHubFrontend } from "@itwin/core-frontend";
 import { AuthorizationClient } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";

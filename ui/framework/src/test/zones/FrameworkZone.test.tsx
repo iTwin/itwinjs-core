@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { FrameworkZone } from "../../ui-framework";
-import { FrameworkZoneProps } from "../../ui-framework/zones/FrameworkZone";
+import { FrameworkZone } from "../../appui-react";
+import { FrameworkZoneProps } from "../../appui-react/zones/FrameworkZone";
 
 describe("FrameworkZone", () => {
   it("renders floating correctly", () => {

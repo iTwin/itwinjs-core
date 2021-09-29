@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import { AuthorizationClient } from "@itwin/itwin-client";
 /** @packageDocumentation
  * @module iModelBankClient
  */

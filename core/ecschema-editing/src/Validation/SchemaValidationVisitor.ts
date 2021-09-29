@@ -10,7 +10,7 @@ import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttr
   EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
   Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
   StructClass, Unit, UnitSystem,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
 import { IDiagnosticReporter } from "./DiagnosticReporter";

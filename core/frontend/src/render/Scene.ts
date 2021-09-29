@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { SpatialClassifier } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { SpatialClassifier } from "@itwin/core-common";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addFloatingWidget, addTab, createNineZoneState, FloatingWidgets } from "../../ui-ninezone";
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidgets } from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidgets", () => {
