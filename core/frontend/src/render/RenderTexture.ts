@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Gradient, ImageBuffer, RenderTexture } from "@bentley/imodeljs-common";
+import { Gradient, ImageBuffer, RenderTexture } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
 export enum TextureTransparency {
