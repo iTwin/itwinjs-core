@@ -31,7 +31,7 @@ function ColorOptions({ handleColorPicked, options, numColumns, round, title }: 
 }
 
 /** Properties for the [[ColorPickerButton]] React component
- * @beta
+ * @public
  */
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Active color */
@@ -145,7 +145,7 @@ const ForwardRefColorPickerButton = React.forwardRef<HTMLButtonElement, ColorPic
 
 /** ColorPickerButton component
  * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
- * @beta
+ * @public
  */
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null = ForwardRefColorPickerButton;
 

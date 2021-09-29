@@ -18,7 +18,7 @@ export interface PropertyLabelRendererProps {
   /** Indicates whether to render a colon after the label */
   renderColon?: boolean;
   /** Custom tooltip for the component.
-   * @beta
+   * @public
    */
   tooltip?: string;
 }

@@ -14,7 +14,7 @@ import { CommonProps } from "@itwin/core-react";
 import { getCSSColorFromDef } from "./getCSSColorFromDef";
 
 /** Properties for the [[ColorSwatch]] React component
- * @beta
+ * @public
  */
 export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** color specification */
@@ -26,7 +26,7 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
 }
 
 /** ColorSwatch Functional component displays a color swatch in a button
- * @beta
+ * @public
  */
 export function ColorSwatch(props: ColorSwatchProps) {
   const rgbaString = getCSSColorFromDef(props.colorDef);

@@ -30,7 +30,7 @@ export enum MapMode {
 }
 
 /** Properties for the [[DrawingNavigationAid]] component
- * @beta
+ * @public
  */
 export interface DrawingNavigationAidProps extends CommonProps {
   iModelConnection: IModelConnection;
@@ -90,7 +90,7 @@ interface DrawingNavigationAidState {
 
 /**
  * A Drawing Navigation Aid.
- * @beta
+ * @public
  */
 export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
   private _rootElement = React.createRef<HTMLDivElement>();

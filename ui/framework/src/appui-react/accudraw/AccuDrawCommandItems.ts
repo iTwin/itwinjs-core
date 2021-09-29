@@ -28,7 +28,7 @@ import { ToolItemDef } from "../shared/ToolItemDef";
 import { BumpToolSetting, FocusToolSettings } from "../tools/ToolSettingsTools";
 
 /** AccuDraw Command Items - useful in Keyboard Shortcuts
- * @beta
+ * @public
  */
 // istanbul ignore next
 export class AccuDrawCommandItems {

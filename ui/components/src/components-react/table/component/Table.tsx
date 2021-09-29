@@ -116,10 +116,10 @@ export interface TableProps extends CommonProps {
   selectionMode?: SelectionMode;
 
   /** Callback for when properties are being edited
-   * @beta */
+   * @public */
   onPropertyEditing?: (args: TableCellEditorState) => void;
   /** Callback for when properties are updated
-   * @beta */
+   * @public */
   onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
 
   /** @internal */
@@ -155,7 +155,7 @@ export interface TableProps extends CommonProps {
   onApplyFilter?: () => void;
 
   /** Called to show a context menu when a cell is right-clicked.
-   * @beta */
+   * @public */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
   /** Maximum number of distinct values for filtering */
   maximumDistinctValues?: number;
@@ -213,7 +213,7 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @beta
+ * @public
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */

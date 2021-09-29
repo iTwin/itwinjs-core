@@ -15,7 +15,7 @@ import { ColorDef } from "@itwin/core-common";
 import { ColorPickerPanel } from "./ColorPickerPanel";
 
 /** Properties for the [[ColorPickerDialog]] React component
- * @beta
+ * @public
  */
 export interface ColorPickerDialogProps {
   dialogTitle: string;
@@ -29,7 +29,7 @@ export interface ColorPickerDialogProps {
 
 /**
  * Color Picker Dialog to use as modal dialog.
- * @beta
+ * @public
  */
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps) {
   const [activeColor, setActiveColor] = React.useState(color);

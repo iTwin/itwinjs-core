@@ -43,7 +43,7 @@ export interface FilteringInputProps extends CommonProps {
   onFilterClear: () => void;
   /**
    * Tells the component what is the status of filtering.
-   * @beta
+   * @public
    */
   status: FilteringInputStatus;
   /**
@@ -58,7 +58,7 @@ export interface FilteringInputProps extends CommonProps {
 
 /**
  * Enumeration of possible component contexts
- * @beta
+ * @public
  */
 export enum FilteringInputStatus {
   /** Component is ready to filter */

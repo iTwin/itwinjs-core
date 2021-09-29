@@ -15,7 +15,7 @@ import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProvid
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
- * @beta
+ * @public
  */
 export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): readonly CommonToolbarItem[] => {
   const uiItemsProviderIds = useAvailableUiItemsProviders();

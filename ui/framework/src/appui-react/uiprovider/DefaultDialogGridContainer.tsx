@@ -21,7 +21,7 @@ enum LayoutMode {
 
 /**
  * Component to provide grid of property editors
- * @beta
+ * @public
  */
 export function ToolSettingsGridContainer({ componentGenerator }: { componentGenerator: ComponentGenerator }) {
   const { availableContentWidth } = React.useContext(ToolSettingsContentContext);
@@ -63,7 +63,7 @@ export function DialogGridContainer({ componentGenerator, containerClassName }: 
 }
 
 /** DefaultDialogGridContainer populates a React node with the items specified by the UiLayoutDataProvider
- * @beta
+ * @public
  */
 export function DefaultDialogGridContainer({ componentGenerator, isToolSettings }: { componentGenerator: ComponentGenerator, isToolSettings?: boolean }) {
   return (!!isToolSettings ?

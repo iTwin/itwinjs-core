@@ -13,7 +13,7 @@ import { Orientation } from "@itwin/core-react";
 import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
 
 /** Properties of [[ActionButtonList]] React component
- * @beta
+ * @public
  */
 export interface ActionButtonListProps {
   /** Orientation to use for displaying the action buttons */
@@ -27,7 +27,7 @@ export interface ActionButtonListProps {
 }
 
 /** ActionButtonList React component.
- * @beta
+ * @public
  */
 export class ActionButtonList extends React.PureComponent<ActionButtonListProps> {
   private getClassName(orientation: Orientation) {

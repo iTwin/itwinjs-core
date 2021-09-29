@@ -13,7 +13,7 @@ import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProvid
 // cspell:ignore setxxx
 
 /** Hook that returns items from [[BackstageItemsManager]].
- * @beta
+ * @public
  */
 export const useUiItemsProviderBackstageItems = (manager: BackstageItemsManager): readonly BackstageItem[] => {
   const uiItemProviderIds = useAvailableUiItemsProviders();

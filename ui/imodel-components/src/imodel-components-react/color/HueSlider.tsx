@@ -69,7 +69,7 @@ function calculateChange(currentHue: number, e: React.MouseEvent<HTMLDivElement>
 }
 
 /** Properties for the [[HueSlider]] React component
- * @beta
+ * @public
  */
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
@@ -81,7 +81,7 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, Co
 }
 
 /** HueSlider component used to set the hue value.
- * @beta
+ * @public
  */
 export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps) {
   const container = React.useRef<HTMLDivElement>(null);

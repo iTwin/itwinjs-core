@@ -15,7 +15,7 @@ import { UiItemsApplicationAction, UiItemsManager } from "./UiItemsManager";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 
 /** Application for items provided by a UiItemsProvider
- * @beta
+ * @beta @deprecated
  */
 export interface UiItemsApplication {
   /** Validate and optionally update a Toolbar button item */
@@ -29,7 +29,7 @@ export interface UiItemsApplication {
 }
 
 /** Arbitrates between the [[UiItemsApplication]] and a [[UiItemsProvider]]
- * @beta
+ * @beta @deprecated
  */
 export class UiItemsArbiter {
   private static _uiItemsApplication?: UiItemsApplication;

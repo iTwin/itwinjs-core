@@ -48,7 +48,7 @@ export interface SharedRendererProps {
   /** Width of the whole property element */
   width?: number;
   /** Array of action button renderers
-   * @beta */
+   * @public */
   actionButtonRenderers?: ActionButtonRenderer[];
   /** Is resize handle hovered */
   isResizeHandleHovered?: boolean;
@@ -71,16 +71,16 @@ export interface PropertyRendererProps extends SharedRendererProps {
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
   /** Indicates property is being edited
-   * @beta */
+   * @public */
   isEditing?: boolean;
   /** Called when property edit is committed.
-   * @beta */
+   * @public */
   onEditCommit?: (args: PropertyUpdatedArgs) => void;
   /** Called when property edit is cancelled.
-   * @beta */
+   * @public */
   onEditCancel?: () => void;
   /** Props used for highlighting.
-   * @beta */
+   * @public */
   highlight?: HighlightingComponentProps;
 }
 

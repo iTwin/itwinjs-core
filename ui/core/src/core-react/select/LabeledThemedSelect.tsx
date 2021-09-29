@@ -12,12 +12,12 @@ import { LabeledComponentProps, MessagedComponentProps } from "../inputs/Labeled
 import { ThemedSelect, ThemedSelectProps } from "./ThemedSelect";
 
 /** Properties for [[LabeledThemedSelect]] components
- * @beta
+ * @beta @deprecated
  */
 export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Dropdown wrapper that allows for additional styling and labelling
- * @beta
+ * @beta @deprecated
  */
 export function LabeledThemedSelect(props: LabeledThemedSelectProps) {
   const { label, status, className, style,

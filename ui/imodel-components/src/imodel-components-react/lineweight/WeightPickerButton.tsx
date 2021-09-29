@@ -17,7 +17,7 @@ import { LineWeightSwatch } from "./Swatch";
 // cSpell:ignore weightpicker lineweight
 
 /** Properties for the [[WeightPickerButton]] React component
- * @beta
+ * @public
  */
 export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** active weight */
@@ -45,7 +45,7 @@ interface WeightPickerState {
 }
 
 /** WeightPickerButton component
- * @beta
+ * @public
  */
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
   private _target = React.createRef<HTMLDivElement>();

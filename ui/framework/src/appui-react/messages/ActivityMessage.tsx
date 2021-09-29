@@ -16,7 +16,7 @@ import { ActivityMessageEventArgs } from "../messages/MessageManager";
 import { MessageLabel } from "./MessageLabel";
 
 /** Properties for a [[ActivityMessage]]
- * @beta
+ * @public
  */
 export interface ActivityMessageProps {
   activityMessageInfo: ActivityMessageEventArgs;
@@ -25,7 +25,7 @@ export interface ActivityMessageProps {
 }
 
 /** Activity Message React component
- * @beta
+ * @public
  */
 export function ActivityMessage(props: ActivityMessageProps) {
   const messageDetails = props.activityMessageInfo.details;

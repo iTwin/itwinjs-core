@@ -17,7 +17,7 @@ import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { BackstageAppButton, ToolWidgetComposer } from "./ToolWidgetComposer";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
- * @beta
+ * @public
  */
 export interface BasicToolWidgetProps {
   /** if true include hide/isolate Models and Categories */
@@ -46,7 +46,7 @@ export function useUiVisibility() {
 
 /** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
- * @beta
+ * @public
  */
 export function BasicToolWidget(props: BasicToolWidgetProps) {
   const getHorizontalToolbarItems = React.useCallback(

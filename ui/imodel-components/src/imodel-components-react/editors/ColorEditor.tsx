@@ -27,7 +27,7 @@ interface ColorEditorState {
 }
 
 /** ColorEditor React component that is a property editor with text input
- * @beta
+ * @public
  */
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
   private _buttonElement: React.RefObject<HTMLButtonElement> = React.createRef();
@@ -154,7 +154,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
 /** Color Property Editor registered for the "number" type name and "color-picker" editor name.
  * It uses the [[ColorEditor]] React component.
- * @beta
+ * @public
  */
 export class ColorPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {

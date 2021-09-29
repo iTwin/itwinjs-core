@@ -14,7 +14,7 @@ import { CommonProps } from "@itwin/core-react";
 import { getCSSColorFromDef } from "../color/getCSSColorFromDef";
 
 /** Properties for the [[LineWeightSwatch]] React component
- * @beta
+ * @public
  */
 export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** color specification */
@@ -32,7 +32,7 @@ export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLBu
 }
 
 /** LineWeightSwatch Functional component
- * @beta
+ * @public
  */
 export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps> {
   /** @internal */

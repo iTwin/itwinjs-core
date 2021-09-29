@@ -11,7 +11,7 @@ import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { UiCore } from "../UiCore";
 
 /** Interface used to populate a tab entry in the SettingContainer control
- * @beta
+ * @public
  */
 export interface SettingsTabEntry {
   /** unique id for entry */
@@ -36,12 +36,12 @@ export interface SettingsTabEntry {
 }
 
 /** Event class for [[this.onSettingsProvidersChanged]] which is emitted when a new SettingsTabsProvider is added or removed.
- * @beta
+ * @public
  */
 export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> { }
 
 /** Arguments of [[this.onSettingsProvidersChanged]] event.
- * @beta
+ * @public
  */
 export interface SettingsProvidersChangedEventArgs {
   readonly providers: ReadonlyArray<SettingsTabsProvider>;
@@ -49,12 +49,12 @@ export interface SettingsProvidersChangedEventArgs {
 
 /** Event class for [[this.onProcessSettingsTabActivation]] which is emitted when a new Tab needs to be activated. This allows the current
  * settings page to save its settings before activating the new SettingTab.
- * @beta
+ * @public
  */
 export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> { }
 
 /** Arguments of [[this.onProcessSettingsTabActivation]] event.
- * @beta
+ * @public
  */
 export interface ProcessSettingsTabActivationEventArgs {
   readonly tabSelectionFunc: (tabId: string) => void;
@@ -63,7 +63,7 @@ export interface ProcessSettingsTabActivationEventArgs {
 
 /** Event class for [[this.onProcessSettingsContainerClose]] which is emitted when the settings container will be closed. This allows the current
  * settings page to save its settings before calling the function to close the container.
- * @beta
+ * @public
  */
 export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
@@ -73,7 +73,7 @@ export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSetting
 export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> { }
 
 /** Arguments of [[this.onProcessSettingsContainerClose]] event.
- * @beta
+ * @public
  */
 export interface ProcessSettingsContainerCloseEventArgs {
   readonly closeFunc: (args: any) => void;
@@ -81,12 +81,12 @@ export interface ProcessSettingsContainerCloseEventArgs {
 }
 
 /** Event class for [[this.onActivateSettingsTab]] which is emitted when API call needs to set the active settings tab (ie via Tool key-in).
- * @beta
+ * @public
  */
 export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> { }
 
 /** Arguments of [[this.onActivateSettingsTab]] event.
- * @beta
+ * @public
  */
 export interface ActivateSettingsTabEventArgs {
   readonly settingsTabId: string;
@@ -94,7 +94,7 @@ export interface ActivateSettingsTabEventArgs {
 
 /** Setting Provider interface. Implemented by classes that want to supply settings pages for display in the SettingContainer. The
  * classes that implement this interface need to be registered with the [[SettingsManager]].
- * @beta
+ * @public
  */
 export interface SettingsTabsProvider {
   /** Id of provider, used to remove registration. */
@@ -103,7 +103,7 @@ export interface SettingsTabsProvider {
 }
 
 /** Settings Manager class. Hold registration of settings providers and supplies events for the provided settings pages to listen.
- * @beta
+ * @public
  */
 export class SettingsManager {
   private _providers: ReadonlyArray<SettingsTabsProvider> = [];
@@ -132,7 +132,7 @@ export class SettingsManager {
    */
   public readonly onCloseSettingsContainer = new CloseSettingsContainerEvent();
 
-  /** @beta */
+  /** @public */
   public get providers(): ReadonlyArray<SettingsTabsProvider> { return this._providers; }
   public set providers(p: ReadonlyArray<SettingsTabsProvider>) {
     this._providers = p;

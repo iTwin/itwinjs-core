@@ -29,7 +29,7 @@ export interface ExpandableBlockProps extends CommonProps {
   /** Additional text displayed in the block below the label and in a smaller font size */
   caption?: string;
   /** Custom tooltip for the component.
-   * @beta
+   * @public
    */
   tooltip?: string;
 }
