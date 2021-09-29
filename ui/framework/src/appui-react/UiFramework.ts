@@ -508,7 +508,7 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
 
-  public static isMobile() {  // eslint-disable-line @bentley/prefer-get
+  public static isMobile() {  // eslint-disable-line @itwin/prefer-get
     return ProcessDetector.isMobileBrowser;
   }
 

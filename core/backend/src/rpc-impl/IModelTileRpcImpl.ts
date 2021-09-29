@@ -212,7 +212,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
   }
 
-  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return IModelHost.usingExternalTileCache;
   }
 
