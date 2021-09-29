@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodel-components-react",
+      "comment": "Add the ability for an app to mark a specific date on the rail of a TimelineComponent.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodel-components-react"
+}

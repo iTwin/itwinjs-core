@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { getErrorMessage } from "./BentleyError";
+import { BentleyError } from "./BentleyError";
 
 /** @beta */
 export class AbandonedError extends Error { }
@@ -41,7 +41,7 @@ class PromiseWithAbandon<T> {
     try {
       this._resolve(await this._run(...this._args));
     } catch (err) {
-      this.abandon(getErrorMessage(err)); // turn all errors from execution into abandoned errors, but keep the message
+      this.abandon(BentleyError.getErrorMessage(err)); // turn all errors from execution into abandoned errors, but keep the message
     }
   }
 }

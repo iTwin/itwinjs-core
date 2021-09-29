@@ -8,8 +8,8 @@
 
 import {
   assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64, Id64String,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Vector3d } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
 import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
@@ -349,7 +349,7 @@ export interface PrimaryTileTreeId {
   enforceDisplayPriority?: boolean;
   /** If defined, the compact string representation of a clip vector applied to the tiles to produce cut geometry at the intersections with the clip planes.
    * Any geometry *not* intersecting the clip planes is omitted from the tiles.
-   * @see [ClipVector.toCompactString[($geometry-core).
+   * @see [ClipVector.toCompactString[($core-geometry).
    */
   sectionCut?: string;
 }

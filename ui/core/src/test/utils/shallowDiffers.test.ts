@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallowDiffers } from "../../ui-core";
+import { shallowDiffers } from "../../core-react";
 
 describe("shallowDiffers", () => {
   it("should return false with the same object", () => {

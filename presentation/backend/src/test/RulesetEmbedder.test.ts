@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
-} from "@bentley/imodeljs-backend";
-import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@bentley/imodeljs-common";
-import { Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+} from "@itwin/core-backend";
+import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@itwin/core-common";
+import { Ruleset } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
 import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";

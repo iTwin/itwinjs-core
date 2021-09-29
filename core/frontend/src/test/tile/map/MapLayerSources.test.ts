@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapSubLayerSettings } from "@bentley/imodeljs-common/lib/MapLayerSettings";
+import { MapSubLayerSettings } from "@itwin/core-common/lib/MapLayerSettings";
 import { expect } from "chai";
 import { MapLayerSource } from "../../../tile/map/MapLayerSources";
 

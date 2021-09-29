@@ -6,14 +6,14 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { WidgetState } from "@itwin/appui-abstract";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
 import {
   ActionItemButton, AnyWidgetProps, CommandItemDef, CoreTools, FrontstageManager, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
   ToolButton, ToolWidget, ToolWidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 const testCallback = sinon.stub();

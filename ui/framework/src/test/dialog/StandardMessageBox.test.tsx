@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
+import { MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
-import { StandardMessageBox } from "../../ui-framework";
+import { StandardMessageBox } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("StandardMessageBox", () => {

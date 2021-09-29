@@ -12,7 +12,7 @@ This package contains the following Loaders and Plugins:
 
 | Name | Description |
 | - | - |
-| strip-assert-loader | Removes all uses of @bentley/bentleyjs-core `assert()` method from the webpack bundle. |
+| strip-assert-loader | Removes all uses of @itwin/core-bentley `assert()` method from the webpack bundle. |
 
 ## __Plugins__
 

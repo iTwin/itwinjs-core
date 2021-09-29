@@ -7,9 +7,9 @@ import { expect } from "chai";
 import * as React from "react";
 import {
   IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-} from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { TextEditor } from "../../ui-components/editors/TextEditor";
+} from "@itwin/appui-abstract";
+import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
+import { TextEditor } from "../../components-react/editors/TextEditor";
 
 // cspell:ignore badeditor newvalue
 

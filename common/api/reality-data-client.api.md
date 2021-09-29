@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
 import { Client } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';

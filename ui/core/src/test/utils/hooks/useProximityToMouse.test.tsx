@@ -11,7 +11,7 @@ import {
   getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
   TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useProximityToMouse, WidgetElementSet,
-} from "../../../ui-core/utils/hooks/useProximityToMouse";
+} from "../../../core-react/utils/hooks/useProximityToMouse";
 import { TestUtils } from "../../TestUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/telemetry-client",
+      "comment": "use new @itwin package names",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/telemetry-client"
+}

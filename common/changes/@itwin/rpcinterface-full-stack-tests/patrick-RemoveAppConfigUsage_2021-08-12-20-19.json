@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/rpcinterface-full-stack-tests",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

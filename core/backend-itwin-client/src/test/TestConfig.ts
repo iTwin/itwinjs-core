@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import * as fs from "fs";

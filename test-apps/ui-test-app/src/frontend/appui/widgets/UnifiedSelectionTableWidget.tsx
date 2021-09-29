@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
-import { Table, TableCellContextMenuArgs } from "@bentley/ui-components";
-import { ContextMenuItem, GlobalContextMenu } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
+import { Table, TableCellContextMenuArgs } from "@itwin/components-react";
+import { ContextMenuItem, GlobalContextMenu } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { ContextMenuItemInfo } from "./UnifiedSelectionPropertyGridWidget";
 
 // create a HOC property grid component that supports unified selection

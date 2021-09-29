@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { BaseMapLayerSettings, ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
+import { BaseMapLayerSettings, ColorDef } from "@itwin/core-common";
+import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
@@ -486,7 +486,7 @@ export class MapBaseVisibilityTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView() || vp.displayStyle.backgroundMapBase instanceof ColorDef)
       return false;
 
-    vp.displayStyle.backgroundMapBase =  vp.displayStyle.backgroundMapBase.clone({ visible });
+    vp.displayStyle.backgroundMapBase = vp.displayStyle.backgroundMapBase.clone({ visible });
     vp.invalidateRenderPlan();
 
     return true;

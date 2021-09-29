@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AnyWidgetProps, ConfigurableUiManager, CubeNavigationAidControl, NavigationWidgetDef } from "../../ui-framework";
+import { AnyWidgetProps, ConfigurableUiManager, CubeNavigationAidControl, NavigationWidgetDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("CubeNavigationAidControl", () => {

@@ -6,7 +6,7 @@
  * @module Diagnostic
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
 import { FormatDiagnosticReporter } from "./DiagnosticReporter";
 

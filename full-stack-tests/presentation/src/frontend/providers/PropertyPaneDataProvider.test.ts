@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { using } from "@bentley/bentleyjs-core";
-import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, RuleTypes } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyCategory } from "@bentley/ui-components";
+import { using } from "@itwin/core-bentley";
+import { ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet, RuleTypes } from "@itwin/presentation-common";
+import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PropertyCategory } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
@@ -173,5 +173,4 @@ describe("PropertyDataProvider", async () => {
     // repeat request
     await checkDataProvider();
   });
-
 });

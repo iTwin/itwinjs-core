@@ -1,0 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "./button";
+@import "./disabled";
+
+@mixin uicore-buttons-disabled-large {
+
+    @include uicore-buttons-disabled;
+    @include uicore-buttons-large-size;
+}

@@ -158,7 +158,7 @@
  */
 // @todo Update example with property type conversions once that's available.
 
-import { assert, Logger } from "@bentley/bentleyjs-core";
+import { assert, Logger } from "@itwin/core-bentley";
 import { WsgClientLoggerCategory } from "./WsgLoggerCategory";
 
 /** @internal */

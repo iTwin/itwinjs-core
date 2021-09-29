@@ -6,9 +6,10 @@
  * @module Content
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON,
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship,
+  RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
@@ -25,7 +26,7 @@ export interface SelectClassInfo {
   isSelectPolymorphic: boolean;
 
   /** Relationship path from input class to the select class. */
-  pathFromInputToSelectClass?: RelationshipPath;
+  pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationship[];
 
   /** Relationship paths to [related property]($docs/presentation/Content/Terminology#related-properties) classes */
   relatedPropertyPaths?: RelationshipPath[];
@@ -44,7 +45,7 @@ export interface SelectClassInfo {
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
-  pathFromInputToSelectClass?: RelationshipPathJSON<TClassInfoJSON>;
+  pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON>[];
   relatedPropertyPaths?: RelationshipPathJSON<TClassInfoJSON>[];
   navigationPropertyClasses?: RelatedClassInfoJSON<TClassInfoJSON>[];
   relatedInstancePaths?: RelationshipPathJSON<TClassInfoJSON>[];
@@ -52,26 +53,15 @@ export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 
 /** @public */
 export namespace SelectClassInfo {
-  /** Deserialize [[SelectClassInfo]] from JSON */
-  export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo {
-    return {
-      selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
-      isSelectPolymorphic: json.isSelectPolymorphic,
-      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map(RelatedClassInfo.fromJSON) } : undefined),
-      ...(json.relatedPropertyPaths ? { relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => rp.map(RelatedClassInfo.fromJSON)) } : undefined),
-      ...(json.navigationPropertyClasses ? { navigationPropertyClasses: json.navigationPropertyClasses.map(RelatedClassInfo.fromJSON) } : undefined),
-      ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map(RelatedClassInfo.fromJSON)) } : undefined),
-    };
-  }
-
   /** Deserialize [[SelectClassInfo]] from compressed JSON */
   export function fromCompressedJSON(json: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo {
+    assert(classesMap.hasOwnProperty(json.selectClassInfo));
     return {
       selectClassInfo: { id: json.selectClassInfo, ...classesMap[json.selectClassInfo] },
       isSelectPolymorphic: json.isSelectPolymorphic,
       ...(json.navigationPropertyClasses ? { navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
       ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
-      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
+      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) => RelatedClassInfoWithOptionalRelationship.fromCompressedJSON(item, classesMap)) } : undefined),
       ...(json.relatedPropertyPaths ? { relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
     };
   }
@@ -80,13 +70,12 @@ export namespace SelectClassInfo {
   export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON<string> {
     const { id, ...leftOverClassInfo } = selectClass.selectClassInfo;
     classesMap[id] = leftOverClassInfo;
-
     return {
       selectClassInfo: id,
       isSelectPolymorphic: selectClass.isSelectPolymorphic,
       ...(selectClass.relatedInstancePaths ? { relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))) } : undefined),
       ...(selectClass.navigationPropertyClasses ? { navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)) } : undefined),
-      ...(selectClass.pathFromInputToSelectClass ? { pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)) } : undefined),
+      ...(selectClass.pathFromInputToSelectClass ? { pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) => RelatedClassInfoWithOptionalRelationship.toCompressedJSON(item, classesMap)) } : undefined),
       ...(selectClass.relatedPropertyPaths ? { relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))) } : undefined),
     };
   }

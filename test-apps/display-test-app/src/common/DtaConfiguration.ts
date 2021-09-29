@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { GuidString, ProcessDetector } from "@bentley/bentleyjs-core";
+import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 
 /** Parameters for starting display-test-app with a specified initial configuration */
 export interface DtaConfiguration {

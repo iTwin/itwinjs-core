@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
-import { StandardRotationNavigationAid } from "../../ui-framework";
+import { StandardRotationNavigationAid } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("StandardRotationNavigationAid", () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { ScrollView } from "../../ui-core";
+import { ScrollView } from "../../core-react";
 
 describe("<ScrollView />", () => {
   it("should render", () => {

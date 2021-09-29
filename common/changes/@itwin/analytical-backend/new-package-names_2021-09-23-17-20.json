@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/analytical-backend",
+      "comment": "rename to @itwin/analytical-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/analytical-backend"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Updated to Electron 14",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

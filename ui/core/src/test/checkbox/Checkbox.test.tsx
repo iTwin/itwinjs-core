@@ -7,8 +7,8 @@ import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { Checkbox } from "../../ui-core/checkbox/Checkbox";
-import { InputStatus } from "../../ui-core/inputs/InputStatus";
+import { Checkbox } from "../../core-react/checkbox/Checkbox";
+import { InputStatus } from "../../core-react/inputs/InputStatus";
 
 /* eslint-disable deprecation/deprecation */
 

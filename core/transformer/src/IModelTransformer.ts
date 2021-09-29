@@ -7,19 +7,19 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
+import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";

@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { CompressedId64Set, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Model geometry changes", () => {

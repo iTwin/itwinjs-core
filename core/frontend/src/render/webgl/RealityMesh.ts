@@ -7,9 +7,9 @@
  * @module WebGL
  */
 
-import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
-import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
+import { assert, dispose, IDisposable } from "@itwin/core-bentley";
+import { Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
+import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@itwin/core-common";
 import { AttributeMap } from "./AttributeMap";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";

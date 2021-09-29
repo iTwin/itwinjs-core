@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import {
   BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, ConditionalStringValue, isActionItem, isStageLauncher,
-} from "../../ui-abstract";
+} from "../../appui-abstract";
 
 const getActionItem = () => BackstageItemUtilities.createActionItem("Action", 100, 50, () => { }, "Custom Label", "subtitle", "icon-placeholder");
 const getStageLauncherItem = () => BackstageItemUtilities.createStageLauncher("stageId", 100, 50, "Custom Label", "subtitle", "icon-placeholder");

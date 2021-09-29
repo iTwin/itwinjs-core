@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControlType, WidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
+import { WidgetState } from "@itwin/appui-abstract";
+import { ConfigurableCreateInfo, ConfigurableUiControlType, WidgetControl, WidgetDef, WidgetProps } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("WidgetControl", () => {

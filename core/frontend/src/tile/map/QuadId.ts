@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareNumbers } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Range2d } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { assert, compareNumbers } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Range2d } from "@itwin/core-geometry";
+import { Cartographic } from "@itwin/core-common";
 import { MapTilingScheme } from "../internal";
 
 const scratchCartographic1 = Cartographic.createZero();

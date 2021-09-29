@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
+import { I18NOptions } from "@itwin/core-i18n";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */

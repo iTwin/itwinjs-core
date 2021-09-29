@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BackgroundMapType } from "../BackgroundMapProvider";
-import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
+import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
 
 const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
 const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };
@@ -43,7 +43,7 @@ describe("MapSubLayerSettings", () => {
   it("clones", () => {
     const clone = (input: MapSubLayerProps, changed: Partial<MapSubLayerProps>, expected: MapSubLayerProps) => {
       const settings = MapSubLayerSettings.fromJSON(input);
-      const output = settings!.clone(changed);
+      const output = settings.clone(changed);
       expectMatch(output.toJSON(), expected);
     };
 

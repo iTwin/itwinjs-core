@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/core-react/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $signin-height: 315px; // 250px;
-$signin-width:  275px;
+$signin-width: 275px;
 
 $signin-background: $buic-background-dialog;
 $signin-logo-color: $buic-foreground-primary;
 $signin-text-color: $buic-text-color;
-$signin-font-size:  $iui-font-size;
+$signin-font-size: $iui-font-size;
 $signin-hyperlink-color: $buic-foreground-primary;
 $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
 
 /* sign in dialog */
 .components-signin {
   font-family: Arial;
-  width:  $signin-width;
+  width: $signin-width;
   height: $signin-height;
   position: absolute;
   top: 50%;
@@ -27,7 +27,7 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
   color: $signin-text-color;
   background-color: $signin-background;
   transform: translate(-50%, -50%);
-  box-shadow: 2px 4px 8px 2px rgba(0,0,0,0.25);
+  box-shadow: 2px 4px 8px 2px rgba(0, 0, 0, 0.25);
 
   /* content area */
   .components-signin-content {
@@ -58,8 +58,7 @@ $signin-hyperlink-hover-color: $buic-foreground-primary-tone;
   }
 
   /* sign in button */
-  .components-signin-button {
-  }
+  .components-signin-button {}
 
   /* "Register" container */
   .components-signin-register {

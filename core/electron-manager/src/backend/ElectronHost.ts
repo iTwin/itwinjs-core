@@ -11,9 +11,9 @@
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import { BeDuration, IModelStatus, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModelError, InternetConnectivityStatus, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { IModelError, InternetConnectivityStatus, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
@@ -72,6 +72,8 @@ export interface ElectronHostOpts extends NativeHostOpts {
 /** @beta */
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
   storeWindowName?: string;
+  /** The style of window title bar. Default is `default`. */
+  titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
 }
 
 /** the size and position of a window as stored in the settings file.
@@ -147,7 +149,7 @@ export class ElectronHost {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
-        enableRemoteModule: false,
+        nativeWindowOpen: true,
         nodeIntegrationInWorker: false,
         nodeIntegrationInSubFrames: false,
       },
@@ -259,7 +261,6 @@ export class ElectronHost {
       this._electron = require("electron");
       this._ipc = new ElectronIpc();
       const app = this.app;
-      app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
       if (!app.isReady())
         this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
       const eopt = opts?.electronHost;

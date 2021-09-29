@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UiGeometry } from "../../ui-core";
+import { UiGeometry } from "../../core-react";
 
 describe("UiGeometry", () => {
   it("clamp should clamp value outside (min,max) to within (min,max)", () => {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Remove usage-logging-client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "41296254+DanielToby@users.noreply.github.com"
+}

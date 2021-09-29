@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Footer, SafeAreaInsets } from "../../ui-ninezone";
+import { Footer, SafeAreaInsets } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<Footer />", () => {

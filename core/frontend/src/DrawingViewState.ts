@@ -6,13 +6,13 @@
  * @module Views
  */
 
-import { assert, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Constant, Range3d, Transform, TransformProps, Vector3d,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
 import { Frustum2d } from "./Frustum2d";
 import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";

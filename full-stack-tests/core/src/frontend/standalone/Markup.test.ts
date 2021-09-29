@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@bentley/imodeljs-frontend";
-import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@bentley/imodeljs-markup";
+import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
+import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Remove TSLint support and .eslintrc.js file - please use `@itwin/eslint-plugin` instead",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools",
+  "email": "66480813+paulius-valiunas@users.noreply.github.com"
+}
