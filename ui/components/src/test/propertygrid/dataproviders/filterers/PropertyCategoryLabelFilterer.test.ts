@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { PropertyCategoryLabelFilterer } from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyCategoryLabelFilterer";
-import { FilteredType } from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
-import { PropertyCategory } from "../../../../ui-components/propertygrid/PropertyDataProvider";
+import { PropertyCategoryLabelFilterer } from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyCategoryLabelFilterer";
+import { FilteredType } from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+import { PropertyCategory } from "../../../../components-react/propertygrid/PropertyDataProvider";
 
 describe("PropertyCategoryLabelFilterer", () => {
 

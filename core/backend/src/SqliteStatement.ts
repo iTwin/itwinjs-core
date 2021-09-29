@@ -6,27 +6,25 @@
  * @module SQLite
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@bentley/bentleyjs-core";
-import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
+import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
-/** an object returned by [[SqliteStatement.getRow]]
- * @public
+/** Marks a string as either an [Id64String]($core-bentley) or [GuidString]($core-bentley), so
+ * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
+ * methods of [SqliteStatement]($backend).
+ * @internal
  */
-export interface RowValue {
-  [propName: string]: Uint8Array | number | string | undefined;
+export interface StringParam {
+  id?: Id64String;
+  guid?: GuidString;
 }
 
 /** parameter Index (1-based), or name of the parameter (including the initial ':', '@' or '$')
  * @public
  */
 export type BindParameter = number | string;
-
-/** A value that can be bound with [[SqliteStatement.bindValue]] or [[SqliteStatement.bindValues]]
- * @public
- */
-export type ParameterValue = undefined | number | boolean | string | Uint8Array | { id: Id64String, guid?: never } | { guid: GuidString, id?: never };
 
 /** Executes SQLite SQL statements.
  *
@@ -49,7 +47,7 @@ export type ParameterValue = undefined | number | boolean | string | Uint8Array 
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  * @public
  */
-export class SqliteStatement implements IterableIterator<RowValue>, IDisposable {
+export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
 
   public constructor(private _sql: string) { }
@@ -99,37 +97,37 @@ export class SqliteStatement implements IterableIterator<RowValue>, IDisposable 
    *  JavaScript Type | SQLite Type
    *  --- | ---
    *  undefined | NULL
-   *  null | NULL
    *  boolean | INTEGER with true being bound as 1 and false as 0
    *  number | INTEGER if number is integral or REAL if number is not integral
    *  string | TEXT
    *  Uint8Array or ArrayBuffer | BLOB
-   *  {id: Id64String}  | INTEGER
-   *  {guid: GuidString} | BLOB
+   *  [StringParam]($backend) where member **id** is set | INTEGER
+   *  [StringParam]($backend) where member **guid** is set | BLOB
    *
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param value Value to bind.
+   *  @throws [IModelError]($common) if the value is of an unsupported type or in
+   *  case of other binding errors.
    */
-  public bindValue(parameter: BindParameter, value: ParameterValue): void {
+  public bindValue(parameter: BindParameter, value: any): void {
     let stat: DbResult;
-    const stmt = this.stmt!;
     if (value === undefined || value === null) {
-      stat = stmt.bindNull(parameter);
+      stat = this._stmt!.bindNull(parameter);
     } else if (typeof (value) === "number") {
       if (Number.isInteger(value))
-        stat = stmt.bindInteger(parameter, value);
+        stat = this._stmt!.bindInteger(parameter, value);
       else
-        stat = stmt.bindDouble(parameter, value);
+        stat = this._stmt!.bindDouble(parameter, value);
     } else if (typeof (value) === "boolean") {
-      stat = stmt.bindInteger(parameter, value ? 1 : 0);
+      stat = this._stmt!.bindInteger(parameter, value ? 1 : 0);
     } else if (typeof (value) === "string") {
-      stat = stmt.bindString(parameter, value);
+      stat = this._stmt!.bindString(parameter, value);
+    } else if (!!value.id) {
+      stat = this._stmt!.bindId(parameter, value.id);
+    } else if (!!value.guid) {
+      stat = this._stmt!.bindGuid(parameter, value.guid);
     } else if (value instanceof Uint8Array) {
-      stat = stmt.bindBlob(parameter, value);
-    } else if (undefined !== value.id) {
-      stat = stmt.bindId(parameter, value.id);
-    } else if (undefined !== value.guid) {
-      stat = stmt.bindGuid(parameter, value.guid);
+      stat = this._stmt!.bindBlob(parameter, value);
     } else
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
 
@@ -191,24 +189,26 @@ export class SqliteStatement implements IterableIterator<RowValue>, IDisposable 
    * The values in either the array or object must match the respective types of the parameter.
    * See [[SqliteStatement.bindValue]] for details on the supported types.
    */
-  public bindValues(values: ParameterValue[] | { [propName: string]: ParameterValue }): void {
+  public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
       for (let i = 0; i < values.length; i++) {
-        const paramValue = values[i];
+        const paramIndex: number = i + 1;
+        const paramValue: any = values[i];
         if (paramValue === undefined || paramValue === null)
           continue;
 
-        this.bindValue(i + 1, paramValue);
+        this.bindValue(paramIndex, paramValue);
       }
       return;
     }
 
     for (const entry of Object.entries(values)) {
-      const paramValue = entry[1];
+      const paramName: string = entry[0];
+      const paramValue: any = entry[1];
       if (paramValue === undefined || paramValue === null)
         continue;
 
-      this.bindValue(entry[0], paramValue);
+      this.bindValue(paramName, paramValue);
     }
   }
 
@@ -224,12 +224,12 @@ export class SqliteStatement implements IterableIterator<RowValue>, IDisposable 
   /** Step this statement to the next row.
    *
    *  For **SQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - [DbResult.BE_SQLITE_ROW]($core-bentley) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has no more rows.
    *  - Error status in case of errors.
    *
    *  For **SQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
   public step(): DbResult { return this._stmt!.step(); }
@@ -280,15 +280,15 @@ export class SqliteStatement implements IterableIterator<RowValue>, IDisposable 
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | Uint8Array
    */
-  public getRow(): RowValue {
+  public getRow(): any {
     const colCount = this.getColumnCount();
-    const row: RowValue = {};
+    const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
       const sqliteValue = this.getValue(i);
       if (!sqliteValue.isNull) {
-        const propName = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
-        let val: Uint8Array | number | string;
+        const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
+        let val: any;
         switch (sqliteValue.type) {
           case SqliteValueType.Blob:
             val = sqliteValue.getBlob();
@@ -331,12 +331,12 @@ export class SqliteStatement implements IterableIterator<RowValue>, IDisposable 
 
   /** Calls step when called as an iterator.
    */
-  public next(): IteratorResult<RowValue> {
+  public next(): IteratorResult<any> {
     return DbResult.BE_SQLITE_ROW === this.step() ? { done: false, value: this.getRow() } : { done: true, value: undefined };
   }
 
   /** The iterator that will step through the results of this statement. */
-  public [Symbol.iterator](): IterableIterator<RowValue> { return this; }
+  public [Symbol.iterator](): IterableIterator<any> { return this; }
 }
 
 /** Data type of a value in in an SQLite SQL query result.
@@ -390,7 +390,7 @@ export class SqliteValue {
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | Uint8Array
    */
-  public get value(): Uint8Array | number | string | undefined {
+  public get value(): any {
     switch (this.type) {
       case SqliteValueType.Null:
         return undefined;

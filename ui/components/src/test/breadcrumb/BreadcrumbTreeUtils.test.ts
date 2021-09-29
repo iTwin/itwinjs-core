@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { BreadcrumbTreeUtils } from "../../ui-components/breadcrumb/BreadcrumbTreeUtils";
-import { CellItem, RowItem } from "../../ui-components/table/TableDataProvider";
-import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../ui-components/tree/TreeDataProvider";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { BreadcrumbTreeUtils } from "../../components-react/breadcrumb/BreadcrumbTreeUtils";
+import { CellItem, RowItem } from "../../components-react/table/TableDataProvider";
+import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../components-react/tree/TreeDataProvider";
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 
@@ -149,7 +149,7 @@ describe("BreadcrumbTreeUtils", () => {
           testNum: 0,
         },
         style: {
-          colorOverrides: {color: 0xfffff},
+          colorOverrides: { color: 0xfffff },
         },
       },
     ];

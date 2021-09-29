@@ -5,13 +5,13 @@
 import { fireEvent, render } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
-import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@itwin/core-frontend";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
 import { TestUtils } from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawDialog } from "../../ui-framework/accudraw/AccuDrawDialog";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { AccuDrawDialog } from "../../appui-react/accudraw/AccuDrawDialog";
+import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 
 describe("AccuDrawDialog", () => {
   before(async () => {

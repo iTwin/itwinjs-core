@@ -9,7 +9,7 @@
 import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
   EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipConstraint,
   Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
 

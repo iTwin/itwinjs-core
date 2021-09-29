@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // import { expect } from "chai";
-import * as g from "../../geometry-core";
+import * as g from "../../core-geometry";
 /* eslint-disable no-console */
 import { Checker } from "../Checker";
 import { SimpleFactory } from "../SimpleFactory";

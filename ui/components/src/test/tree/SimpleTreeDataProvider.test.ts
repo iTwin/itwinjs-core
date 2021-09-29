@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider";
-import { DelayLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../components-react/tree/SimpleTreeDataProvider";
+import { DelayLoadedTreeNodeItem } from "../../components-react/tree/TreeDataProvider";
 
 describe("SimpleTreeDataProvider", () => {
 

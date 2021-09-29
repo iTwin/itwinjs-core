@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames, StructValue,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 export function createPrimitiveStringProperty(
   name: string,

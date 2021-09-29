@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ExpandableButton } from "../../../ui-ninezone";
+import { ExpandableButton } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<ExpandableButton  />", () => {

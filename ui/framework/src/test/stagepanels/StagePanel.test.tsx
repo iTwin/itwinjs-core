@@ -7,16 +7,16 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
+import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
   FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl, WidgetDef,
-} from "../../ui-framework";
-import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
-import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
+} from "../../appui-react";
+import { StagePanelRuntimeProps } from "../../appui-react/stagepanels/StagePanel";
+import { StagePanelDef, StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
+import { UiFramework } from "../../appui-react/UiFramework";
+import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 import TestUtils, { mount } from "../TestUtils";
 
 /* eslint-disable react/jsx-key */

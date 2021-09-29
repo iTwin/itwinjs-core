@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point, Rectangle } from "@bentley/ui-core";
-import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone";
+import { Point, Rectangle } from "@itwin/core-react";
+import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../appui-layout-react";
 import { createRect, mount } from "../Utils";
 
 describe("<Stacked />", () => {

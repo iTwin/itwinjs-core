@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentProps,
   NavigationAidControl,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("ContentGroup", () => {
 

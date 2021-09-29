@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { BriefcaseConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 if (ProcessDetector.isElectronAppFrontend) {

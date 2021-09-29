@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import {
   FrontstageDef, FrontstageManager, StagePanelState, useActiveFrontstageDef,
-} from "@bentley/ui-framework";
-import { SpecialKey, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { NumberInput, RectangleProps } from "@bentley/ui-core";
+} from "@itwin/appui-react";
+import { SpecialKey, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { NumberInput, RectangleProps } from "@itwin/core-react";
 import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
 
 function usePanelDef(location: StagePanelLocation) {

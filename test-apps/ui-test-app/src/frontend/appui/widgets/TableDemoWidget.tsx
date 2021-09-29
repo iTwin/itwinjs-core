@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Table } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@bentley/ui-framework";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Table } from "@itwin/components-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { Checkbox } from "@itwin/itwinui-react";
 import { demoMutableTableDataProvider } from "./demodataproviders/demoTableDataProvider";
 

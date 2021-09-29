@@ -1,6 +1,6 @@
 # Style
 
-The `@bentley/ui-core` package includes Sass variables and mixins for
+The `@itwin/core-react` package includes Sass variables and mixins for
 colors and themes,
 breakpoints,
 opacity,
@@ -10,13 +10,13 @@ and typography.
 
 ## Colors and Themes
 
-There are two color themes delivered in `@bentley/ui-core`: 'light' and 'dark'.
+There are two color themes delivered in `@itwin/core-react`: 'light' and 'dark'.
 The color values for each theme are defined in `ui-core/style/colorthemes.scss`.
-This file is imported in `@bentley/ui-core` by UiCore.ts and that should be the only place where it is imported.
+This file is imported in `@itwin/core-react` by UiCore.ts and that should be the only place where it is imported.
 (It should **not** be imported by any *.scss or other ui-core files.)
 
 The color theme system uses CSS variables (aka. CSS custom properties) to define the color values. The values of the CSS variables are changed when the name of the  "data-theme" document element attribute is set.
-The `ThemeManager` component in the `@bentley/ui-framework` package does this by calling `document.documentElement.setAttribute("data-theme", theme)`.
+The `ThemeManager` component in the `@itwin/appui-react` package does this by calling `document.documentElement.setAttribute("data-theme", theme)`.
 
 Sass variables are used in the UI components to reference the CSS variables set to the themed colors.
 These themed color Sass variables are defined in the
@@ -65,7 +65,7 @@ Since there are variables defined for the different background contexts, they sh
 `$buic-background-1` through `$buic-background-5` variables should rarely be used directly.
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/ui-core/style/themecolors";
 
 .my-component {
 
@@ -93,7 +93,7 @@ Several breakpoints are defined for dealing with screens and devices with differ
 ### Example
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@itwin/core-react/lib/ui-core/style/breakpoints";
 
 .toolAssistance-separator {
   @include for-tablet-landscape-down {
@@ -189,7 +189,7 @@ There are also specific mixins for the text types.
 There are also React components for the different text types. E.g.
 
 ```tsx
-import { BodyText, LeadingText, SmallText } from "@bentley/ui-core";
+import { BodyText, LeadingText, SmallText } from "@itwin/core-react";
 
   <LeadingText>Dialog Title</LeadingText>
   <BodyText>Normal message text</BodyText>
@@ -208,7 +208,7 @@ For any container CSS class that shows a scrollbar, the `uicore-touch-scrolling`
 ### Example
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@itwin/core-react/lib/ui-core/scrollbar";
 
 .my-scrollable-container {
 
@@ -248,7 +248,7 @@ listed in order from lowest to top-most:
 ### Example
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/z-index";
+@import "~@itwin/core-react/lib/ui-core/z-index";
 
 .my-tooltip {
 

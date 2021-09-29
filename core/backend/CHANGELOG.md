@@ -1,4 +1,4 @@
-# Change Log - @bentley/imodeljs-backend
+# Change Log - @itwin/core-backend
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 
@@ -780,7 +780,7 @@ Fri, 19 Jun 2020 14:10:03 GMT
 - Add missing properties to UrlLink and RepositoryLink
 - Bump tile version
 - Add IModelExporter.wantGeometry to optimize cases where geometry is not required
-- Move linear referencing domain types out to new @bentley/linear-referencing-backend package.
+- Move linear referencing domain types out to new @itwin/linear-referencing-backend package.
 - Added test for null string access via ECSqlStatement
 - Add PhysicalElement.physicalMaterial
 - Add PhysicalMaterial
@@ -1208,7 +1208,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fix for Render Gradient.Symb test
 - Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Add IModelDb.createSnapshot/openSnapshot/closeSnapshot, deprecate IModelDb.createStandalone/openStandalone/closeStandalone
-- Moved IModelJsExpressServer class into a new package (@bentley/express-server).
+- Moved IModelJsExpressServer class into a new package (@itwin/express-server).
 - Simplified tile caching IModelHost config and removed dev flags. Allow
 - Typo in documentation
 - Fix missing ULAS client request data
@@ -1301,7 +1301,7 @@ Mon, 07 Jan 2019 21:49:21 GMT
 
 ### Updates
 
-- Moved electron utilities into a separate "@bentley/electron-manager" package.
+- Moved electron utilities into a separate "@itwin/electron-manager" package.
 
 ## 0.182.0
 Mon, 07 Jan 2019 13:31:34 GMT

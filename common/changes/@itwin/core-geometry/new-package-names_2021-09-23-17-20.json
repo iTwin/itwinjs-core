@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "rename to @itwin/core-geometry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

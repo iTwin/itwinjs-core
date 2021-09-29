@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { CommonProps, getUserColor } from "@bentley/ui-core";
-import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
+import { CommonProps, getUserColor } from "@itwin/core-react";
+import { UserProfile as NZ_UserProfile } from "@itwin/appui-layout-react";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
-import { Backstage, FrontstageManager, SafeAreaContext, UiFramework, UserInfo } from "@bentley/ui-framework";
+import { Backstage, FrontstageManager, SafeAreaContext, UiFramework, UserInfo } from "@itwin/appui-react";
 
 // cSpell:ignore safearea
 

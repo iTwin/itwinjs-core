@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/ui-ninezone",
+  "name": "@itwin/appui-layout-react",
   "version": "3.0.0-dev.71",
   "description": "iModel.js Nine-zone React UI components",
-  "main": "lib/ui-ninezone.js",
-  "typings": "lib/ui-ninezone",
+  "main": "lib/appui-layout-react.js",
+  "typings": "lib/appui-layout-react",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -17,8 +17,8 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc",
-    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=ui-ninezone",
+    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-layout-react/file.json --tsIndexFile=./appui-layout-react.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=appui-layout-react",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.71",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.71",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.71",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.71",
+    "@itwin/core-react": "workspace:^3.0.0-dev.71",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -44,12 +44,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -73,7 +73,7 @@
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
-    "jsdom": "^17.0.0",
+    "typescript": "^17.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
@@ -89,7 +89,7 @@
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+    "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
     "@itwin/itwinui-css": "^0.27.0",
@@ -100,7 +100,7 @@
     "uuid": "^7.0.3"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [
       "ignore-styles",
       "jsdom-global/register",
@@ -115,12 +115,12 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley",
+      "@itwin",
       "jsx-a11y"
     ],
     "extends": [
-      "plugin:@bentley/ui",
-      "plugin:@bentley/jsdoc"
+      "plugin:@itwin/ui",
+      "plugin:@itwin/jsdoc"
     ]
   }
 }

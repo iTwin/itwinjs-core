@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { Capabilities, WebGLContext } from "@bentley/webgl-compatibility";
+import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";

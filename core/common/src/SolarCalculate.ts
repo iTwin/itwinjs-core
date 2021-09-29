@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { Angle, Vector3d } from "@bentley/geometry-core";
+import { Angle, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "./geometry/Cartographic";
 
 // cspell:ignore mrad sinm sint aarg

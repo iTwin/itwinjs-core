@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { Ellipsis } from "../../ui-ninezone";
+import { Ellipsis } from "../../appui-layout-react";
 
 describe("<Ellipsis />", () => {
   it("renders correctly", () => {

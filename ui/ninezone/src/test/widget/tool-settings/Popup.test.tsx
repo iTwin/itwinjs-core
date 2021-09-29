@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolSettingsPopup } from "../../../ui-ninezone";
+import { ToolSettingsPopup } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<ToolSettingsPopup />", () => {

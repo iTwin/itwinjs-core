@@ -10,7 +10,7 @@ import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from 
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 import * as fs from "fs";
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

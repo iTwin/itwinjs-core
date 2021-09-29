@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../appui-layout-react";
 import { NineZoneProvider, setRefValue } from "../Providers";
 
 describe("usePanelsAutoCollapse", () => {

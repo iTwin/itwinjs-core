@@ -6,9 +6,9 @@
  * @module HubAccess
  */
 
-import { AccessToken, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, IModelStatus } from "@itwin/core-bentley";
 import { addCsrfHeader, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersion } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 
 /** @internal */

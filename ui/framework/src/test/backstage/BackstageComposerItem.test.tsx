@@ -5,13 +5,13 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import {
   BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
   BackstageStageLauncher, FrontstageManager, UiFramework,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType } from "@itwin/appui-abstract";
 
 /** @internal */
 export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation

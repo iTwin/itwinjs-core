@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@bentley/geometry-core";
-import { ClipStyle } from "@bentley/imodeljs-common";
+import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
+import { ClipStyle } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;

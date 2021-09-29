@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { SplitterPaneTarget } from "../../../ui-ninezone";
+import { SplitterPaneTarget } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<SplitterPaneTarget />", () => {

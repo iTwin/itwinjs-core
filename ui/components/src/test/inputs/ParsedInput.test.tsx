@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
-import { ParsedInput } from "../../ui-components/inputs/ParsedInput";
-import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
+import { ParsedInput } from "../../components-react/inputs/ParsedInput";
+import { ParseResults, SpecialKey } from "@itwin/appui-abstract";
 
 function fahrenheitToCelsius(f: number) {
   return (f - 32) * 5 / 9;

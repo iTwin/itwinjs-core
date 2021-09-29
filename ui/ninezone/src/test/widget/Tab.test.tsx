@@ -8,7 +8,7 @@ import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
   WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTab", () => {

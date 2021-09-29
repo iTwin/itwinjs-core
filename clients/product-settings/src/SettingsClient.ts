@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Settings
  */
-import { AccessToken, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 

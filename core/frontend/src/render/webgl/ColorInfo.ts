@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { ColorDef, ColorIndex } from "@itwin/core-common";
 import { VertexTable } from "../primitives/VertexTable";
 import { FloatRgba } from "./FloatRGBA";
 

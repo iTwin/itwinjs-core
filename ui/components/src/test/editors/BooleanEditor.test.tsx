@@ -8,11 +8,11 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
-import { BooleanEditor } from "../../ui-components/editors/BooleanEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import { BooleanEditor } from "../../components-react/editors/BooleanEditor";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {

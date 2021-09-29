@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../index";
-import { IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 
 // cSpell:ignore TESTAPP FILEPATH
 

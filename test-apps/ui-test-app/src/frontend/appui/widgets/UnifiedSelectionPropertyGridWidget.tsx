@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import {
   ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver,
-} from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@itwin/appui-react";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

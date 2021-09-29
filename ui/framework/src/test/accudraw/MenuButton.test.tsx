@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
+import { MenuButton } from "../../appui-react/accudraw/MenuButton";
 import { mount } from "../TestUtils";
 
 describe("MenuButton", () => {

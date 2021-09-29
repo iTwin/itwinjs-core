@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../ui-ninezone";
+import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetPanels", () => {

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUtility } from "@itwin/oidc-signin-tool";
 
 export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizationClient {
   private _token: AccessToken | undefined;

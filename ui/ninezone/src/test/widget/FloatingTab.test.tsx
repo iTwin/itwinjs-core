@@ -5,11 +5,11 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point } from "@bentley/ui-core";
+import { Point } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, NineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {

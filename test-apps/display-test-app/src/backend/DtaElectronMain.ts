@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost, ElectronHostOptions } from "@itwin/electron-manager/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-backend";
+import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 
 const mainWindowName = "mainWindow";

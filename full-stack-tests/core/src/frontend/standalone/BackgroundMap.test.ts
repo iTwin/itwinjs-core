@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps, TerrainHeightOriginMode,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 describe("Background map", () => {
@@ -51,28 +51,28 @@ describe("Background map", () => {
       return newTree === prevTree;
     }
 
-    type Test = [ BackgroundMapProps | PersistentBackgroundMapProps, boolean ]; // true if expect same tile tree after changing background map props
+    type Test = [BackgroundMapProps | PersistentBackgroundMapProps, boolean]; // true if expect same tile tree after changing background map props
     const tests: Test[] = [
-      [ {}, true ],
-      [ BackgroundMapSettings.fromJSON().toJSON(), true ],
-      [ { useDepthBuffer: true }, false ],
-      [ { groundBias: 100 }, false ],
-      [ { groundBias: 0 }, false ],
-      [ { transparency: 0.5 }, false ],
-      [ { providerName: "NotAValidProvider" }, true ],
+      [{}, true],
+      [BackgroundMapSettings.fromJSON().toJSON(), true],
+      [{ useDepthBuffer: true }, false],
+      [{ groundBias: 100 }, false],
+      [{ groundBias: 0 }, false],
+      [{ transparency: 0.5 }, false],
+      [{ providerName: "NotAValidProvider" }, true],
 
       // The same tile tree can draw different types of imagery from different providers.
-      [ { providerName: "MapBoxProvider" }, true ],
-      [ { providerData: { mapType: BackgroundMapType.Street } }, true ],
-      [ { globeMode: GlobeMode.Plane }, false ],
+      [{ providerName: "MapBoxProvider" }, true],
+      [{ providerData: { mapType: BackgroundMapType.Street } }, true],
+      [{ globeMode: GlobeMode.Plane }, false],
 
       // Terrain-specific settings don't affect tile tree if terrain is disabled.
-      [ { terrainSettings: { exaggeration: 42 } }, true ],
-      [ { terrainSettings: { heightOrigin: 21 } }, true ],
-      [ { terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true ],
+      [{ terrainSettings: { exaggeration: 42 } }, true],
+      [{ terrainSettings: { heightOrigin: 21 } }, true],
+      [{ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true],
 
       // Terrain enabled.
-      /* ###TODO ApproximateTerrainHeights.json supplied by imodeljs-frontend is not found...
+      /* ###TODO ApproximateTerrainHeights.json supplied by core-frontend is not found...
       [ { applyTerrain: true }, false ],
       [ { applyTerrain: true, terrainSettings: { exaggeration: 0 } }, false ],
       [ { applyTerrain: true, terrainSettings: { heightOrigin: 0 } }, false ],
@@ -93,5 +93,4 @@ describe("Background map", () => {
       }
     });
   });
-
 });

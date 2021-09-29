@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometryParams, GeometryPartProps,
   GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
-import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

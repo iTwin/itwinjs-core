@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/presentation-components",
+  "name": "@itwin/presentation-components",
   "version": "3.0.0-dev.71",
   "description": "React components based on iModel.js Presentation library",
   "main": "lib/presentation-components.js",
@@ -48,32 +48,32 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.71",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.71",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.71",
-    "@bentley/presentation-frontend": "workspace:^3.0.0-dev.71",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.71",
-    "@bentley/ui-components": "workspace:^3.0.0-dev.71",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.71",
-    "@bentley/ui-imodel-components": "workspace:^3.0.0-dev.71",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
+    "@itwin/core-common": "workspace:^3.0.0-dev.71",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.71",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.71",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.71",
+    "@itwin/presentation-frontend": "workspace:^3.0.0-dev.71",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.71",
+    "@itwin/components-react": "workspace:^3.0.0-dev.71",
+    "@itwin/core-react": "workspace:^3.0.0-dev.71",
+    "@itwin/imodel-components-react": "workspace:^3.0.0-dev.71",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
-    "@bentley/presentation-frontend": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-components": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
-    "@bentley/ui-imodel-components": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@itwin/presentation-frontend": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/components-react": "workspace:*",
+    "@itwin/core-react": "workspace:*",
+    "@itwin/imodel-components-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -114,7 +114,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 100,
     "functions": 100,
@@ -134,8 +134,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/ui"
+    "extends": "plugin:@itwin/ui"
   }
 }

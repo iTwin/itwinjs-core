@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackstageItemsManager, isActionItem, isStageLauncher } from "@bentley/ui-abstract";
-import { useDefaultBackstageItems } from "../../ui-framework";
+import { BackstageItemsManager, isActionItem, isStageLauncher } from "@itwin/appui-abstract";
+import { useDefaultBackstageItems } from "../../appui-react";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 import { mount } from "../TestUtils";
 

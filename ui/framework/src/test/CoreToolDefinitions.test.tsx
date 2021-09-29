@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolbarWithOverflow } from "@bentley/ui-components";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { ActionItemButton, CoreTools, FrontstageManager, ToolWidget, ToolWidgetComposer } from "../ui-framework";
-import { ToolbarHelper } from "../ui-framework/toolbar/ToolbarHelper";
+import { ToolbarWithOverflow } from "@itwin/components-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
+import { ActionItemButton, CoreTools, FrontstageManager, ToolWidget, ToolWidgetComposer } from "../appui-react";
+import { ToolbarHelper } from "../appui-react/toolbar/ToolbarHelper";
 import TestUtils, { mount } from "./TestUtils";
 
 describe("CoreToolDefinitions", () => {

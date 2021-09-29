@@ -5,12 +5,12 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@bentley/bentleyjs-core";
-import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
+import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements,
   IModelHost, IModelJsFs, SpatialCategory,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";

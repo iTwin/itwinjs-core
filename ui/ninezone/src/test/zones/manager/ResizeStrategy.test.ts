@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { Rectangle, RectangleProps } from "@bentley/ui-core";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   GrowBottom, GrowLeft, GrowRight, GrowStrategy, GrowTop, HorizontalAnchor, ResizeStrategy, ShrinkBottom, ShrinkHorizontalStrategy, ShrinkLeft, ShrinkRight,
   ShrinkStrategy, ShrinkTop, ShrinkVerticalStrategy, UpdateWindowResizeSettings, WidgetZoneId, ZonesManager, ZonesManagerProps,
-} from "../../../ui-ninezone";
-import { BottomZones, LeftZones, RightZones, TopZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
+} from "../../../appui-layout-react";
+import { BottomZones, LeftZones, RightZones, TopZones } from "../../../appui-layout-react/zones/manager/AdjacentZones";
 import TestProps from "./TestProps";
 
 const zonesManagerMock = Moq.Mock.ofType<ZonesManager>();

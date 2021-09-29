@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as ws from "ws";
-import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError } from "@itwin/core-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 
 interface MobileAddon {
   notifyListening: (port: number) => void;

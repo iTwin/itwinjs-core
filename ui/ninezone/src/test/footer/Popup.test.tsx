@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { FooterPopup } from "../../ui-ninezone";
+import { FooterPopup } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<FooterPopup />", () => {

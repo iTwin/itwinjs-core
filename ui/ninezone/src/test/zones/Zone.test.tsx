@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { SafeAreaInsets, Zone } from "../../ui-ninezone";
+import { SafeAreaInsets, Zone } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<Zone />", () => {

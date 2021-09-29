@@ -8,7 +8,7 @@
   },
   "mochaOptions": {
     "timeout": 2000, // These are unit tests; they should be quick.
-    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
       "mochaFile": "lib/test/junit_results.xml"
     }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../ui-framework";
-import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
+import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../appui-react";
+import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
 import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 import { expect } from "chai";
 import sinon = require("sinon");

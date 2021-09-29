@@ -6,8 +6,8 @@
  * @module Tools
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";

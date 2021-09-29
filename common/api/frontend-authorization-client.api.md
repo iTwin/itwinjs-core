@@ -4,10 +4,10 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { IDisposable } from '@bentley/bentleyjs-core';
+import { BeEvent } from '@itwin/core-bentley';
+import { IDisposable } from '@itwin/core-bentley';
 import { Logger } from 'oidc-client';
 import { User } from 'oidc-client';
 import { UserManager } from 'oidc-client';

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeDuration, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, GuidString, Logger } from "@itwin/core-bentley";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { IModelVersion } from "@itwin/core-common";
+import { CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 

@@ -7,7 +7,7 @@ import { render } from "@testing-library/react";
 import {
   createWidgetState, EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContext, WidgetContentManagerContextArgs,
   WidgetStateContext,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 
 describe("WidgetContentContainer ", () => {
   it("should render minimized", () => {

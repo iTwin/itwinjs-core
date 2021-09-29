@@ -1,10 +1,10 @@
-# @bentley/frontend-devtools
+# @itwin/frontend-devtools
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
+The __@itwin/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
 
 Because this is a developer-only package, its functionality is not expected to ever be promoted from "beta" to "public".
 
