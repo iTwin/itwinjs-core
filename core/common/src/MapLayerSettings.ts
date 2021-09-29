@@ -210,25 +210,27 @@ export class MapLayerSettings {
 
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
-
-    let subLayers: MapSubLayerProps[] | undefined;
-    if (this.subLayers) {
-      subLayers = [];
-      for (const subLayer of this.subLayers) {
-        subLayers.push(subLayer.toJSON());
-      }
+    const props: MapLayerProps = {formatId: this.formatId, name: this.name, url: this.url};
+    if (this.subLayers.length > 0) {
+      props.subLayers = [];
+      this.subLayers.forEach((subLayer) => {
+        const subLayerJson = subLayer.toJSON();
+        if (subLayerJson)
+          props.subLayers!.push(subLayerJson);
+      });
     }
 
-    return {
-      name: this.name,
-      formatId: this.formatId,
-      visible: this.visible,
-      url: this.url,
-      transparency: this.transparency,
-      transparentBackground: this.transparentBackground,
-      subLayers,
-      accessKey: this.accessKey,
-    };
+    if (0 !== this.transparency)
+      props.transparency = this.transparency;
+
+    if (this.transparentBackground === false)
+      props.transparentBackground = this.transparentBackground;
+
+    if (this.isBase === true)
+      props.isBase = this.isBase;
+
+    props.visible = this.visible;
+    return props;
   }
 
   /** @internal */

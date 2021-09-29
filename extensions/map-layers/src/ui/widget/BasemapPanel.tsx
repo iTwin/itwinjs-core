@@ -90,9 +90,8 @@ export function BasemapPanel() {
     ModalDialogManager.closeDialog();
     if (activeViewport) {
       // change color and make sure previously set transparency is not lost.
-      const viewportBase = activeViewport.displayStyle.settings.mapImagery.backgroundBase;
-      const curTransparency = viewportBase instanceof ColorDef ? viewportBase.getTransparency() : 0;
-      activeViewport.displayStyle.settings.mapImagery.backgroundBase = bgColorDef.withTransparency(curTransparency);
+      const curTransparency = activeViewport.displayStyle.backgroundMapBase instanceof ColorDef ? activeViewport.displayStyle.backgroundMapBase.getTransparency() : 0;
+      activeViewport.displayStyle.backgroundMapBase = bgColorDef.withTransparency(curTransparency);
       activeViewport.invalidateRenderPlan();
       setSelectedBaseMap(bgColorDef.toJSON());
     }
