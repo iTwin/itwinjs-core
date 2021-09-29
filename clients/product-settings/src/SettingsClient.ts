@@ -91,7 +91,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
       urlTerminator = "/Setting";
 
     // CHANGE:
-    // SWB What does context mean here?
     //  - If you supply a context, do not require a user
     //  - If no context, default to user
 

@@ -644,8 +644,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
   });
 
-  // SWB What does context mean here?
-  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async function () {
+  it("should be able to create a reality data as an admin (without specific iTwin and admin) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
     const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));

@@ -171,7 +171,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 
     this._options.includeAll = getArg("a");
     this._options.includeIModelSpecific = getArg("i");
-    this._options.includeITwinSpecific = getArg("t");
+    this._options.includeITwinSpecific = getArg("p"); // "p" for backwards compatibility with old "project" terminology
     this._options.includeBackgroundMap = getArg("m");
     this._options.includeDrawingAids = getArg("d");
     this._copyToClipboard = true === getArg("c");

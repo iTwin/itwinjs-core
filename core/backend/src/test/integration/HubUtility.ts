@@ -588,8 +588,7 @@ export class HubUtility {
   }
 }
 
-// SWB Should this class be renamed?
-/** An implementation of IModelProjectAbstraction backed by an iTwin */
+/** An implementation of TestITwin backed by an iTwin */
 class TestITwin {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }

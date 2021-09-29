@@ -283,7 +283,6 @@ describe("ImodelChangesetPerformance", () => {
       fs.mkdirSync(KnownTestLocations.outputDir);
     // TODO: Update config to use iTwin terminology
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
-    // SWB Requires config change
     iTwinId = configData.basicTest.projectId;
     imodelId = configData.basicTest.imodelId;
     imodelPushId = configData.basicTest.imodelPushId;
@@ -479,7 +478,6 @@ describe("ImodelChangesetPerformance big datasets", () => {
     const reporter = new Reporter();
     const batchSize: number = 50;
     for (const ds of configData.bigDatasets) {
-      // SWB Requires config change
       const iTwinId: GuidString = ds.projId;
       const imodelId: string = ds.modelId;
 

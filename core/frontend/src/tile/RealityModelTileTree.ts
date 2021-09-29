@@ -863,7 +863,6 @@ export class RealityModelTileClient {
   // ###TODO temporary means of extracting the tileId and iTwinId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
   // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
-  // SWB What does context mean here?
   // We obtain the iTwinId from URL but it should be used normally. The iModel context should be used everywhere: verify!
   private parseUrl(url: string): RDSClientProps | undefined {
     // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
