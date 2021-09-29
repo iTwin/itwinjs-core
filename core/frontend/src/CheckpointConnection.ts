@@ -6,11 +6,11 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, getErrorMessage, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -131,7 +131,7 @@ export class CheckpointConnection extends IModelConnection {
       this.changeset = openResponse.changeset!;
 
     } catch (error) {
-      reject(getErrorMessage(error));
+      reject(BentleyError.getErrorMessage(error));
     } finally {
     }
 

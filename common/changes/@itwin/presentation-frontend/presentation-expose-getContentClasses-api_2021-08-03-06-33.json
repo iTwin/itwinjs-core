@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Added `PresentationManager.getContentSources` API to retrieve information about where content for specific types of elements comes from.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

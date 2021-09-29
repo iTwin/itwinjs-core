@@ -1,4 +1,4 @@
-# Change Log - @bentley/ui-framework
+# Change Log - @itwin/appui-react
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 
@@ -707,7 +707,7 @@ Thu, 28 May 2020 22:48:59 GMT
 
 ### Updates
 
-- Add missing @bentley/imodeljs-markup peerDependency
+- Add missing @itwin/core-markup peerDependency
 - Add commandItemDef to clearHiddenIsolatedEmphasized elements.
 - Fix z-index of Modeless dialogs.
 - Address React warnings about deprecated methods.

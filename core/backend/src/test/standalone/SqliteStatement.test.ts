@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, using } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../imodeljs-backend";
+import { DbResult, using } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";

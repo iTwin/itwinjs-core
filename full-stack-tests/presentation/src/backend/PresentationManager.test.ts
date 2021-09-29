@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, using } from "@bentley/bentleyjs-core";
-import { IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { PresentationManager, UnitSystemFormat } from "@bentley/presentation-backend";
+import { Guid, using } from "@itwin/core-bentley";
+import { IModelDb, SnapshotDb } from "@itwin/core-backend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
 import {
   ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset, RuleTypes,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { findFieldByLabel } from "../Utils";
 

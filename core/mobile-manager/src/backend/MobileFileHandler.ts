@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import { AccessToken, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, Logger } from "@itwin/core-bentley";
 import {
   CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
   UserCancelledError,

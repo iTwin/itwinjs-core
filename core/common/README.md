@@ -1,10 +1,10 @@
-# @bentley/imodeljs-common
+# @itwin/core-common
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/imodeljs-common__ package contains classes for working with iModels that can be used in both the frontend and backend.
+The __@itwin/core-common__ package contains classes for working with iModels that can be used in both the frontend and backend.
 
 ## Documentation
 

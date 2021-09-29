@@ -6,8 +6,8 @@
  * @module HubAccess
  */
 
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
-import { ChangesetId, IModelVersion } from "@bentley/imodeljs-common";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { ChangesetId, IModelVersion } from "@itwin/core-common";
 
 /** @public */
 export interface IModelIdArg {

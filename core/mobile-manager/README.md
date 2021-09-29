@@ -1,10 +1,10 @@
-# @bentley/mobile-manager
+# @itwin/mobile-manager
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice. See LICENSE.md in the project root for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/electron-manager__ package contains the electron utilities to write an iTwin.js application based on Electron.
+The __@itwin/electron-manager__ package contains the electron utilities to write an iTwin.js application based on Electron.
 
 ## Documentation
 

@@ -16,12 +16,12 @@
       "--no-sandbox"
     ],
     "publicDirs": [
-      "./node_modules/@bentley/hypermodeling-frontend/lib/public/"
+      "./node_modules/@itwin/hypermodeling-frontend/lib/public/"
     ]
   },
   "mochaOptions": {
     "timeout": 240000,
-    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
       "mochaFile": "lib/test/junit_results.xml"
     }

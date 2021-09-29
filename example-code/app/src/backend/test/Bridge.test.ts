@@ -6,15 +6,15 @@
 import * as path from "path";
 
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
-import { AccessToken, GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
-} from "@bentley/imodeljs-backend";
-import { ColorByName, IModel, LocalFileName } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+} from "@itwin/core-backend";
+import { ColorByName, IModel, LocalFileName } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";

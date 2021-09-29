@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
-import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
@@ -14,7 +14,7 @@ import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
-import { InstancedGraphicParams } from "../../../imodeljs-frontend";
+import { InstancedGraphicParams } from "../../../core-frontend";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).to.equal(total);

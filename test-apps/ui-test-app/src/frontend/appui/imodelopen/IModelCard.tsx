@@ -5,7 +5,7 @@
 import "./IModelCard.scss";
 import * as React from "react";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { ProgressRadial } from "@itwin/itwinui-react";
 
 /** Properties for the [[IModelCard]] component */

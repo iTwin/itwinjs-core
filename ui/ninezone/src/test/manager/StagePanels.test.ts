@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import {
   getDefaultNineZoneStagePanelManagerProps, getDefaultNineZoneStagePanelsManagerProps, NineZoneStagePanelManager, NineZoneStagePanelManagerProps,
   NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps, StagePanelType,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 
 describe("NineZoneStagePanelsManager", () => {
   describe("addWidget", () => {

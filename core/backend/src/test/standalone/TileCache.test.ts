@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid } from "@bentley/bentleyjs-core";
+import { DbResult, Guid } from "@itwin/core-bentley";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
-import { IModelTileRpcInterface, RpcActivity, RpcInvocation, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, RpcActivity, RpcInvocation, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import { IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { IModelHost, IModelHostConfiguration } from "../../core-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";

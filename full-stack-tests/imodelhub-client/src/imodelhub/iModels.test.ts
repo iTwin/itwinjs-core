@@ -5,12 +5,12 @@
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { AccessToken, Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, Guid, GuidString, IModelHubStatus } from "@itwin/core-bentley";
 import {
   HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, IModelType, InitializationState, SeedFile, WsgError,
 } from "@bentley/imodelhub-client";
 import { RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";

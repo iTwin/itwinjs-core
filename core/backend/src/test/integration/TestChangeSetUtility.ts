@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
-import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { SpatialCategory } from "../../Category";
-import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseDb, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

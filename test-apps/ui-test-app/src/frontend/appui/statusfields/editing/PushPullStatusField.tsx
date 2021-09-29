@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PushPullField.scss";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { ChangeSetPostPushEvent, ChangeSetQuery, IModelHubFrontend } from "@bentley/imodelhub-client";
 import {
   BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
-import { Icon } from "@bentley/ui-core";
-import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+} from "@itwin/core-frontend";
+import { Icon } from "@itwin/core-react";
+import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 

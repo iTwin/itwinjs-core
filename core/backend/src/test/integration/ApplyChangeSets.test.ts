@@ -5,9 +5,9 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { IModelHost, IModelJsFs } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

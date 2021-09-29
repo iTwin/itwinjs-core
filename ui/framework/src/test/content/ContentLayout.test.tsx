@@ -7,12 +7,12 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import SplitPane from "react-split-pane";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutProps, StandardContentLayouts } from "@bentley/ui-abstract";
+import { MockRender } from "@itwin/core-frontend";
+import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
   ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ContentLayout", () => {

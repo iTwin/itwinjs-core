@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { useActiveViewport } from "@bentley/ui-framework";
-import { FillCentered } from "@bentley/ui-core";
+import { useActiveViewport } from "@itwin/appui-react";
+import { FillCentered } from "@itwin/core-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapLayerOptions } from "../Interfaces";
 import { MapLayerManager } from "./MapLayerManager";

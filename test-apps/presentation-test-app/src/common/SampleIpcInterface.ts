@@ -4,8 +4,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Arg } from "@bentley/bentleyjs-core";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { Id64Arg } from "@itwin/core-bentley";
+import { ElementProps } from "@itwin/core-common";
 
 /** @internal */
 export const PRESENTATION_TEST_APP_IPC_CHANNEL_NAME = "presentation-test-app-ipc-interface";

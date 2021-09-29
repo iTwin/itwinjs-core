@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
   StrippedRelationshipPath,
@@ -478,6 +478,7 @@ export class NestedContentField extends Field {
    * @public
    */
   public static override fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]) {
+    assert(classesMap.hasOwnProperty(json.contentClassInfo));
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, this.fromCommonJSON(json, categories), {
       category: this.getCategoryFromFieldJson(json, categories),
@@ -599,6 +600,7 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
 }
 
 function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
+  assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
   return {
     ...compressedPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },

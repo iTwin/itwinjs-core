@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { Arc3d, Point3d } from "@itwin/core-geometry";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 
 // __PUBLISH_EXTRACT_START__ GeometryStreamBuilder.example-code
 // Simple example of using GeometryStreamBuilder. Note how the building works with

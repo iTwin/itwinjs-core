@@ -1,4 +1,4 @@
-# @bentley/imodeljs-transformer
+# @itwin/core-transformer
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 

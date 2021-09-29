@@ -1,0 +1,27 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/space";
+
+ .core-ls{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  .ls-message {
+    color: $buic-foreground-body;
+  }
+
+  .ls-message-top {
+    @extend .ls-message;
+    margin-bottom: $iui-sm;
+  }
+
+  .ls-message-bottom {
+    @extend .ls-message;
+    margin-top: $iui-sm;
+  }
+}

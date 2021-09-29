@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { StatusBarSection } from "@bentley/ui-abstract";
-import { StatusBarItem, StatusBarItemsManager, StatusBarItemUtilities } from "../../ui-framework";
+import { StatusBarSection } from "@itwin/appui-abstract";
+import { StatusBarItem, StatusBarItemsManager, StatusBarItemUtilities } from "../../appui-react";
 
 describe("StatusBarItemsManager", () => {
 

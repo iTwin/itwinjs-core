@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus, getErrorProps, ProcessDetector } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import {
   IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
@@ -207,7 +207,7 @@ export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcReque
     try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
       this._browserWindow = require("electron").BrowserWindow; // eslint-disable-line @typescript-eslint/no-var-requires
     } catch (err) {
-      throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, () => getErrorProps(err));
+      throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, () => BentleyError.getErrorProps(err));
     }
   }
 }

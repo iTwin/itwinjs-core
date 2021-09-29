@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { getCssVariable } from "../../ui-core";
+import { getCssVariable } from "../../core-react";
 
 // NOTE: CSS Custom Properties don't work in Jsdom
 

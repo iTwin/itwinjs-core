@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 
 /** The iTwin context object, for generalized properties of Projects, Assets, custom contexts, etc.
  * @beta

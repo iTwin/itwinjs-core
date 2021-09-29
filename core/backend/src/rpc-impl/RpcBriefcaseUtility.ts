@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, BeDuration, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";

@@ -6,11 +6,11 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 import { TokenArg } from "./IModelDb";
 

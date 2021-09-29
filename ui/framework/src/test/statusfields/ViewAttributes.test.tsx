@@ -5,14 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
+import { MockRender } from "@itwin/core-frontend";
+import { WidgetState } from "@itwin/appui-abstract";
 import { Checkbox } from "@itwin/itwinui-react";
-import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
-import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
-import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
-import { ViewAttributesStatusField } from "../../ui-framework/statusfields/ViewAttributes";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../appui-react/configurableui/ConfigurableUiControl";
+import { StatusBar } from "../../appui-react/statusbar/StatusBar";
+import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../appui-react/statusbar/StatusBarWidgetControl";
+import { ViewAttributesStatusField } from "../../appui-react/statusfields/ViewAttributes";
+import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ViewAttributes", () => {

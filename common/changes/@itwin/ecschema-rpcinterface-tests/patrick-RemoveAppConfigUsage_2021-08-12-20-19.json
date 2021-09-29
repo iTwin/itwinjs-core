@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-tests",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-tests",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { flattenChildren } from "../../ui-core/utils/flattenChildren";
+import { flattenChildren } from "../../core-react/utils/flattenChildren";
 
 describe("flattenChildren", () => {
 

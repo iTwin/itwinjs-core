@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Primitives } from "@bentley/ui-abstract";
-import { CompositeTypeConverter } from "../../ui-components/converters/CompositeTypeConverter";
+import { Primitives } from "@itwin/appui-abstract";
+import { CompositeTypeConverter } from "../../components-react/converters/CompositeTypeConverter";
 import TestUtils from "../TestUtils";
 
 describe("CompositeTypeConverter", () => {

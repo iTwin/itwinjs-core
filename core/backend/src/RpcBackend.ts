@@ -8,7 +8,7 @@
 
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
+import { BentleyStatus, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 
 let initialized = false;
 

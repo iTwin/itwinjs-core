@@ -15,7 +15,7 @@ import { asyncScheduler } from "rxjs/internal/scheduler/async";
 import { queueScheduler } from "rxjs/internal/scheduler/queue";
 import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
 import sinon from "sinon";
-import { scheduleSubscription, SubscriptionScheduler } from "../../ui-components/common/SubscriptionScheduler";
+import { scheduleSubscription, SubscriptionScheduler } from "../../components-react/common/SubscriptionScheduler";
 import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
 import { ResolvablePromise } from "../test-helpers/misc";
 

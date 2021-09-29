@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { CommonToolbarItem, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
   BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
 import { GenericTool } from "./tools/GenericTool";
 

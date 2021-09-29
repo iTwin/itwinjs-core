@@ -5,9 +5,9 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetApplyOption, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangesetFileProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
+import { Id64String, OpenMode } from "@itwin/core-bentley";
+import { ChangesetFileProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -25,18 +25,10 @@ function createChangeset(imodel: IModelDb): ChangesetFileProps {
   return changeset;
 }
 
-function applyOneChangeSet(imodel: IModelDb, csToken: ChangesetFileProps) {
-  try {
-    imodel.nativeDb.applyChangeset(csToken, ChangeSetApplyOption.Merge);
-  } catch (err: any) {
-    assert.isTrue(false, `apply failed, err=${err.errorNumber}`);
-  }
-}
-
 function applyChangeSets(imodel: IModelDb, csHistory: ChangesetFileProps[], curIdx: number): number {
   while (curIdx < (csHistory.length - 1)) {
     ++curIdx;
-    applyOneChangeSet(imodel, csHistory[curIdx]);
+    imodel.nativeDb.applyChangeset(csHistory[curIdx]);
   }
   return curIdx;
 }

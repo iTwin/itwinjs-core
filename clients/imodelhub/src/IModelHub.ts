@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
-import { FrontendHubAccess, IModelIdArg } from "@bentley/imodeljs-frontend"; // All of the imports from both frontend and common must be only of interfaces.
-import { BriefcaseId, ChangesetId, IModelVersion } from "@bentley/imodeljs-common";
+import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
+import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend"; // All of the imports from both frontend and common must be only of interfaces.
+import { BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { BriefcaseQuery } from "./imodelhub/Briefcases";
 import { ChangeSet, ChangeSetQuery } from "./imodelhub/ChangeSets";
 import { IModelHubClient } from "./imodelhub/Client";

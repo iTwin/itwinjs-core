@@ -6,4 +6,4 @@ This package contains the Schema RPC Interface Implementation which can be added
 
 ## Testing
 
-The tests for this RPC Interface are available in the [@bentley/ecschema-rpcinterface-tests](https://www.npmjs.com/package/@bentley/ecschema-rpcinterface-tests) package, please visit the README in that package for more information.
+The tests for this RPC Interface are available in the [@itwin/ecschema-rpcinterface-tests](https://www.npmjs.com/package/@itwin/ecschema-rpcinterface-tests) package, please visit the README in that package for more information.

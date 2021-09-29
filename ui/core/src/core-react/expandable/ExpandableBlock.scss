@@ -1,0 +1,145 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "../style/mixins";
+@import "../text/mixins";
+
+.uicore-expandable-blocks-block {
+  background-color: $buic-background-control;
+  border: solid 1px $buic-background-control-stroke;
+  border-radius: 3px;
+  position: relative;
+
+  > .header {
+    padding: $iui-xs $iui-xxs;
+    background: $buic-background-control;
+    transition: background-color $iui-speed-fast ease-in-out, border-color $iui-speed-fast ease-in-out;
+    cursor: pointer;
+
+    > .icon-container {
+      line-height: 22px;
+      width: 22px;
+      height: 22px;
+      font-size: 10px;
+      float: left;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: $iui-xxs;
+      color: $buic-foreground-body;
+      transition: $iui-speed-fast ease-in-out;
+    }
+
+    > .caption {
+      @include no-link;
+      @include uicore-text(small);
+      display: block;
+      color: $buic-foreground-muted;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    > .title {
+      @include no-link;
+      @include uicore-text(subheading);
+      font-size: $iui-font-size;
+      line-height: 23px;
+      display: block;
+      margin: 0;
+      color: $buic-foreground-body;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: $iui-speed-fast ease-in-out;
+    }
+
+    &:focus {
+      background-color: $buic-background-focus-overlay;
+      outline: none;
+    }
+
+  }
+
+  > .content {
+    padding: 0;
+    margin: 0;
+    border: 0 none transparent;
+    transition:
+    padding-top $iui-speed-fast ease-in-out,
+    padding-bottom $iui-speed-fast ease-in-out;
+  }
+
+  &.with-caption > .header > .icon-container {
+    margin-top: $iui-baseline;
+  }
+
+  &.is-collapsed {
+    > .content > * {
+      display: none;
+    }
+  }
+
+  &:hover {
+    > .header {
+      > .icon-container {
+        color: $buic-foreground-activehover;
+      }
+
+      > .caption,
+      > .title {
+        color: $buic-foreground-activehover;
+      }
+    }
+  }
+
+  &.is-expanded {
+    border-top: 1px solid $buic-foreground-primary;
+
+    > .header {
+      transition: $iui-speed-fast ease-in-out;
+
+      > .icon-container,
+      > .caption,
+      > .title {
+        color: $buic-foreground-primary;
+      }
+
+      > .icon-container {
+        transform: rotate( 90deg );
+        transform-origin: center;
+      }
+
+      > .title {
+        transition: $iui-speed-fast ease-in-out;
+      }
+    }
+
+    &:hover > .header {
+      > .icon-container,
+      > .title {
+        color: $buic-foreground-primary;
+      }
+    }
+
+    > .content {
+      padding: 0;
+      background-color: $buic-background-control;
+      border-style: none;
+    }
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      height: 1px;
+      width: 100%;
+      background: $buic-foreground-primary;
+    }
+  }
+}

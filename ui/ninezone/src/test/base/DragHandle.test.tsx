@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { DragHandle, DragHandleProps, PointerCaptor } from "../../ui-ninezone";
+import { DragHandle, DragHandleProps, PointerCaptor } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<DragHandle />", () => {

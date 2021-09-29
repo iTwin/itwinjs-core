@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { createStableWidgetDef } from "../../ui-framework";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { createStableWidgetDef } from "../../appui-react";
+import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 
 describe("createStableWidgetDef", () => {
   it("should return stableId", () => {

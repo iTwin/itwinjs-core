@@ -8,15 +8,15 @@ import * as sinon from "sinon";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, CustomButtonDefinition, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
 import {
   CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
   SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
-} from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
+} from "../../appui-react";
+import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
 import TestUtils from "../TestUtils";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { UiFramework } from "../../appui-react/UiFramework";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { EventEmitter } from "../../ui-ninezone";
+import { EventEmitter } from "../../appui-layout-react";
 
 describe("EventEmitter", () => {
   it("should remove event when emitting", () => {

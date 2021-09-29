@@ -1,15 +1,15 @@
 # AutoSuggest
 
-The [AutoSuggest]($ui-core) React component displays an input field with an auto-suggest dropdown.
+The [AutoSuggest]($core-react) React component displays an input field with an auto-suggest dropdown.
 The AutoSuggest component has support for the Light and Dark themes.
 
 **Note**: The AutoSuggest component uses the [react-autosuggest](https://www.npmjs.com/package/react-autosuggest) package internally.
 
 ## Properties
 
-The AutoSuggest properties, as defined in [AutoSuggestProps]($ui-core), control what is displayed in the dropdown for any given input value.
+The AutoSuggest properties, as defined in [AutoSuggestProps]($core-react), control what is displayed in the dropdown for any given input value.
 
-The `options` prop specifies either an array of all the suggestions ([AutoSuggestData]($ui-core)) or a function that provides the suggestions matching the given input. If `options` is an array, any value or label that includes the current input value will be displayed in the dropdown.
+The `options` prop specifies either an array of all the suggestions ([AutoSuggestData]($core-react)) or a function that provides the suggestions matching the given input. If `options` is an array, any value or label that includes the current input value will be displayed in the dropdown.
 
 The `getSuggestions` prop specifies a function that asynchronously calculates suggestions for any given input value.
 
@@ -27,4 +27,4 @@ There are props for several handlers:
 
 ## API Reference
 
-- [AutoSuggest]($ui-core:AutoSuggest)
+- [AutoSuggest]($core-react:AutoSuggest)

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LeadingText2 } from "../../ui-core";
+import { LeadingText2 } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

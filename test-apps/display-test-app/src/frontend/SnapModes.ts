@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { createComboBox } from "@bentley/frontend-devtools";
-import { SnapMode } from "@bentley/imodeljs-frontend";
+import { createComboBox } from "@itwin/frontend-devtools";
+import { SnapMode } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
 const multiSnapModes = [

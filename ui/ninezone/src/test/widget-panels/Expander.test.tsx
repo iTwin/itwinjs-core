@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import {
   createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetPanelExpanders", () => {

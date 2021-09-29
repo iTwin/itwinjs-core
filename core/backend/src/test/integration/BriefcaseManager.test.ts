@@ -6,10 +6,10 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
-import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
+import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
 import { UserCancelledError } from "@bentley/itwin-client";
-import { BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { BriefcaseId } from '@bentley/imodeljs-common';
 import { CancelRequest } from '@bentley/itwin-client';
@@ -12,6 +12,7 @@ import { ChangesetId } from '@bentley/imodeljs-common';
 import { Client } from '@bentley/itwin-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
+<<<<<<< HEAD
 import { FrontendHubAccess } from '@bentley/imodeljs-frontend';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
@@ -20,8 +21,15 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
 import { IModelIdArg } from '@bentley/imodeljs-frontend';
 import { IModelVersion } from '@bentley/imodeljs-common';
+=======
+import { GetMetaDataFunction } from '@itwin/core-bentley';
+import { GuidString } from '@itwin/core-bentley';
+import { HttpStatus } from '@itwin/core-bentley';
+import { Id64String } from '@itwin/core-bentley';
+import { IModelHubStatus } from '@itwin/core-bentley';
+>>>>>>> master
 import { ITwin } from '@bentley/context-registry-client';
-import { LogFunction } from '@bentley/bentleyjs-core';
+import { LogFunction } from '@itwin/core-bentley';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';

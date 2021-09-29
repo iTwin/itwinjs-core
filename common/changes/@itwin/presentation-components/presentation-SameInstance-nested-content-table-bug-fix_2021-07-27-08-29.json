@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}

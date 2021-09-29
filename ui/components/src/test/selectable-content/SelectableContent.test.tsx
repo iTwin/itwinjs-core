@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { SelectableContent } from "../../ui-components/selectable-content/SelectableContent";
+import { SelectableContent } from "../../components-react/selectable-content/SelectableContent";
 
 /* eslint-disable react/display-name */
 

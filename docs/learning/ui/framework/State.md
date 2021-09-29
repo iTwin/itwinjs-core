@@ -1,14 +1,14 @@
 # State
 
-[State]($ui-framework:State) refers to the runtime application state that is managed by the Redux store. For detailed information about Redux and its API see  [Redux](https://redux.js.org/).
+[State]($appui-react:State) refers to the runtime application state that is managed by the Redux store. For detailed information about Redux and its API see  [Redux](https://redux.js.org/).
 
 ## Reducer Registry
 
-The [ReducerRegistry]($ui-framework) class provides a registry of individual reducers that are used to define names actions which are dispatched to change the state of the Redux store. The use of the Reducer Registry allow the redux store to be incrementally constructed as different code is loaded.  This allows independently developed packages or plugin to register their specific reducers without the parent application having to know at build time that the Redux store should include reducers from the other modules. As reducers are registered the [StateManager]($ui-framework) is informed of them and the StageManager will combine the new reducer with all the existing reducers and update the Redux store.
+The [ReducerRegistry]($appui-react) class provides a registry of individual reducers that are used to define names actions which are dispatched to change the state of the Redux store. The use of the Reducer Registry allow the redux store to be incrementally constructed as different code is loaded.  This allows independently developed packages or plugin to register their specific reducers without the parent application having to know at build time that the Redux store should include reducers from the other modules. As reducers are registered the [StateManager]($appui-react) is informed of them and the StageManager will combine the new reducer with all the existing reducers and update the Redux store.
 
 ## StateManager
 
-The [StateManager]($ui-framework) manages a collection of Reducers. There are a default set of reducers that are specified when the StateManager is created. The StateManage will combine these default reducers with dynamically specified reducers register using the call to method `ReducerRegistryInstance.registerReducer`. The StateManager also provide a store property `StateManager.store` that will return the current Redux store.
+The [StateManager]($appui-react) manages a collection of Reducers. There are a default set of reducers that are specified when the StateManager is created. The StateManage will combine these default reducers with dynamically specified reducers register using the call to method `ReducerRegistryInstance.registerReducer`. The StateManager also provide a store property `StateManager.store` that will return the current Redux store.
 
 ## Example of Defining Initial Set of Reducers
 
@@ -34,7 +34,7 @@ export class MyIModelApp {
 
 ## Example of Defining Dynamic Reducer needed by a Plugin
 
-The code snippet below defines a class that provides a Reducer and registers it with the ReducerRegistry in its initialize `SampleExtensionStateManager.method`. Note that the createActionName method return a lowercase string, this allows the action name to server as the SyncUiEventId when the state is changed via a call to ([UiFramework.dispatchActionToStore]($ui-framework)).
+The code snippet below defines a class that provides a Reducer and registers it with the ReducerRegistry in its initialize `SampleExtensionStateManager.method`. Note that the createActionName method return a lowercase string, this allows the action name to server as the SyncUiEventId when the state is changed via a call to ([UiFramework.dispatchActionToStore]($appui-react)).
 
 ```ts
 // Class that specifies Redux Reducer for a plugin

@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@bentley/imodeljs-common";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { BoundaryType, ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
