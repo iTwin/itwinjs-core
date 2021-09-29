@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AccessToken, ChangeSetApplyOption, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelQuery, VersionQuery,
@@ -14,6 +14,7 @@ import {
 import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { IModelHubBackend  } from "../IModelHubBackend";
 import {
   BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
 } from "../core-backend";
@@ -22,7 +23,6 @@ import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { IModelHubBackend } from "../IModelHubBackend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -754,13 +754,12 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Insert changeset to iModel ${iModelName}.`);
         user = await TestUtility.getAccessToken(TestUsers.regular);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeset(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetInsert", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
@@ -786,12 +785,11 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Delete changeset to iModel ${iModelName}.`);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeset(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetDelete", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
@@ -817,12 +815,11 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Update changeset to iModel ${iModelName}.`);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeset(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetUpdate", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });

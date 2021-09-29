@@ -21,7 +21,6 @@ public;BeTimePoint
 public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
-internal;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number

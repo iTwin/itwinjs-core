@@ -1816,6 +1816,9 @@ export interface ParentCategoryIdentifier {
 }
 
 // @public
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+// @public
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
 // @public (undocumented)
@@ -2255,6 +2258,22 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 }
 
 // @public
+export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
+
+// @public (undocumented)
+export namespace RelatedClassInfoWithOptionalRelationship {
+    export function fromCompressedJSON(json: RelatedClassInfoWithOptionalRelationshipJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): RelatedClassInfoWithOptionalRelationship;
+    export function toCompressedJSON(classInfo: RelatedClassInfoWithOptionalRelationship, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): RelatedClassInfoWithOptionalRelationshipJSON<string>;
+}
+
+// @public (undocumented)
+export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
+
+// @public
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
@@ -2534,7 +2553,7 @@ export interface SchemasSpecification {
 export interface SelectClassInfo {
     isSelectPolymorphic: boolean;
     navigationPropertyClasses?: RelatedClassInfo[];
-    pathFromInputToSelectClass?: RelationshipPath;
+    pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationship[];
     relatedInstancePaths?: RelationshipPath[];
     relatedPropertyPaths?: RelationshipPath[];
     selectClassInfo: ClassInfo;
@@ -2545,7 +2564,6 @@ export namespace SelectClassInfo {
     export function fromCompressedJSON(json: SelectClassInfoJSON<string>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): SelectClassInfo;
-    export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo;
     // @internal
     export function listFromCompressedJSON(json: SelectClassInfoJSON<Id64String>[], classesMap: {
         [id: string]: CompressedClassInfoJSON;
@@ -2562,7 +2580,7 @@ export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     // (undocumented)
     navigationPropertyClasses?: RelatedClassInfoJSON<TClassInfoJSON>[];
     // (undocumented)
-    pathFromInputToSelectClass?: RelationshipPathJSON<TClassInfoJSON>;
+    pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON>[];
     // (undocumented)
     relatedInstancePaths?: RelationshipPathJSON<TClassInfoJSON>[];
     // (undocumented)
