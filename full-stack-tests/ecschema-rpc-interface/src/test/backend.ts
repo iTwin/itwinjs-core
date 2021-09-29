@@ -35,8 +35,6 @@ void (async () => {
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
   await IModelHost.startup(hostConfig);
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
