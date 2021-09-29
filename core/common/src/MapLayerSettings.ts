@@ -59,7 +59,7 @@ export class MapSubLayerSettings {
     this.children = children;
   }
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings | undefined {
+  public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings {
     return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
   }
   public toJSON(): MapSubLayerProps {
