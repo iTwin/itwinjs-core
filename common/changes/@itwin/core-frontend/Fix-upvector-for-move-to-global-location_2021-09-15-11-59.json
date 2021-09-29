@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Correct calculation for up vector when looking at globe location",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

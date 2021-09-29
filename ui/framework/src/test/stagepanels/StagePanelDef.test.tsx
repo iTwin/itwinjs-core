@@ -6,11 +6,11 @@ import * as React from "react";
 import { expect } from "chai";
 import produce from "immer";
 import * as sinon from "sinon";
-import { FrontstageManager, setPanelSize, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, toPanelSide, UiFramework, Widget, WidgetDef } from "../../ui-framework";
+import { FrontstageManager, setPanelSize, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef, toPanelSide, UiFramework, Widget, WidgetDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { StagePanelLocation } from "@bentley/ui-abstract";
-import { createNineZoneState } from "@bentley/ui-ninezone";
-import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
+import { StagePanelLocation } from "@itwin/appui-abstract";
+import { createNineZoneState } from "@itwin/appui-layout-react";
+import { FrontstageDef } from "../../appui-react/frontstage/FrontstageDef";
 
 describe("StagePanelDef", () => {
 

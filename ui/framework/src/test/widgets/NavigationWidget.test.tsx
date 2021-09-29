@@ -6,19 +6,19 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { IModelConnection } from "@itwin/core-frontend";
+import { WidgetState } from "@itwin/appui-abstract";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import {
   AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
-} from "../../ui-framework";
-import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
-import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
-import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
-import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
+} from "../../appui-react";
+import { ConfigurableUiManager } from "../../appui-react/configurableui/ConfigurableUiManager";
+import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
+import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
+import { NavigationAidControl } from "../../appui-react/navigationaids/NavigationAidControl";
 import TestUtils, { storageMock } from "../TestUtils";
-import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
+import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 
 describe("NavigationWidget localStorage Wrapper", () => {
 
@@ -72,26 +72,26 @@ describe("NavigationWidget localStorage Wrapper", () => {
     });
 
     const horizontalToolbar =
-    <Toolbar
-      expandsTo={Direction.Bottom}
-      items={
-        <>
-          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        </>
-      }
-    />;
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+          </>
+        }
+      />;
 
     const verticalToolbar =
-    <Toolbar
-      expandsTo={Direction.Left}
-      items={
-        <>
-          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-        </>
-      }
-    />;
+      <Toolbar
+        expandsTo={Direction.Left}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+          </>
+        }
+      />;
 
     it("NavigationWidget should render", () => {
       mount(

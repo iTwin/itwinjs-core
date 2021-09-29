@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { withIsPressed } from "../../ui-core";
+import { withIsPressed } from "../../core-react";
 
 describe("withIsPressed", () => {
 

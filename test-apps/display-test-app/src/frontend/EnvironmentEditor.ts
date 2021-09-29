@@ -5,9 +5,9 @@
 
 import {
   CheckBox, ColorInput, createButton, createCheckBox, createColorInput, createNestedMenu, createRadioBox, createSlider, RadioBox, Slider,
-} from "@bentley/frontend-devtools";
-import { ColorDef, RenderMode, SkyBoxProps } from "@bentley/imodeljs-common";
-import { Environment, SkyBox, SkyGradient, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+} from "@itwin/frontend-devtools";
+import { ColorDef, RenderMode, SkyBoxProps } from "@itwin/core-common";
+import { Environment, SkyBox, SkyGradient, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { LightingEditor } from "./LightingEditor";
 
 type EnvironmentAspect = "ground" | "sky";
@@ -331,7 +331,7 @@ export class EnvironmentEditor {
       const visible = view.is3d();
       elems.div.style.display = visible ? "block" : "none";
       if (visible) {
-        const view3d = view as ViewState3d;
+        const view3d = view;
         const style = view3d.getDisplayStyle3d();
         elems.checkbox.checked = style.environment[aspect].display;
       }

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent, BeUiEvent, using } from "@bentley/bentleyjs-core";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../ui-framework/imodel-components/VisibilityTreeEventHandler";
-import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@bentley/ui-components";
-import { SelectionHandler } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { BeEvent, BeUiEvent, using } from "@itwin/core-bentley";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../appui-react/imodel-components/VisibilityTreeEventHandler";
+import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@itwin/components-react";
+import { SelectionHandler } from "@itwin/presentation-frontend";
+import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { createSimpleTreeModelNode } from "./Common";
 import TestUtils from "../TestUtils";
 

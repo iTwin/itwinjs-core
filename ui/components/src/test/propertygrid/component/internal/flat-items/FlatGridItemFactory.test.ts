@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { MutableCustomGridCategory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCustomGridCategory";
-import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { PropertyCategory } from "../../../../../ui-components/propertygrid/PropertyDataProvider";
+import { MutableCustomGridCategory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableCustomGridCategory";
+import { FlatGridItemType } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
+import { MutableGridItemFactory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { PropertyCategory } from "../../../../../components-react/propertygrid/PropertyDataProvider";
 import TestUtils from "../../../../TestUtils";
 import { FlatGridTestUtils } from "./FlatGridTestUtils";
 

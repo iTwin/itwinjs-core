@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDataProvider } from "@bentley/ui-components";
-import { SortDirection } from "@bentley/ui-core";
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
+import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDataProvider } from "@itwin/components-react";
+import { SortDirection } from "@itwin/core-react";
 
 const tableData: DemoMutableRow[] = [
   { id: "251125811780946", label: "Row 0", type: "row", description: "row 0 of mutable table", icon: "icon-placeholder" },

@@ -6,10 +6,10 @@
  * @module Entities
  */
 
-import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   AngleProps, ClipVectorProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
@@ -221,7 +221,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
   jsonProperties?: {
     /** Integer priority in [-500,500]. Where two attachments overlap, the one with the higher priority draws in front of the other. Default: 0. */
     displayPriority?: number;
-    /** JSON representation of a [ClipVector]($geometry-core] in sheet coordinate space, used to clip the attachment's graphics on the sheet. */
+    /** JSON representation of a [ClipVector]($core-geometry] in sheet coordinate space, used to clip the attachment's graphics on the sheet. */
     clip?: ClipVectorProps;
     /** Options for customizing how the view attachment is displayed on the sheet. */
     displayOptions?: {

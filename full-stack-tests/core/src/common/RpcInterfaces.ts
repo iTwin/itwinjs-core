@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import {
-  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface,
-  RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
+  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  WipRpcInterface,
+} from "@itwin/core-common";
 
 export interface CloudEnvProps {
   iModelBank?: {
@@ -29,12 +28,6 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
   public async executeTest(_iModelRpcProps: IModelRpcProps, _testName: string, _params: any): Promise<any> {
-    return this.forward(arguments);
-  }
-  public async reportRequestContext(): Promise<ClientRequestContextProps> {
-    return this.forward(arguments);
-  }
-  public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
     return this.forward(arguments);
   }
   public async getCloudEnv(): Promise<CloudEnvProps> {

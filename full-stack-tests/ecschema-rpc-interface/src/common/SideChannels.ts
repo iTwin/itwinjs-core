@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { executeBackendCallback, registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback, registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 
 const getEnvCallbackName = "getEnv";
 

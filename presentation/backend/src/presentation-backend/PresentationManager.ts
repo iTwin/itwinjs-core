@@ -8,9 +8,9 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { Id64String } from "@itwin/core-bentley";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
@@ -18,7 +18,7 @@ import {
   FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
   SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { buildElementProperties } from "./ElementPropertiesHelper";
 import {
@@ -355,7 +355,7 @@ export class PresentationManager {
       if (isChangeTrackingEnabled) {
         this._updatesTracker = UpdatesTracker.create({
           nativePlatformGetter: this.getNativePlatform,
-          pollInterval: props!.updatesPollInterval!,
+          pollInterval: props.updatesPollInterval!,
         });
       }
       this._disposeIpcHandler = PresentationIpcHandler.register();
@@ -437,14 +437,6 @@ export class PresentationManager {
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
-      if (this._isOneFrontendPerBackend) {
-        // in case of native apps we don't have to enforce ruleset id uniqueness, since there's ony one
-        // frontend and it's up to the frontend to make sure rulesets are unique
-        return {
-          uniqueId: rulesetOrId.id,
-          parts: { id: rulesetOrId.id },
-        };
-      }
       const hashedId = hash.MD5(rulesetOrId);
       return {
         uniqueId: `${rulesetOrId.id}-${hashedId}`,

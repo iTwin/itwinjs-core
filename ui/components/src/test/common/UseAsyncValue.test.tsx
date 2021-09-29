@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { renderHook } from "@testing-library/react-hooks";
-import { useAsyncValue } from "../../ui-components/common/UseAsyncValue";
+import { useAsyncValue } from "../../components-react/common/UseAsyncValue";
 import { ResolvablePromise } from "../test-helpers/misc";
 
 describe("useAsyncValue", () => {

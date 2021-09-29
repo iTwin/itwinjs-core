@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../index";
-import { IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 
 // cSpell:ignore TESTAPP FILEPATH
 
@@ -37,7 +37,7 @@ export class LocalFileSupport {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening standalone. path=${filePath} writable=${writable}`);
       try {
         iModelConnection = await BriefcaseConnection.openStandalone(filePath, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filePath });
-      } catch (err) {
+      } catch (err: any) {
         Logger.logError(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: BriefcaseConnection.openStandalone failed.`);
 
         if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly) {
@@ -53,7 +53,7 @@ export class LocalFileSupport {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening snapshot. path=${filePath}`);
       try {
         iModelConnection = await SnapshotConnection.openFile(filePath);
-      } catch (err) {
+      } catch (err: any) {
         alert(err.message);
         iModelConnection = undefined;
       }

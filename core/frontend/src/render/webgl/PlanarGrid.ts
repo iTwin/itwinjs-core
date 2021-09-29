@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@bentley/geometry-core";
-import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
+import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
+import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
 import { RenderMemory } from "../RenderMemory";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
@@ -30,7 +30,7 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
     super(positions, indices, numIndices);
     const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.PlanarGrid, false);
     assert(attrParams !== undefined);
-    this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams!.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this.uvParams = uvParams;
   }
 }

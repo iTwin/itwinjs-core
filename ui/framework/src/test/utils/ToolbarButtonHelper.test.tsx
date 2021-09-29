@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
-import { CommandItemDef, GroupButton, ToolbarButtonHelper, ToolButton, ToolWidget } from "../../ui-framework";
+import { CommandItemDef, GroupButton, ToolbarButtonHelper, ToolButton, ToolWidget } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("Locate Toolbar items", () => {

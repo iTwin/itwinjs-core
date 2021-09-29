@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import deepEqual from "deep-equal";
-import { PropertyGroupingValue, Rule, RuleTypes } from "@bentley/presentation-common";
+import { PropertyGroupingValue, Rule, RuleTypes } from "@itwin/presentation-common";
 
 const rulesOrder = [
   RuleTypes.RootNodes, RuleTypes.ChildNodes,
@@ -21,7 +21,6 @@ const specialDefaultValues = new Map<string, any>([
   ["schemaNames", []],
   ["sortingValue", PropertyGroupingValue.DisplayLabel],
   ["sortAscending", true],
-  ["supportedSchemas", {}],
   ["vars", []],
 ]);
 

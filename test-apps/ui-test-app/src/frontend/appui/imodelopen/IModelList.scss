@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/icons/variables";
-@import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@itwin/core-react/lib/core-react/icons/variables";
+@import "~@itwin/core-react/lib/core-react/scrollbar";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 .cards-content {
   height: 100%;
 }
 
- /* content header */
-.cards-content > .header {
+/* content header */
+.cards-content>.header {
   display: flex;
   align-items: center;
   height: 60px;
   margin: 0 2em;
   border-bottom: 1px solid #eee;
 
-  > .title {
+  >.title {
     font-size: 1.75em;
     font-weight: 500;
     color: #6d6e77;
@@ -79,25 +79,25 @@
 }
 
 .cards-empty {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   font-size: 1.25em;
-	color: #616161;
+  color: #616161;
 
-	> div {
+  >div {
     height: 75%;
-		display: flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-		flex-direction: column;
+    flex-direction: column;
 
-		> button {
-			margin-top: 1em;
-		}
-	}
+    >button {
+      margin-top: 1em;
+    }
+  }
 }
 
 /* no projects prompt */
@@ -107,7 +107,7 @@
   left: 50%;
   width: 100%;
   text-align: center;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   font-style: italic;
   font-size: 1.25em;
   color: $uicore-gray;
@@ -124,7 +124,8 @@
   font-family: arial, sans-serif;
   border-collapse: collapse;
 
-  th, td {
+  th,
+  td {
     border-bottom: 1px solid $buic-background-control-stroke;
     cursor: pointer;
   }
@@ -152,10 +153,12 @@
     color: $uicore-icons-light;
   }
 
-  tr:hover {background-color: #f5f5f5}
+  tr:hover {
+    background-color: #f5f5f5
+  }
 }
 
 .toggle-offline {
   height: 22px;
-  width : 48px;
+  width: 48px;
 }

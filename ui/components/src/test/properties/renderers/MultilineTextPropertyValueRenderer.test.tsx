@@ -9,7 +9,7 @@ import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import {
   MultilineTextPropertyValueRenderer, MultilineTextRenderer,
-} from "../../../ui-components/properties/renderers/value/MultilineTextPropertyValueRenderer";
+} from "../../../components-react/properties/renderers/value/MultilineTextPropertyValueRenderer";
 import TestUtils from "../../TestUtils";
 
 describe("MultilineTextPropertyValueRenderer", () => {

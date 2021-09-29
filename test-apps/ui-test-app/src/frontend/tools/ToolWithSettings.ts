@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   AngleDescription, BeButtonEvent, EventHandled, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
   QuantityType, SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
+} from "@itwin/core-frontend";
+import { FormatterSpec } from "@itwin/core-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
   EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
   PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
-} from "@bentley/ui-abstract";
-import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 
 enum ToolOptions {
   Red = 1,

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ThematicDisplayMode, ThematicGradientMode } from "@bentley/imodeljs-common";
+import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { unpackFloat } from "./Clipping";

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Correct implementation of \"mask\" ClipPrimitive",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

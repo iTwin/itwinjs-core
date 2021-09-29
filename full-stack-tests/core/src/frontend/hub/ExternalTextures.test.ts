@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/webgl";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {
@@ -35,11 +35,10 @@ describe("external texture requests (#integration)", () => {
   let totalLoadTextureCalls = 0;
 
   before(async () => {
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup();
+    IModelApp.authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
+    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
+
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);

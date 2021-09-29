@@ -8,7 +8,7 @@
 
 /* The order of exports below is based on dependencies between the types in each file.
  * For example, IModelTileTree derives from TileTree, so TileTree must be exported first.
- * No file inside imodeljs-frontend should import from *any* file in /tile/ *except* for this one.
+ * No file inside core-frontend should import from *any* file in /tile/ *except* for this one.
  * e.g.:
  *  import { TileTree } from "./tile/TileTree"; // NO...
  *  import { TileTree } from "./tile/internal"; // YES!

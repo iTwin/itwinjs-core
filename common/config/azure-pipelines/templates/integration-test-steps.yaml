@@ -31,9 +31,9 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to imodeljs-backend
+      node ./common/scripts/install-run-rush build -v --to core-backend
 
-      node ./common/scripts/install-run-rush build -v --to imodel-transformer
+      node ./common/scripts/install-run-rush build -v --to core-transformer
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 

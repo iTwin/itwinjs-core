@@ -5,16 +5,12 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { ITwinAccessClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
-import {
-  BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
-  StandaloneDb,
-} from "@bentley/imodeljs-backend";
-import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelDb, IModelHost, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
+import { TransformerLoggerCategory } from "@itwin/core-transformer";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
@@ -116,32 +112,24 @@ void (async () => {
       Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
-    let user: AuthorizedClientRequestContext | BackendRequestContext;
-    let contextRegistry: ContextRegistryClient | undefined;
+    let iTwinAccessClient: ITwinAccessClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
+    const user = await IModelHubUtils.getAccessToken();
     if (args.sourceContextId || args.targetContextId) {
-      user = await IModelHubUtils.getAuthorizedClientRequestContext();
-      contextRegistry = new ContextRegistryClient();
-    } else {
-      user = new BackendRequestContext();
+      iTwinAccessClient = new ITwinAccessClient();
     }
 
     if (args.sourceContextId) {
       // source is from iModelHub
-      assert(user instanceof AuthorizedClientRequestContext);
-      assert(undefined !== contextRegistry);
+      assert(undefined !== iTwinAccessClient);
       assert(undefined !== args.sourceIModelId);
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
-      const sourceContext = await contextRegistry.getProject(user, {
-        $filter: `$id+eq+'${sourceContextId}'`,
-      });
-      assert(undefined !== sourceContext);
-      Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
+      Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
@@ -201,7 +189,6 @@ void (async () => {
 
     if (args.targetContextId) {
       // target is from iModelHub
-      assert(user instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.targetIModelId || undefined !== args.targetIModelName, "must be able to identify the iModel by either name or id");
       const targetContextId = Guid.normalize(args.targetContextId);
       let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
@@ -277,7 +264,6 @@ void (async () => {
     };
 
     if (processChanges) {
-      assert(user instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.sourceStartChangesetId);
       await Transformer.transformChanges(user, sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
     } else {
@@ -298,7 +284,7 @@ void (async () => {
     sourceDb.close();
     targetDb.close();
     await IModelHost.shutdown();
-  } catch (error) {
+  } catch (error: any) {
     process.stdout.write(`${error.message}\n${error.stack}`);
   }
 })();

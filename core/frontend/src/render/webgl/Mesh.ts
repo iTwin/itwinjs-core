@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d } from "@bentley/geometry-core";
-import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
@@ -139,8 +139,21 @@ export class MeshRenderGeometry {
     return data ? new this(data, params) : undefined;
   }
 
-  public dispose() { }
-  public collectStatistics() { }
+  public dispose() {
+    dispose(this.data);
+    dispose(this.surface);
+    dispose(this.segmentEdges);
+    dispose(this.silhouetteEdges);
+    dispose(this.polylineEdges);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics) {
+    this.data.collectStatistics(stats);
+    this.surface?.collectStatistics(stats);
+    this.segmentEdges?.collectStatistics(stats);
+    this.silhouetteEdges?.collectStatistics(stats);
+    this.polylineEdges?.collectStatistics(stats);
+  }
 }
 
 /** @internal */
@@ -156,7 +169,7 @@ export class MeshGraphic extends Graphic {
         buffers = instances;
       } else {
         const instancesRange = InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
-        buffers = InstanceBuffers.create(instances, true, instancesRange);
+        buffers = InstanceBuffers.create(instances, instancesRange);
         if (!buffers)
           return undefined;
       }
@@ -190,20 +203,18 @@ export class MeshGraphic extends Graphic {
   public get isPickable() { return false; }
 
   public dispose() {
-    dispose(this.meshData);
     for (const primitive of this._primitives)
       dispose(primitive);
 
+    dispose(this.meshData);
+    dispose(this._instances);
     this._primitives.length = 0;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.meshData.collectStatistics(stats);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
-
-    // Only count the shared instance buffers once...
-    if (undefined !== this._instances)
-      this._instances.collectStatistics(stats);
+    this._instances?.collectStatistics(stats);
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }

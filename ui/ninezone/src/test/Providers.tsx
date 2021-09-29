@@ -10,8 +10,8 @@ import {
   DragManagerContext,
   NineZoneProvider as RealNineZoneProvider,
   NineZoneProviderProps as RealNineZoneProviderProps,
-} from "../ui-ninezone";
-import { Point, Rectangle, Size } from "@bentley/ui-core";
+} from "../appui-layout-react";
+import { Point, Rectangle, Size } from "@itwin/core-react";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

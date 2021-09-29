@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { IModelError } from "@bentley/imodeljs-common";
-import { SnapshotDb } from "../../imodeljs-backend";
+import { IModelError } from "@itwin/core-common";
+import { SnapshotDb } from "../../core-backend";
 import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

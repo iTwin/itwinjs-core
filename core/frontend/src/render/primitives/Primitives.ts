@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, SortedArray } from "@itwin/core-bentley";
 import { GraphicBuilder } from "../GraphicBuilder";
 
 /** @internal */
@@ -100,7 +100,7 @@ export class TriangleList {
     this._flags.push(flags);
   }
   public addFromTypedArray(indices: Uint16Array | Uint32Array, flags: number = 0) {
-    for (let i = 0; i < indices.length; ) {
+    for (let i = 0; i < indices.length;) {
       this.indices.push(indices[i++]);
       this.indices.push(indices[i++]);
       this.indices.push(indices[i++]);

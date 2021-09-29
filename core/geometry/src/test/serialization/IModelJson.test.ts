@@ -247,7 +247,7 @@ describe("CreateIModelJsonSamples", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
-    // read imjs files from various places -- some produced by native, some by geometry-core ...
+    // read imjs files from various places -- some produced by native, some by core-geometry ...
     for (const sourceDirectory of [iModelJsonSamplesDirectory, iModelJsonNativeSamplesDirectory]) {
       const items = fs.readdirSync(sourceDirectory);
       let numItems = 0;

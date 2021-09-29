@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { withTimeout } from "../../ui-core";
+import { withTimeout } from "../../core-react";
 
 describe("withTimeout", () => {
 

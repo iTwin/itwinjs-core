@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, BeEvent, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData } from "@bentley/imodeljs-common";
+import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData } from "@itwin/core-common";
 import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -348,6 +348,7 @@ export abstract class TextureHandle implements WebGLDisposable {
     if (!this.isDisposed) {
       System.instance.disposeTexture(this._glTexture!);
       this._glTexture = undefined;
+      this.bytesUsed = 0;
     }
   }
 
@@ -637,7 +638,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
         const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
         if (System.instance.capabilities.supportsCreateImageBitmap) {
           const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
-          const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
+          const image = await createImageBitmap(blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
           if (!cnvReq.req.imodel.isClosed) {
             cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
           }

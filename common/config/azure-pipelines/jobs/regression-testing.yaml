@@ -1,8 +1,8 @@
-# iModel.js Regression Testing Build
+# iTwin.js Core Regression Testing Build
 #
-# Tests all supported versions of iModel.js on 3 main supported platforms; Windows 10, Ubuntu 10.04, and MacOS.
+# Tests all supported versions of iTwin.js on 3 main supported platforms; Windows 10, Ubuntu 20.04, and MacOS .
 #
-# Starts with the minimum version (currently 10.16.0) and then follows the tip of each subsequent minor version
+# Starts with the minimum version (currently 12.20.0) and then follows the tip of each subsequent minor version.
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
@@ -19,19 +19,25 @@ schedules:
 jobs:
   - template: ci-core.yaml
     parameters:
+      name: Node_16
+      nodeVersion: 16.x
+      pool:
+        demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
       name: Node_14_x
       nodeVersion: 14.x
       pool:
         demands: Agent.OS -equals $(platform)
-  # - template: ci-core.yaml
-  #   parameters:
-  #     name: Node_12_17
-  #     nodeVersion: 12.17.0
-  #     pool:
-  #       demands: Agent.OS -equals $(platform)
   - template: ci-core.yaml
     parameters:
       name: Node_12
       nodeVersion: 12.x
+      pool:
+        demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_12_20
+      nodeVersion: 12.20.0
       pool:
         demands: Agent.OS -equals $(platform)

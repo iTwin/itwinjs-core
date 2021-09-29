@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, Unit,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
 import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics";

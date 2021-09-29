@@ -8,8 +8,8 @@ import * as React from "react";
 import {
   AbstractWidgetProps, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
-import { BackstageManager, ToolbarHelper } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { BackstageManager, ToolbarHelper } from "@itwin/appui-react";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../appui/widgets/LayoutWidget";
 import { AppTools } from "./ToolSpecifications";
 

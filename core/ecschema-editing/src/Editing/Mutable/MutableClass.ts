@@ -5,7 +5,7 @@
 import {
   CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
   PrimitiveProperty, PrimitiveType, Property, StructArrayProperty, StructClass, StructProperty,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 /**
  * @internal

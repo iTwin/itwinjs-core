@@ -38,16 +38,16 @@ ECSQL type | Extended Type | JavaScript Typ
 ---------- | ------------- | ---------------
 Boolean    | -             | boolean
 Blob       | -             | Uint8Array
-Blob       | BeGuid        | [GuidString]($bentleyjs-core)
+Blob       | BeGuid        | [GuidString]($core-bentley)
 ClassId system properties | - | fully qualified class name
 Double     | -             | number
 DateTime   | -             | ISO 8601 date time string
-Id system properties | -   | [Id64String]($bentleyjs-core)
+Id system properties | -   | [Id64String]($core-bentley)
 Integer    | -             | number
 Int64      | -             | number
 Int64      | Id            | hexadecimal string
-Point2d    | -             | [XAndY]($geometry-core)
-Point3d    | -             | [XYAndZ]($geometry-core)
+Point2d    | -             | [XAndY]($core-geometry)
+Point3d    | -             | [XYAndZ]($core-geometry)
 String     | -             | string
 Navigation | n/a           | [NavigationValue]($common)
 Struct     | n/a           | JavaScript object with properties of the types in this table

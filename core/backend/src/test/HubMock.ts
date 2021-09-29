@@ -5,18 +5,18 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
-} from "@bentley/imodeljs-common";
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+} from "@itwin/core-common";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, LockMap,
-  LockProps, V2CheckpointAccessProps,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
+  LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
+import { AcquireNewBriefcaseIdArg, UserArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -160,16 +160,20 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
+  private static async getAccessToken(arg: UserArg) {
+    return arg.user ?? await IModelHost.getAccessToken() ?? "";
+  }
+
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user.accessToken.getUserInfo()!.id);
+    const user = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user);
   }
 
-  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
-    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken.getUserInfo()!.id);
-
+  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
+    const user = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user, arg.briefcaseAlias);
   }
+
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
@@ -209,18 +213,10 @@ export class HubMock {
 
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const hub = this.findLocalHub(arg.iModelId);
-    const locks = hub.queryAllLocks(arg.briefcaseId);
-    hub.releaseLocks(locks, arg);
-  }
-
-  public static async releaseAllCodes(_arg: BriefcaseDbArg) {
+    hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
   }
 
   public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
-    return [];
-  }
-
-  public static async queryAllCodes(_arg: BriefcaseDbArg): Promise<CodeProps[]> {
     return [];
   }
 

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@itwin/core-bentley";
 import { ProgramBuilder } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";

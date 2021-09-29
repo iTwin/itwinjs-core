@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ScrollableToolSettings } from "../../../ui-ninezone";
+import { ScrollableToolSettings } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<ScrollableToolSettings />", () => {

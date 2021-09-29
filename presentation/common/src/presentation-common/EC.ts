@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { FormatProps } from "@itwin/core-quantity";
 import { PartialBy } from "./Utils";
 
 /**

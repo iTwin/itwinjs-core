@@ -6,9 +6,9 @@
  * @module UnifiedSelection
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { BeEvent } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 
 /**
@@ -49,7 +49,7 @@ export interface SelectionChangeEventArgs {
   /** The name of the selection source which caused the selection change. */
   source: string;
 
-  /** Level of the selection. See [selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level). */
+  /** Level of the selection. See [selection levels]($docs/presentation/Unified-Selection/index#selection-levels). */
   level: number;
 
   /** The selection change type. */
