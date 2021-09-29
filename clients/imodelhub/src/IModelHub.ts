@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
-import { ChangeSetId, FrontendHubAccess, IModelIdArg } from "@bentley/imodeljs-frontend"; // All of the imports from both frontend and common must be only of interfaces.
+import { FrontendHubAccess } from "@bentley/imodeljs-frontend"; // All of the imports from both frontend and common must be only of interfaces.
+import { ChangeSetId, IModelIdArg } from "@bentley/imodeljs-backend";
 import { BriefcaseId, IModelVersion } from "@bentley/imodeljs-common";
 import { BriefcaseQuery } from "./imodelhub/Briefcases";
 import { ChangeSet, ChangeSetQuery } from "./imodelhub/ChangeSets";

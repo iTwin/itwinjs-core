@@ -22,7 +22,6 @@ import {
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import { BriefcaseDb } from "../../IModelDb";
-import { IModelHubBackend } from "../../IModelHubBackend";
 import {
   AuthorizedBackendRequestContext, BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
   DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions,
@@ -36,6 +35,7 @@ import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
+import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -1862,18 +1862,14 @@ describe("iModel", () => {
     snapshot.close();
 
     // Mock iModelHub
-    const mockCheckpointV2: CheckpointV2 = {
-      wsgId: "INVALID",
-      ecId: "INVALID",
-      changeset,
-      containerAccessKeyAccount: "testAccount",
-      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
-      containerAccessKeySAS: "testSAS",
-      containerAccessKeyDbName: "testDb",
+    const mockCheckpointV2: V2CheckpointAccessProps = {
+      user: "testAccount",
+      container: `imodelblocks-${iModelId}`,
+      auth: "testSAS",
+      dbAlias: "testDb",
+      storageType: "azure?sas=1",
     };
-    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
-    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").get(() => mockCheckpointV2);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);

@@ -41,7 +41,6 @@ export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./BackendRequestContext";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IModelHubBackend";
 export * from "./IModelSchemaLoader";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";

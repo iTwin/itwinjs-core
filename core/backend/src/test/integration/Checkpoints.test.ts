@@ -8,11 +8,9 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { ChangesetProps } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
@@ -30,24 +28,30 @@ describe("Checkpoints (#integration)", () => {
   before(async () => {
     originalEnv = { ...process.env };
     process.env.BLOCKCACHE_DIR = blockcacheDir;
-    // IModelTestUtils.setupDebugLogLevels();
 
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
     testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ user, iModelId: testIModelId });
 
-    const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSet.id).selectContainerAccessKey();
-    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(user, testIModelId, checkpointQuery);
-    assert.equal(checkpoints.length, 1, "checkpoint missing");
-    assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
+    const checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
+      expectV2: true,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      user,
+      changeset: {
+        id: testChangeSet.id,
+      },
+    });
+    assert.isDefined(checkpoint, "checkpoint missing");
+    assert.isDefined(checkpoint?.auth, "checkpoint storage account is invalid");
 
     // Start daemon process and wait for it to be ready
     fs.chmodSync((BlobDaemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
     daemonProc = BlobDaemon.start({
       daemonDir: blockcacheDir,
       storageType: "azure?sas=1",
-      user: checkpoints[0].containerAccessKeyAccount!,
+      user: checkpoint!.user,
     });
     while (!IModelJsFs.existsSync(path.join(blockcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));

@@ -13,7 +13,6 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { IModelHubBackend } from "../../IModelHubBackend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
 

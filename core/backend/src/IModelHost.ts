@@ -9,9 +9,7 @@
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, SessionProps } from "@bentley/bentleyjs-core";
-import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
@@ -25,7 +23,6 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -95,8 +92,8 @@ export class IModelHostConfiguration {
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
-  /** The kind of iModel server to use. Defaults to iModelHubClient */
-  public imodelClient?: IModelClient;
+  /** The kind of iModel server to use. */
+  public hubAccess?: BackendHubAccess;
 
   /** The credentials to use for the tile cache service. If omitted, a local cache will be used.
    * @beta
@@ -323,8 +320,6 @@ export class IModelHost {
 
     this.logStartup();
 
-    await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
-
     this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
@@ -362,7 +357,6 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
-    IModelHubBackend.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     IModelHost.setupRpcRequestContext();
@@ -381,7 +375,9 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    IModelHost._hubAccess = IModelHubBackend;
+    if (undefined === configuration.hubAccess)
+      throw new Error("Please provide the configuration `hubAccess`.");
+    IModelHost._hubAccess = configuration.hubAccess;
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 

@@ -5,17 +5,16 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Guid } from "@bentley/bentleyjs-core";
-import { CheckpointV2 } from "@bentley/imodelhub-client";
 import { IModelTileRpcInterface, RpcInvocation, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
-import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, BackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";
 
 import sinon = require("sinon");
+import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 
 describe("TileCache open v1", () => {
   let tileRpcInterface: IModelTileRpcInterface;
@@ -78,22 +77,19 @@ describe("TileCache, open v2", async () => {
     snapshot.saveChanges();
     snapshot.close();
     // Mock iModelHub
-    const mockCheckpointV2: CheckpointV2 = {
-      wsgId: "INVALID",
-      ecId: "INVALID",
-      changeset,
-      containerAccessKeyAccount: "testAccount",
-      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
-      containerAccessKeySAS: "testSAS",
-      containerAccessKeyDbName: "testDb",
+    const mockCheckpointV2: V2CheckpointAccessProps = {
+      user: "testAccount",
+      container: `imodelblocks-${iModelId}`,
+      auth: "testSAS",
+      dbAlias: "testDb",
+      storageType: "azure?sas=1",
     };
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
     const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
-    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    // const checkpointsV2Handler = IModelHost.hubAccess;
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").get(() => mockCheckpointV2);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
     // Mock blockcacheVFS daemon

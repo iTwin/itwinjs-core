@@ -86,6 +86,7 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
+      '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -108,6 +109,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../frontend-authorization
+      '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/itwin-client': link:../itwin
@@ -320,14 +322,12 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
-      '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-native': 3.0.10
       '@bentley/itwin-client': workspace:*
@@ -388,14 +388,12 @@ importers:
       semver: 5.7.1
       ws: 7.5.5
     devDependencies:
-      '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../geometry
-      '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-common': link:../common
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool

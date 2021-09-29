@@ -162,7 +162,7 @@ export interface BackendHubAccess {
   queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-  /** push a changeset to iMOdelHub. Returns the newly pushed changeSet's index */
+  /** push a changeset to iModelHub. Returns the newly pushed changeSet's index */
   pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
   getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;

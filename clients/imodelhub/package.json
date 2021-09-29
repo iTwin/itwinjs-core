@@ -40,10 +40,10 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.68",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.68",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.68"
   },
   "devDependencies": {
+    "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/bentleyjs-core": "workspace:*",

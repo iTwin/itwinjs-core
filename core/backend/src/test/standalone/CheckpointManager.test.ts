@@ -13,7 +13,6 @@ import { SnapshotDb } from "../../IModelDb";
 import { BackendRequestContext, IModelHost } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelHubBackend } from "../../IModelHubBackend";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
