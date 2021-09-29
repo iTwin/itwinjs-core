@@ -59,7 +59,7 @@ export class WebAppRpcLogging {
 
     const tokens = path.split("/");
     for (let i = 0; i !== tokens.length; ++i) {
-      // For backwards compatibility, find old "context" on current "iTwin" terminology
+      // For backwards compatibility, find old "context" or current "iTwin" terminology
       if ((/^context$/i).test(tokens[i]) || (/^itwin$/i).test(tokens[i])) {
         iTwinId = tokens[i + 1] || "";
       }
