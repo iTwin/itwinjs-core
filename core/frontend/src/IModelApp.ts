@@ -98,7 +98,7 @@ export interface IModelAppOptions {
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
-  /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
+  /** If present, supplies the [[i18n]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
   authorizationClient?: AuthorizationClient;

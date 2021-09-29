@@ -324,7 +324,7 @@ export class UiFramework {
 
   /** @internal */
   public static get packageName(): string {
-    return "ui-framework";
+    return "appui-react";
   }
 
   /** @internal */
