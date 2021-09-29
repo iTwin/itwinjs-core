@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ModelsTab.scss";
 import * as React from "react";
+import { UiFramework } from "@itwin/appui-react";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
-import { ModelProps, ModelQueryParams } from "@itwin/core-common";
+import { ModelProps, ModelQueryParams, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
+import { Button, Checkbox } from "@itwin/itwinui-react";
 import { RegisteredRuleset } from "@itwin/presentation-common";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
-import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
-import { UiFramework } from "@itwin/appui-react";
-import { Button, Checkbox } from "@itwin/itwinui-react";
 
 interface ModelInfo {
   name: string;
@@ -245,7 +245,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
     const rows = [];
-    for await (const row of this.props.iModelConnection.query(ecsql)) {
+    for await (const row of this.props.iModelConnection.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     if (rows.length !== 1)
@@ -254,7 +254,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    for await (const model of this.props.iModelConnection.query(ecsql2)) {
+    for await (const model of this.props.iModelConnection.query(ecsql2, undefined, QueryRowFormat.UseJsPropertyNames)) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;
