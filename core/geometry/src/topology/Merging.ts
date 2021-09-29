@@ -81,7 +81,7 @@ export class HalfEdgeGraphOps {
     }
     return range;
   }
-  /** Returns an array of a all nodes (both ends) of edges created from segments. */
+  /** Returns an array of all nodes (both ends) of edges created from segments. */
   public static segmentArrayToGraphEdges(segments: LineSegment3d[], returnGraph: HalfEdgeGraph, mask: HalfEdgeMask): HalfEdge[] {
     const result = [];
     let idxCounter = 0;
@@ -143,7 +143,66 @@ export class HalfEdgeGraphOps {
     }
   }
 
+  /**
+   * @return whether the face sector represented by the HalfEdge would become convex after the HalfEdge's removal.
+   * @param base the HalfEdge to query
+   */
+  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge): boolean {
+    return HalfEdge.isSectorConvex(base.facePredecessor, base, base.vertexPredecessor.faceSuccessor);
+  }
+
+  /**
+   * Mask edges between faces if the union of the faces is convex.
+   * @remarks Best results when input faces are convex.
+   * @param graph graph to examine and mark
+   * @param mark the mask used to mark (both sides of) removable edges
+   * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.EXTERIOR to expand only interior faces.
+   * @return number of edges masked (half the number of HalfEdges masked)
+   */
+  public static markRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, mark: HalfEdgeMask, barrier: HalfEdgeMask = HalfEdgeMask.EXTERIOR): number {
+    if (HalfEdgeMask.NULL_MASK === mark)
+      return 0;
+    const visit = graph.grabMask(true);
+    let numMarked = 0;
+    for (const node of graph.allHalfEdges) {
+      if (!node.isMaskSet(visit)) {
+        node.setMaskAroundEdge(visit);
+        if (!node.isMaskSet(barrier) && !node.edgeMate.isMaskSet(barrier)) {
+          if (this.isSectorConvexAfterEdgeRemoval(node) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate)) {
+            node.setMaskAroundEdge(mark);
+            ++numMarked;
+          }
+        }
+      }
+    }
+    return numMarked;
+  }
+
+  /**
+   * Collect edges between faces if the union of the faces is convex.
+   * @remarks Best results when input faces are convex.
+   * @param graph graph to examine
+   * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.EXTERIOR to expand only interior faces.
+   * @return one HalfEdge per removable edge
+   */
+   public static collectRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.EXTERIOR): HalfEdge[] | undefined {
+    const removable: HalfEdge[] = [];
+    const mark = graph.grabMask(true);
+    if (0 < this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier)) {
+      const visited = graph.grabMask(true);
+      for (const node of graph.allHalfEdges) {
+        if (node.isMaskSet(mark) && !node.isMaskSet(visited)) {
+          node.setMaskAroundEdge(visited);
+          removable.push(node);
+        }
+      }
+      graph.dropMask(visited);
+    }
+    graph.dropMask(mark);
+    return removable;
+  }
 }
+
 /**
  * @internal
  */

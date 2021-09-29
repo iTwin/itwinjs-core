@@ -35,8 +35,8 @@ import { MaskManager } from "./MaskManager";
 export enum HalfEdgeMask {
   /**  Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
-   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
-   * * An interior edges (such as added during triangulation) will have no EXTERIOR bits.
+   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both sides.
+   * * An interior edge (such as added during triangulation) will have no EXTERIOR bits.
    */
   EXTERIOR = 0x00000001,
   /** Mask commonly set (on both sides) of original geometry edges that are transition from outside from to inside.
@@ -678,6 +678,19 @@ public findAroundFace(other: HalfEdge): boolean {
       nodeB.x - nodeA.x, nodeB.y - nodeA.y,
       nodeC.x - nodeB.x, nodeC.y - nodeB.y);
   }
+
+  /**
+   * @return whether the sector represented by the 2D vectors from nodeA to nodeB and nodeB to nodeC is convex.
+   */
+  public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): boolean {
+    const cross = HalfEdge.crossProductXYAlongChain(nodeA, nodeB, nodeC);
+    if (cross > 0.0)
+      return true;
+    if (cross < 0.0)
+      return false;
+    return HalfEdge.dotProductNodeToNodeVectorsXY(nodeA, nodeB, nodeB, nodeC) > 0.0;
+  }
+
   /** Return true if `this` is lexically below `other`, comparing y first then x. */
   public belowYX(other: HalfEdge): boolean {
     // Check y's
