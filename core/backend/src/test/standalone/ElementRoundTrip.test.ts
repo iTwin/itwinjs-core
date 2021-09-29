@@ -11,6 +11,7 @@ import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/co
 import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { QueryRowFormat } from "@itwin/core-common";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
