@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { NavigationArea } from "../../ui-ninezone";
+import { NavigationArea } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<NavigationArea />", () => {

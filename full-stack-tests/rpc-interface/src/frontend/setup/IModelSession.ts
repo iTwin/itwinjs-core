@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { IModelVersion } from "@itwin/core-common";
+import { AccessToken } from "@itwin/core-bentley";
 
 export class IModelSession {
 

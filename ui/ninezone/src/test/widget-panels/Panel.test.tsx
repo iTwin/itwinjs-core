@@ -6,13 +6,13 @@ import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Size } from "@bentley/ui-core";
+import { Size } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, NineZoneProvider, setRefValue } from "../Providers";
 
 describe("WidgetPanelProvider", () => {

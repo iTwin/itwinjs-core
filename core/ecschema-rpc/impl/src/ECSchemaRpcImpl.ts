@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
-import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import * as backend from "@bentley/imodeljs-backend";
-import { SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { IModelRpcProps, RpcManager } from "@itwin/core-common";
+import * as backend from "@itwin/core-backend";
+import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 
 /**
  * Defines the interface how the rows of the iModel query look like.

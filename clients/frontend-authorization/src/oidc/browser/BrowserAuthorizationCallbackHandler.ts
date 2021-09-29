@@ -8,7 +8,7 @@
  */
 
 import { UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError } from "@itwin/core-bentley";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
 

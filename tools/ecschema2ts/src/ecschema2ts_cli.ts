@@ -10,7 +10,7 @@ import * as chalk from "chalk";
 import * as fs from "fs-extra";
 
 import { ECSchemaToTsXmlWriter } from "./ecschema2ts_io";
-import { SchemaContext } from "@bentley/ecschema-metadata";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 
 function commaSeparatedList(value: string): string[] {
   return value.split(",");

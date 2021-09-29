@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AccessToken, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;

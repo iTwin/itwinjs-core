@@ -11,7 +11,7 @@ const packageRoot = findPackageRootDir();
 let npFolder = "node_modules";
 let requiredPkgVer = require(path.join(packageRoot, "package.json")).dependencies["@bentley/imodeljs-native"];
 if (!requiredPkgVer) {
-  npFolder = "node_modules/@bentley/imodeljs-backend/node_modules"
+  npFolder = "node_modules/@itwin/core-backend/node_modules"
   requiredPkgVer = require(path.join(packageRoot, npFolder, "@bentley/imodeljs-native/package.json"))["version"];
 }
 // platform/os is configured here

@@ -4,19 +4,19 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from '@bentley/itwin-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { GuidString } from '@bentley/bentleyjs-core';
-import { HttpStatus } from '@bentley/bentleyjs-core';
-import { Id64String } from '@bentley/bentleyjs-core';
-import { IModelHubStatus } from '@bentley/bentleyjs-core';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
+import { GuidString } from '@itwin/core-bentley';
+import { HttpStatus } from '@itwin/core-bentley';
+import { Id64String } from '@itwin/core-bentley';
+import { IModelHubStatus } from '@itwin/core-bentley';
 import { ITwin } from '@bentley/context-registry-client';
-import { LogFunction } from '@bentley/bentleyjs-core';
+import { LogFunction } from '@itwin/core-bentley';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';

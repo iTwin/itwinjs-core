@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { CompositeFlags } from "./RenderFlags";
 
 /* eslint-disable no-restricted-syntax */

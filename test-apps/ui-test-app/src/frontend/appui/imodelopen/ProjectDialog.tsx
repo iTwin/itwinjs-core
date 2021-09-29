@@ -6,11 +6,11 @@ import "./Common.scss";
 import "./ProjectDialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SearchBox } from "@bentley/ui-core";
+import { SearchBox } from "@itwin/core-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ProjectTab, ProjectTabs } from "./ProjectTabs";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 /** Properties for the [[ProjectDialog]] component */
 export interface ProjectDialogProps {

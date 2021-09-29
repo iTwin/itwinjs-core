@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-layout-react",
+      "comment": "Initialize popout window size and position when popping out from floating state to avoid crash.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-layout-react",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { BetaBadge } from "../../ui-core";
+import { BetaBadge } from "../../core-react";
 
 describe("<BetaBadge />", () => {
   it("should render", () => {

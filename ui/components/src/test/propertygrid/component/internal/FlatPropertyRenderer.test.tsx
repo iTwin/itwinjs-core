@@ -6,14 +6,14 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
-import { LinksRenderer } from "../../../../ui-components/properties/LinkHandler";
-import { PrimitivePropertyRenderer } from "../../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
-import { FlatNonPrimitivePropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer";
-import { FlatPropertyRenderer } from "../../../../ui-components/propertygrid/internal/flat-properties/FlatPropertyRenderer";
+import { LinksRenderer } from "../../../../components-react/properties/LinkHandler";
+import { PrimitivePropertyRenderer } from "../../../../components-react/properties/renderers/PrimitivePropertyRenderer";
+import { PropertyValueRendererManager } from "../../../../components-react/properties/ValueRendererManager";
+import { FlatNonPrimitivePropertyRenderer } from "../../../../components-react/propertygrid/internal/flat-properties/FlatNonPrimitivePropertyRenderer";
+import { FlatPropertyRenderer } from "../../../../components-react/propertygrid/internal/flat-properties/FlatPropertyRenderer";
 import TestUtils from "../../../TestUtils";
 
 describe("FlatPropertyRenderer", () => {

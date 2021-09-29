@@ -6,11 +6,11 @@ import { expect } from "chai";
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BadgeType } from "@bentley/ui-abstract";
-import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { Item } from "@bentley/ui-ninezone";
+import { BadgeType } from "@itwin/appui-abstract";
+import { WithOnOutsideClickProps } from "@itwin/core-react";
+import { Item } from "@itwin/appui-layout-react";
 import { fireEvent, render } from "@testing-library/react";
-import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../ui-framework";
+import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../appui-react";
 /* eslint-disable deprecation/deprecation */
 import TestUtils, { mount } from "../TestUtils";
 

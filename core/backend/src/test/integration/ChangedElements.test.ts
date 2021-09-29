@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, DbResult, GuidString, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import { IModelError, IModelVersion } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { ChangedElementsDb, ProcessChangesetOptions } from "../../ChangedElementsDb";

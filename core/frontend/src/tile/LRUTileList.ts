@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ReadonlySortedArray, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
 import { RenderMemory } from "../render/RenderMemory";
 import { Tile } from "./internal";
 
@@ -91,7 +91,7 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
   /** Remove the specified viewport Id from all sets and remove empty and duplicate sets. */
   public drop(viewportId: number): void {
     // Remove from all sets, and delete empty sets.
-    let i =0;
+    let i = 0;
     for (/* */; i < this._array.length; i++) {
       const set = this._array[i];
       set.drop(viewportId);
@@ -167,7 +167,7 @@ function isLinked(node: LRUTileListNode): boolean {
   return undefined !== node.previous || undefined !== node.next;
 }
 
-function * lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefined): Iterator<Tile> {
+function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefined): Iterator<Tile> {
   let cur = start;
   while (cur && cur !== end) {
     const prev = cur;

@@ -6,8 +6,8 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@bentley/imodeljs-common";
+import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@itwin/core-geometry";
+import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";

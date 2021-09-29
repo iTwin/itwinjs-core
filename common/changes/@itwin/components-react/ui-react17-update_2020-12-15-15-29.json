@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Update to React 17.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

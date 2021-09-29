@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, Id64, Id64String, lowerBound } from "@bentley/bentleyjs-core";
-import { Feature } from "@bentley/imodeljs-common";
+import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
+import { Feature } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { BranchStack } from "./BranchStack";
 import { Batch } from "./Graphic";

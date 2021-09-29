@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@bentley/ui-ninezone";
-import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../ui-framework";
+import { ActionButton, BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
+import { WithOnOutsideClickProps } from "@itwin/core-react";
+import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
+import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 const tool1 = ToolbarItemUtilities.createActionButton("childButton1", 10, "icon-button", "label", () => { }, { badgeType: BadgeType.New });

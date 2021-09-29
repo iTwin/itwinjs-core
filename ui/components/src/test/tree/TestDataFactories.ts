@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../components-react";
 import { ResolvablePromise } from "../test-helpers/misc";
 
 /** @internal */

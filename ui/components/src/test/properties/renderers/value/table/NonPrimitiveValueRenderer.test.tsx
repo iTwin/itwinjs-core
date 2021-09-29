@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { TableNonPrimitiveValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
+import { TableNonPrimitiveValueRenderer } from "../../../../../components-react/properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("TableNonPrimitiveValueRenderer", () => {
   const dialogContents = <div><p>Hello</p></div>;

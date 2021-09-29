@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { AccessToken, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
 
 if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)

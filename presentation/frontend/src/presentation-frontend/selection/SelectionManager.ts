@@ -6,9 +6,9 @@
  * @module UnifiedSelection
  */
 
-import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@bentley/imodeljs-frontend";
-import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@bentley/presentation-common";
+import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
+import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
+import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@itwin/presentation-common";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";

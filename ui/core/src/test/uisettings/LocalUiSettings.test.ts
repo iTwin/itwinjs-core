@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LocalSettingsStorage, LocalUiSettings, UiSettingsStatus } from "../../ui-core";
+import { LocalSettingsStorage, LocalUiSettings, UiSettingsStatus } from "../../core-react";
 
 import { storageMock } from "../TestUtils";
 

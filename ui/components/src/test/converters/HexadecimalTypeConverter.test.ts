@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { HexadecimalTypeConverter } from "../../ui-components";
+import { HexadecimalTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 describe("HexadecimalTypeConverter", () => {

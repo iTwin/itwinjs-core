@@ -5,17 +5,17 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson, Point3d } from "@bentley/geometry-core";
+import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometryStreamProps, IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DrawingCategory } from "../../Category";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import {
   BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

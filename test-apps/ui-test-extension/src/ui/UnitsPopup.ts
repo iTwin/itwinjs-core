@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { Presentation } from "@itwin/presentation-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 /** UnitsPopup is a modal dialog with only one DialogItem. It is intended to be a very basic example of using DialogItem interfaces and the DialogLayoutDataProvider to create React UI
  * in an iModel.js app and to apply changes only when the user hits the OK button.

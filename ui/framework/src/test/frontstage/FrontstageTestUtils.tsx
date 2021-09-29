@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
-} from "../../ui-framework";
-import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
+} from "../../appui-react";
+import { ToolItemDef } from "../../appui-react/shared/ToolItemDef";
 
 /* eslint-disable react/jsx-key */
 

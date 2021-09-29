@@ -6,8 +6,8 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ContentViewManager, ViewportContentControl } from "../../ui-framework";
+import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
+import { ContentViewManager, ViewportContentControl } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("ContentViewManager", () => {

@@ -7,18 +7,18 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
-import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@itwin/core-bentley";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
+  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
   GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
   MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
   SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import { BriefcaseDb } from "../../IModelDb";
@@ -31,7 +31,7 @@ import {
   InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
   ViewDefinition,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -558,13 +558,20 @@ describe("iModel", () => {
 
   it("should create display styles", () => {
     const defaultViewFlags = new ViewFlags().toJSON();
+    const defaultMapImagery = new DisplayStyleSettings({ }).toJSON().mapImagery;
 
     const viewFlags = new ViewFlags({ patterns: false, visibleEdges: true });
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5 }],
+      backgroundLayers: [{
+        name: "x",
+        url: "y",
+        transparency: 0.5,
+        formatId: "WMS",
+        visible: true,
+      }],
     };
 
     const props: DisplayStyleSettingsProps = {
@@ -607,7 +614,8 @@ describe("iModel", () => {
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
 
-      expect(actual.mapImagery).to.deep.equal(expected.mapImagery);
+      // DisplayStyleSettings constructor always initializes json.mapImagery.
+      expect(actual.mapImagery).to.deep.equal(expected.mapImagery ?? defaultMapImagery);
       expect(actual.excludedElements).to.deep.equal(expected.excludedElements);
       expect(actual.timePoint).to.deep.equal(expected.timePoint);
     }

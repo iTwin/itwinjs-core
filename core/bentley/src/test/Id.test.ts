@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import {
   CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, MutableCompressedId64Set, OrderedId64Iterable,
-} from "../bentleyjs-core";
+} from "../core-bentley";
 
 class Uint64Id {
   public constructor(public readonly high: number,

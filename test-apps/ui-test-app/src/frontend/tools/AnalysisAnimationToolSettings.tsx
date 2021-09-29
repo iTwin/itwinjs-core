@@ -10,10 +10,10 @@
 
 import "./AnalysisAnimationToolSettings.scss";
 import * as React from "react";
-import { Icon } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider } from "@bentley/ui-framework";
-import { Direction, Item, Toolbar } from "@bentley/ui-ninezone";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Icon } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider } from "@itwin/appui-react";
+import { Direction, Item, Toolbar } from "@itwin/appui-layout-react";
+import { IModelApp } from "@itwin/core-frontend";
 
 /** State for [[AnalysisAnimationToolSettings]] */
 interface AnimationState {
