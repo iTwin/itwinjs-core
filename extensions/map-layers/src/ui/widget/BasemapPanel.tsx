@@ -26,7 +26,6 @@ function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   return undefined;
 }
 
-// eslint-disable-next-line deprecation/deprecation
 interface BaseOption extends OptionType {
   color?: string;
 }
