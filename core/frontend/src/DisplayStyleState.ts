@@ -143,7 +143,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
   /** @beta */
-  public get backgroundMapBase(): BaseLayerSettings { return this.settings.mapImagery.backgroundBase; }
+  public get backgroundMapBase(): BaseLayerSettings {
+    return this.settings.mapImagery.backgroundBase;
+  }
   public set backgroundMapBase(base: BaseLayerSettings) {
     this.settings.mapImagery.backgroundBase = base;
     this._synchBackgroundMapImagery();
