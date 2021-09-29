@@ -29,6 +29,7 @@ describe("IModelConnection (#integration)", () => {
     await IModelApp.shutdown();
     await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
+      hubAccess: TestUtility.itwinPlatformEnv.hubAccess,
     });
 
     Logger.initializeToConsole();

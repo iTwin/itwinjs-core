@@ -181,7 +181,7 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
-  private static _hubAccess: FrontendHubAccess;
+  private static _hubAccess?: FrontendHubAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -235,7 +235,7 @@ export class IModelApp {
   /** Provides access to the IModelHub implementation for this IModelApp.
    * @internal
    */
-  public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
+  public static get hubAccess(): FrontendHubAccess | undefined { return this._hubAccess; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
@@ -316,9 +316,7 @@ export class IModelApp {
     this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
     this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
     this.authorizationClient = opts.authorizationClient;
-
-    if (undefined !== opts.hubAccess)
-      this._hubAccess = opts.hubAccess;
+    this._hubAccess = opts.hubAccess;
 
     this._setupRpcRequestContext();
 

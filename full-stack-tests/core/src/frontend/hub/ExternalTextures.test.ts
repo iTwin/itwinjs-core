@@ -35,6 +35,7 @@ describe("external texture requests (#integration)", () => {
   let totalLoadTextureCalls = 0;
 
   before(async () => {
+    await IModelApp.shutdown();
     await TestUtility.initialize(TestUsers.regular);
     await IModelApp.startup({
       authorizationClient: TestUtility.itwinPlatformEnv.authClient,

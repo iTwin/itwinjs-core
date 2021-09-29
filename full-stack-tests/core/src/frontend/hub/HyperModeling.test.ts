@@ -21,6 +21,7 @@ describe("HyperModeling (#integration)", () => {
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
+    await IModelApp.shutdown();
     await TestUtility.initialize(TestUsers.regular);
     await IModelApp.startup({
       authorizationClient: TestUtility.itwinPlatformEnv.authClient,
