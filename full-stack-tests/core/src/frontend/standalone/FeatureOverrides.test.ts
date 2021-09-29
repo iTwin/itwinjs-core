@@ -8,7 +8,7 @@ import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentl
 import {
   HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@bentley/imodeljs-frontend";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
+import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/esm/webgl";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -49,7 +49,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+    const ovr = FeatureOverrides.createFromTarget(vp.target as unknown as Target, { });
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -74,7 +74,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+    const ovr = FeatureOverrides.createFromTarget(vp.target as unknown as Target, { });
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
