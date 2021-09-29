@@ -47,6 +47,6 @@ export interface RealityData {
  * @beta
  */
 export interface RealityDataAccess {
-  getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;
-  getRealityDataUrl: (iTwinId: string | undefined, tileId: string) => Promise<string>;
+  getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
+  getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }
