@@ -606,6 +606,9 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                       | `AnalysisStyle.thematic`                                       |
+| `AnalysisStyleScalar`                        | `AnalysisStyleThematic`                                        |
+| `AnalysisStyleScalarProps`                   | `AnalysisStyleThematicProps`                                   |
 | `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
 | `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |
