@@ -85,6 +85,7 @@ import { GeometricElementProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
 import { GeometricModel3dProps } from '@itwin/core-common';
 import { GeometricModelProps } from '@itwin/core-common';
+import { GeometryClass } from '@itwin/core-common';
 import { GeometryContainmentRequestProps } from '@itwin/core-common';
 import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryPartProps } from '@itwin/core-common';
@@ -1486,6 +1487,7 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 export interface ExportGraphicsInfo {
     color: number;
     elementId: Id64String;
+    geometryClass: GeometryClass;
     materialId?: Id64String;
     mesh: ExportGraphicsMesh;
     subCategory: Id64String;
@@ -1548,6 +1550,7 @@ export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 export interface ExportLinesInfo {
     color: number;
     elementId: Id64String;
+    geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
     subCategory: Id64String;
 }
@@ -1558,6 +1561,8 @@ export interface ExportPartDisplayInfo {
     categoryId: Id64String;
     // (undocumented)
     elmTransparency: number;
+    // (undocumented)
+    geometryClass: GeometryClass;
     // (undocumented)
     lineColor: number;
     // (undocumented)
@@ -1586,6 +1591,7 @@ export interface ExportPartGraphicsOptions {
 // @public
 export interface ExportPartInfo {
     color: number;
+    geometryClass: GeometryClass;
     materialId?: Id64String;
     mesh: ExportGraphicsMesh;
     textureId?: Id64String;
@@ -1605,6 +1611,7 @@ export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 // @public
 export interface ExportPartLinesInfo {
     color: number;
+    geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
 }
 

@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/imodeljs-common",
+      "packageName": "@itwin/core-common",
       "comment": "Rename AnalysisStyleScalar to AnalysisStyleThematic",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/imodeljs-common"
+  "packageName": "@itwin/core-common"
 }
