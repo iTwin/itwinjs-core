@@ -11,8 +11,8 @@ public;AnalysisStyle
 public;AnalysisStyleDisplacement
 public;AnalysisStyleDisplacementProps
 public;AnalysisStyleProps
-public;AnalysisStyleScalar
-public;AnalysisStyleScalarProps
+public;AnalysisStyleThematic
+public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern

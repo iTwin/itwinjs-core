@@ -113,8 +113,8 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   }
 
   let analysisTexture;
-  if (analysisStyle?.scalar)
-    analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.scalar.gradient, vp.iModel);
+  if (analysisStyle?.thematic)
+    analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
   return {
     is3d,

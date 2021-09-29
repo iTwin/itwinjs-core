@@ -61,30 +61,31 @@ export class AnalysisStyleDisplacement {
   }
 }
 
-/** JSON representation of an [[AnalysisStyleScalar]].
+/** JSON representation of an [[AnalysisStyleThematic]].
  * @see [[AnalysisStyleProps.scalar]].
  * @public
  */
-export interface AnalysisStyleScalarProps {
-  /** @see [[AnalysisStyleScalar.channelName]]. */
+export interface AnalysisStyleThematicProps {
+  /** @see [[AnalysisStyleThematic.channelName]]. */
   channelName: string;
-  /** @see [[AnalysisStyleScalar.range]]. */
+  /** @see [[AnalysisStyleThematic.range]]. */
   range: Range1dProps;
-  /** @see [[AnalysisStyleScalar.thematicSettings]].
+  /** @see [[AnalysisStyleThematic.thematicSettings]].
    * Default value: [[ThematicGradientSettings.defaults]].
    */
   thematicSettings?: ThematicGradientSettingsProps;
 }
 
-/** Describes how an [[AnalysisStyle]] recolors [Polyface]($core-geometry) vertices by mapping scalar values supplied
+/** Describes how an [[AnalysisStyle]] recolors [Polyface]($core-geometry) vertices by mapping values of type
+ * [AuxChannelDataType.Scalar]($core-geometry) or [AuxChannelDataType.Distance]($core-geometry) supplied
  * by an [AuxChannel]($core-geometry) to colors supplied by a [[Gradient]] image.
- * @see [[AnalysisStyle.scalar]].
+ * @see [[AnalysisStyle.thematic]].
  * @public
  */
-export class AnalysisStyleScalar {
-  /** The name of the [AuxChannel]($core-geometry) supplying the scalar values from which the vertex colors are computed. */
+export class AnalysisStyleThematic {
+  /** The name of the [AuxChannel]($core-geometry) supplying the values from which the vertex colors are computed. */
   public readonly channelName: string;
-  /** The minimum and maximum scalar values that map to colors in the [[Gradient]] image. Vertices with values outside of
+  /** The minimum and maximum values that map to colors in the [[Gradient]] image. Vertices with values outside of
    * this range are displayed with the gradient's margin color.
    */
   public readonly range: Readonly<Range1d>;
@@ -93,20 +94,20 @@ export class AnalysisStyleScalar {
   private _gradient?: Gradient.Symb;
 
   /** @internal */
-  private constructor(props: AnalysisStyleScalarProps) {
+  private constructor(props: AnalysisStyleThematicProps) {
     this.channelName = props.channelName;
     this.range = Range1d.fromJSON(props.range);
     this.thematicSettings = ThematicGradientSettings.fromJSON(props.thematicSettings);
   }
 
   /** Create from JSON representation. */
-  public static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar {
+  public static fromJSON(props: AnalysisStyleThematicProps): AnalysisStyleThematic {
     return new this(props);
   }
 
   /** Convert to JSON representation. */
-  public toJSON(): AnalysisStyleScalarProps {
-    const props: AnalysisStyleScalarProps = {
+  public toJSON(): AnalysisStyleThematicProps {
+    const props: AnalysisStyleThematicProps = {
       channelName: this.channelName,
       range: this.range.toJSON(),
     };
@@ -126,7 +127,7 @@ export class AnalysisStyleScalar {
   }
 
   /** Return true if `this` is equivalent to `other`. */
-  public equals(other: AnalysisStyleScalar): boolean {
+  public equals(other: AnalysisStyleThematic): boolean {
     return this.channelName === other.channelName && this.range.isAlmostEqual(other.range) && this.thematicSettings.equals(other.thematicSettings);
   }
 }
@@ -137,8 +138,10 @@ export class AnalysisStyleScalar {
 export interface AnalysisStyleProps {
   /** @see [[AnalysisStyle.displacement]]. */
   displacement?: AnalysisStyleDisplacementProps;
-  /** @see [[AnalysisStyle.scalar]]. */
-  scalar?: AnalysisStyleScalarProps;
+  /** JSON representation of [[AnalysisStyle.thematic]].
+   * @note The name "scalar" is used instead of "thematic" for backwards compatibility.
+   */
+  scalar?: AnalysisStyleThematicProps;
   /** @see [[AnalysisStyle.normalChannelName]]. */
   normalChannelName?: string;
 }
@@ -196,7 +199,7 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
  */
 export class AnalysisStyle {
   public readonly displacement?: AnalysisStyleDisplacement;
-  public readonly scalar?: AnalysisStyleScalar;
+  public readonly thematic?: AnalysisStyleThematic;
   /** If defined, the name of the [AuxChannel]($core-geometry) from which to obtain normal vectors for the vertices. */
   public readonly normalChannelName?: string;
 
@@ -221,7 +224,7 @@ export class AnalysisStyle {
       this.displacement = AnalysisStyleDisplacement.fromJSON(props.displacement);
 
     if (props.scalar)
-      this.scalar = AnalysisStyleScalar.fromJSON(props.scalar);
+      this.thematic = AnalysisStyleThematic.fromJSON(props.scalar);
   }
 
   /** Convert this style to its JSON representation. */
@@ -233,8 +236,8 @@ export class AnalysisStyle {
     if (this.displacement)
       props.displacement = this.displacement.toJSON();
 
-    if (this.scalar)
-      props.scalar = this.scalar.toJSON();
+    if (this.thematic)
+      props.scalar = this.thematic.toJSON();
 
     if (undefined !== this.normalChannelName)
       props.normalChannelName = this.normalChannelName;
@@ -260,10 +263,10 @@ export class AnalysisStyle {
     else if (this.displacement && !this.displacement.equals(other.displacement!))
       return false;
 
-    if ((undefined === this.scalar) !== (undefined === other.scalar))
+    if ((undefined === this.thematic) !== (undefined === other.thematic))
       return false;
 
-    return undefined === this.scalar || this.scalar.equals(other.scalar!);
+    return undefined === this.thematic || this.thematic.equals(other.thematic!);
   }
 
   public static readonly defaults = new AnalysisStyle({ });

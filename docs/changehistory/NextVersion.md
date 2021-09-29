@@ -4,7 +4,7 @@ publish: false
 
 # NextVersion
 
-## Update minimum requirements
+## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
 
@@ -606,6 +606,9 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                       | `AnalysisStyle.thematic`                                       |
+| `AnalysisStyleScalar`                        | `AnalysisStyleThematic`                                        |
+| `AnalysisStyleScalarProps`                   | `AnalysisStyleThematicProps`                                   |
 | `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
 | `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |
