@@ -65,8 +65,6 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
     let cmp: number = 0;
     if (lhsSourceKey && rhsSourceKey) {
       cmp = compareStringsOrUndefined(lhsSourceKey.realityDataId, rhsSourceKey.realityDataId);
-      if (0 === cmp)
-        cmp = compareStringsOrUndefined(lhsSourceKey.iTwinId, rhsSourceKey.iTwinId);
     } else if (lhsSourceURLKey && rhsSourceURLKey) {
       cmp = compareStringsOrUndefined(lhsSourceURLKey.tilesetUrl, rhsSourceURLKey.tilesetUrl);
     }
@@ -463,7 +461,7 @@ export namespace OrbitGtTileTree {
         props.rdsUrl = await rdClient.getRealityDataUrl(authRequestContext, iModel.contextId, props.containerName);
       }
     } else {
-      props.rdsUrl = await rdConnection.getServiceUrl();
+      props.rdsUrl = await rdConnection.getServiceUrl(iModel.contextId);
     }
 
     // If props are now valid, return OK
@@ -475,7 +473,7 @@ export namespace OrbitGtTileTree {
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey);
+    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey, iModel.contextId);
 
     if (await initializeOrbitGtBlobProps(props, rdConnection, iModel) === false)
       return undefined;

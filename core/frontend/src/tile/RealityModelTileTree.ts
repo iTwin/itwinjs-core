@@ -99,8 +99,6 @@ class RealityTreeSupplier implements TileTreeSupplier {
     let cmp: number = 0;
     if (lhsSourceKey && rhsSourceKey) {
       cmp = compareStringsOrUndefined(lhsSourceKey.realityDataId, rhsSourceKey.realityDataId);
-      if (0 === cmp)
-        cmp = compareStringsOrUndefined(lhsSourceKey.iTwinId, rhsSourceKey.iTwinId);
     } else if (lhsSourceURLKey && rhsSourceURLKey) {
       cmp = compareStringsOrUndefined(lhsSourceURLKey.tilesetUrl, rhsSourceURLKey.tilesetUrl);
     }
@@ -627,10 +625,10 @@ export namespace RealityModelTileTree {
   }
 
   export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey);
+    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey, iModel.contextId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdConnection) {
-      const url = await rdConnection.getServiceUrl();
+      const url = await rdConnection.getServiceUrl(iModel.contextId);
       if (url === undefined)
         return undefined;
       const props = await getTileTreeProps(url, tilesetToDb, iModel);

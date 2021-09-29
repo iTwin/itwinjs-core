@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Guid, Logger } from "@bentley/bentleyjs-core";
-import { RealityDataConnectionProps, RealityDataProvider, RealityDataSourceContextShareKey, RealityDataSourceKey, RealityDataSourceProps, RealityDataSourceURLKey } from "@bentley/imodeljs-common";
+import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { RealityDataProvider, RealityDataSourceContextShareKey, RealityDataSourceKey, RealityDataSourceProps, RealityDataSourceURLKey } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -56,7 +56,6 @@ export class RealityDataSource {
       // Make sure the reality data id are the same
       const guid1 = urlParts1.find(Guid.isGuid);
       if (guid1 !== undefined) {
-        // TODO: extract projectId from tileset URL
         const provider = inputProvider ? inputProvider : isOPC1 ? RealityDataProvider.ContextShareOrbitGt : RealityDataProvider.ContextShare;
         const contextShareKey: RealityDataSourceContextShareKey = { provider, realityDataId: guid1 };
         return contextShareKey;
@@ -83,20 +82,7 @@ export class RealityDataSource {
     };
     return new RealityDataSource(props);
   }
-  /** Construct a new reality data source.
-   * @param props JSON representation of the reality data source
-   */
-  // public toProps(): RealityDataSourceProps {
-  //   let sourceKey: RealityDataSourceKey;
-  //   if (this.realityDataId)
-  //     sourceKey = { provider: RealityDataProvider.ContextShare, realityDataId: this.realityDataId, iTwinId: this.iTwinId};
-  //   else
-  //     sourceKey = {provider: RealityDataProvider.TilesetUrl, tilesetUrl: this.tilesetUrl};
-  //   const props: RealityDataSourceProps = {
-  //     sourceKey,
-  //   };
-  //   return props;
-  // }
+
   public get isContextShare() {
     return (this._rdSourceKey.provider === RealityDataProvider.ContextShare ||
             this._rdSourceKey.provider === RealityDataProvider.ContextShareOrbitGt);
@@ -104,10 +90,6 @@ export class RealityDataSource {
   public get realityDataId(): string | undefined {
     const sourceKey = this._rdSourceKey as RealityDataSourceContextShareKey;
     return sourceKey.realityDataId;
-  }
-  public get iTwinId(): string | undefined {
-    const sourceKey = this._rdSourceKey as RealityDataSourceContextShareKey;
-    return sourceKey.iTwinId;
   }
   public async getAccessToken(): Promise<AccessToken | undefined> {
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -124,7 +106,7 @@ export class RealityDataSource {
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.
    */
-  public async getServiceUrl(): Promise<string | undefined> {
+  public async getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined> {
     // If url was not resolved - resolve it
     if (this.isContextShare && !this.isUrlResolved) {
       const rdSourceKey = this._rdSourceKey as RealityDataSourceContextShareKey;
@@ -136,11 +118,11 @@ export class RealityDataSource {
           const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
           authRequestContext.enter();
 
-          this.tilesetUrl = await client.getRealityDataUrl(authRequestContext, rdSourceKey.iTwinId, rdSourceKey.realityDataId);
+          this.tilesetUrl = await client.getRealityDataUrl(authRequestContext, iTwinId, rdSourceKey.realityDataId);
           this.isUrlResolved=true;
         }
       } catch (e) {
-        const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.realityDataId} and iTwinId=${rdSourceKey.iTwinId}`;
+        const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.realityDataId} and iTwinId=${iTwinId}`;
         Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
       }
     } else if (this._rdSourceKey.provider === RealityDataProvider.TilesetUrl) {
@@ -158,36 +140,30 @@ export class RealityDataConnection {
     this._rdSource = RealityDataSource.fromProps(props);
   }
 
-  /** Create a new RealityDataConnection object from a set of properties.
-   * @param props JSON representation of the reality data source or RealityDataConnectionProps
-   */
-  public static async createFromProps(props: RealityDataSourceProps | RealityDataConnectionProps): Promise<RealityDataConnection | undefined>  {
+  public static async createFromSourceKey(sk: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
+    const props: RealityDataSourceProps = {sourceKey: sk};
     const rdConnection = new RealityDataConnection(props);
     let tilesetUrl: string | undefined;
     try {
-      await rdConnection.queryRealityData();
-      tilesetUrl = await rdConnection._rdSource.getServiceUrl();
+      await rdConnection.queryRealityData(iTwinId);
+      tilesetUrl = await rdConnection._rdSource.getServiceUrl(iTwinId);
     } catch (e) {
     }
 
     return (tilesetUrl !== undefined) ? rdConnection : undefined;
   }
-  public static async createFromSourceKey(sk: RealityDataSourceKey): Promise<RealityDataConnection | undefined> {
-    const props = {provider: sk.provider, sourceKey: sk};
-    return RealityDataConnection.createFromProps(props);
-  }
-  public static async createFromUrl(url: string): Promise<RealityDataConnection | undefined>  {
+  public static async createFromUrl(url: string, iTwinId: GuidString): Promise<RealityDataConnection | undefined>  {
     const sourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(url);
-    return RealityDataConnection.createFromSourceKey(sourceKey);
+    return RealityDataConnection.createFromSourceKey(sourceKey, iTwinId);
   }
 
-  public async queryRealityData() {
+  public async queryRealityData(iTwinId: GuidString | undefined) {
     if (this._rdSource.isContextShare && !this._rd) {
       const token = await this._rdSource.getAccessToken();
       if (token && this._rdSource.realityDataId) {
         const client = new RealityDataClient();      // we need to resolve tilesetURl from realityDataId and iTwinId
         const requestContext = new AuthorizedFrontendRequestContext(token);
-        this._rd = await client.getRealityData(requestContext,this._rdSource.iTwinId, this._rdSource.realityDataId);
+        this._rd = await client.getRealityData(requestContext,iTwinId, this._rdSource.realityDataId);
       }
     }
   }
@@ -199,20 +175,7 @@ export class RealityDataConnection {
   public get realityDataType(): string | undefined {
     return this._rd?.type;
   }
-  public async getServiceUrl(): Promise<string | undefined> {
-    return this._rdSource.getServiceUrl();
+  public async getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined> {
+    return this._rdSource.getServiceUrl(iTwinId);
   }
-  /** Serialize a RealityDataConnection to JSON. The returned JSON can later be passed to [deserializeViewState] to reinstantiate the ViewState.
-   * @beta
-   */
-  // public toProps(): RealityDataConnectionProps {
-  //   const props: RealityDataConnectionProps = {
-  //     sourceKey: this._rdSource,
-  //     realityDataId: this._rdSource.realityDataId,
-  //     iTwinId: this._rdSource.iTwinId,
-  //     realityDataType: this.realityDataType,
-  //     tilesetUrl: this._tilesetUrl,
-  //   };
-  //   return props;
-  // }
 }

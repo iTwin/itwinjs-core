@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, BeEvent, GuidString } from "@bentley/bentleyjs-core";
+import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
@@ -22,13 +22,27 @@ export interface OrbitGtBlobProps {
   accountName: string;
 }
 
-/** Controls whether the user has exclusive or shared access to a local briefcase
+/** Identify the Reality Data service provider and storage formats supported by this provider
  * @alpha
  */
 export enum RealityDataProvider {
-  TilesetUrl = "TilesetUrl",   // This is the legacy mode where the access to the 3d tiles is harcoded in tilesetUrl property.
-  ContextShare = "ContextShare", // Will resolve tilesetUrl from realityDataId and iTwinId on contextShare.
-  ContextShareOrbitGt = "ContextShareOrbitGt", // Will resolve tilesetUrl from realityDataId and iTwinId on contextShare but use OrbitGt TileTree implementation
+  /**
+   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
+   * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
+   * You should use other mode when possible
+   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * */
+  TilesetUrl = "TilesetUrl:3dtile",
+  /**
+   * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format
+   * This provider support all type of 3dTile storage fomat: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles,
+  */
+  ContextShare = "ContextShare:3dtile",
+  /**
+   * Will provide access url from realityDataId and iTwinId on contextShare for OPC storage format
+   * This is the mode that support PointCloud OPC storage format (RealityDataType.OPC)
+  */
+  ContextShareOrbitGt = "ContextShare:OPC",
 }
 
 // Key used by ContextShare RealityDataProvider
@@ -37,8 +51,6 @@ export interface RealityDataSourceContextShareKey {
   provider: RealityDataProvider;
   /** The reality data id that identify a reality data for the provider. */
   realityDataId: string;
-  /** The iTwin id that identify the "context" for the provider. If undefined, will use current context (iTwinId) */
-  iTwinId?: GuidString;
 }
 
 // Key used by TilesetUrl RealityDataProvider
