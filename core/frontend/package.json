@@ -5,6 +5,9 @@
   "main": "lib/cjs/imodeljs-frontend.js",
   "typings": "lib/cjs/imodeljs-frontend.js",
   "module": "lib/esm/imodeljs-frontend.js",
+  "browser": {
+    "./lib/esm/imodeljs-frontend.js": "./lib/cjs/imodeljs-frontend.js"
+  },
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {

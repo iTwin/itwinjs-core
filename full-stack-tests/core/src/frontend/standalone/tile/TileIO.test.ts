@@ -12,8 +12,8 @@ import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
   SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { SurfaceType } from "@bentley/imodeljs-frontend/lib/esm/render-primitives";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/esm/webgl";
+import { SurfaceType } from "@bentley/imodeljs-frontend/lib/cjs/render-primitives";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -270,7 +270,7 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachRectangle(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as unknown as Batch;
+        const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
@@ -293,7 +293,7 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachTriangles(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as unknown as Batch;
+        const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.numFeatures).to.equal(6);
         expect(batch.graphic).not.to.be.undefined;
@@ -334,7 +334,7 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachLineString(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as unknown as Batch;
+        const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.featureTable.numFeatures).to.equal(1);
         expect(batch.graphic).not.to.be.undefined;
@@ -359,7 +359,7 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachLineStrings(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as unknown as Batch;
+        const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.numFeatures).to.equal(3);
         expect(batch.graphic).not.to.be.undefined;
@@ -402,7 +402,7 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachCylinder(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as unknown as Batch;
+        const batch = graphic as Batch;
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
