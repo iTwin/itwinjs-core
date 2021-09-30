@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RpcConfiguration } from "@bentley/imodeljs-common";
+import { RpcConfiguration } from "@itwin/core-common";
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;

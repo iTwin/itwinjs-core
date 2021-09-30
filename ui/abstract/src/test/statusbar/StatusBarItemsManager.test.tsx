@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import {
   AbstractStatusBarCustomItem, AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
   isAbstractStatusBarActionItem, isAbstractStatusBarCustomItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarSection,
-} from "../../ui-abstract";
+} from "../../appui-abstract";
 
 describe("StatusBarItemsManager", () => {
   const createCustomItem = (id: string, section: StatusBarSection, itemPriority: number, itemProps?: Partial<AbstractStatusBarCustomItem>): AbstractStatusBarCustomItem => ({

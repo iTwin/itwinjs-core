@@ -1,4 +1,4 @@
-# Change Log - @bentley/imodelhub-client-tests
+# Change Log - @itwin/imodelhub-client-tests
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 
@@ -529,7 +529,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 
 ### Updates
 
-- Switched projects for some iModelHub tests. 
+- Switched projects for some iModelHub tests.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

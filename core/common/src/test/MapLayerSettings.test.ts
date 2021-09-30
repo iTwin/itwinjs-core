@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BackgroundMapSettings, BackgroundMapType } from "../BackgroundMapSettings";
-import { MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
+import { BackgroundMapType } from "../BackgroundMapProvider";
+import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
 
-const testMapSubLayer0 = { name: "TestName", title: "TestTitle", visible: true };
-const testMapSubLayer1 = { name: "TestName", title: "TestTitle", visible: true, id: 0, parent: -1, children: [1, 2, 3] };
+const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
+const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };
 
 describe("MapSubLayerSettings", () => {
   const expectMatch = (output: MapSubLayerProps, expected: MapSubLayerProps) => {
@@ -28,10 +28,7 @@ describe("MapSubLayerSettings", () => {
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: MapSubLayerProps | undefined, expected: MapSubLayerProps | "input") => {
-      if (!input)
-        input = {};
-
+    const roundTrip = (input: MapSubLayerProps, expected: MapSubLayerProps | "input") => {
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
       const settings = MapSubLayerSettings.fromJSON(input)!;
@@ -44,9 +41,9 @@ describe("MapSubLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: MapSubLayerProps, changed: MapSubLayerProps, expected: MapSubLayerProps) => {
+    const clone = (input: MapSubLayerProps, changed: Partial<MapSubLayerProps>, expected: MapSubLayerProps) => {
       const settings = MapSubLayerSettings.fromJSON(input);
-      const output = settings!.clone(changed);
+      const output = settings.clone(changed);
       expectMatch(output.toJSON(), expected);
     };
 
@@ -62,7 +59,7 @@ const testMapLayer2 = { name: "TestName", url: "www.bentley.com", formatId: "WMS
 const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: true };
 const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true, visible: false };
 const testMapLayer6 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false };
-const legacyMapLayer = MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } }));
+const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } });
 
 describe("MapLayerSettings", () => {
   const expectMatches = (output: MapLayerProps, expected: MapLayerProps) => {
@@ -77,7 +74,7 @@ describe("MapLayerSettings", () => {
       expect(output.subLayers).not.to.be.undefined;
       expect(expected.subLayers.length).to.equal(output.subLayers!.length);
       for (let i = 0; i < expected.subLayers.length; i++)
-        expect(JSON.stringify(expected.subLayers[i])).to.equal(JSON.stringify(output.subLayers![i]));
+        expect(expected.subLayers[i]).to.deep.equal(output.subLayers![i]);
     }
   };
 
@@ -88,9 +85,7 @@ describe("MapLayerSettings", () => {
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: MapLayerProps | undefined, expected: MapLayerProps | "input") => {
-      if (!input)
-        input = {};
+    const roundTrip = (input: MapLayerProps, expected: MapLayerProps | "input") => {
 
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as MapLayerProps;
@@ -111,9 +106,9 @@ describe("MapLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: MapLayerProps, changed: MapLayerProps, expected: MapLayerProps) => {
+    const clone = (input: MapLayerProps, changed: Partial<MapLayerProps>, expected: MapLayerProps) => {
       const settings = MapLayerSettings.fromJSON(input);
-      const output = settings!.clone(changed);
+      const output = settings.clone(changed);
       expectMatches(output.toJSON(), expected);
     };
     const cloneSettings = (input: MapLayerSettings) => {

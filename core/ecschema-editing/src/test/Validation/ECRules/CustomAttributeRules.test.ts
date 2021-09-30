@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { CustomAttributeClass, ECClassModifier, EntityClass,
   Schema, SchemaContext,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../../Editing/Mutable/MutableClass";
 import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
 import * as Rules from "../../../Validation/ECRules";

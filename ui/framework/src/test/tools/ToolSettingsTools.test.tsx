@@ -5,9 +5,9 @@
 import * as React from "react";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { TestUtils } from "../TestUtils";
-import { BumpToolSetting, FocusToolSettings } from "../../ui-framework/tools/ToolSettingsTools";
+import { BumpToolSetting, FocusToolSettings } from "../../appui-react/tools/ToolSettingsTools";
 
 describe("ToolSettingsTools", () => {
 
@@ -29,7 +29,7 @@ describe("ToolSettingsTools", () => {
     });
 
     it("should return true if focusable item in docked ToolSettings", async () => {
-      render(<div className="nz-toolSettings-docked"><button/></div>);
+      render(<div className="nz-toolSettings-docked"><button /></div>);
       const tool = new FocusToolSettings();
       expect(await tool.parseAndRun()).to.be.true;
     });

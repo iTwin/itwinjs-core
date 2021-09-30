@@ -8,11 +8,11 @@ import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import TestUtils, { mount } from "../TestUtils";
-import { ConfigurableUiContent } from "../../ui-framework/configurableui/ConfigurableUiContent";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
-import { FrameworkToolAdmin } from "../../ui-framework/tools/FrameworkToolAdmin";
+import { ConfigurableUiContent } from "../../appui-react/configurableui/ConfigurableUiContent";
+import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
+import { FrameworkToolAdmin } from "../../appui-react/tools/FrameworkToolAdmin";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {

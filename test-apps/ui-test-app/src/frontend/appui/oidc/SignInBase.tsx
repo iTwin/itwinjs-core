@@ -9,9 +9,9 @@
 import "./SignInBase.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "@bentley/ui-components";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { CommonProps } from "@itwin/core-react";
+import { UiComponents } from "@itwin/components-react";
 import { Button } from "@itwin/itwinui-react";
 
 // cspell:ignore signingin

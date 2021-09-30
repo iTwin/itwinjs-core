@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Rename AnalysisStyleScalar to AnalysisStyleThematic",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

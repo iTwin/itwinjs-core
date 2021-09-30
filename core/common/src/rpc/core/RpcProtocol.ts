@@ -6,12 +6,12 @@
  * @module RpcInterface
  */
 
-import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocation } from "./RpcInvocation";
+import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
@@ -29,7 +29,7 @@ export interface SerializedRpcOperation {
 /** A serialized RPC operation request.
  * @public
  */
-export interface SerializedRpcRequest extends SerializedClientRequestContext {
+export interface SerializedRpcRequest extends SerializedRpcActivity {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
@@ -107,7 +107,7 @@ export abstract class RpcProtocol {
   /** The RPC invocation class for this protocol. */
   public readonly invocationType: typeof RpcInvocation = RpcInvocation;
 
-  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+  public serializedClientRequestContextHeaderNames: SerializedRpcActivity = {
     /** The name of the request id header. */
     id: "",
 
@@ -122,9 +122,6 @@ export abstract class RpcProtocol {
 
     /** The name of the authorization header. */
     authorization: "",
-
-    /** The id of the authorized user */
-    userId: "",
   };
 
   /** If greater than zero, specifies where to break large binary request payloads. */
@@ -166,7 +163,7 @@ export abstract class RpcProtocol {
 
   /** Serializes a request. */
   public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
-    const serializedContext: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(request);
+    const serializedContext = await RpcConfiguration.requestContext.serialize(request);
     return {
       ...serializedContext,
       operation: {

@@ -3,25 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 
 import { TestUtility } from "./TestUtility";
-import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {
   let contextId: GuidString;
   let iModelId: GuidString;
-  let requestContext: AuthorizedClientRequestContext;
+  let requestContext: AccessToken;
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
     await TestUtility.initialize(TestUsers.regular);
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAccessToken(TestUsers.regular);
 
     await IModelApp.shutdown();
     await IModelApp.startup({

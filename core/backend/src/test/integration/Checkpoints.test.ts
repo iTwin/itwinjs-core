@@ -7,16 +7,16 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangesetProps } from "@bentley/imodeljs-common";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { ChangesetProps } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { IModelHost, IModelJsFs, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 describe("Checkpoints (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let accessToken: AccessToken;
   let testIModelId: GuidString;
   let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
@@ -29,16 +29,16 @@ describe("Checkpoints (#integration)", () => {
     originalEnv = { ...process.env };
     process.env.BLOCKCACHE_DIR = blockcacheDir;
 
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testITwinId = await HubUtility.getTestITwinId(user);
-    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
-    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ user, iModelId: testIModelId });
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId });
 
     const checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
       expectV2: true,
       iTwinId: testITwinId,
       iModelId: testIModelId,
-      user,
+      accessToken,
       changeset: {
         id: testChangeSet.id,
       },
@@ -71,7 +71,7 @@ describe("Checkpoints (#integration)", () => {
 
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
-      user,
+      accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
       changeset: testChangeSet,
@@ -83,7 +83,7 @@ describe("Checkpoints (#integration)", () => {
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
-    await iModel.reattachDaemon(user);
+    await iModel.reattachDaemon(accessToken);
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 

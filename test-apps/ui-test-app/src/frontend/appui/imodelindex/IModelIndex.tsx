@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelIndex.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelClient, IModelHubClient, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
-import { LoadingSpinner } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { LoadingSpinner } from "@itwin/core-react";
+import { UiFramework } from "@itwin/appui-react";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
@@ -92,22 +92,22 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* retrieves the iModel thumbnail. */
   private async startRetrieveThumbnail(iTwinId: string, iModelId: string) {
     const hubFrontend = new IModelHubFrontend();
-    const _thumbnail = await hubFrontend.hubClient.thumbnails.download(await AuthorizedFrontendRequestContext.create(), iModelId, { contextId: iTwinId, size: "Small" });
+    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.authorizationClient?.getAccessToken())!, iModelId, { contextId: iTwinId, size: "Small" });
     this.setState({ thumbnail: _thumbnail });
   }
 
   /* retrieve version information */
   private async startRetrieveIModelInfo() {
     const hubClient: IModelClient = new IModelHubClient();
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
     const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
 
     /* get the iModel name */
-    const imodels = await hubClient.iModels.get(requestContext, iTwinId, new IModelQuery().byId(iModelId));
+    const imodels = await hubClient.iModels.get(accessToken, iTwinId, new IModelQuery().byId(iModelId));
 
     /* get the top named version */
-    const _versions: Version[] = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().top(1));
+    const _versions: Version[] = await hubClient.versions.get(accessToken, iModelId, new VersionQuery().top(1));
 
     /* determine if the version is up-to-date */
     const changeSetId = this.props.iModelConnection.changeset.id;
@@ -117,7 +117,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     let currentVersions: Version[] = [];
     let _versionName = "";
     try {
-      currentVersions = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().byChangeSet(changeSetId));
+      currentVersions = await hubClient.versions.get(accessToken, iModelId, new VersionQuery().byChangeSet(changeSetId));
       _versionName = (currentVersions.length === 1) ? currentVersions[0].name! : "Version name not found!";
     } catch (e) { }
 

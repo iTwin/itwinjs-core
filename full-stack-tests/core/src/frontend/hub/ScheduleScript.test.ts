@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import {
   Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+} from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 function countTileTrees(view: ViewState): number {
@@ -32,11 +32,7 @@ describe("Schedule script (#integration)", () => {
     await TestUtility.initialize(TestUsers.regular);
 
     await IModelApp.shutdown();
-    await IModelApp.startup({
-      authorizationClient: TestUtility.itwinPlatformEnv.authClient,
-      hubAccess: TestUtility.itwinPlatformEnv.hubAccess,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup(TestUtility.iModelAppOptions);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);

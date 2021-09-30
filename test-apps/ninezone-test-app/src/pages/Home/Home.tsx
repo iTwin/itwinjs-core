@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./Home.scss";
-import "@bentley/ui-core/lib/ui-core/colorthemes.scss";
+import "@itwin/core-react/lib/core-react/colorthemes.scss";
 import * as React from "react";
 import Navigation from "./Navigation";
 import Readme from "./Readme";
-const packageJson = require("@bentley/ui-ninezone/package.json");
+const packageJson = require("@itwin/appui-layout-react/package.json");
 
 export class Home extends React.PureComponent {
   public render() {

@@ -6,12 +6,11 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { AccessToken, BeDuration } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
-import { ActivityMessagePopup } from "@bentley/ui-framework";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
+import { ActivityMessagePopup } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelInfo } from "../ExternalIModel";
@@ -62,9 +61,9 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingiModels: false,
         isLoadingiModel: false,
         currentITwin: {
-          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @bentley/react-set-state-usage
+          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @itwin/react-set-state-usage
         },
-        iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line @itwin/react-set-state-usage
       });
     }
 
@@ -75,10 +74,9 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     if (undefined === token)
       return;
 
-    const ctx = new AuthorizedFrontendRequestContext(token);
-
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
     const client = new ITwinAccessClient();
-    const iTwins = await client.getAll(ctx, { pagination: { skip: 0, top: 10 } });
+    const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
     this.setState({
       isLoadingProjects: false,
       isLoadingiModels: true,
@@ -89,16 +87,17 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
     const hubAccess = new IModelHubFrontend();
 
     const iModelInfos: IModelInfo[] = [];
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: HubIModel[] = await hubAccess.hubClient.iModels.get(requestContext, iTwinId, queryOptions);
+      const iModels: HubIModel[] = await hubAccess.hubClient.iModels.get(accessToken, iTwinId, queryOptions);
       for (const imodel of iModels) {
-        const versions: Version[] = await hubAccess.hubClient.versions.get(requestContext, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await hubAccess.hubClient.versions.get(accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           imodel.latestVersionName = versions[0].name;
           imodel.latestVersionChangeSetId = versions[0].changeSetId;

@@ -6,13 +6,13 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
-import { UserArg } from "./IModelDb";
+import { TokenArg } from "./IModelDb";
 
 /** The state of a lock.
  * @public
@@ -50,7 +50,9 @@ export class LockConflict extends IModelError {
 export interface V2CheckpointAccessProps {
   readonly container: string;
   readonly auth: string;
+  /** The name of the container */
   readonly user: string;
+  /** The name of the virtual file used for the Checkpoint */
   readonly dbAlias: string;
   readonly storageType: string;
 }
@@ -81,7 +83,7 @@ export interface ITwinIdArg {
  * Argument for methods that must supply an IModelId
  * @public
  */
-export interface IModelIdArg extends UserArg {
+export interface IModelIdArg extends TokenArg {
   readonly iModelId: GuidString;
 }
 
@@ -97,7 +99,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
 /** Argument for methods that must supply an IModel name and iTwinId
  * @public
  */
-export interface IModelNameArg extends UserArg, ITwinIdArg {
+export interface IModelNameArg extends TokenArg, ITwinIdArg {
   readonly iModelName: string;
 }
 

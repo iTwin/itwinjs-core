@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { placementToPosition, Tooltip } from "../../ui-core";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { placementToPosition, Tooltip } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

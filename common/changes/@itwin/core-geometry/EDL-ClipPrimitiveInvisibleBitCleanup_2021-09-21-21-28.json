@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "When building planes for a ClipShape, pre-filter the shape edges to remove danglers that violate triangulation requirements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Impose default minimum spatial tolerance of 1mm.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

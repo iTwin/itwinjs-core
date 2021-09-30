@@ -6,8 +6,8 @@ import "./Common.scss";
 import "./IModelViewPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Button, ProgressRadial } from "@itwin/itwinui-react";
 import { ExternalIModel } from "../ExternalIModel";
 

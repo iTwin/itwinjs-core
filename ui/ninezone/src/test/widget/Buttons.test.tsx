@@ -5,8 +5,8 @@
 import * as React from "react";
 import { expect } from "chai";
 import { render } from "@testing-library/react";
-import { ActiveTabIdContext, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidgetContext, FloatingWidgetIdContext, PanelSideContext, PanelStateContext, TabBarButtons, TabsStateContext, WidgetIdContext, WidgetStateContext } from "../../ui-ninezone";
-import { addFloatingWidget, toolSettingsTabId } from "../../ui-ninezone/base/NineZoneState";
+import { ActiveTabIdContext, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidgetContext, FloatingWidgetIdContext, PanelSideContext, PanelStateContext, TabBarButtons, TabsStateContext, WidgetIdContext, WidgetStateContext } from "../../appui-layout-react";
+import { addFloatingWidget, toolSettingsTabId } from "../../appui-layout-react/base/NineZoneState";
 
 describe("TabBarButtons", () => {
   it("Floating widget should render Sendback button", () => {

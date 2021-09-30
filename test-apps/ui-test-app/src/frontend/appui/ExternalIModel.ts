@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
 
 /* eslint-disable deprecation/deprecation */
@@ -45,10 +45,10 @@ export class ExternalIModel {
     const projectName = this.projectName;
     const iModelName = this.imodelName;
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
 
     const connectClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await connectClient.getAll(requestContext, {
+    const iTwinList: ITwin[] = await connectClient.getAll(accessToken, {
       search: {
         searchString: projectName,
         propertyName: ITwinSearchableProperty.Name,
@@ -65,7 +65,7 @@ export class ExternalIModel {
     const iModelId = await hubClient.queryIModelByName({
       iModelName,
       iTwinId: iTwinList[0].id,
-      requestContext,
+      accessToken,
     });
     if (undefined === iModelId) {
       throw new Error(`iModel with name "${iModelName}" does not exist in project "${projectName}"`);

@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AuthorizedFrontendRequestContext, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
+import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./ITwinPlatformEnv";
@@ -44,9 +43,8 @@ export class TestUtility {
 
   public static itwinPlatformEnv: ITwinPlatformAbstraction;
 
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await getAccessTokenFromBackend(user);
-    return new AuthorizedClientRequestContext(accessToken);
+  public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken> {
+    return getAccessTokenFromBackend(user);
   }
 
   /** The initialize methods wraps creating and setting up all of the clients needed to perform integrations tests. If a user is provided,
@@ -62,7 +60,7 @@ export class TestUtility {
     if (user) {
       if (NativeApp.isValid) {
         authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
-        await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(user)).toJSON());
+        await NativeApp.callNativeHost("setAccessToken", (await getAccessTokenFromBackend(user)));
       } else {
         authorizationClient = new IModelHubUserMgr(user);
         await authorizationClient.signIn();
@@ -77,31 +75,39 @@ export class TestUtility {
   }
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iTwin: ITwin = await this.itwinPlatformEnv.contextMgr.getITwinByName(requestContext, contextName);
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const iTwin: ITwin = await this.itwinPlatformEnv.contextMgr.getITwinByName(accessToken, contextName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ requestContext, iTwinId, iModelName });
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
     return iModelId!;
   }
 
   /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const briefcaseIds = await this.itwinPlatformEnv.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const briefcaseIds = await this.itwinPlatformEnv.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
 
     if (briefcaseIds.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       for (const briefcaseId of briefcaseIds)
-        promises.push(this.itwinPlatformEnv.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId }));
+        promises.push(this.itwinPlatformEnv.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
       await Promise.all(promises);
     }
+  }
+
+  public static get iModelAppOptions(): IModelAppOptions {
+    return {
+      authorizationClient: this.itwinPlatformEnv.authClient,
+      hubAccess: this.itwinPlatformEnv.hubAccess,
+      applicationVersion: "1.2.1.1",
+    };
   }
 }

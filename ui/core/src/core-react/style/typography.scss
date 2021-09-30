@@ -1,0 +1,43 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+// @warn "typography.scss is deprecated. Use '~@itwin/itwinui-css/scss/style/typography' instead.";
+
+/// Constants ------------------------------------------------------------------
+
+$uicore-sans:                      $iui-sans;
+$uicore-monospace:                 $iui-monospace;
+
+$uicore-font-family:               $iui-font-family;
+
+$uicore-font-size:                 $iui-font-size;
+$uicore-font-size-small:           $iui-font-size-small;
+$uicore-font-size-leading:         $iui-font-size-leading;
+$uicore-font-size-subheading:      $iui-font-size-subheading;
+$uicore-font-size-title:           $iui-font-size-title;
+$uicore-font-size-headline:        $iui-font-size-headline;
+
+$uicore-cap-size:                  $iui-cap-size;
+$uicore-cap-size-small:            $iui-cap-size-small;
+$uicore-cap-size-leading:          $iui-cap-size-leading;
+$uicore-cap-size-subheading:       $iui-cap-size-subheading;
+$uicore-cap-size-title:            $iui-cap-size-title;
+$uicore-cap-size-headline:         $iui-cap-size-headline;
+
+$uicore-font-weight-light:         $iui-font-weight-light;
+$uicore-font-weight-normal:        $iui-font-weight-normal;
+$uicore-font-weight-semibold:      $iui-font-weight-semibold;
+$uicore-font-weight-bold:          $iui-font-weight-bold;
+
+/// Font loading helpers -------------------------------------------------------
+/// See: https://www.zachleat.com/web/comprehensive-webfonts
+
+$uicore-font-loaded-class:         $iui-font-loaded-class;
+
+@mixin uicore-font-family {
+
+  @include iui-font-family;
+}

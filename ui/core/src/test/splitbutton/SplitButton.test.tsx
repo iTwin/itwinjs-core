@@ -6,9 +6,9 @@ import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { SplitButton } from "../../ui-core";
-import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { ButtonType } from "../../ui-core/button/Button";
+import { SplitButton } from "../../core-react";
+import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
+import { ButtonType } from "../../core-react/button/Button";
 
 /* eslint-disable deprecation/deprecation */
 

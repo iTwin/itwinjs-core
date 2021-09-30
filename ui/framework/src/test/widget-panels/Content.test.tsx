@@ -5,9 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
-import { Rectangle } from "@bentley/ui-core";
-import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../ui-framework";
+import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@itwin/appui-layout-react";
+import { Rectangle } from "@itwin/core-react";
+import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("WidgetContent", () => {

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
   DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;

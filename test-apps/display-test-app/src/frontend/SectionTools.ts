@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { createButton, createComboBox } from "@bentley/frontend-devtools";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
-import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
+import { BeEvent } from "@itwin/core-bentley";
+import { createButton, createComboBox } from "@itwin/frontend-devtools";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
+import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 function setFocusToHome(): void {

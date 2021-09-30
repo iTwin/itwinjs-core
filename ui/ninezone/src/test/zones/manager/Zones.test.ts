@@ -5,12 +5,12 @@
 import { should } from "chai";
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { PointProps } from "@bentley/ui-abstract";
-import { Point, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@itwin/appui-abstract";
+import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle,
   ResizeStrategy, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,
-} from "../../../ui-ninezone";
+} from "../../../appui-layout-react";
 import { TestProps } from "./TestProps";
 
 describe("ZonesManager", () => {

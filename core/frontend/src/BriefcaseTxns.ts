@@ -6,12 +6,12 @@
  * @module IModelConnection
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, XYZProps } from "@bentley/geometry-core";
+import { BeEvent } from "@itwin/core-bentley";
+import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import {
   ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
   RemoveFunction, RootSubjectProps, TxnNotifications,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 
@@ -123,21 +123,21 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** Query if the briefcase has any pending Txns waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return IpcApp.callIpcHost("hasPendingTxns", this._iModel.key);
   }
 
   /** Determine if any reversible (undoable) changes exist.
    * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
    */
-  public async isUndoPossible(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async isUndoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return IpcApp.callIpcHost("isUndoPossible", this._iModel.key);
   }
 
   /** Determine if any reinstatable (redoable) changes exist.
    * @see [[reinstateTxn]] to redo changes.
    */
-  public async isRedoPossible(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async isRedoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return IpcApp.callIpcHost("isRedoPossible", this._iModel.key);
   }
 

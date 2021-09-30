@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -10,7 +10,7 @@ import {
   ContentGroup, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
   ToolItemDef,
   ToolWidget, Widget, Zone, ZoneState,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { AppStatusBarWidgetControl, TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
 

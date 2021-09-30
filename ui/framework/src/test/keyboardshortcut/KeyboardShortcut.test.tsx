@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Point } from "@bentley/ui-core";
+import { Point } from "@itwin/core-react";
 import {
   AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
-} from "../../ui-framework";
-import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
-import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
+} from "../../appui-react";
+import { CursorInformation } from "../../appui-react/cursor/CursorInformation";
+import { KeyboardShortcutMenu } from "../../appui-react/keyboardshortcut/KeyboardShortcutMenu";
 import TestUtils from "../TestUtils";
-import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@bentley/ui-abstract";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import { ConditionalBooleanValue, FunctionKey, SpecialKey } from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher } from "../../appui-react/syncui/SyncUiEventDispatcher";
 
 describe("KeyboardShortcut", () => {
 

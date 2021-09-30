@@ -6,11 +6,12 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, ClientRequestContext, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
+import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
@@ -19,18 +20,39 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
-/* eslint-disable @typescript-eslint/naming-convention */
+/** The properties of an RpcActivity.
+ * @public
+ */
+export interface RpcActivity extends SessionProps {
+  /** Used for logging to correlate an Rpc activity between frontend and backend */
+  readonly activityId: GuidString;
+
+  /** access token for authorization  */
+  readonly accessToken: AccessToken;
+}
+
+/** Serialized format for sending the request across the RPC layer
+ * @public
+ */
+export interface SerializedRpcActivity {
+  id: string;
+  applicationId: string;
+  applicationVersion: string;
+  sessionId: string;
+  authorization: string;
+  csrfToken?: { headerName: string, headerValue: string };
+}
 
 /** Notification callback for an RPC invocation.
  * @public
  */
-export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
+export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request.
  * @public
  */
 export class RpcInvocation {
-  public static currentRequest: ClientRequestContext;
+  public static currentActivity: RpcActivity;
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
@@ -121,19 +143,24 @@ export class RpcInvocation {
   /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
    * @internal
    */
-  public static logRpcException(currentRequest: ClientRequestContext, error: any) {
-    let msg = error.toString();
-    const errMeta = error.getMetaData?.();
-    if (errMeta)
-      msg += ` [${JSON.stringify(errMeta)}]`;
+  public static logRpcException(activity: RpcActivity, operationName: string, error: unknown) {
+    const props = {
+      error: BentleyError.getErrorProps(error),
+      activity: {
+        activityId: activity.activityId,
+        sessionId: activity.sessionId,
+        app: activity.applicationId,
+        version: activity.applicationVersion,
+      },
+    };
 
-    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => currentRequest.sanitize());
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Error in RPC operation [${operationName}]`, () => props);
   }
 
   private async resolve(): Promise<any> {
-    let currentRequest: ClientRequestContext | undefined;
+    let activity: RpcActivity | undefined;
     try {
-      currentRequest = await RpcConfiguration.requestContext.deserialize(this.request);
+      activity = RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
@@ -144,12 +171,12 @@ export class RpcInvocation {
 
       // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
       // any asynchronous code that may need it, and *not* rely on the global variable remaining unchanged across async calls.
-      RpcInvocation.currentRequest = currentRequest;
+      RpcInvocation.currentActivity = activity;
 
       return await op.call(impl, ...parameters);
-    } catch (error: any) {
-      if (currentRequest)
-        RpcInvocation.logRpcException(currentRequest, error);
+    } catch (error: unknown) {
+      if (activity)
+        RpcInvocation.logRpcException(activity, this.request.operation.operationName, error);
 
       return this.reject(error);
     }
@@ -237,7 +264,7 @@ export class RpcInvocation {
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
-    const fulfillment = {
+    const fulfillment: RpcRequestFulfillment = {
       result,
       rawResult,
       status: this.protocol.getCode(this.status),

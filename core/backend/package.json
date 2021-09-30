@@ -1,24 +1,24 @@
 {
-  "name": "@bentley/imodeljs-backend",
-  "version": "3.0.0-dev.68",
-  "description": "iModel.js backend components",
-  "main": "lib/imodeljs-backend.js",
-  "typings": "lib/imodeljs-backend",
+  "name": "@itwin/core-backend",
+  "version": "3.0.0-dev.72",
+  "description": "iTwin.js backend components",
+  "main": "lib/core-backend.js",
+  "typings": "lib/core-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s copy:assets && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc npm run test:integration",
-    "extract-api": "betools extract-api --entry=imodeljs-backend",
+    "cover": "nyc npm -s test",
+    "cover:integration": "nyc npm run -s test:integration",
+    "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "mocha --grep=\"#integration|#WebGLPerformance\" --invert",
@@ -26,18 +26,18 @@
     "test:integration": "run-s pretest test:integration:azurite",
     "test:integration:azurite": "run-p -r azurite:setup test:integration:core",
     "test:integration:core": "mocha --grep=\"#integration|#WebGLPerformance\"",
-    "perftest:pre": "npm run pretest && cpx \"./src/perftest/*.json\" ./lib/perftest",
-    "perftest": "npm run perftest:crud && npm run perftest:cs && npm run perftest:elAspect && npm run perftest:schema",
-    "perftest:crud": "npm run perftest:pre && mocha --timeout=999999999 --grep PerformanceElementsTests \"./lib/perftest/**/*.test.js\"",
-    "perftest:cs": "npm run perftest:pre && mocha --timeout=999999999 --grep ImodelChangesetPerformance \"./lib/perftest/**/*.test.js\"",
-    "perftest:elAspect": "npm run perftest:pre && mocha --timeout=999999999 --grep ElementAspectPerformance \"./lib/perftest/**/*.test.js\"",
-    "perftest:schema": "npm run perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/perftest/**/*.test.js\"",
-    "perftest:tile": "npm run perftest:pre && mocha --timeout=999999999 --grep TilesGenerationPerformance \"./lib/perftest/**/*.test.js\"",
+    "perftest:pre": "npm run -s pretest && cpx \"./src/perftest/*.json\" ./lib/perftest",
+    "perftest": "npm run -s perftest:crud && npm run -s perftest:cs && npm run -s perftest:elAspect && npm run -s perftest:schema",
+    "perftest:crud": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementsTests \"./lib/perftest/**/*.test.js\"",
+    "perftest:cs": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ImodelChangesetPerformance \"./lib/perftest/**/*.test.js\"",
+    "perftest:elAspect": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ElementAspectPerformance \"./lib/perftest/**/*.test.js\"",
+    "perftest:schema": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/perftest/**/*.test.js\"",
+    "perftest:tile": "npm run -s perftest:pre && mocha --timeout=999999999 --grep TilesGenerationPerformance \"./lib/perftest/**/*.test.js\"",
     "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/ios/webpack/assets && cpx \"./lib/assets/**/*\" ./lib/test/ios/webpack/assets",
-    "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
-    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
+    "build:core-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/core-backend-test-app.xcworkspace -scheme core-backend-test-app -derivedDataPath ./lib/test/ios/DerivedData -allowProvisioningUpdates",
+    "webpack:imodeljs-test": "npm run -s copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/test ./lib/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
     "install-ios-lib": "node ./src/test/ios/scripts/installIosNativeLib.js",
-    "build:ios-test": "npm run install-ios-lib && npm run webpack:imodeljs-test && npm run build:imodeljs-backend-test-app"
+    "build:ios-test": "npm run -s install-ios-lib && npm run -s webpack:imodeljs-test && npm run -s build:core-backend-test-app"
   },
   "repository": {
     "type": "git",
@@ -55,28 +55,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.68",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.68",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.68",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.68",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.68",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.68"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.72",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
+    "@itwin/core-common": "workspace:^3.0.0-dev.72",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.72",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.72"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
-    "@bentley/perf-tools": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/perf-tools": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -115,7 +115,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.0.10",
+    "@bentley/imodeljs-native": "3.0.11",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
@@ -126,12 +126,12 @@
     "ws": "^7.5.3"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

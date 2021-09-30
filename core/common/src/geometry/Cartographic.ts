@@ -6,8 +6,8 @@
  * @module Geometry
  */
 
-import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
+import { assert } from "@itwin/core-bentley";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-webpack-tools",
+      "comment": "Update the CopyBentleyStaticResourcesPlugin to support the `@itwin` scope in addition to the `@bentley` scope.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-webpack-tools"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "large textures",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

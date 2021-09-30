@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, Guid } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -528,8 +528,8 @@ export abstract class RpcRequest<TResponse = any> {
       this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());
     }
 
-    const headerNames: SerializedClientRequestContext = this.protocol.serializedClientRequestContextHeaderNames;
-    const headerValues: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(this);
+    const headerNames = this.protocol.serializedClientRequestContextHeaderNames;
+    const headerValues = await RpcConfiguration.requestContext.serialize(this);
 
     if (headerNames.id)
       this.setHeader(headerNames.id, headerValues.id || this.id); // Cannot be empty
@@ -545,9 +545,6 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (headerNames.authorization && headerValues.authorization)
       this.setHeader(headerNames.authorization, headerValues.authorization);
-
-    if (headerNames.userId && headerValues.userId)
-      this.setHeader(headerNames.userId, headerValues.userId);
 
     if (headerValues.csrfToken)
       this.setHeader(headerValues.csrfToken.headerName, headerValues.csrfToken.headerValue);

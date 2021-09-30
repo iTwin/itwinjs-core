@@ -5,14 +5,14 @@
 import * as React from "react";
 import {
   DateFormatter, Primitives, PropertyRecord, PropertyValue, StandardTypeNames,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import {
   ColumnDescription, LessGreaterOperatorProcessor,
   PropertyUpdatedArgs, SelectionMode, Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
-} from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@itwin/appui-react";
 import { Input, Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
-import { BodyText, Gap } from "@bentley/ui-core";
+import { BodyText, Gap } from "@itwin/core-react";
 import { TableExampleData } from "./TableExampleData";
 
 class TableExampleContentControl extends ContentControl {

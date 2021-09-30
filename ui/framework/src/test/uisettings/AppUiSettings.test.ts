@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { storageMock, TestUtils } from "../TestUtils";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import { AppUiSettings } from "../../ui-framework/uisettings/AppUiSettings";
-import { SYSTEM_PREFERRED_COLOR_THEME } from "../../ui-framework/theme/ThemeManager";
+import { UiFramework } from "../../appui-react/UiFramework";
+import { AppUiSettings } from "../../appui-react/uisettings/AppUiSettings";
+import { SYSTEM_PREFERRED_COLOR_THEME } from "../../appui-react/theme/ThemeManager";
 
 describe("AppUiSettings", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;

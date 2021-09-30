@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Refactored part of AccuDraw UI & Providing AccuDraw UI documentation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

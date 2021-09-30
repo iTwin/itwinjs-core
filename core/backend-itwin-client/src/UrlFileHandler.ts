@@ -11,8 +11,9 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { URL } from "url";
-import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { downloadFileAtomic } from "./downloadFileAtomic";
+import { AccessToken } from "@itwin/core-bentley";
 
 /**
  * Provides methods to upload and download files from the Internet
@@ -34,7 +35,7 @@ export class UrlFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  public async downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
 
@@ -42,7 +43,7 @@ export class UrlFileHandler implements FileHandler {
     return downloadFileAtomic(downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
   }
 
-  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const uploadUrl = new URL(uploadUrlString);
       const fileSize = this.getFileSize(uploadFromPathname);
