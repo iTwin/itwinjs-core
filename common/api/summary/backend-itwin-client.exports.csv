@@ -1,7 +1,5 @@
 sep=;
 Release Tag;API Item
-beta;AgentAuthorizationClient 
-beta;AgentAuthorizationClientConfiguration
 internal;AzureFileHandler 
 public;BackendITwinClientLoggerCategory
 internal;BlobDownloader

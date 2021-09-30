@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/backend-itwin-client",
-      "comment": "Removed BackendAuthorizationClient, DelegationAuthorizationClient, and all Introspection classes",
+      "comment": "Removed AgentAuthorizationClient, BackendAuthorizationClient, DelegationAuthorizationClient, and all Introspection classes",
       "type": "none"
     }
   ],

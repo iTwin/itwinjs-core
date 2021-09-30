@@ -5,38 +5,12 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
-import { AuthorizationClient } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
-import { Client } from 'openid-client';
 import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
-import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
-
-// @beta
-export class AgentAuthorizationClient extends ImsAuthorizationClient implements AuthorizationClient {
-    constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
-    // (undocumented)
-    protected _configuration: AgentAuthorizationClientConfiguration;
-    discoverEndpoints(): Promise<Issuer<Client>>;
-    getAccessToken(): Promise<AccessToken>;
-    // (undocumented)
-    protected getClient(): Promise<Client>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    get isAuthorized(): boolean;
-    }
-
-// @beta
-export interface AgentAuthorizationClientConfiguration {
-    readonly authority?: string;
-    readonly clientId: string;
-    readonly clientSecret: string;
-    readonly scope: string;
-}
 
 // @internal
 export class AzureFileHandler implements FileHandler {
