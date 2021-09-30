@@ -480,7 +480,10 @@ export class IModelApp {
     }
   }
 
-  /** Get the user access token, or a blank string if one is not available. */
+  /** Get the user's access token for this IModelApp, or a blank string if none is available.
+   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * returned by this method may change over time throughout the course of a session.
+   */
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await this.authorizationClient?.getAccessToken()) ?? "";
