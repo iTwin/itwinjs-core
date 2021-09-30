@@ -16,7 +16,6 @@ import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
@@ -189,7 +188,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess: FrontendHubAccess;
-  private static _realityDataAccess: RealityDataAccess;
+  private static _realityDataAccess?: RealityDataAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -247,7 +246,7 @@ export class IModelApp {
   /** Provides access to the RealityData service implementation for this IModelApp
    * @beta
    */
-  public static get realityDataAccess(): RealityDataAccess { return this._realityDataAccess; }
+  public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
@@ -375,8 +374,7 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
-    // TEMP: Using soon-to-be deprecated RealityDataClient as a default implementation
-    this._realityDataAccess = (opts.realityDataAccess !== undefined) ? opts.realityDataAccess : new RealityDataAccessClient();
+    this._realityDataAccess = opts.realityDataAccess;
 
     [
       this.renderSystem,

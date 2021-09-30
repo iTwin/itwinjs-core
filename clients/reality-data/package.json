@@ -41,7 +41,10 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.69"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.69",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",
@@ -51,6 +54,8 @@
     "@bentley/geometry-core": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/jsonpath": "^0.2.0",

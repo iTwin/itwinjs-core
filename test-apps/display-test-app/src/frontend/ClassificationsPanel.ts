@@ -10,8 +10,9 @@ import {
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@bentley/imodeljs-common";
 import {
-  ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
+  ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport,
 } from "@bentley/imodeljs-frontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -98,9 +99,13 @@ export class ClassificationsPanel extends ToolBarDropDown {
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
     let available = new Array<ContextRealityModelProps>();
     try {
-      if (this._iTwinId !== undefined)
-        available = await queryRealityData({ iTwinId: this._iTwinId, range });
-    } catch (_error) {
+      if (this._iTwinId !== undefined) {
+        if (IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn) {
+          const accessToken = await IModelApp.authorizationClient.getAccessToken();
+          available = await new RealityDataAccessClient().queryRealityData(accessToken, { iTwinId: this._iTwinId, range });
+        }
+      }
+      } catch (_error) {
       // eslint-disable-next-line no-console
       console.error("Error in query RealitydataList, you need to set SVT_STANDALONE_SIGNIN=true, and are your SVT_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");
     }

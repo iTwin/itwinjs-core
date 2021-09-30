@@ -225,6 +225,8 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
+      '@bentley/imodeljs-common': workspace:*
+      '@bentley/imodeljs-frontend': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
@@ -258,6 +260,8 @@ importers:
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
+      '@bentley/imodeljs-common': link:../../core/common
+      '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
@@ -924,7 +928,6 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/orbitgt-core': workspace:*
       '@bentley/product-settings-client': workspace:*
-      '@bentley/reality-data-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
@@ -951,7 +954,6 @@ importers:
       wms-capabilities: 0.4.0
       xml-js: ~1.6.11
     dependencies:
-      '@bentley/reality-data-client': link:../../clients/reality-data
       fuse.js: 3.6.1
       semver: 5.7.1
       wms-capabilities: 0.4.0
@@ -3150,6 +3152,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/react-scripts': 4.0.3
+      '@bentley/reality-data-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
@@ -3193,6 +3196,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/mobile-manager': link:../../core/mobile-manager
+      '@bentley/reality-data-client': link:../../clients/reality-data
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.19.0

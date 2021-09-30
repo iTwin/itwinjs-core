@@ -8,8 +8,11 @@
  */
 
 import { URL } from "url";
-import { Guid } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Angle } from "@bentley/geometry-core";
+import { AuthorizedClientRequestContext, AccessToken, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { IModelConnection, SpatialModelState, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
@@ -332,6 +335,19 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
   action?: string;
 }
 
+/** Criteria used to query for reality data associated with an iTwin context.
+ * @see [[queryRealityData]].
+ * @public
+ */
+export interface RealityDataQueryCriteria {
+  /** The Id of the iTwin context. */
+  iTwinId: GuidString;
+  /** If supplied, only reality data overlapping this range will be included. */
+  range?: CartographicRange;
+  /** If supplied, reality data already referenced by a [[GeometricModelState]] within this iModel will be excluded. */
+  filterIModel?: IModelConnection;
+}
+
 /** DataLocation
  * This class is used to represent a data location
  * @internal
@@ -462,6 +478,87 @@ export class RealityDataAccessClient extends WsgClient {
     newQueryOptions.$filter = this.getRealityDataTypesFilter(type);
 
     return this.getRealityDatas(requestContext, projectId, newQueryOptions);
+  }
+
+  /** Query for reality data associated with an iTwin context.
+   * @param criteria Criteria by which to query.
+   * @returns Properties of reality data associated with the context, filtered according to the criteria.
+   * @public
+   */
+  public async queryRealityData(accessToken: AccessToken, criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
+    const iTwinId = criteria.iTwinId;
+    const availableRealityModels: ContextRealityModelProps[] = [];
+
+    if (!accessToken)
+      return availableRealityModels;
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const client = new RealityDataAccessClient();
+
+    let realityData: RealityData[];
+    if (criteria.range) {
+      const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
+      realityData = await client.getRealityDataInProjectOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
+        Angle.radiansToDegrees(iModelRange.high.x),
+        Angle.radiansToDegrees(iModelRange.low.y),
+        Angle.radiansToDegrees(iModelRange.high.y));
+    } else {
+      realityData = await client.getRealityDataInProject(requestContext, iTwinId);
+    }
+
+    // Get set of URLs that are directly attached to the model.
+    const modelRealityDataIds = new Set<string>();
+    if (criteria.filterIModel) {
+      const query = { from: SpatialModelState.classFullName, wantPrivate: false };
+      const props = await criteria.filterIModel.models.queryProps(query);
+      for (const prop of props)
+        if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
+          const realityDataId = client.getRealityDataIdFromUrl(prop.jsonProperties.tilesetUrl);
+          if (realityDataId)
+            modelRealityDataIds.add(realityDataId);
+        }
+    }
+
+    // We obtain the reality data name, and RDS URL for each RD returned.
+    for (const currentRealityData of realityData) {
+      let realityDataName: string = "";
+      let validRd: boolean = true;
+      if (currentRealityData.name && currentRealityData.name !== "") {
+        realityDataName = currentRealityData.name;
+      } else if (currentRealityData.rootDocument) {
+        // In case root document contains a relative path we only keep the filename
+        const rootDocParts = (currentRealityData.rootDocument).split("/");
+        realityDataName = rootDocParts[rootDocParts.length - 1];
+      } else {
+        // This case would not occur normally but if it does the RD is considered invalid
+        validRd = false;
+      }
+
+      // If the RealityData is valid then we add it to the list.
+      if (currentRealityData.id && validRd === true) {
+        const url = await client.getRealityDataUrl(iTwinId, currentRealityData.id);
+        let opcConfig: OrbitGtBlobProps | undefined;
+
+        if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
+          const rootDocUrl: string = await currentRealityData.getBlobStringUrl(requestContext, currentRealityData.rootDocument);
+          opcConfig = {
+            rdsUrl: "",
+            containerName: "",
+            blobFileName: rootDocUrl,
+            accountName: "",
+            sasToken: "",
+          };
+        }
+
+        if (!modelRealityDataIds.has(currentRealityData.id))
+          availableRealityModels.push({
+            tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),
+            realityDataId: currentRealityData.id, orbitGtBlob: opcConfig,
+          });
+      }
+    }
+
+    return availableRealityModels;
   }
 
   /**

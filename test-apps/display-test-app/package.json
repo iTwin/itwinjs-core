@@ -52,6 +52,7 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",

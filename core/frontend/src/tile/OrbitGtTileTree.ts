@@ -433,6 +433,8 @@ export namespace OrbitGtTileTree {
 
     // If there's no rdsUrl, request one from RealityDataAccessClient
     if (!props.rdsUrl) {
+      if (undefined === IModelApp.realityDataAccess)
+        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access orbit tiles. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
       props.rdsUrl = await IModelApp.realityDataAccess.getRealityDataUrl(iModel.iTwinId, props.containerName);
     }
 

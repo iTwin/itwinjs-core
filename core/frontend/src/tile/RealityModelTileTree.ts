@@ -854,6 +854,9 @@ export class RealityModelTileClient {
 
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
+        if (undefined === IModelApp.realityDataAccess)
+          throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
         this._realityData = await IModelApp.realityDataAccess.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
