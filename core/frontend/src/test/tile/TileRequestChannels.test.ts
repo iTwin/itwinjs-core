@@ -14,7 +14,7 @@ describe("TileRequestChannels", () => {
   it("uses customized channels for RPC if IPC is configured", () => {
     const isCustomChannel = (ch: any) => undefined !== ch._canceled;
 
-    let channels = new TileRequestChannels(undefined);
+    let channels = new TileRequestChannels(undefined, false);
     expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.httpConcurrency);
     expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.httpConcurrency);
@@ -23,7 +23,7 @@ describe("TileRequestChannels", () => {
     expectClassName(channels.elementGraphicsRpc, "TileRequestChannel");
     expectClassName(channels.iModelChannels.rpc, "TileRequestChannel");
 
-    channels = new TileRequestChannels(42);
+    channels = new TileRequestChannels(42, false);
     expect(channels.rpcConcurrency).to.equal(42);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.rpcConcurrency);
     expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.rpcConcurrency);
@@ -34,7 +34,7 @@ describe("TileRequestChannels", () => {
   });
 
   it("requires unique channel names", () => {
-    const channels = new TileRequestChannels(undefined);
+    const channels = new TileRequestChannels(undefined, false);
     channels.add(new TileRequestChannel("abc", 123));
     expect(() => channels.add(new TileRequestChannel("abc", 456))).to.throw(Error);
     expect(channels.get("abc")!.concurrency).to.equal(123);
@@ -45,7 +45,7 @@ describe("TileRequestChannels", () => {
   });
 
   it("allocates http channel on first request", () => {
-    const channels = new TileRequestChannels(undefined);
+    const channels = new TileRequestChannels(undefined, false);
     expect(channels.size).to.equal(2);
     const channel = channels.getForHttp("abc");
     expect(channels.size).to.equal(3);
@@ -57,7 +57,7 @@ describe("TileRequestChannels", () => {
   });
 
   it("enables cloud storage cache", () => {
-    const channels = new TileRequestChannels(undefined);
+    const channels = new TileRequestChannels(undefined, false);
     expect(channels.iModelChannels.cloudStorage).to.be.undefined;
     channels.enableCloudStorageCache();
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
@@ -67,7 +67,7 @@ describe("TileRequestChannels", () => {
 
   it("returns whether channel is registered", () => {
     const channel = new TileRequestChannel("abc", 123);
-    const channels = new TileRequestChannels(undefined);
+    const channels = new TileRequestChannels(undefined, false);
     expect(channels.has(channel)).to.be.false;
     channels.add(channel);
     expect(channels.has(channel)).to.be.true;
@@ -80,7 +80,7 @@ describe("TileRequestChannels", () => {
   });
 
   it("changes RPC concurrency", () => {
-    const channels = new TileRequestChannels(undefined);
+    const channels = new TileRequestChannels(undefined, false);
     expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.rpcConcurrency);
     expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.rpcConcurrency);

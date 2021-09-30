@@ -204,7 +204,7 @@ export class TileAdmin {
     if (undefined === options)
       options = {};
 
-    this.channels = new TileRequestChannels(rpcConcurrency);
+    this.channels = new TileRequestChannels(rpcConcurrency, true === options.cacheTileMetadata);
 
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
@@ -969,6 +969,11 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     optimizeBRepProcessing?: boolean;
+
+    /** ###TODO describe
+     * @internal
+     */
+    cacheTileMetadata?: boolean;
 
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.

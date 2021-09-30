@@ -8,7 +8,7 @@
 
 import { assert, PriorityQueue } from "@itwin/core-bentley";
 import { IModelConnection } from "../IModelConnection";
-import { Tile, TileRequest } from "./internal";
+import { Tile, TileContent, TileRequest } from "./internal";
 
 class TileRequestQueue extends PriorityQueue<TileRequest> {
   public constructor() {
@@ -85,6 +85,10 @@ export class TileRequestChannel {
   private _pending = new TileRequestQueue();
   private _previouslyPending = new TileRequestQueue();
   protected _statistics = new TileRequestChannelStatistics();
+  /** Callback invoked by recordCompletion. See IModelTileMetadataCacheChannel.
+   * @internal
+   */
+  public contentCallback?: (tile: Tile, content: TileContent) => void;
 
   /** Create a new channel.
    * @param name The unique name of the channel.
@@ -150,12 +154,15 @@ export class TileRequestChannel {
   /** Invoked by [[TileRequest]] after a request completes.
    * @internal
    */
-  public recordCompletion(tile: Tile): void {
+  public recordCompletion(tile: Tile, content: TileContent): void {
     ++this._statistics.totalCompletedRequests;
     if (tile.isEmpty)
       ++this._statistics.totalEmptyTiles;
     else if (!tile.isDisplayable)
       ++this._statistics.totalUndisplayableTiles;
+
+    if (this.contentCallback)
+      this.contentCallback(tile, content);
   }
 
   /** Invoked by [[TileRequestChannels.swapPending]] when [[TileAdmin]] is about to start enqueuing new requests.

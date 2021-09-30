@@ -64,7 +64,10 @@ export class IModelTile extends Tile {
   /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
    * See CloudStorageCacheChannel.onNoContent and IModelTile.channel
    */
-  public cacheMiss = false;
+  /** If an initial attempt to obtain this tile's content (e.g., from cloud storage cache) failed,
+   * the next channel to try.
+   */
+  public requestChannel?: TileRequestChannel;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);

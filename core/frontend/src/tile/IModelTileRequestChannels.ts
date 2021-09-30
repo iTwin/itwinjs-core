@@ -6,12 +6,12 @@
  * @module Tiles
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, compareStrings, SortedArray } from "@itwin/core-bentley";
 import { TileTreeContentIds } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
-import { IModelTile, Tile, TileRequest, TileRequestChannel } from "./internal";
+import { IModelTile, IModelTileContent, Tile, TileContent, TileRequest, TileRequestChannel, TileTree } from "./internal";
 
 /** Handles requests to the cloud storage tile cache, if one is configured. If a tile's content is not found in the cache, subsequent requests for the same tile will
  * use the IModelTileChannel instead.
@@ -24,7 +24,7 @@ class CloudStorageCacheChannel extends TileRequestChannel {
 
   public override onNoContent(request: TileRequest): boolean {
     assert(request.tile instanceof IModelTile);
-    request.tile.cacheMiss = true;
+    request.tile.requestChannel = IModelApp.tileAdmin.channels.iModelChannels.rpc;
     ++this._statistics.totalCacheMisses;
     return true;
   }
@@ -68,16 +68,87 @@ class IModelTileChannel extends TileRequestChannel {
   }
 }
 
+interface CachedContent extends Omit<IModelTileContent, "graphic"> {
+  contentId: string;
+  hasGraphic: boolean;
+}
+
+class IModelTileMetadataCacheChannel extends TileRequestChannel {
+  private readonly _cacheByIModel = new Map<IModelConnection, Map<TileTree, SortedArray<CachedContent>>>();
+
+  public constructor() {
+    super("itwinjs-imodel-metadata-cache", 100);
+  }
+
+  public override onNoContent(request: TileRequest): boolean {
+    assert(request.tile instanceof IModelTile);
+    const channels = IModelApp.tileAdmin.channels.iModelChannels;
+    request.tile.requestChannel = channels.cloudStorage ?? channels.rpc;
+    return true;
+  }
+
+  public override async requestContent(tile: Tile): Promise<TileRequest.Response> {
+    assert(tile instanceof IModelTile);
+    const cached = this._cacheByIModel.get(tile.iModel)?.get(tile.tree)?.findEquivalent(x => compareStrings(x.contentId, tile.contentId));
+    if (!cached)
+      return undefined;
+
+    const content: TileContent = {
+      ...cached,
+      graphic: cached.hasGraphic ? IModelApp.renderSystem.createGraphicList([]) : undefined,
+      contentRange: cached.contentRange?.clone(),
+    };
+
+    return { content };
+  }
+
+  public override onIModelClosed(imodel: IModelConnection): void {
+    this._cacheByIModel.delete(imodel);
+  }
+
+  public registerChannel(channel: TileRequestChannel): void {
+    channel.contentCallback = (tile, content) => this.cache(tile, content);
+  }
+
+  private cache(tile: Tile, content: IModelTileContent): void {
+    assert(tile instanceof IModelTile);
+    let trees = this._cacheByIModel.get(tile.iModel);
+    if (!trees)
+      this._cacheByIModel.set(tile.iModel, trees = new Map<TileTree, SortedArray<CachedContent>>());
+
+    let list = trees.get(tile.tree);
+    if (!list)
+      trees.set(tile.tree, list = new SortedArray<CachedContent>((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId)));
+
+    assert(undefined === list.findEquivalent(x => compareStrings(x.contentId, tile.contentId)));
+    list.insert({
+      contentId: tile.contentId,
+      hasGraphic: undefined !== content.graphic,
+      contentRange: content.contentRange?.clone(),
+      isLeaf: content.isLeaf,
+      sizeMultiplier: content.sizeMultiplier,
+      emptySubRangeMask: content.emptySubRangeMask,
+    });
+  }
+}
+
 export class IModelTileRequestChannels {
   private _cloudStorage?: TileRequestChannel;
+  private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
   public constructor(args: {
     concurrency: number,
     usesHttp: boolean,
+    cacheMetadata: boolean,
   }) {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
+    if (!args.cacheMetadata)
+      return;
+
+    this._contentCache = new IModelTileMetadataCacheChannel();
+    this._contentCache.registerChannel(this.rpc);
   }
 
   public get cloudStorage(): TileRequestChannel | undefined {
@@ -86,7 +157,9 @@ export class IModelTileRequestChannels {
 
   public enableCloudStorageCache(concurrency: number): TileRequestChannel {
     assert(undefined === this._cloudStorage);
-    return this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", concurrency);
+    this._cloudStorage = new CloudStorageCacheChannel("itwinjs-cloud-cache", concurrency);
+    this._contentCache?.registerChannel(this._cloudStorage);
+    return this._cloudStorage;
   }
 
   public [Symbol.iterator](): Iterator<TileRequestChannel> {
@@ -99,6 +172,6 @@ export class IModelTileRequestChannels {
   }
 
   public getChannelForTile(tile: IModelTile): TileRequestChannel {
-    return tile.cacheMiss || undefined === this._cloudStorage ? this.rpc : this._cloudStorage;
+    return tile.requestChannel || this._cloudStorage || this.rpc;
   }
 }

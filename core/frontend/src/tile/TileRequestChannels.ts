@@ -60,7 +60,7 @@ export class TileRequestChannels {
   /** `rpcConcurrency` is defined if [[IpcApp.isValid]]; otherwise RPC requests are made over HTTP and use the same limits.
    * @internal
    */
-  public constructor(rpcConcurrency: number | undefined) {
+  public constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean) {
     this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
     const elementGraphicsChannelName = "itwinjs-elem-rpc";
@@ -71,7 +71,12 @@ export class TileRequestChannels {
 
     this.add(this.elementGraphicsRpc);
 
-    this.iModelChannels = new IModelTileRequestChannels({ concurrency: this.rpcConcurrency, usesHttp: undefined === rpcConcurrency });
+    this.iModelChannels = new IModelTileRequestChannels({
+      concurrency: this.rpcConcurrency,
+      usesHttp: undefined === rpcConcurrency,
+      cacheMetadata,
+    });
+
     for (const channel of this.iModelChannels)
       this.add(channel);
   }
