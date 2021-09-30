@@ -6,10 +6,11 @@
  * @module Tiles
  */
 
-import { assert } from "@itwin/core-bentley";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
-import { CloudStorageCacheChannel, IModelTileChannel, TileRequest, TileRequestChannel, TileRequestChannelStatistics } from "./internal";
+import {
+  IModelTile, IModelTileRequestChannels, TileRequest, TileRequestChannel, TileRequestChannelStatistics,
+} from "./internal";
 
 /** For an [[IpcApp]], allows backend element graphics requests in progress to be canceled. */
 class ElementGraphicsChannel extends TileRequestChannel {
@@ -45,9 +46,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
  * @public
  */
 export class TileRequestChannels {
-  private _cloudStorageCache?: TileRequestChannel;
-  /** @internal */
-  public readonly iModelTileRpc: TileRequestChannel;
+  private readonly _iModelChannels: IModelTileRequestChannels;
   /** The channel over which [[TileAdmin.requestElementGraphics]] executes. If you implement a [[TiledGraphicsProvider]] or [[TileTree]] that obtains its
    * content from `requestElementGraphics`, use this channel.
    */
@@ -63,38 +62,24 @@ export class TileRequestChannels {
   public constructor(rpcConcurrency: number | undefined) {
     this._rpcConcurrency = rpcConcurrency ?? this.httpConcurrency;
 
-    const imodelChannelName = "itwinjs-tile-rpc";
     const elementGraphicsChannelName = "itwinjs-elem-rpc";
-    if (undefined !== rpcConcurrency) {
-      // RPC uses IPC so it should be throttled based on the concurrency supported by the backend process.
-      // IPC means "single user" so we can also cancel requests in progress on the backend.
-      this.iModelTileRpc = new IModelTileChannel(imodelChannelName, rpcConcurrency);
+    if (undefined !== rpcConcurrency)
       this.elementGraphicsRpc = new ElementGraphicsChannel(elementGraphicsChannelName, rpcConcurrency);
-    } else {
-      // RPC uses HTTP so it should be throttled based on HTTP limits.
-      // HTTP means "multiple users" so we cannot cancel requests in progress on the backend.
-      this.iModelTileRpc = new TileRequestChannel(imodelChannelName, this.rpcConcurrency);
+    else
       this.elementGraphicsRpc = new TileRequestChannel(elementGraphicsChannelName, this.rpcConcurrency);
-    }
 
-    this.add(this.iModelTileRpc);
     this.add(this.elementGraphicsRpc);
-  }
 
-  /** If a cloud storage tile cache is configured, [[IModelTile]]s first request their content via this channel.
-   * @internal
-   */
-  public get cloudStorageCache(): TileRequestChannel | undefined {
-    return this._cloudStorageCache;
+    this._iModelChannels = new IModelTileRequestChannels({ concurrency: this.rpcConcurrency, usesHttp: undefined === rpcConcurrency });
+    for (const channel of this._iModelChannels)
+      this.add(channel);
   }
 
   /** Lazily called by [[TileAdmin]] once it can determine whether a cloud storage cache is configured.
    * @internal
    */
   public enableCloudStorageCache(): void {
-    assert(undefined === this._cloudStorageCache);
-    if (!this._cloudStorageCache)
-      this.add(this._cloudStorageCache = new CloudStorageCacheChannel("itwinjs-cloud-cache", this.httpConcurrency));
+    this.add(this._iModelChannels.enableCloudStorageCache(this.httpConcurrency));
   }
 
   /** The number of registered channels. */
@@ -158,12 +143,17 @@ export class TileRequestChannels {
     return this._rpcConcurrency;
   }
 
+  /** @internal */
+  public getIModelTileChannel(tile: IModelTile): TileRequestChannel {
+    return this._iModelChannels.getChannelForTile(tile);
+  }
+
   /** Chiefly for debugging.
    * @internal
    */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
-    this.iModelTileRpc.concurrency = concurrency;
+    this._iModelChannels.setRpcConcurrency(concurrency);
     this.elementGraphicsRpc.concurrency = concurrency;
   }
 

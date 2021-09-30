@@ -89,9 +89,7 @@ export class IModelTile extends Tile {
   }
 
   public get channel(): TileRequestChannel {
-    const channels = IModelApp.tileAdmin.channels;
-    const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
-    return cloud ?? channels.iModelTileRpc;
+    return IModelApp.tileAdmin.channels.getIModelTileChannel(this);
   }
 
   public async requestContent(): Promise<TileRequest.Response> {
