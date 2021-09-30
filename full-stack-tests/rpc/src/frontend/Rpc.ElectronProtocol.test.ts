@@ -12,7 +12,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 // N.B.: These tests only run in electron!
 if (ProcessDetector.isElectronAppFrontend) {
   describe("Rpc.ElectronProtocol", () => {
-    it("should generate one response per request", async () => {
+    it.only("should generate one response per request", async () => {
       let received = 0;
       let request: RpcRequest;
       const client = TestRpcInterface3.getClient();

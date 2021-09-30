@@ -218,11 +218,9 @@ export class IModelHost {
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
-  /** Get the active authorization/access token for use with various services
-   * @throws if authorizationClient has not been set up
-   */
-  public static async getAccessToken(): Promise<AccessToken | undefined> {
-    return this.authorizationClient!.getAccessToken();
+  /** Get the current access token, or a blank string one is not available. */
+  public static async getAccessToken(): Promise<AccessToken> {
+    return (await this.authorizationClient?.getAccessToken()) ?? "";
   }
 
   /** @internal */

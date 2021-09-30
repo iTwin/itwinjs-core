@@ -93,7 +93,7 @@ export interface NativeAppFunctions {
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
   signOut(): Promise<void>;
 
-  getAccessToken: () => Promise<AccessToken | undefined>;
+  getAccessToken: () => Promise<AccessToken>;
 
   /** Check if the internet is reachable. */
   checkInternetConnectivity(): Promise<InternetConnectivityStatus>;

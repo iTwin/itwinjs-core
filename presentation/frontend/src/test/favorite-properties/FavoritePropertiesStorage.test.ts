@@ -91,12 +91,6 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       expect(properties).to.be.undefined;
     });
 
-    it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
-      await expect(storage.loadProperties()).to.eventually.be.rejected;
-    });
-
   });
 
   describe("saveProperties", () => {
@@ -109,12 +103,6 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
       await storage.saveProperties(properties);
       settingsAdminMock.verify(async (x) => x.saveUserSetting(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), undefined, undefined), moq.Times.once());
-    });
-
-    it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
-      await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
     });
 
   });
@@ -175,12 +163,6 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
       await storage.savePropertiesOrder([orderInfo], "projectId", "imodelId");
       settingsAdminMock.verify(async (x) => x.saveUserSetting(moq.It.isAny(), moq.It.isAny(), "imodeljs.presentation", "FavoritePropertiesOrderInfo", moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
-    });
-
-    it("throws when not signed in", async () => {
-      authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
-      await expect(storage.savePropertiesOrder([], "projectId", "imodelId")).to.eventually.be.rejected;
     });
 
   });

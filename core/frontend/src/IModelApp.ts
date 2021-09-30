@@ -480,6 +480,11 @@ export class IModelApp {
     }
   }
 
+  /** Get the user access token, or a blank string if one is not available. */
+  public static async getAccessToken(): Promise<AccessToken> {
+    return (await this.authorizationClient?.getAccessToken()) ?? "";
+  }
+
   /** @internal */
   public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
 
@@ -490,20 +495,12 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
-      let authorization: AccessToken | undefined;
-      if (IModelApp.authorizationClient) {
-        try {
-          authorization = await IModelApp.authorizationClient.getAccessToken();
-        } catch (err) {
-          // The application may go offline
-        }
-      }
       const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization: authorization ?? "",
+        authorization: await this.getAccessToken(),
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;

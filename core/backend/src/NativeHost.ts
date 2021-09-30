@@ -41,10 +41,10 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     NativeHost.onUserStateChanged.raiseEvent(token);
   }
 
-  public async getAccessToken(): Promise<AccessToken | undefined> {
-    if (!this._accessToken)
+  public async getAccessToken(): Promise<AccessToken> {
+    if (!this._accessToken) // TODO: This should happen from a timer, not here
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken;
+    return this._accessToken ?? "";
   }
 
   public async initialize(config?: NativeAppAuthorizationConfiguration) {
@@ -66,7 +66,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async setAccessToken(token: AccessToken) {
     NativeHost.authorization.setAccessToken(token);
   }
-  public async getAccessToken(): Promise<AccessToken | undefined> {
+  public async getAccessToken(): Promise<AccessToken> {
     return NativeHost.authorization.getAccessToken();
   }
   public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {

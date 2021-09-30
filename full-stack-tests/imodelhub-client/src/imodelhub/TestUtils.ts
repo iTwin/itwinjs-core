@@ -196,7 +196,7 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);
 
   await (authorizationClient as TestIModelHubOidcAuthorizationClient).signIn();
-  return (await authorizationClient.getAccessToken())!;
+  return authorizationClient.getAccessToken();
 }
 
 export async function bootstrapBankProject(accessToken: AccessToken, projectName: string): Promise<void> {

@@ -240,10 +240,10 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
   }
 
-  public override async getAccessToken(): Promise<AccessToken | undefined> {
-    if (this._hasExpired || !this._accessToken)
+  public override async getAccessToken(): Promise<AccessToken> {
+    if (this._hasExpired || !this._accessToken) // TODO: THis should happen on a timer, not here
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken;
+    return this._accessToken ?? "";
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {

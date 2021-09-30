@@ -59,7 +59,7 @@ export class TestUtility {
 
     const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
     await authorizationClient.signIn();
-    const accessToken = (await authorizationClient.getAccessToken())!;
+    const accessToken = (await authorizationClient.getAccessToken());
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
       await this.imodelCloudEnv.bootstrapIModelBankProject(accessToken, testContextName);
     }
@@ -68,14 +68,14 @@ export class TestUtility {
   }
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const iTwin: ITwin = await this.imodelCloudEnv.contextMgr.getITwinByName(accessToken, contextName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
@@ -83,9 +83,9 @@ export class TestUtility {
     return iModels[0].wsgId;
   }
 
-  /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
+  /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const briefcases = await IModelHubFrontend.iModelClient.briefcases.get(accessToken, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
