@@ -115,18 +115,18 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const row = quadId.row * 2;
     const column = quadId.column * 2;
     const level = quadId.level + 1;
+    const available = [false, false, false, false];
 
     getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${row}/${column}/2/2?f=json`).then((json) => {
-      let available: boolean[] | undefined;
-      if (Array.isArray(json.data)) {
-        const data = json.data;
-        if (Array.isArray(data))
-          data.forEach((entry: number) => available?.push(entry !== 0));
-      }
+      if (Array.isArray(json.data))
+        for (let i = 0; i < 4; i++)
+          available[i] = json.data[i] !== 0;
+
       resolveChildren(available);
     }).catch((_error) => {
-      resolveChildren();
+      resolveChildren(available);
     });
+
   }
 
   private isEpsg3857Compatible(tileInfo: any) {

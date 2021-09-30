@@ -46,8 +46,8 @@ export class ImageryMapTile extends RealityTile {
   }
 
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
-    if (this.isDisplayable && (this.isLeaf || (this.rectangle.yLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound)) {
-      if (!this.isNotFound)
+    if (this.isLeaf || (this.rectangle.yLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound) {
+      if (this.isDisplayable && !this.isNotFound)
         drapeTiles.push(this);
       return TileTreeLoadStatus.Loaded;
     }
