@@ -59,18 +59,15 @@ describe("IModel Connection", () => {
 });
 
 describe("IModel Connection with client credentials", () => {
-  let accessToken: AccessToken;
+  // let accessToken: AccessToken;
   let testContext: TestContext;
 
   before(async function () {
     testContext = await TestContext.instance();
 
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
-    if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
+    if (testContext.settings.runiModelReadRpcTests)
       this.skip();
-
-    accessToken = testContext.clientAccessToken!;
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
   it("should successfully open an IModelConnection for read", async () => {

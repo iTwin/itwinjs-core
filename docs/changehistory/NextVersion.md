@@ -691,13 +691,14 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
 
-| Removed                             | Replacement                                  |
-| ----------------------------------- | -------------------------------------------- |
-| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
-| `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
-| `BackendAuthorizationClient`        | *removed*                                    |
-| `DelegationAuthorizationClient`     | *removed*                                    |
-| `IntrospectionClient`               | moved to iTwin/auth-clients                  |
+| Removed                             | Replacement                                                 |
+| ----------------------------------- | --------------------------------------------                |
+| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`                |
+| `OidcDelegationClient`              | `DelegationAuthorizationClient`                             |
+| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient  |
+| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
+| `DelegationAuthorizationClient`     | *removed*                                                   |
+| `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
 
 ### @itwin/appui-abstract
 
