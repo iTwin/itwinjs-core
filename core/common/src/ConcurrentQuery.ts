@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-
+/** @public */
 export enum QueryRowFormat {
   UseECSqlPropertyNames,
   UseJsPropertyNames,
@@ -345,21 +345,17 @@ export interface BlobResponse extends Response {
   data?: Uint8Array;
   rawBlobSize: number;
 }
-/** @beta */
-export class ResponseError extends BentleyError {
-  public constructor(public readonly response: Response, public readonly request?: Request, rc?: DbResult) {
-    super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, () => {
-      return {
-        resp: response, req: request,
-      };
-    });
+/** @public */
+export class ConcurrentQueryError extends BentleyError {
+  public constructor(public readonly response: any, public readonly request?: any, rc?: DbResult) {
+    super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, { response, request });
   }
-  public static throwIfError(response: Response, request?: Request) {
+  public static throwIfError(response: any, request?: any) {
     if (response.status === ResponseStatus.Error) {
-      throw new ResponseError(response, request);
+      throw new ConcurrentQueryError(response, request);
     }
     if (response.status === ResponseStatus.Cancel) {
-      throw new ResponseError(response, request, DbResult.BE_SQLITE_INTERRUPT);
+      throw new ConcurrentQueryError(response, request, DbResult.BE_SQLITE_INTERRUPT);
     }
   }
 }
