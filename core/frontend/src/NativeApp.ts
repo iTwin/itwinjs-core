@@ -83,12 +83,12 @@ export class NativeAppAuthorization implements AuthorizationClient {
     this._expireSafety = await NativeApp.callNativeHost("initializeAuth", props, this._config);
   }
 
-  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
+  /** Called to start the sign-in process. Subscribe to onAccessTokenChanged to be notified when sign-in completes */
   public async signIn(): Promise<void> {
     return NativeApp.callNativeHost("signIn");
   }
 
-  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
+  /** Called to start the sign-out process. Subscribe to onAccessTokenChanged to be notified when sign-out completes */
   public async signOut(): Promise<void> {
     return NativeApp.callNativeHost("signOut");
   }
@@ -97,7 +97,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
    * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
    * - The token is refreshed if it's possible and necessary.
    * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
-   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
+   * - Getting or refreshing the token will trigger the [[onAccessTokenChanged]] event.
    */
   public async getAccessToken(): Promise<AccessToken> {
     // if we have a valid token, return it. Otherwise call backend to refresh the token.

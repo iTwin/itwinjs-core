@@ -105,7 +105,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   /**
    * Start the sign-in process
-   * - calls the onUserStateChanged() call back after the authorization completes
+   * - calls the onAccessTokenChanged() call back after the authorization completes
    * or if there is an error.
    * - will attempt in order:
    *   (i) load any existing authorized user from storage,
@@ -188,7 +188,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   /**
    * Start the sign-out process
-   * - calls the onUserStateChanged() call back after the authorization completes
+   * - calls the onAccessTokenChanged() call back after the authorization completes
    *   or if there is an error.
    * - redirects application to the postSignoutRedirectUri specified in the configuration when the sign out is
    *   complete

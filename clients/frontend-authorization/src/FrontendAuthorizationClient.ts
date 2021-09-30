@@ -12,10 +12,10 @@ import { AuthorizationClient } from "@bentley/itwin-client";
  * @beta
  */
 export interface FrontendAuthorizationClient extends AuthorizationClient {
-  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
+  /** Called to start the sign-in process. Subscribe to onAccessTokenChanged to be notified when sign-in completes */
   signIn(): Promise<void>;
 
-  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
+  /** Called to start the sign-out process. Subscribe to onAccessTokenChanged to be notified when sign-out completes */
   signOut(): Promise<void>;
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because token was refreshed */
