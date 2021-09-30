@@ -6,7 +6,9 @@
 import { assert } from "chai";
 import * as path from "path";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
-import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
+import {
+  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryParams, QueryRowFormat, SubCategoryAppearance,
+} from "@itwin/core-common";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
@@ -15,8 +17,6 @@ import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
-import { QueryParams } from "@itwin/core-common";
-import { QueryRowFormat } from "@itwin/core-common";
 
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
