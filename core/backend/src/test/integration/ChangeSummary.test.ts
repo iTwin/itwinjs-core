@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
 import {
-  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryParams, QueryRowFormat, SubCategoryAppearance,
+  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
@@ -516,7 +516,7 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(row.summary.id, changeSummaryId);
         });
 
-        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryParams.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
+        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
           assert.isDefined(row.wsgId);
           assert.equal(row.wsgId, changeSet.id);
           assert.isDefined(row.summary);
@@ -539,7 +539,7 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(row.summary.id, changeSummaryId);
         });
 
-        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryParams.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
+        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
           assert.isDefined(row.wsgId);
           assert.equal(row.wsgId, changeSet.id);
           assert.isDefined(row.summary);

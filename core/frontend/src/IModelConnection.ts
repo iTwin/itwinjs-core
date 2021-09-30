@@ -10,11 +10,11 @@ import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementProps,
-  EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
-  ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryConfig,
-  QueryParams, QueryRequest, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d,
+  QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData,
   TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
@@ -246,9 +246,9 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryParams, config?: QueryConfig): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
-      execute: async (request: QueryRequest) => {
+      execute: async (request: DbQueryRequest) => {
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
@@ -271,7 +271,7 @@ export abstract class IModelConnection extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
     const reader = this.createQueryReader(ecsql, params, config);
     while (await reader.step())
       yield reader.formatCurrentRow(rowFormat ?? QueryRowFormat.Default);
@@ -290,7 +290,7 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
 
-  public async queryRowCount(ecsql: string, params?: QueryParams): Promise<number> {
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
     for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
@@ -315,7 +315,7 @@ export abstract class IModelConnection extends IModel {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
 
-  public async * restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any | any[]> {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any | any[]> {
     if (!config) {
       config = { restartToken: token };
     } else {

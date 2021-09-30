@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
-import { GeometricModel3dProps, QueryParams, QueryRowFormat } from "@itwin/core-common";
+import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
 import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
@@ -245,7 +245,7 @@ export class CategoryPicker extends IdPicker {
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];
-    for await (const row of view.iModel.query(`${ecsql}`, QueryParams.from(bindings), QueryRowFormat.UseJsPropertyNames, { limit: { count: 1000 } })) {
+    for await (const row of view.iModel.query(`${ecsql}`, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames, { limit: { count: 1000 } })) {
       rows.push(row);
     }
     rows.sort((lhs, rhs) => {
