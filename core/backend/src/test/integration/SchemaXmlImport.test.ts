@@ -22,22 +22,19 @@ import { HubUtility } from "./HubUtility";
 //      - Required: "openid imodelhub context-registry-service:read-only"
 
 describe("Schema XML Import Tests (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
-  // SWB
-  let testContextId: string;
+  let user: AuthorizedBackendRequestContext;  let testITwinId: string;
   let readWriteTestIModelId: GuidString;
 
   before(async () => {
     HubMock.startup("schemaImport");
     user = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    testContextId = await HubUtility.getTestITwinId(user);
-    readWriteTestIModelId = await HubUtility.recreateIModel({ user, iTwinId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
+    testITwinId = await HubUtility.getTestITwinId(user);
+    readWriteTestIModelId = await HubUtility.recreateIModel({ user, iTwinId: testITwinId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
   after(async () => {
     try {
-      // SWB
-      await IModelHost.hubAccess.deleteIModel({ user, iTwinId: testContextId, iModelId: readWriteTestIModelId });
+      await IModelHost.hubAccess.deleteIModel({ user, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -49,8 +46,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    // SWB
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId: testContextId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
     await iModel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure

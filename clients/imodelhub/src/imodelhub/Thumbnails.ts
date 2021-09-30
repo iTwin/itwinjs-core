@@ -133,6 +133,7 @@ export class ThumbnailHandler {
 
     const base64Data = Base64.btoa(byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), ""));
     return `data:image/png;base64,${base64Data}`;
+
   }
 
   /** Download the latest iModel's thumbnail.

@@ -81,7 +81,7 @@ export class HubUtility {
 
   /** Queries the iModel id by its name
    * @param requestContext The client request context
-   * @param iTwinId Id of the iTwin the iModel is in.
+   * @param iTwinId Id of the parent iTwin
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
@@ -319,10 +319,9 @@ export class HubUtility {
    * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
-  // SWB
-  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
+  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString, iModelDir: string) {
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir, true /* =reDownload */);
+    await HubUtility.downloadIModelById(requestContext, iTwinId, iModelId, iModelDir, true /* =reDownload */);
 
     this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }
@@ -357,9 +356,8 @@ export class HubUtility {
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
-  // SWB
-  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    const iTwinId = await HubUtility.getITwinIdByName(requestContext, projectName);
+  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, iTwinName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    const iTwinId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, iTwinId, seedPathname, iModelName, overwrite);
 
@@ -454,15 +452,13 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  // SWB
-  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, iTwinName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    // SWB
-    const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const iTwinId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, iModelName);
 
     return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
-      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${iTwinName}:${iModelName}. Purging all briefcases.`);
     }, acquireThreshold);
   }
 
@@ -592,8 +588,7 @@ export class HubUtility {
   }
 }
 
-/** An implementation of TestITwin backed by an iTwin project */
-
+/** An implementation of TestITwin backed by an iTwin */
 class TestITwin {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
