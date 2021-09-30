@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-
 /**
  * Specify row format for the row returned by query() and restartQuery() methods
  * @public
