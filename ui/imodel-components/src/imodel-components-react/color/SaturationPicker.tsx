@@ -76,7 +76,7 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
 }
 
 /** Properties for the [[SaturationPicker]] React component
- * @public
+ * @beta
  */
 export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** function to run when user selects location in saturation region */
@@ -86,7 +86,7 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
 }
 
 /** SaturationPicker component used to set the saturation value.
- * @public
+ * @beta
  */
 export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps) {
   const container = React.useRef<HTMLDivElement>(null);

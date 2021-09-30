@@ -1,22 +1,22 @@
 sep=;
 Release Tag;API Item
-public;AlphaSlider 
-public;AlphaSliderProps 
+beta;AlphaSlider 
+beta;AlphaSliderProps 
 public;AnimationFractionChangeHandler = (animationFraction: number) => void
 alpha;BaseSolarDataProvider 
 alpha;BaseTimelineDataProvider 
-public;ColorEditor 
-public;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
-public;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
-public;ColorPickerDialogProps
+beta;ColorEditor 
+beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
+beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
+beta;ColorPickerDialogProps
 public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
 public;ColorPickerPanelProps
 public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 public;ColorPickerPopupProps 
-public;ColorPickerProps 
-public;ColorPropertyEditor 
-public;ColorSwatch(props: ColorSwatchProps): JSX.Element
-public;ColorSwatchProps 
+beta;ColorPickerProps 
+beta;ColorPropertyEditor 
+beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
+beta;ColorSwatchProps 
 internal;ContextMenu 
 deprecated;ContextMenu 
 internal;ContextMenuItem 
@@ -65,8 +65,8 @@ internal;HitBoxY
 deprecated;HitBoxY
 internal;HitBoxZ
 deprecated;HitBoxZ
-public;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
-public;HueSliderProps 
+beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
+beta;HueSliderProps 
 internal;InlineEdit 
 public;LineWeightSwatch 
 public;LineWeightSwatchProps 
@@ -92,8 +92,8 @@ beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | nul
 beta;QuantityNumberInputProps 
 beta;QuantityProps 
 internal;RailMarkers({ showToolTip, percent, tooltipText, markDate }:
-public;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
-public;SaturationPickerProps 
+beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
+beta;SaturationPickerProps 
 internal;Scrubber(props: ScrubberProps): JSX.Element
 internal;ScrubberProps 
 alpha;SolarDataProvider

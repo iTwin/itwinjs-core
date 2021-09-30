@@ -14,7 +14,7 @@ import { UiIModelComponents } from "../UiIModelComponents";
 import { SpecialKey } from "@itwin/appui-abstract";
 
 /** Properties for the [[AlphaSlider]] React component
- * @public
+ * @beta
  */
 export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
   /** true if slider is oriented horizontal, else vertical orientation is assumed */
@@ -26,7 +26,7 @@ export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, 
 }
 
 /** AlphaSlider component used to set the alpha value.
- * @public
+ * @beta
  */
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   private _container: HTMLDivElement | null = null;

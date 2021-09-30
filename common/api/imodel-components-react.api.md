@@ -36,7 +36,7 @@ import { ViewManager } from '@itwin/core-frontend';
 import { Viewport } from '@itwin/core-frontend';
 import { ViewState } from '@itwin/core-frontend';
 
-// @public
+// @beta
 export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     // @internal
     constructor(props: AlphaSliderProps);
@@ -46,7 +46,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     render(): React.ReactNode;
     }
 
-// @public
+// @beta
 export interface AlphaSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     alpha: number;
     isHorizontal?: boolean;
@@ -147,7 +147,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     protected _viewport: ScreenViewport | undefined;
 }
 
-// @public
+// @beta
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -165,13 +165,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     readonly state: Readonly<ColorEditorState>;
 }
 
-// @public
+// @beta
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
-// @public
+// @beta
 export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element;
 
-// @public
+// @beta
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
@@ -219,7 +219,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     showCaret?: boolean;
 }
 
-// @public
+// @beta
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDefs?: ColorDef[];
     disabled?: boolean;
@@ -233,16 +233,16 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
     showCaret?: boolean;
 }
 
-// @public
+// @beta
 export class ColorPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
 
-// @public
+// @beta
 export function ColorSwatch(props: ColorSwatchProps): JSX.Element;
 
-// @public
+// @beta
 export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef: ColorDef;
     onColorPick?: ((color: ColorDef, e: React.MouseEvent) => void) | undefined;
@@ -640,10 +640,10 @@ export enum HitBoxZ {
     Top = 1
 }
 
-// @public
+// @beta
 export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element;
 
-// @public
+// @beta
 export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     isHorizontal?: boolean;
@@ -856,10 +856,10 @@ export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
     markDate?: DateMarkerProps;
 }): JSX.Element;
 
-// @public
+// @beta
 export function SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element;
 
-// @public
+// @beta
 export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivElement>, CommonProps {
     hsv: HSVColor;
     onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
