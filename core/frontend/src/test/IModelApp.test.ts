@@ -44,8 +44,6 @@ class TestRotateTool extends RotateViewTool { }
 class TestSelectTool extends SelectionTool { }
 
 class TestApp extends MockRender.App {
-  public static testNamespace?: Promise<void>;
-
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuDraw = new TestAccuDraw();
@@ -53,7 +51,6 @@ class TestApp extends MockRender.App {
     await MockRender.App.startup(opts);
 
     const namespace = "TestApp";
-    this.testNamespace = IModelApp.localization.registerNamespace(namespace);
     TestImmediate.register(namespace);
     AnotherImmediate.register(namespace);
     ThirdImmediate.register(namespace);
@@ -74,7 +71,7 @@ class TestApp extends MockRender.App {
 describe("IModelApp", () => {
   before(async () => {
     await TestApp.startup({ localization: new I18N("iModelJs") });
-    await TestApp.testNamespace;  // we must wait for the localization read to finish.
+    await IModelApp.localization.registerNamespace("TestApp")  // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());
 

@@ -44,7 +44,6 @@
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
-    "@types/i18next-node-fs-backend": "^2.1.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
@@ -64,7 +63,6 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.70",
     "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.70"
   },
   "dependencies": {

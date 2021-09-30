@@ -625,7 +625,6 @@ importers:
       '@types/benchmark': ^2.1.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/i18next-node-fs-backend': ^2.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/sinon': ^9.0.0
@@ -657,7 +656,6 @@ importers:
       '@types/benchmark': 2.1.1
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
-      '@types/i18next-node-fs-backend': 2.1.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/sinon': 9.0.11
