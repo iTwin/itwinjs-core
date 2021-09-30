@@ -10,46 +10,27 @@ function expectClassName(obj: Object, name: string): void {
   expect(obj.constructor.name).to.equal(name);
 }
 
-function findChannelByName(channels: TileRequestChannels, name: string): TileRequestChannel | undefined {
-  for (const channel of channels)
-    if (channel.name === name)
-      return channel;
-
-  return undefined;
-}
-
-function getIModelRpc(channels: TileRequestChannels): TileRequestChannel {
-  const channel = findChannelByName(channels, "itwinjs-tile-rpc");
-  expect(channel).not.to.be.undefined;
-  return channel!;
-}
-
-function getCloudStorage(channels: TileRequestChannels) {
-  return findChannelByName(channels, "itwinjs-cloud-cache");
-}
-
 describe("TileRequestChannels", () => {
   it("uses customized channels for RPC if IPC is configured", () => {
     const isCustomChannel = (ch: any) => undefined !== ch._canceled;
 
     let channels = new TileRequestChannels(undefined);
-    const iModelRpc = getIModelRpc(channels);
     expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.httpConcurrency);
-    expect(iModelRpc.concurrency).to.equal(channels.httpConcurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.httpConcurrency);
     expect(isCustomChannel(channels.elementGraphicsRpc)).to.be.false;
-    expect(isCustomChannel(iModelRpc)).to.be.false;
+    expect(isCustomChannel(channels.iModelChannels.rpc)).to.be.false;
     expectClassName(channels.elementGraphicsRpc, "TileRequestChannel");
-    expectClassName(iModelRpc, "TileRequestChannel");
+    expectClassName(channels.iModelChannels.rpc, "TileRequestChannel");
 
     channels = new TileRequestChannels(42);
     expect(channels.rpcConcurrency).to.equal(42);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.rpcConcurrency);
-    expect(iModelRpc.concurrency).to.equal(channels.rpcConcurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.rpcConcurrency);
     expect(isCustomChannel(channels.elementGraphicsRpc)).to.be.true;
-    expect(isCustomChannel(iModelRpc)).to.be.true;
+    expect(isCustomChannel(channels.iModelChannels.rpc)).to.be.true;
     expectClassName(channels.elementGraphicsRpc, "ElementGraphicsChannel");
-    expectClassName(iModelRpc, "IModelTileChannel");
+    expectClassName(channels.iModelChannels.rpc, "IModelTileChannel");
   });
 
   it("requires unique channel names", () => {
@@ -77,13 +58,11 @@ describe("TileRequestChannels", () => {
 
   it("enables cloud storage cache", () => {
     const channels = new TileRequestChannels(undefined);
-    expect(getCloudStorage(channels)).to.be.undefined;
-
+    expect(channels.iModelChannels.cloudStorage).to.be.undefined;
     channels.enableCloudStorageCache();
-    const cloud = getCloudStorage(channels);
-    expect(cloud).not.to.be.undefined;
-    expect(cloud!.concurrency).to.equal(channels.httpConcurrency);
-    expectClassName(cloud!, "CloudStorageCacheChannel");
+    expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
+    expect(channels.iModelChannels.cloudStorage!.concurrency).to.equal(channels.httpConcurrency);
+    expectClassName(channels.iModelChannels.cloudStorage!, "CloudStorageCacheChannel");
   });
 
   it("returns whether channel is registered", () => {
@@ -102,15 +81,14 @@ describe("TileRequestChannels", () => {
 
   it("changes RPC concurrency", () => {
     const channels = new TileRequestChannels(undefined);
-    const iModelRpc = getIModelRpc(channels);
     expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(channels.rpcConcurrency);
-    expect(iModelRpc.concurrency).to.equal(channels.rpcConcurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(channels.rpcConcurrency);
 
     const concurrency = channels.rpcConcurrency + 1;
     channels.setRpcConcurrency(concurrency);
     expect(channels.rpcConcurrency).to.equal(concurrency);
     expect(channels.elementGraphicsRpc.concurrency).to.equal(concurrency);
-    expect(iModelRpc.concurrency).to.equal(concurrency);
+    expect(channels.iModelChannels.rpc.concurrency).to.equal(concurrency);
   });
 });

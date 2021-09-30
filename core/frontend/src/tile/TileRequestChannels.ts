@@ -46,7 +46,8 @@ class ElementGraphicsChannel extends TileRequestChannel {
  * @public
  */
 export class TileRequestChannels {
-  private readonly _iModelChannels: IModelTileRequestChannels;
+  /** @internal */
+  public readonly iModelChannels: IModelTileRequestChannels;
   /** The channel over which [[TileAdmin.requestElementGraphics]] executes. If you implement a [[TiledGraphicsProvider]] or [[TileTree]] that obtains its
    * content from `requestElementGraphics`, use this channel.
    */
@@ -70,8 +71,8 @@ export class TileRequestChannels {
 
     this.add(this.elementGraphicsRpc);
 
-    this._iModelChannels = new IModelTileRequestChannels({ concurrency: this.rpcConcurrency, usesHttp: undefined === rpcConcurrency });
-    for (const channel of this._iModelChannels)
+    this.iModelChannels = new IModelTileRequestChannels({ concurrency: this.rpcConcurrency, usesHttp: undefined === rpcConcurrency });
+    for (const channel of this.iModelChannels)
       this.add(channel);
   }
 
@@ -79,7 +80,7 @@ export class TileRequestChannels {
    * @internal
    */
   public enableCloudStorageCache(): void {
-    this.add(this._iModelChannels.enableCloudStorageCache(this.httpConcurrency));
+    this.add(this.iModelChannels.enableCloudStorageCache(this.httpConcurrency));
   }
 
   /** The number of registered channels. */
@@ -145,7 +146,7 @@ export class TileRequestChannels {
 
   /** @internal */
   public getIModelTileChannel(tile: IModelTile): TileRequestChannel {
-    return this._iModelChannels.getChannelForTile(tile);
+    return this.iModelChannels.getChannelForTile(tile);
   }
 
   /** Chiefly for debugging.
@@ -153,7 +154,7 @@ export class TileRequestChannels {
    */
   public setRpcConcurrency(concurrency: number): void {
     this._rpcConcurrency = concurrency;
-    this._iModelChannels.setRpcConcurrency(concurrency);
+    this.iModelChannels.setRpcConcurrency(concurrency);
     this.elementGraphicsRpc.concurrency = concurrency;
   }
 

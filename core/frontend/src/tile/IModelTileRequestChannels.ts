@@ -70,14 +70,18 @@ class IModelTileChannel extends TileRequestChannel {
 
 export class IModelTileRequestChannels {
   private _cloudStorage?: TileRequestChannel;
-  private readonly _rpc: TileRequestChannel;
+  public readonly rpc: TileRequestChannel;
 
   public constructor(args: {
     concurrency: number,
     usesHttp: boolean,
   }) {
     const channelName = "itwinjs-tile-rpc";
-    this._rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
+    this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
+  }
+
+  public get cloudStorage(): TileRequestChannel | undefined {
+    return this._cloudStorage;
   }
 
   public enableCloudStorageCache(concurrency: number): TileRequestChannel {
@@ -86,15 +90,15 @@ export class IModelTileRequestChannels {
   }
 
   public [Symbol.iterator](): Iterator<TileRequestChannel> {
-    const channels = this._cloudStorage ? [this._cloudStorage, this._rpc] : [this._rpc];
+    const channels = this._cloudStorage ? [this._cloudStorage, this.rpc] : [this.rpc];
     return channels[Symbol.iterator]();
   }
 
   public setRpcConcurrency(concurrency: number): void {
-    this._rpc.concurrency = concurrency;
+    this.rpc.concurrency = concurrency;
   }
 
   public getChannelForTile(tile: IModelTile): TileRequestChannel {
-    return tile.cacheMiss || undefined === this._cloudStorage ? this._rpc : this._cloudStorage;
+    return tile.cacheMiss || undefined === this._cloudStorage ? this.rpc : this._cloudStorage;
   }
 }
