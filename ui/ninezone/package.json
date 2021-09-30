@@ -11,17 +11,17 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "copy:assets": "cpx \"./src/**/*.{*css,svg}\" \"./lib\"",
-    "build": "npm run copy:assets && tsc 1>&2",
+    "build": "npm run -s copy:assets && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "docs": "npm run docs:typedoc",
+    "cover": "nyc npm -s test",
+    "docs": "npm run -s docs:typedoc",
     "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-layout-react/file.json --tsIndexFile=./appui-layout-react.ts --onlyJson",
     "extract-api": "betools extract-api --entry=appui-layout-react",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [
     "Bentley",

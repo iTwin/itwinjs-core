@@ -11,17 +11,17 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "copy:assets": "cpx \"./src/**/*.*css\" ./lib && cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "build": "npm run -s copy:assets && npm run -s pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/components-react/file.json --tsIndexFile=./components-react.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=components-react",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [
     "Bentley",
