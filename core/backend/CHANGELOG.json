@@ -2774,7 +2774,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Moved electron utilities into a separate \"@itwin/electron-manager\" package."
+            "comment": "Moved electron utilities into a separate \"@itwin/core-electron\" package."
           }
         ]
       }

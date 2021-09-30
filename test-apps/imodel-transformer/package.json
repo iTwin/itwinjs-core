@@ -17,7 +17,7 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@itwin/electron-manager": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

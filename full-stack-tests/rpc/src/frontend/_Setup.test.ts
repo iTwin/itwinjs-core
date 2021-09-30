@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@itwin/core-common";
-import { MobileRpcManager } from "@itwin/mobile-manager/lib/MobileFrontend";
+import { MobileRpcManager } from "@itwin/core-mobile/lib/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 
