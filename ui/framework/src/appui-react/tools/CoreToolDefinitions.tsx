@@ -36,7 +36,7 @@ import { UiFramework } from "../UiFramework";
 // istanbul ignore next
 export class CoreTools {
   /** Get the CustomItemDef for PopupButton
-   * @beta
+   * @public
    */
   public static get keyinBrowserButtonItemDef() {
     return new CustomItemDef({

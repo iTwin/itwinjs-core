@@ -11,15 +11,15 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
-    "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
+    "cover": "nyc npm -s test",
+    "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
   "keywords": [
     "Bentley",

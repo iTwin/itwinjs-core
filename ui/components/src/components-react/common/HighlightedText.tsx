@@ -12,7 +12,7 @@ import { HighlightingEngine } from "../tree/HighlightingEngine";
 
 /**
  * Properties of [[HighlightedText]]
- * @beta
+ * @public
  */
 export interface HighlightedTextProps {
   /* Filter text which we want to highlight */
@@ -29,7 +29,7 @@ export interface HighlightedTextProps {
  * Highlighted text
  * Used for highlighting parts in the 'text' which match with 'searchText'
  * Also actively highlights one matched part which is selected with 'activeMatchIndex'
- * @beta
+ * @public
  */
 export function HighlightedText(props: HighlightedTextProps) {
   const { searchText, activeMatchIndex, text, caseSensitive } = props;

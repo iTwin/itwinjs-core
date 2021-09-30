@@ -14,7 +14,7 @@ import { ParseResults, SpecialKey } from "@itwin/appui-abstract";
 import "./ParsedInput.scss";
 
 /** Props for [[ParsedInput]] control
- * @beta
+ * @public
  */
 export interface ParsedInputProps extends CommonProps {
   /** InitialValue which is used to restore input field if ESC is pressed */
@@ -113,7 +113,7 @@ const ForwardRefParsedInput = React.forwardRef<HTMLInputElement, ParsedInputProp
 );
 
 /** Generic Input component that requires formatting and parsing functions to be passed in as props.
- * @beta
+ * @public
  */
 export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null = ForwardRefParsedInput;
 

@@ -2,22 +2,22 @@ sep=;
 Release Tag;API Item
 public;class AbstractTreeNodeLoader 
 public;class AbstractTreeNodeLoaderWithProvider
-beta;ActionButtonList 
-beta;ActionButtonListProps
+public;ActionButtonList 
+public;ActionButtonListProps
 public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
 public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 public;ArrayPropertyValueRenderer 
-beta;AsyncErrorMessage
-beta;AsyncValueProcessingResult
+public;AsyncErrorMessage
+public;AsyncValueProcessingResult
 public;class BasePointTypeConverter 
-beta;BasicPropertyEditor 
+public;BasicPropertyEditor 
 beta;BeDragDropContext(props:
 deprecated;BeDragDropContext(props:
-beta;BooleanEditor 
-beta;BooleanPropertyEditor 
+public;BooleanEditor 
+public;BooleanPropertyEditor 
 public;BooleanTypeConverter 
 beta;Breadcrumb 
 deprecated;Breadcrumb 
@@ -62,8 +62,8 @@ beta;CompositeFilterType
 beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 public;computeVisibleNodes(model: TreeModel): VisibleTreeNodes
-beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
-beta;ControlledSelectableContentProps
+public;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
+public;ControlledSelectableContentProps
 public;ControlledTree(props: ControlledTreeProps): JSX.Element
 public;ControlledTreeProps 
 public;ConvertedPrimitives
@@ -71,9 +71,9 @@ internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promis
 internal;CustomItem({ item, addGroupSeparator }:
 alpha;CustomNumberEditor 
 alpha;CustomNumberPropertyEditor 
-beta;CustomToolbarItem 
-beta;DataController
-beta;class DataControllerBase 
+public;CustomToolbarItem 
+public;DataController
+public;class DataControllerBase 
 internal;DataRowItem 
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
@@ -85,9 +85,9 @@ internal;DateTimeEditor
 internal;DateTimePropertyEditor 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
-beta;DEFAULT_LINKS_HANDLER: LinkElementsInfo
+public;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
-beta;Direction
+public;Direction
 internal;DirectionHelpers
 beta;DisplayValuePropertyDataFilterer 
 public;DistinctValueCollection
@@ -97,14 +97,14 @@ internal;DragAction
 public;EditableTreeDataProvider 
 public;EditorContainer 
 public;EditorContainerProps 
-beta;EnumButtonGroupEditor 
-beta;EnumEditor 
-beta;EnumPropertyButtonGroupEditor 
-beta;EnumPropertyEditor 
+public;EnumButtonGroupEditor 
+public;EnumEditor 
+public;EnumPropertyButtonGroupEditor 
+public;EnumPropertyEditor 
 public;EnumTypeConverter 
 public;ErrorObserver
 beta;ExtendedTreeNodeRendererProps 
-beta;FavoritePropertiesRenderer
+public;FavoritePropertiesRenderer
 alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
 alpha;FavoritePropertyListProps
 public;FieldFilterDescriptor 
@@ -118,7 +118,7 @@ beta;FilteredPropertyData
 beta;FilteredType
 public;FilteringInput 
 public;FilteringInputProps 
-beta;FilteringInputStatus
+public;FilteringInputStatus
 beta;FilteringPropertyDataProvider 
 public;FilterOperator
 public;FilterRenderer
@@ -140,19 +140,19 @@ public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeF
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
 public;HighlightableTreeProps
-beta;HighlightedText(props: HighlightedTextProps): JSX.Element
-beta;HighlightedTextProps
-beta;HighlightInfo
-beta;HighlightingComponentProps
-beta;HighlightingEngine
+public;HighlightedText(props: HighlightedTextProps): JSX.Element
+public;HighlightedTextProps
+public;HighlightInfo
+public;HighlightingComponentProps
+public;HighlightingEngine
 alpha;IconEditor 
 alpha;IconPickerButton 
 alpha;IconPickerProps 
 alpha;IconPropertyEditor 
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
-beta;ImageCheckBoxEditor 
-beta;ImageCheckBoxPropertyEditor 
+public;ImageCheckBoxEditor 
+public;ImageCheckBoxPropertyEditor 
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
@@ -210,6 +210,7 @@ beta;MutableGridItemFactory
 beta;MutablePropertyGridModel 
 public;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
+deprecated;MutableTreeDataProvider 
 public;MutableTreeModel 
 public;MutableTreeModelNode 
 public;NavigationPropertyTypeConverter 
@@ -221,8 +222,8 @@ public;NonPrimitivePropertyLabelRendererProps
 public;NonPrimitivePropertyRenderer 
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
-beta;NumericInputEditor 
-beta;NumericInputPropertyEditor 
+public;NumericInputEditor 
+public;NumericInputPropertyEditor 
 public;class NumericTypeConverterBase 
 public;Observable
 public;Observer
@@ -236,15 +237,15 @@ alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
 public;PagedTreeNodeLoader
 public;PageOptions
-beta;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
-beta;ParsedInputProps 
+public;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
+public;ParsedInputProps 
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
-beta;PopupItem(props: PopupItemProps): JSX.Element
+public;PopupItem(props: PopupItemProps): JSX.Element
 internal;PopupItemPopup(props: PopupItemPopupProps): JSX.Element
-beta;PopupItemProps 
-beta;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
-beta;PopupItemWithDragProps 
+public;PopupItemProps 
+public;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
+public;PopupItemWithDragProps 
 public;PrimitivePropertyLabelRenderer 
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
@@ -267,8 +268,8 @@ beta;class PropertyDataFiltererBase
 beta;PropertyDataFilterResult
 public;PropertyDialogState
 public;PropertyEditingArgs
-beta;class PropertyEditorBase 
-beta;PropertyEditorManager
+public;class PropertyEditorBase 
+public;PropertyEditorManager
 public;PropertyEditorProps 
 beta;PropertyFilterChangeEvent 
 beta;PropertyFilterChangesListener = () => void
@@ -306,9 +307,9 @@ public;ResultSelector
 public;ResultSelectorProps 
 public;RowItem
 public;RowProps
-beta;SelectableContent(props: SelectableContentProps): JSX.Element
-beta;SelectableContentDefinition
-beta;SelectableContentProps
+public;SelectableContent(props: SelectableContentProps): JSX.Element
+public;SelectableContentDefinition
+public;SelectableContentProps
 internal;SelectionHandler
 public;SelectionMode
 public;SelectionModeFlags
@@ -327,8 +328,8 @@ public;SimpleTableDataProvider
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
 internal;SingleSelectionHandler
-beta;SliderEditor 
-beta;SliderPropertyEditor 
+public;SliderEditor 
+public;SliderPropertyEditor 
 public;SortComparer
 public;SparseArray
 internal;SparseTree
@@ -342,7 +343,7 @@ public;TableArrayValueRenderer
 public;TableCell 
 public;TableCellContent 
 public;TableCellContentProps 
-beta;TableCellContextMenuArgs
+public;TableCellContextMenuArgs
 public;TableCellEditorState
 public;TableCellProps 
 public;TableCellUpdatedArgs
@@ -363,35 +364,38 @@ public;TableRowStyleProvider:
 public;TableSelectionTarget
 public;TableSpecificValueRendererProps 
 public;TableStructValueRenderer 
-beta;TextareaEditor 
-beta;TextareaPropertyEditor 
-beta;TextEditor 
+public;TextareaEditor 
+public;TextareaPropertyEditor 
+public;TextEditor 
 beta;ThemedEnumEditor 
+deprecated;ThemedEnumEditor 
 beta;ThemedEnumEditorProps 
+deprecated;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
+deprecated;ThemedEnumPropertyEditor 
 internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element
 internal;TimeFieldProps
 internal;TimeSpec
 public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
-beta;ToggleEditor 
-beta;TogglePropertyEditor 
-beta;Toolbar(props: ToolbarProps): JSX.Element
-beta;ToolbarButtonItem: React.MemoExoticComponent
-beta;ToolbarButtonItemProps 
-beta;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
+public;ToggleEditor 
+public;TogglePropertyEditor 
+public;Toolbar(props: ToolbarProps): JSX.Element
+public;ToolbarButtonItem: React.MemoExoticComponent
+public;ToolbarButtonItemProps 
+public;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
 internal;ToolbarItemComponent({ item, addGroupSeparator }:
 internal;ToolbarItemContext: React.Context
 internal;ToolbarItemContextArgs
-beta;ToolbarOpacitySetting
+public;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
-beta;ToolbarPanelAlignment
+public;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
 public;ToolbarPopupContext: React.Context
 public;ToolbarPopupContextProps
-beta;ToolbarProps 
-beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
+public;ToolbarProps 
+public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
-beta;ToolbarWithOverflowProps 
+public;ToolbarWithOverflowProps 
 internal;toRxjsObservable
 public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
@@ -441,7 +445,7 @@ public;TypeEditor
 public;UiComponents
 public;Unsubscribable
 public;UrlPropertyValueRenderer 
-beta;useAsyncValue: 
+public;useAsyncValue: 
 alpha;useDebouncedAsyncValue
 beta;usePagedTreeNodeLoader
 beta;usePropertyData(props:

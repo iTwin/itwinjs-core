@@ -11,7 +11,7 @@ import { TextEditor } from "./TextEditor";
 import { DisplayMessageType, MessageSeverity, PropertyDescription, PropertyRecord, PropertyValue, StandardTypeNames } from "@itwin/appui-abstract";
 
 /** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]
- * @beta
+ * @public
  */
 export interface AsyncErrorMessage {
   severity: MessageSeverity;
@@ -21,7 +21,7 @@ export interface AsyncErrorMessage {
 }
 
 /** Asynchronous Value Process Result
- * @beta
+ * @public
  */
 export interface AsyncValueProcessingResult {
   encounteredError: boolean;
@@ -30,7 +30,7 @@ export interface AsyncValueProcessingResult {
 }
 
 /** DataControllers can be implemented per typename to validate and commit values.
- * @beta
+ * @public
  */
 export interface DataController {
   validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
@@ -38,7 +38,7 @@ export interface DataController {
 }
 
 /** PropertyEditor is the base class for all property editors.
- * @beta
+ * @public
  */
 export abstract class PropertyEditorBase implements DataController {
 
@@ -81,7 +81,7 @@ export abstract class PropertyEditorBase implements DataController {
 }
 
 /** DataControllerBase is the base class for all Data Controllers.
- * @beta
+ * @public
  */
 export abstract class DataControllerBase implements DataController {
   public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
@@ -94,7 +94,7 @@ export abstract class DataControllerBase implements DataController {
 }
 
 /** Manages Property Editors. Property Editors are registered with and created by the manager.
- * @beta
+ * @public
  */
 export class PropertyEditorManager {
   private static _editors: { [index: string]: (new () => PropertyEditorBase) } = {};
@@ -161,7 +161,7 @@ export class PropertyEditorManager {
 
 /** Basic Property Editor registered for the "text" and "string" type names.
  * It uses the [[TextEditor]] React component.
- * @beta
+ * @public
  */
 export class BasicPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {

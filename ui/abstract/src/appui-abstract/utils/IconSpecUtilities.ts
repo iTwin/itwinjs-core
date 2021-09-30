@@ -7,7 +7,7 @@
  */
 
 /** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
- * @beta
+ * @public
  */
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec */

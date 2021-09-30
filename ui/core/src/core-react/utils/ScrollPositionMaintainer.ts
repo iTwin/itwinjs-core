@@ -17,7 +17,7 @@ import { IDisposable } from "@itwin/core-bentley";
  * // disposing the `maintainer` object restores scroll positions
  * maintainer.dispose();
  * ```
- * @beta
+ * @public
  */
 export class ScrollPositionMaintainer implements IDisposable {
   private _storage: Map<Element, number>;

@@ -138,7 +138,7 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 /**
  * MutableTreeDataProvider provides manipulation processing for the Tree.
  * Useful for Drag & Drop processing.
- * @beta
+ * @beta @deprecated
  */
 export interface MutableTreeDataProvider extends ITreeDataProvider {
   insertNode(parent: TreeNodeItem | undefined, child: TreeNodeItem, index?: number): void;

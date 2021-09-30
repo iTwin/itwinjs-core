@@ -72,7 +72,6 @@ export interface AbstractToolbarProps {
 export interface AbstractWidgetProps extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
-    // @beta
     readonly canPopout?: boolean;
     readonly defaultFloatingPosition?: {
         x: number;
@@ -80,7 +79,6 @@ export interface AbstractWidgetProps extends ProvidedItem {
     };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
-    // @beta
     readonly floatingContainerId?: string;
     readonly getWidgetContent: () => any;
     readonly icon?: string | ConditionalStringValue;
@@ -1172,7 +1170,7 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.IconListData;
 }
 
-// @beta
+// @public
 export class IconSpecUtilities {
     static createSvgIconSpec(svgSrc: string): string;
     static getSvgSource(iconSpec: string): string | undefined;
@@ -1473,7 +1471,7 @@ export interface PropertyDescription {
     typename: string;
 }
 
-// @beta
+// @public
 export class PropertyDescriptionHelper {
     static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
@@ -1736,7 +1734,7 @@ export class StandardContentLayouts {
     static readonly twoVerticalSplit: ContentLayoutProps;
 }
 
-// @beta
+// @public
 export enum StandardEditorNames {
     // (undocumented)
     ColorPicker = "color-picker",
@@ -1766,7 +1764,7 @@ export enum StandardEditorNames {
     WeightPicker = "weight-picker"
 }
 
-// @beta
+// @public
 export enum StandardTypeNames {
     // (undocumented)
     Array = "array",
@@ -1851,7 +1849,6 @@ export enum StatusBarLabelSide {
 // @public
 export enum StatusBarSection {
     Center = 1,
-    // @beta
     Context = 3,
     Left = 0,
     Message = 0,
@@ -2056,7 +2053,7 @@ export interface UiItemProviderRegisteredEventArgs {
     providerId: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface UiItemsApplication {
     validateBackstageItem?: (item: BackstageItem) => {
         updatedItem: BackstageItem;
@@ -2083,7 +2080,7 @@ export enum UiItemsApplicationAction {
     Update = 2
 }
 
-// @beta
+// @beta @deprecated
 export class UiItemsArbiter {
     // @internal (undocumented)
     static clearApplication(): void;

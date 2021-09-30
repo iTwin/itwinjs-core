@@ -9,14 +9,14 @@
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s copy:assets && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-transformer/file.json --tsIndexFile=./core-transformer.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc npm run test:integration",
+    "cover": "nyc npm -s test",
+    "cover:integration": "nyc npm run -s test:integration",
     "extract-api": "betools extract-api --entry=core-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha --grep=\"#integration\" --invert",

@@ -6,9 +6,9 @@
   "version": "0.0.0",
   "homepage": "http://localhost:3000/",
   "scripts": {
-    "compile": "npm run build:backend & tsc",
-    "build": "npm run build:backend && npm run build:frontend",
-    "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
+    "compile": "npm run -s build:backend & tsc",
+    "build": "npm run -s build:backend && npm run -s build:frontend",
+    "build:backend": "npm run -s copy:assets && tsc -p tsconfig.backend.json",
     "build:frontend": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_NEW_ASSET_COPY=true GENERATE_SOURCEMAP=false DISABLE_ESLINT=true TRANSPILE_DEPS=false USE_FAST_SASS=true DISABLE_TERSER=true react-scripts --max_old_space_size=8192 build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web",
@@ -16,7 +16,7 @@
     "start": "run-p start:webserver start:electron",
     "start:electron": "cross-env NODE_ENV=development electron ./lib/backend/main.js",
     "start:electron:prod": "electron ./lib/backend/main.js",
-    "start:webserver": "npm run pseudolocalize && cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_NEW_ASSET_COPY=true BROWSER=none DISABLE_ESLINT=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts start",
+    "start:webserver": "npm run -s pseudolocalize && cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_NEW_ASSET_COPY=true BROWSER=none DISABLE_ESLINT=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./build/public/locales/en-PSEUDO",
@@ -24,10 +24,10 @@
     "cover": "",
     "docs": "",
     "copy:config": "internal-tools copy-config",
-    "build:ios-backend": "npm run build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/main.js --env.bundlename=main",
+    "build:ios-backend": "npm run -s build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/main.js --env.bundlename=main",
     "install-ios-lib": "node ./ios/scripts/installIosNativeLib.js",
     "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
-    "build:ios": "npm run install-ios-lib && npm run build:frontend && npm run build:ios-backend && npm run copy:ios-frontend"
+    "build:ios": "npm run -s install-ios-lib && npm run -s build:frontend && npm run -s build:ios-backend && npm run -s copy:ios-frontend"
   },
   "repository": {},
   "keywords": [
