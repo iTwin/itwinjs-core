@@ -9,7 +9,7 @@
 import { GuidString, Id64String } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
-import { BlobConfig, BlobRequest, BlobResponse, QueryConfig, QueryRequest, QueryResponse } from "../ConcurrentQuery";
+import { BlobRequest, BlobResponse, QueryRequest, QueryResponse } from "../ConcurrentQuery";
 import { ElementLoadOptions, ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../EntityProps";
 import { FontMapProps } from "../Fonts";

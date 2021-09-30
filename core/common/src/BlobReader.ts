@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { BlobConfig, BlobConfigBuilder, BlobRequest, BlobResponse, Range, RequestExecutor, RequestKind, ConcurrentQueryError } from "./ConcurrentQuery";
+import {
+  BlobConfig, BlobConfigBuilder, BlobRequest, BlobResponse, ConcurrentQueryError, Range, RequestExecutor, RequestKind,
+} from "./ConcurrentQuery";
+
 /** @beta */
 export class Uint8Chunks implements Iterable<Uint8Array> {
   private _chunks: Uint8Array[] = [];
