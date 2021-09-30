@@ -8,7 +8,7 @@
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
-import { RpcActivity, SerializedRpcActivity } from "./RpcInvocation";
+import { SerializedRpcActivity } from "./RpcInvocation";
 import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol";
 import { INSTANCE } from "./RpcRegistry";
 import { RpcRequest } from "./RpcRequest";
@@ -101,13 +101,6 @@ export abstract class RpcConfiguration {
       applicationVersion: "",
       sessionId: "",
       authorization: "",
-    }),
-    deserialize: (request: SerializedRpcActivity): RpcActivity => ({
-      activityId: request.id,
-      applicationId: request.applicationId,
-      applicationVersion: request.applicationVersion,
-      sessionId: request.sessionId,
-      accessToken: request.authorization,
     }),
   };
 

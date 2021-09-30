@@ -29,6 +29,7 @@ export interface RpcActivity extends SessionProps {
 
   /** access token for authorization  */
   readonly accessToken: AccessToken;
+  readonly methodName?: string;
 }
 
 /** Serialized format for sending the request across the RPC layer
@@ -46,13 +47,13 @@ export interface SerializedRpcActivity {
 /** Notification callback for an RPC invocation.
  * @public
  */
-export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
+export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 /** An RPC operation invocation in response to a request.
  * @public
  */
 export class RpcInvocation {
-  public static currentActivity: RpcActivity;
+  public static runActivity: RpcActivityRun = async (_activity, fn) => fn();
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
@@ -127,7 +128,6 @@ export class RpcInvocation {
         }
       }
 
-      this.operation.policy.invocationCallback(this);
       this.result = this.resolve();
     } catch (error) {
       this.result = this.reject(error);
@@ -158,26 +158,28 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
-    let activity: RpcActivity | undefined;
+    const request = this.request;
+    const activity = {
+      activityId: request.id,
+      applicationId: request.applicationId,
+      applicationVersion: request.applicationVersion,
+      sessionId: request.sessionId,
+      accessToken: request.authorization,
+      methodName: request.operation.operationName,
+    };
+
     try {
-      activity = RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
-      const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
+      const parameters = RpcMarshaling.deserialize(this.protocol, request.parameters);
       this.applyPolicies(parameters);
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
-      // any asynchronous code that may need it, and *not* rely on the global variable remaining unchanged across async calls.
-      RpcInvocation.currentActivity = activity;
-
-      return await op.call(impl, ...parameters);
+      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters));
     } catch (error: unknown) {
-      if (activity)
-        RpcInvocation.logRpcException(activity, this.request.operation.operationName, error);
-
+      RpcInvocation.logRpcException(activity, request.operation.operationName, error);
       return this.reject(error);
     }
   }

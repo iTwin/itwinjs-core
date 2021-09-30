@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger } from "@itwin/core-bentley";
 import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
@@ -289,6 +290,7 @@ describe("Thematic display", () => {
   });
 
   it("should render the model with proper thematic colors applied for hillshade mode", async () => {
+    Logger.logError("abc", "hello");
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());

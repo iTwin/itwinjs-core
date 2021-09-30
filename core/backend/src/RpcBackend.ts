@@ -8,17 +8,43 @@
 
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import { AsyncLocalStorage } from "async_hooks";
+import { Logger } from "@itwin/core-bentley";
 
 let initialized = false;
 
-/** @internal */
-export function initializeRpcBackend() {
-  if (initialized) {
-    return;
+export class RpcTracer {
+  private static storage = new AsyncLocalStorage();
+
+  /** Get the [RpcActivity]($common) for the currently executing async, or undefined if there is no RpcActivity in the call stack. */
+  public static get currentActivity(): RpcActivity | undefined {
+    return RpcTracer.storage.getStore() as RpcActivity | undefined;
   }
 
+  public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
+    return RpcTracer.storage.run(activity, fn);
+  }
+}
+
+/** @internal */
+export function initializeRpcBackend() {
+  if (initialized)
+    return;
+
   initialized = true;
+
+  RpcInvocation.runActivity = RpcTracer.run;
+  Logger.staticMetaData.set("rpc", () => {
+    const activity = RpcTracer.currentActivity;
+    return activity ? {
+      activityId: activity.activityId,
+      sessionId: activity.sessionId,
+      applicationId: activity.applicationId,
+      applicationVersion: activity.applicationVersion,
+      methodName: activity.methodName,
+    } : undefined;
+  });
 
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
     const form = new FormData();
