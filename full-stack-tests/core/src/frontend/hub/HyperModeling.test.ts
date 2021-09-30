@@ -23,11 +23,7 @@ describe("HyperModeling (#integration)", () => {
   before(async () => {
     await IModelApp.shutdown();
     await TestUtility.initialize(TestUsers.regular);
-    await IModelApp.startup({
-      authorizationClient: TestUtility.itwinPlatformEnv.authClient,
-      hubAccess: TestUtility.itwinPlatformEnv.hubAccess,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup(TestUtility.iModelAppOptions);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);

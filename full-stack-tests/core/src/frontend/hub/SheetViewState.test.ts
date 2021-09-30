@@ -15,11 +15,7 @@ describe("Sheet views (#integration)", () => {
 
   before(async () => {
     await TestUtility.initialize(TestUsers.regular);
-    await IModelApp.startup({
-      authorizationClient: TestUtility.itwinPlatformEnv.authClient,
-      hubAccess: TestUtility.itwinPlatformEnv.hubAccess,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup(TestUtility.iModelAppOptions);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);

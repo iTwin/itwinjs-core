@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -101,5 +101,13 @@ export class TestUtility {
         promises.push(this.itwinPlatformEnv.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
       await Promise.all(promises);
     }
+  }
+
+  public static get iModelAppOptions(): IModelAppOptions {
+    return {
+      authorizationClient: this.itwinPlatformEnv.authClient,
+      hubAccess: this.itwinPlatformEnv.hubAccess,
+      applicationVersion: "1.2.1.1",
+    };
   }
 }
