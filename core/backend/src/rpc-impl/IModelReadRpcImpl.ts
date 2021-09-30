@@ -8,12 +8,12 @@
 
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BlobRequest, BlobResponse, Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps,
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps,
-  NoContentError, QueryRequest, QueryResponse, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, TextureData,
-  TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
+  EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
+  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -36,12 +36,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async close(_tokenProps: IModelRpcProps): Promise<boolean> {
     return true;
   }
-  public async queryRows(tokenProps: IModelRpcProps, request: QueryRequest): Promise<QueryResponse> {
+  public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
     const user = RpcInvocation.currentActivity;
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
-  public async queryBlob(tokenProps: IModelRpcProps, request: BlobRequest): Promise<BlobResponse> {
+  public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
     const user = RpcInvocation.currentActivity;
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);

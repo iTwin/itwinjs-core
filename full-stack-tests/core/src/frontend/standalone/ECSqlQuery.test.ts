@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { QueryParams, QueryRowFormat } from "@itwin/core-common";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 
 describe("ECSql Query", () => {
@@ -97,7 +97,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize }}).toArray(QueryRowFormat.Array);
+        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
         assert.equal(result.length, rowPerPage[k]);
       }
     }
@@ -130,11 +130,11 @@ describe("ECSql Query", () => {
     for await (const row of imodel2.query(query1, undefined, QueryRowFormat.UseJsPropertyNames))
       row1 = row;
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryParams.from([row1.id]), QueryRowFormat.UseJsPropertyNames, {abbreviateBlobs: false}))
+    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: false }))
       row2 = row;
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryParams.from([row1.id]),QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: true}))
+    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: true }))
       row3 = row;
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);
