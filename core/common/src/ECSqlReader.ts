@@ -5,46 +5,46 @@
 
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  ConcurrentQueryError, PropertyInfo, QueryConfig, QueryConfigBuilder, QueryParams, QueryRequest, QueryResponse, QueryRowFormat, RequestExecutor,
-  RequestKind, ResponseStatus,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
 /** @beta */
-export class PropertyList implements Iterable<PropertyInfo> {
+export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
   private _byPropName = new Map<string, number>();
   private _byJsonName = new Map<string, number>();
   private _byNoCase = new Map<string, number>();
-  public constructor(private readonly _properties: PropertyInfo[]) {
-    for (const property of this._properties) {
+  public constructor(public readonly properties: QueryPropertyMetaData[]) {
+    for (const property of this.properties) {
       this._byPropName.set(property.name, property.index);
       this._byJsonName.set(property.jsonName, property.index);
       this._byNoCase.set(property.name.toLowerCase(), property.index);
       this._byNoCase.set(property.jsonName.toLowerCase(), property.index);
     }
   }
-  public get length(): number { return this._properties.length; }
+  public get length(): number { return this.properties.length; }
 
-  public [Symbol.iterator](): Iterator<PropertyInfo, any, undefined> {
-    return this._properties[Symbol.iterator]();
+  public [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined> {
+    return this.properties[Symbol.iterator]();
   }
-  public findByName(name: string): PropertyInfo | undefined {
+  public findByName(name: string): QueryPropertyMetaData | undefined {
     const index = this._byPropName.get(name);
     if (typeof index === "number") {
-      return this._properties[index];
+      return this.properties[index];
     }
     return undefined;
   }
-  public findByJsonName(name: string): PropertyInfo | undefined {
+  public findByJsonName(name: string): QueryPropertyMetaData | undefined {
     const index = this._byJsonName.get(name);
     if (typeof index === "number") {
-      return this._properties[index];
+      return this.properties[index];
     }
     return undefined;
   }
-  public findByNoCase(name: string): PropertyInfo | undefined {
+  public findByNoCase(name: string): QueryPropertyMetaData | undefined {
     const index = this._byNoCase.get(name.toLowerCase());
     if (typeof index === "number") {
-      return this._properties[index];
+      return this.properties[index];
     }
     return undefined;
   }
@@ -52,16 +52,16 @@ export class PropertyList implements Iterable<PropertyInfo> {
 /**
  * @beta
 */
-export type PropertyValueType = any;
+export type QueryValueType = any;
 
 /** @beta */
-export interface IRowProxy {
+export interface QueryRowProxy {
   toJsRow(): any;
   toRow(): any;
-  asArray(): PropertyValueType[];
-  getPropertyDefs(): PropertyList;
-  [propertyName: string]: PropertyValueType;
-  [propertyIndex: number]: PropertyValueType;
+  toArray(): QueryValueType[];
+  getMetaData(): QueryPropertyMetaData[];
+  [propertyName: string]: QueryValueType;
+  [propertyIndex: number]: QueryValueType;
 }
 /** @beta */
 export class ECSqlReader {
@@ -71,8 +71,8 @@ export class ECSqlReader {
   private _globalCount: number = -1;
   private _done: boolean = false;
   private _globalDone: boolean = false;
-  private _props = new PropertyList([]);
-  private _param = new QueryParams().serialize();
+  private _props = new PropertyMetaDataMap([]);
+  private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
   private _rowProxy = new Proxy<ECSqlReader>(this, {
     get: (target: ECSqlReader, key: string | Symbol) => {
@@ -81,12 +81,12 @@ export class ECSqlReader {
         if (!Number.isNaN(idx)) {
           return target.getRowInternal()[idx];
         }
-        const prop = target.properties.findByNoCase(key);
+        const prop = target._props.findByNoCase(key);
         if (prop) {
           return target.getRowInternal()[prop.index];
         }
-        if (key === "getPropertyDefs") {
-          return () => target.properties;
+        if (key === "getMetaData") {
+          return () => target._props.properties;
         }
         if (key === "toRow") {
           return () => target.formatCurrentRow(QueryRowFormat.UseECSqlPropertyNames);
@@ -94,26 +94,26 @@ export class ECSqlReader {
         if (key === "toJsRow") {
           return () => target.formatCurrentRow(QueryRowFormat.UseJsPropertyNames);
         }
-        if (key === "asArray" || key === "toJSON") {
+        if (key === "getArray" || key === "toJSON") {
           return () => this.getRowInternal();
         }
       }
       return undefined;
     },
     has: (target: ECSqlReader, p: string | symbol) => {
-      return !target.properties.findByNoCase(p as string);
+      return !target._props.findByNoCase(p as string);
     },
     ownKeys: (target: ECSqlReader) => {
       const keys = [];
-      for (const prop of target.properties) {
+      for (const prop of target._props) {
         keys.push(prop.name);
       }
       return keys;
     },
   });
-  private _config: QueryConfig = new QueryConfigBuilder().config;
+  private _config: QueryOptions = new QueryOptionsBuilder().config;
   /** @internal */
-  public constructor(private _executor: RequestExecutor<QueryRequest, QueryResponse>, public readonly query: string, param?: QueryParams, config?: QueryConfig) {
+  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, config?: QueryOptions) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
@@ -134,17 +134,17 @@ export class ECSqlReader {
       }
     }
   }
-  public setParams(param: QueryParams) {
+  public setParams(param: QueryBinder) {
     if (this._lockArgs) {
       throw new Error("call resetBindings() before setting or changing parameters");
     }
     this._param = param.serialize();
   }
-  public reset(config?: QueryConfig) {
+  public reset(config?: QueryOptions) {
     if (config) {
       this._config = config;
     }
-    this._props = new PropertyList([]);
+    this._props = new PropertyMetaDataMap([]);
     this._localRows = [];
     this._globalDone = false;
     this._globalOffset = 0;
@@ -157,9 +157,9 @@ export class ECSqlReader {
     }
     this._done = false;
   }
-  public get current(): IRowProxy { return (this._rowProxy as any); }
+  public get current(): QueryRowProxy { return (this._rowProxy as any); }
   public resetBindings() {
-    this._param = new QueryParams().serialize();
+    this._param = new QueryBinder().serialize();
     this._lockArgs = false;
   }
   public get done(): boolean { return this._done; }
@@ -178,43 +178,43 @@ export class ECSqlReader {
     if (this._globalCount === 0) {
       return [];
     }
-    const request: QueryRequest = {
-      kind: RequestKind.ECSql,
+    const request: DbQueryRequest = {
+      kind: DbRequestKind.ECSql,
       query: this.query,
       args: this._param,
       ... this._config,
     };
-    request.includeMetaData = this.properties.length > 0 ? false : true;
+    request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
     const resp = await this.runWithRetry(request);
-    this._globalDone = resp.status === ResponseStatus.Done;
+    this._globalDone = resp.status === DbResponseStatus.Done;
     if (this._props.length === 0 && resp.meta.length > 0) {
-      this._props = new PropertyList(resp.meta);
+      this._props = new PropertyMetaDataMap(resp.meta);
     }
     for (const row of resp.data) {
       ECSqlReader.replaceBase64WithUint8Array(row);
     }
     return resp.data;
   }
-  private async runWithRetry(request: QueryRequest) {
+  private async runWithRetry(request: DbQueryRequest) {
     let resp = await this._executor.execute(request);
     let retry = 10;
-    ConcurrentQueryError.throwIfError(resp, request);
-    while (--retry > 0 && resp.data.length === 0 && (resp.status === ResponseStatus.Partial || resp.status === ResponseStatus.QueueFull || resp.status === ResponseStatus.TimeOut)) {
+    DbQueryError.throwIfError(resp, request);
+    while (--retry > 0 && resp.data.length === 0 && (resp.status === DbResponseStatus.Partial || resp.status === DbResponseStatus.QueueFull || resp.status === DbResponseStatus.TimeOut)) {
       // add timeout
       resp = await this._executor.execute(request);
     }
-    if (retry === 0 && resp.data.length === 0 && (resp.status === ResponseStatus.Partial || resp.status === ResponseStatus.QueueFull || resp.status === ResponseStatus.TimeOut)) {
+    if (retry === 0 && resp.data.length === 0 && (resp.status === DbResponseStatus.Partial || resp.status === DbResponseStatus.QueueFull || resp.status === DbResponseStatus.TimeOut)) {
       throw new Error("query too long to execute or server is too busy");
     }
     return resp;
   }
   public formatCurrentRow(format: QueryRowFormat): any[] | object {
-    if (format === QueryRowFormat.Array) {
+    if (format === QueryRowFormat.UseArrayIndexes) {
       return this.getRowInternal();
     }
     const formattedRow = {};
-    for (const prop of this.properties) {
+    for (const prop of this._props) {
       const propName = format === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = this.getRowInternal()[prop.index];
       if (typeof val !== "undefined" && val !== null) {
@@ -226,8 +226,7 @@ export class ECSqlReader {
     }
     return formattedRow;
   }
-
-  public get properties(): PropertyList { return this._props; }
+  public getMetaData(): QueryPropertyMetaData[] { return this._props.properties; }
   public async step(): Promise<boolean> {
     if (this._done) {
       return false;

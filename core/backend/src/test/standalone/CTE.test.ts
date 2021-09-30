@@ -1,6 +1,6 @@
 
 import { assert } from "chai";
-import { QueryParams, QueryRowFormat } from "@itwin/core-common";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -13,7 +13,7 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryParams.from(bindings), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs })) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs })) {
     rows.push(row);
   }
   return rows;

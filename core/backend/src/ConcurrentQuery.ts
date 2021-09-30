@@ -1,9 +1,9 @@
+import { IModelJsNative } from "@bentley/imodeljs-native";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BlobRequest, BlobResponse, QueryRequest, QueryResponse } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "@itwin/core-common";
 
 /** @internal */
 export type OnResponse = (response: Response) => void;
@@ -11,18 +11,18 @@ export type OnResponse = (response: Response) => void;
 /** @internal */
 export class ConcurrentQuery {
   /** @internal */
-  public static async executeQueryRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: QueryRequest): Promise<QueryResponse> {
-    return new Promise<QueryResponse>((resolve) => {
+  public static async executeQueryRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: DbQueryRequest): Promise<DbQueryResponse> {
+    return new Promise<DbQueryResponse>((resolve) => {
       conn.concurrentQueryExecute(request as any, (response: any) => {
-        resolve(response as QueryResponse);
+        resolve(response as DbQueryResponse);
       });
     });
   }
   /** @internal */
-  public static async executeBlobRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: BlobRequest): Promise<BlobResponse> {
-    return new Promise<BlobResponse>((resolve) => {
+  public static async executeBlobRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: DbBlobRequest): Promise<DbBlobResponse> {
+    return new Promise<DbBlobResponse>((resolve) => {
       conn.concurrentQueryExecute(request as any, (response: any) => {
-        resolve(response as BlobResponse);
+        resolve(response as DbBlobResponse);
       });
     });
   }

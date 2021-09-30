@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelJsNative } from "@bentley/imodeljs-native";
 /** @packageDocumentation
  * @module ECDb
  */
 import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
-import { ECSqlReader, IModelError, QueryConfig, QueryParams, QueryRequest, QueryRowFormat } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -287,12 +287,12 @@ export class ECDb implements IDisposable {
    * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryParams, config?: QueryConfig): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
     }
     const executor = {
-      execute: async (request: QueryRequest) => {
+      execute: async (request: DbQueryRequest) => {
         return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
       },
     };
@@ -315,7 +315,7 @@ export class ECDb implements IDisposable {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
     const reader = this.createQueryReader(ecsql, params, config);
     while (await reader.step())
       yield reader.formatCurrentRow(rowFormat ?? QueryRowFormat.Default);
@@ -333,7 +333,7 @@ export class ECDb implements IDisposable {
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRowCount(ecsql: string, params?: QueryParams): Promise<number> {
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
     for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
@@ -358,7 +358,7 @@ export class ECDb implements IDisposable {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any> {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
     if (!config) {
       config = { restartToken: token };
     } else {

@@ -10,7 +10,7 @@ import {
   SnapshotDb, SpatialCategory, SpatialElement,
 } from "@itwin/core-backend";
 import { DbResult, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, PhysicalElementProps, QueryParams } from "@itwin/core-common";
+import { Code, PhysicalElementProps, QueryBinder } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "@itwin/core-transformer";
 import { loggerCategory, Transformer } from "../Transformer";
 
@@ -104,7 +104,7 @@ describe("imodel-transformer", () => {
       return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
         const queryResult = await db.query(
           `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
-          QueryParams.from({ category: testCategory })
+          QueryBinder.from({ category: testCategory })
         ).next();
         const value = queryResult.value[0];
         if (typeof value !== "number") {

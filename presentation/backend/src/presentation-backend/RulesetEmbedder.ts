@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-backend";
 import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, QueryParams,
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, QueryBinder,
   QueryRowFormat, SubjectProps,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
@@ -129,7 +129,7 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    for await (const row of this._imodel.query(query, QueryParams.from({ rulesetId: ruleset.id }), QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of this._imodel.query(query, QueryBinder.from({ rulesetId: ruleset.id }), QueryRowFormat.UseJsPropertyNames)) {
       const existingRulesetElementId: Id64String = row.id;
       const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
       rulesetsWithSameId.push({
