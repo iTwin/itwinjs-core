@@ -79,16 +79,16 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
     const copyContents = async (basePath: string) => {
       let subDirectoryNames: string[];
       try {
-        subDirectoryNames = await fs.readdir(bentleyDir);
+        subDirectoryNames = await fs.readdir(basePath);
       } catch (err: any) {
         this.logger.error(`Can't locate ${err.path}`);
         return;
       }
       for (const thisSubDir of subDirectoryNames) {
-        if (!(await isDirectory(path.resolve(bentleyDir, thisSubDir))))
+        if (!(await isDirectory(path.resolve(basePath, thisSubDir))))
           continue;
 
-        const fullDirName = path.resolve(bentleyDir, thisSubDir);
+        const fullDirName = path.resolve(basePath, thisSubDir);
         for (const staticAssetsDirectoryName of this._directoryNames) {
           await tryCopyDirectoryContents(
             path.join(fullDirName, "lib", staticAssetsDirectoryName),
