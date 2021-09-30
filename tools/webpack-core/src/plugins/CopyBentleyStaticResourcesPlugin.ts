@@ -80,7 +80,6 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
       try {
         subDirectoryNames = await fs.readdir(basePath);
       } catch (err: any) {
-        this.logger.error(`Can't locate ${err.path}`);
         return;
       }
       for (const thisSubDir of subDirectoryNames) {
