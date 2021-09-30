@@ -47,8 +47,7 @@ export interface SharedRendererProps {
   isSelectable?: boolean;
   /** Width of the whole property element */
   width?: number;
-  /** Array of action button renderers
-   * @public */
+  /** Array of action button renderers */
   actionButtonRenderers?: ActionButtonRenderer[];
   /** Is resize handle hovered */
   isResizeHandleHovered?: boolean;

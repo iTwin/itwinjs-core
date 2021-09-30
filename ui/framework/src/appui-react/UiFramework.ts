@@ -113,7 +113,7 @@ export class UiFramework {
   /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
    * classes to load any previously saved settings from the new storage location. Common storage locations are the browser's
    * local storage, or the iTwin Product Settings cloud storage available via the SettingsAdmin see `IModelApp.settingsAdmin`.
-   * @alpha
+   * @beta
    */
   public static registerUserSettingsProvider(entry: UserSettingsProvider) {
     if (this._uiSettingsProviderRegistry.has(entry.providerId))

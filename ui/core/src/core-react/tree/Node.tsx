@@ -75,8 +75,7 @@ export interface TreeNodeProps extends CommonProps {
 
   /** Contains render overrides for different pieces of the node component. */
   renderOverrides?: {
-    /** Callback to render a checkbox. Only called when checkbox is displayed.
-     * @public */
+    /** Callback to render a checkbox. Only called when checkbox is displayed. */
     renderCheckbox?: NodeCheckboxRenderer;
   };
   ["data-testid"]?: string;

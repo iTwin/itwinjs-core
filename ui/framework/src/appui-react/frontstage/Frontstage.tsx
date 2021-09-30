@@ -80,37 +80,27 @@ export interface FrontstageProps extends CommonProps {
    * @deprecated Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
-  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.
-   * @public */
+  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition. */
   contentManipulationTools?: React.ReactElement<ZoneProps>;
-  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition.
-   * @public */
+  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. */
   toolSettings?: React.ReactElement<ZoneProps>;
-  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.
-   * @public */
+  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition */
   viewNavigationTools?: React.ReactElement<ZoneProps>;
-  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.
-   * @public */
+  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition. */
   statusBar?: React.ReactElement<ZoneProps>;
 
-  /** The StagePanel on the top of the 9-zone area.
-   * @public */
+  /** The StagePanel on the top of the 9-zone area. */
   topPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very top across the full width.
-   * @public
    * @deprecated Only topPanel is supported in UI 2.0 */
   topMostPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the left.
-   * @public  */
+  /** The StagePanel on the left.  */
   leftPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the right.
-   * @public  */
+  /** The StagePanel on the right.  */
   rightPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the bottom of the 9-zone area.
-   * @public  */
+  /** The StagePanel on the bottom of the 9-zone area.  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very bottom across the full width.
-   * @public
    * @deprecated Only bottomPanel is supported in UI 2.0  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
