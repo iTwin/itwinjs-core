@@ -48,7 +48,7 @@ export class CheckpointConnection extends IModelConnection {
       throw new Error("Unable to get a valid access token. An access token is required to open a remote iModel Connection. Please configure IModelApp.authorization with a valid implementation.");
 
     if (undefined === IModelApp.hubAccess)
-      throw new Error("Missing an implementation of FrontendHubAccess on IModelApp, it is required to open a remove iModel Connection. Please provide an implementation to the IModelApp.startup using IModelAppOptions.hubAccess.");
+      throw new Error("Missing an implementation of FrontendHubAccess on IModelApp, it is required to open a remote iModel Connection. Please provide an implementation to the IModelApp.startup using IModelAppOptions.hubAccess.");
 
     const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ accessToken, iModelId, version }) };
 
