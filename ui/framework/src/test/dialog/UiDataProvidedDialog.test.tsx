@@ -6,7 +6,7 @@ import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogL
 import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import { UiDataProvidedDialog } from "../../ui-framework";
 import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 
