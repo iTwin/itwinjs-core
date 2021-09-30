@@ -466,15 +466,11 @@ export namespace Base64EncodedString {
     const replacer: (_name: string, value: any) => any;
 }
 
-// @beta (undocumented)
+// @beta
 export interface BaseConfig {
-    // (undocumented)
     priority?: number;
-    // (undocumented)
     quota?: Quota;
-    // (undocumented)
     restartToken?: string;
-    // (undocumented)
     usePrimaryConn?: boolean;
 }
 
@@ -4826,11 +4822,9 @@ export interface LightSettingsProps {
     specularIntensity?: number;
 }
 
-// @beta (undocumented)
+// @beta
 export interface Limit {
-    // (undocumented)
     count?: number;
-    // (undocumented)
     offset?: number;
 }
 
@@ -6314,15 +6308,11 @@ export namespace Quantization {
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
-// @beta (undocumented)
+// @beta
 export interface QueryConfig extends BaseConfig {
-    // (undocumented)
     abbreviateBlobs?: boolean;
-    // (undocumented)
     includeMetaData?: boolean;
-    // (undocumented)
     limit?: Limit;
-    // (undocumented)
     suppressLogErrors?: boolean;
 }
 
@@ -6396,23 +6386,17 @@ export interface QueryResponse extends Response {
     rowCount: number;
 }
 
-// @public (undocumented)
+// @public
 export enum QueryRowFormat {
-    // (undocumented)
     Array = 2,
-    // (undocumented)
     Default = 2,
-    // (undocumented)
     UseECSqlPropertyNames = 0,
-    // (undocumented)
     UseJsPropertyNames = 1
 }
 
-// @beta (undocumented)
+// @beta
 export interface Quota {
-    // (undocumented)
     memory?: number;
-    // (undocumented)
     time?: number;
 }
 
