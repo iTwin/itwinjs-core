@@ -36,7 +36,6 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private _models: { [modelId: string]: ModelProps } = {};
   // for IMJS_ITWIN_ID to work it should be define in your environment and you should be in signin mode with correct BUDDI region set
   //  IMJS_STANDALONE_SIGNIN=true
-  //  IMJS_BUDDI_RESOLVE_URL_USING_REGION=102
   //  IMJS_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
   private _iTwinId: GuidString | undefined = DisplayTestApp.iTwinId;
 
