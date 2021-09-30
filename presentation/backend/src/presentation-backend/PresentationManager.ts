@@ -101,7 +101,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
 
   /**
-   * A directory for Presentation hierarchy cache.
+   * A directory for Presentation hierarchy cache. If set, the directory must exist.
    *
    * The default directory depends on the iModel and the way it's opened.
    */
