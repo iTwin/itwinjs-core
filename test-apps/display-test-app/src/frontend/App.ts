@@ -16,6 +16,7 @@ import {
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -193,6 +194,7 @@ export class DisplayTestApp {
         tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
+        realityDataAccess: new RealityDataAccessClient(),
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
