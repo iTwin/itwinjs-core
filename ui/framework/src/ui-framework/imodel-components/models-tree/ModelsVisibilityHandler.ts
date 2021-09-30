@@ -553,11 +553,11 @@ class GroupedElementIdsProvider extends RulesetDrivenIdsProvider {
 
 const createTooltip = (status: "visible" | "hidden" | "disabled", tooltipStringId: string | undefined): string => {
   const statusStringId = `UiFramework:modelTree.status.${status}`;
-  const statusString = UiFramework.localizationClient.getLocalizedString(statusStringId);
+  const statusString = UiFramework.localization.getLocalizedString(statusStringId);
   if (!tooltipStringId)
     return statusString;
 
   tooltipStringId = `UiFramework:modelTree.tooltips.${tooltipStringId}`;
-  const tooltipString = UiFramework.localizationClient.getLocalizedString(tooltipStringId);
+  const tooltipString = UiFramework.localization.getLocalizedString(tooltipStringId);
   return `${statusString}: ${tooltipString}`;
 };

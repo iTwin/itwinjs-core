@@ -10,11 +10,11 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, SessionProps } from "@bentley/bentleyjs-core";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, SessionProps } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -221,13 +221,10 @@ export class IModelHost {
   /** Get the active authorization/access token for use with various services
    * @throws if authorizationClient has not been set up
    */
-  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
-    return this.authorizationClient!.getAccessToken(requestContext);
+  public static async getAccessToken(): Promise<AccessToken | undefined> {
+    return this.authorizationClient!.getAccessToken();
   }
-  /** @internal */
-  public static async getAuthorizedContext() {
-    return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
-  }
+
   /** @internal */
   public static flushLog() {
     return this.platform.DgnDb.flushLog();
@@ -260,29 +257,6 @@ export class IModelHost {
     }
     this._platform = undefined;
     throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
-  }
-
-  private static setupRpcRequestContext() {
-    RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
-      // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
-      if (!serializedContext.authorization)
-        return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
-
-      // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
-      let accessToken: AccessToken;
-      if (!IModelHost.authorizationClient) {
-        // Determine the access token from the frontend request
-        accessToken = AccessToken.fromTokenString(serializedContext.authorization);
-        const userId = serializedContext.userId;
-        if (userId)
-          accessToken.setUserInfo(new UserInfo(userId));
-      } else {
-        // Determine the access token from  the backend's authorization client
-        accessToken = await IModelHost.authorizationClient.getAccessToken();
-      }
-
-      return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
-    };
   }
 
   /**
@@ -364,8 +338,6 @@ export class IModelHost {
     this.setupCacheDirs(configuration);
     IModelHubBackend.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir);
-
-    IModelHost.setupRpcRequestContext();
 
     [
       IModelReadRpcImpl,

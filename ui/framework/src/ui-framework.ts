@@ -232,6 +232,8 @@ export * from "./ui-framework/uisettings/AppUiSettings";
 export * from "./ui-framework/uisettings/UserSettingsStorage";
 export * from "./ui-framework/uisettings/useUiSettings";
 
+export * from "./ui-framework/UserInfo";
+
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";

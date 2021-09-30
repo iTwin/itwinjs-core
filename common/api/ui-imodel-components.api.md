@@ -14,7 +14,7 @@ import { HSVColor } from '@bentley/imodeljs-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InputProps } from '@itwin/itwinui-react';
-import { LocalizationClient } from '@bentley/imodeljs-common';
+import { Localization } from '@bentley/imodeljs-common';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
@@ -1043,9 +1043,9 @@ export enum TimelineScale {
 
 // @public
 export class UiIModelComponents {
-    static initialize(localizationClient?: LocalizationClient): Promise<void>;
+    static initialize(localization?: Localization): Promise<void>;
     static get initialized(): boolean;
-    static get localizationClient(): LocalizationClient;
+    static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;

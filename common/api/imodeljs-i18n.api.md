@@ -5,11 +5,11 @@
 ```ts
 
 import { Callback } from 'i18next';
-import { LocalizationClient } from '@bentley/imodeljs-common';
+import { Localization } from '@bentley/imodeljs-common';
 import { TranslationOptions } from 'i18next';
 
 // @public
-export class I18N implements LocalizationClient {
+export class I18N implements Localization {
     constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback);
     // @internal
     getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;

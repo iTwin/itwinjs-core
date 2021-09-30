@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { LocalizationClient, SectionType } from "@bentley/imodeljs-common";
+import { Localization, SectionType } from "@bentley/imodeljs-common";
 import {
   IModelApp,
   ScreenViewport,
@@ -194,8 +194,8 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 }
 
 /** @internal */
-export function registerTools(namespace: string, localizationClient: LocalizationClient): void {
-  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, localizationClient);
+export function registerTools(namespace: string, localization: Localization): void {
+  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, localization);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);
   register(SectionMarkerDecoratorConfigTool);

@@ -15,7 +15,7 @@ describe("UiComponents", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiComponents.localizationClient).to.throw(Error);
+    expect(() => UiComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return UiComponents", () => {

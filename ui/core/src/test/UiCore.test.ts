@@ -15,7 +15,7 @@ describe("UiCore", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiCore.localizationClient).to.throw(Error);
+    expect(() => UiCore.localization).to.throw(Error);
   });
 
   it("terminate should run even if no i18n to unregister", () => {

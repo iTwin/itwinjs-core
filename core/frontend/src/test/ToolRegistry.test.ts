@@ -36,9 +36,9 @@ class TestCommandApp extends MockRender.App {
   public static testNamespace?: string;
 
   public static override async startup(): Promise<void> {
-    await IModelApp.startup({ localizationClient: new I18N("iModelJs", this.supplyI18NOptions()) });
+    await IModelApp.startup({ localization: new I18N("iModelJs", this.supplyI18NOptions()) });
     this.testNamespace = "TestApp";
-    await IModelApp.localizationClient.registerNamespace(this.testNamespace);
+    await IModelApp.localization.registerNamespace(this.testNamespace);
     TestImmediate.register(this.testNamespace);
   }
 

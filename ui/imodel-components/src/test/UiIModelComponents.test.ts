@@ -16,7 +16,7 @@ describe("UiIModelComponents", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiIModelComponents.localizationClient).to.throw(Error);
+    expect(() => UiIModelComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return 'UiIModelComponents'", () => {
@@ -54,7 +54,7 @@ describe("UiIModelComponents", () => {
     await MockRender.App.startup();
 
     await UiIModelComponents.initialize();
-    expect(UiIModelComponents.localizationClient).to.eq(IModelApp.localizationClient);
+    expect(UiIModelComponents.localization).to.eq(IModelApp.localization);
 
     await MockRender.App.shutdown();
   });

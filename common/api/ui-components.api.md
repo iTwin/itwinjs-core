@@ -29,7 +29,7 @@ import { immerable } from 'immer';
 import * as Inspire from 'inspire-tree';
 import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
-import { LocalizationClient } from '@bentley/imodeljs-common';
+import { Localization } from '@bentley/imodeljs-common';
 import { MessageSeverity } from '@bentley/ui-abstract';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
@@ -4202,9 +4202,9 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    static initialize(localizationClient: LocalizationClient): Promise<void>;
+    static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
-    static get localizationClient(): LocalizationClient;
+    static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;

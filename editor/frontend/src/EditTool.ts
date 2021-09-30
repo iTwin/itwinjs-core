@@ -47,7 +47,7 @@ export class EditTools {
   }
 
   /** @internal */
-  public static translate(prompt: string) { return IModelApp.localizationClient.getLocalizedString(this.tools + prompt); }
+  public static translate(prompt: string) { return IModelApp.localization.getLocalizedString(this.tools + prompt); }
 
   /** Call this before using the package (e.g., before attempting to use any of its tools.)
    * To initialize when starting up your app:
@@ -65,7 +65,7 @@ export class EditTools {
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
 
-    const namespacePromise = IModelApp.localizationClient.registerNamespace(this.namespace);
+    const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
 
     // Register requested tools...

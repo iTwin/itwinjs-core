@@ -9,7 +9,7 @@ import { BentleyError } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LocalizationClient } from '@bentley/imodeljs-common';
+import { Localization } from '@bentley/imodeljs-common';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -1972,9 +1972,9 @@ export enum ToolbarUsage {
 
 // @public
 export class UiAbstract {
-    static initialize(localizationClient: LocalizationClient): Promise<void>;
+    static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
-    static get localizationClient(): LocalizationClient;
+    static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;

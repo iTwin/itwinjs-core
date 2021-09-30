@@ -7,7 +7,7 @@ import {
   Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
 } from "@bentley/imodeljs-common";
 import {
-  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
+  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, IModelHubFrontend, SpatialViewState, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -30,11 +30,9 @@ describe("Schedule script (#integration)", () => {
 
   before(async () => {
     await IModelApp.shutdown();
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup();
+    IModelApp.authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
+    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);

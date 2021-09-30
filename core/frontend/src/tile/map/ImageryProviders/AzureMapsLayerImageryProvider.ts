@@ -23,6 +23,6 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override getLogo(_vp: ScreenViewport) {
-    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localizationClient.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") });
+    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") });
   }
 }

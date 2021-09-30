@@ -9,7 +9,7 @@ import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
-import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -19,6 +19,7 @@ import {
 } from "@bentley/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
+import { TestBrowserAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestBrowserAuthorizationClient";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -70,7 +71,7 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, localizationClient: new I18N("iModelJs", { urlTemplate: this.supplyUrlTemplate() }) });
+    await NoRenderApp.startup({ ...opts, localization: new I18N("iModelJs", { urlTemplate: this.supplyUrlTemplate() }) });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");
@@ -110,7 +111,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   if (props.useClientServices)
-    await frontendAppOptions.authorizationClient!.signIn(new ClientRequestContext());
+    await (frontendAppOptions.authorizationClient! as TestBrowserAuthorizationClient).signIn();
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,

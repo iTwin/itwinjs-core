@@ -60,9 +60,9 @@ export function MapManagerSettings() {
   const [groundBias, setGroundBias] = React.useState(() => backgroundMapSettings.groundBias);
 
   const terrainHeightOptions = React.useRef<SelectOption<string>[]>([
-    { value: "geodetic", label: MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.ElevationTypeGeodetic") },
-    { value: "geoid", label: MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.ElevationTypeGeoid") },
-    { value: "ground", label: MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.ElevationTypeGround") },
+    { value: "geodetic", label: MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.ElevationTypeGeodetic") },
+    { value: "geoid", label: MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.ElevationTypeGeoid") },
+    { value: "ground", label: MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.ElevationTypeGround") },
   ]);
 
   const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
@@ -159,16 +159,16 @@ export function MapManagerSettings() {
     setIsLocatable(checked);
   }, [updateBackgroundMap]);
 
-  const [transparencyLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.Transparency"));
-  const [terrainLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.Terrain"));
-  const [enableLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.Enable"));
-  const [elevationOffsetLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.ElevationOffset"));
-  const [useDepthBufferLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.UseDepthBuffer"));
-  const [modelHeightLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.ModelHeight"));
-  const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.HeightOrigin"));
-  const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.Exaggeration"));
-  const [locatableLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.Locatable"));
-  const [maskingLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Settings.Mask"));
+  const [transparencyLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Transparency"));
+  const [terrainLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Terrain"));
+  const [enableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Enable"));
+  const [elevationOffsetLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.ElevationOffset"));
+  const [useDepthBufferLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.UseDepthBuffer"));
+  const [modelHeightLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.ModelHeight"));
+  const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.HeightOrigin"));
+  const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Exaggeration"));
+  const [locatableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Locatable"));
+  const [maskingLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Mask"));
 
   return (
     <>

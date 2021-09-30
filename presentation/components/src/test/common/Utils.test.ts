@@ -92,7 +92,7 @@ describe("Utils", () => {
 
     beforeEach(() => {
       i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
-      Presentation.setLocalizationClient(i18nMock.object);
+      Presentation.setLocalization(i18nMock.object);
     });
 
     afterEach(() => {

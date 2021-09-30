@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic, LocalizationClient } from "@bentley/imodeljs-common";
+import { Cartographic, Localization } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
@@ -43,7 +43,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = `${this.title} (${GeoNameExtension.localizationClient.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
+      this.title = `${this.title} (${GeoNameExtension.localization.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -72,7 +72,6 @@ class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
 export class GeoNameMarkerManager {
   private _markerSet: GeoNameMarkerSet;
   public static decorator?: GeoNameMarkerManager; // static variable so we can tell if the manager is active.
-  protected _requestContext = new ClientRequestContext("");
   private static _scratchCarto = Cartographic.createZero();
   private static _scratchPoint = Point3d.createZero();
 
@@ -121,7 +120,7 @@ export class GeoNameMarkerManager {
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.localizationClient.getLocalizedString(`geoNames:messages.${messageKey}`);
+    const message: string = GeoNameExtension.localization.getLocalizedString(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }
@@ -134,7 +133,7 @@ export class GeoNameMarkerManager {
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      const locationResponse: Response = await request(this._requestContext, url, requestOptions);
+      const locationResponse: Response = await request(url, requestOptions);
 
       const cities = new Array<GeoNameProps>();
       for (const geoName of locationResponse.body.geonames) {
@@ -208,16 +207,16 @@ class GeoNameUpdateTool extends GeoNameTool {
 }
 
 export class GeoNameExtension {
-  private static _localizationClient: LocalizationClient;
+  private static _localization: Localization;
   private static _defaultNs = "mapLayers";
 
-  public static get localizationClient(): LocalizationClient { return this._localizationClient; }
+  public static get localization(): Localization { return this._localization; }
 
-  public static async initialize(localizationClient: LocalizationClient): Promise<void> {
-    await this._localizationClient.registerNamespace(this._defaultNs);
-    IModelApp.tools.register(GeoNameOnTool, this._defaultNs, localizationClient);
-    IModelApp.tools.register(GeoNameOffTool, this._defaultNs, localizationClient);
-    IModelApp.tools.register(GeoNameUpdateTool, this._defaultNs, localizationClient);
+  public static async initialize(localization: Localization): Promise<void> {
+    await this._localization.registerNamespace(this._defaultNs);
+    IModelApp.tools.register(GeoNameOnTool, this._defaultNs, localization);
+    IModelApp.tools.register(GeoNameOffTool, this._defaultNs, localization);
+    IModelApp.tools.register(GeoNameUpdateTool, this._defaultNs, localization);
     if (undefined !== IModelApp.viewManager.selectedView)
       await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }

@@ -63,7 +63,7 @@ describe("StandardNavigationToolsProvider", () => {
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localizationClient: TestUtils.localizationClient });
+    await MockRender.App.startup({ localization: TestUtils.localization });
   });
 
   after(async () => {

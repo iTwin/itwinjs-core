@@ -45,7 +45,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override getLogo(_vp: ScreenViewport): HTMLTableRowElement | undefined {
-    return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localizationClient.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") });
+    return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") });
   }
 
   // no initialization needed for MapBoxImageryProvider.

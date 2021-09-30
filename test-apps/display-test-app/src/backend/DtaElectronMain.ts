@@ -8,12 +8,12 @@ import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { IpcHandler } from "@bentley/imodeljs-backend";
+import { getConfig } from "../common/DtaConfiguration";
 
 const mainWindowName = "mainWindow";
-const getWindowSize = () => {
-  const sizeStr = process.env.SVT_WINDOW_SIZE;
-  if (typeof sizeStr === "string") {
-    const parts = sizeStr.split(",");
+const getWindowSize = (winSize?: string) => {
+  if (undefined !== winSize) {
+    const parts = winSize.split(",");
     if (parts.length === 2) {
       let width = Number.parseInt(parts[0], 10);
       let height = Number.parseInt(parts[1], 10);
@@ -51,14 +51,16 @@ const dtaElectronMain = async () => {
     developmentServer: process.env.NODE_ENV === "development",
     authConfig: {
       clientId: "imodeljs-electron-test",
-      scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
+      scope: "openid email profile organization itwinjs",
     },
   };
 
   await initializeDtaBackend(opts);
 
+  const configuration = getConfig();
+
   // Restore previous window size, position and maximized state
-  const sizeAndPosition = getWindowSize();
+  const sizeAndPosition = getWindowSize(configuration.windowSize);
   const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
@@ -70,7 +72,7 @@ const dtaElectronMain = async () => {
     ElectronHost.mainWindow.show();
   }
 
-  if (undefined === process.env.SVT_NO_DEV_TOOLS)
+  if (configuration.devTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
@@ -86,16 +88,14 @@ const dtaElectronMain = async () => {
     });
   });
 
-  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
-  const configuration = require(configPathname); // eslint-disable-line @typescript-eslint/no-var-requires
-  if (configuration.useIModelBank) {
+  // Custom orchestrator URL is used to define the iModelBank URL.
+  if (configuration.customOrchestratorUri) {
     ElectronHost.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
       event.preventDefault();
       callback(true);
     });
   }
-
 };
 
 // execute this immediately when we load

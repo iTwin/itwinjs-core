@@ -17,7 +17,7 @@ describe("UiAbstract", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiAbstract.localizationClient).to.throw(Error);
+    expect(() => UiAbstract.localization).to.throw(Error);
   });
 
   it("terminate should run even if no i18n to unregister", () => {
@@ -58,9 +58,9 @@ describe("UiAbstract", () => {
 
   it("messagePresenter should return set object", () => {
     const mp: MessagePresenter = {
-      displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => {},
-      displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => {},
-      closeInputFieldMessage: (): void => {},
+      displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => { },
+      displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
+      closeInputFieldMessage: (): void => { },
     };
     UiAbstract.messagePresenter = mp;
     expect(UiAbstract.messagePresenter).to.eq(mp);

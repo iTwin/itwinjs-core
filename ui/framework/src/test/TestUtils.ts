@@ -7,9 +7,9 @@ import { createStore, Store } from "redux";
 import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "../ui-framework/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@bentley/ui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 
@@ -54,17 +54,17 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _localizationClient?: LocalizationClient;
+  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get localizationClient(): LocalizationClient {
-    if (!TestUtils._localizationClient) {
-      TestUtils._localizationClient = new I18N();
+  public static get localization(): Localization {
+    if (!TestUtils._localization) {
+      TestUtils._localization = new I18N();
     }
-    return TestUtils._localizationClient;
+    return TestUtils._localization;
   }
 
   public static async initializeUiFramework(testAlternateKey = false) {
@@ -91,9 +91,9 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.localizationClient, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.localization, "testDifferentFrameworkKey");
       else
-        await UiFramework.initialize(this.store, TestUtils.localizationClient);
+        await UiFramework.initialize(this.store, TestUtils.localization);
 
       TestUtils._uiFrameworkInitialized = true;
     }

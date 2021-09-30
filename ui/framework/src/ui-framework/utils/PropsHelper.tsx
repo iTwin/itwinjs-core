@@ -23,7 +23,7 @@ export class PropsHelper {
 
     let outValue = "";
     if (stringKey)
-      outValue = UiFramework.localizationClient.getLocalizedString(stringKey);
+      outValue = UiFramework.localization.getLocalizedString(stringKey);
     return outValue;
   }
 

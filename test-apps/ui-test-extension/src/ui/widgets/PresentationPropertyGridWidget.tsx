@@ -60,7 +60,7 @@ function FavoriteActionButton({ field, imodel }: { field: Field, imodel: IModelC
 function PresentationPropertyGrid(props: VirtualizedPropertyGridWithDataProviderProps & { dataProvider: IPresentationPropertyDataProvider }) {
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
   if (isOverLimit) {
-    return (<FillCentered>{ExtensionUiItemsProvider.localizationClient.getLocalizedString("uiTestExtension:properties.too-many-elements-selected")}</FillCentered>);
+    return (<FillCentered>{ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:properties.too-many-elements-selected")}</FillCentered>);
   }
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }
@@ -118,16 +118,16 @@ export function PresentationPropertyGridWidget() {
                 key: "remove-favorite",
                 icon: "icon-remove-2",
                 onSelect: async () => onRemoveFavorite(field),
-                title: ExtensionUiItemsProvider.localizationClient.getLocalizedString("uiTestExtension:properties.context-menu.remove-favorite.description"),
-                label: ExtensionUiItemsProvider.localizationClient.getLocalizedString("uiTestExtension:properties.context-menu.remove-favorite.label"),
+                title: ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:properties.context-menu.remove-favorite.description"),
+                label: ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:properties.context-menu.remove-favorite.label"),
               });
             } else {
               items.push({
                 key: "add-favorite",
                 icon: "icon-add",
                 onSelect: async () => onAddFavorite(field),
-                title: ExtensionUiItemsProvider.localizationClient.getLocalizedString("uiTestExtension:properties.context-menu.add-favorite.description"),
-                label: ExtensionUiItemsProvider.localizationClient.getLocalizedString("uiTestExtension:properties.context-menu.add-favorite.label"),
+                title: ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:properties.context-menu.add-favorite.description"),
+                label: ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:properties.context-menu.add-favorite.label"),
               });
             }
           }
@@ -171,7 +171,7 @@ export function PresentationPropertyGridWidget() {
     return null;
   }, [dataProvider, iModelConnection]);
 
-  const [gridSize, setGridSize] = React.useState<{width: number, height: number}>();
+  const [gridSize, setGridSize] = React.useState<{ width: number, height: number }>();
   const onGridResize = React.useCallback((width, height) => setGridSize({ width, height }), []);
 
   return (
@@ -227,7 +227,7 @@ export class PresentationPropertyGridWidgetControl extends WidgetControl {
   public static id = "uiTestExtension:PresentationPropertyGridWidget";
   public static iconSpec = "icon-info";
   public static get label(): string {
-    return ExtensionUiItemsProvider.localizationClient.getLocalizedString("uiTestExtension:properties.widget-label");
+    return ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:properties.widget-label");
   }
 
   constructor(info: ConfigurableCreateInfo, options: any) {

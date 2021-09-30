@@ -29,7 +29,7 @@ import { InvertedUnitProps } from '@bentley/ecschema-metadata';
 import { ISchemaPartVisitor } from '@bentley/ecschema-metadata';
 import { KindOfQuantity } from '@bentley/ecschema-metadata';
 import { KindOfQuantityProps } from '@bentley/ecschema-metadata';
-import { LocalizationClient } from '@bentley/imodeljs-common';
+import { Localization } from '@bentley/imodeljs-common';
 import { Mixin } from '@bentley/ecschema-metadata';
 import { MixinProps } from '@bentley/ecschema-metadata';
 import { OverrideFormat } from '@bentley/ecschema-metadata';
@@ -623,9 +623,9 @@ export class FormatChanges extends SchemaItemChanges {
 
 // @beta
 export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
-    constructor(suppressions?: Map<string, string[]>, localizationClient?: LocalizationClient);
+    constructor(suppressions?: Map<string, string[]>, localization?: Localization);
     protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex?: number): string;
-    localizationClient?: LocalizationClient;
+    localization?: Localization;
     protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
     reportInternal(diagnostic: AnyDiagnostic): void;
     }
@@ -658,7 +658,7 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
 
 // @beta
 export interface IDiagnosticReporter {
-    localizationClient?: LocalizationClient;
+    localization?: Localization;
     report(diagnostic: AnyDiagnostic): void;
     suppressions?: Map<string, string[]>;
 }

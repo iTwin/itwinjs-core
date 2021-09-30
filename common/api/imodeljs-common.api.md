@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessTokenProps } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
@@ -15,8 +15,6 @@ import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BriefcaseStatus } from '@bentley/bentleyjs-core';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
@@ -30,6 +28,7 @@ import { GeometryQuery } from '@bentley/geometry-core';
 import { GeoServiceStatus } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
+import { GuidString as GuidString_2 } from '@bentley/bentleyjs-core/src/Id';
 import { Id64 } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
@@ -64,7 +63,6 @@ import { Range3dProps } from '@bentley/geometry-core';
 import { Readable } from 'stream';
 import { RepositoryStatus } from '@bentley/bentleyjs-core';
 import { RpcInterfaceStatus } from '@bentley/bentleyjs-core';
-import { SerializedClientRequestContext } from '@bentley/bentleyjs-core';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { Vector2d } from '@bentley/geometry-core';
@@ -394,38 +392,50 @@ export interface BackgroundMapProps {
     nonLocatable?: boolean;
     // @beta
     planarClipMask?: PlanarClipMaskProps;
-    providerData?: {
-        mapType?: BackgroundMapType;
-    };
-    providerName?: string;
+    providerData?: never;
+    providerName?: never;
     terrainSettings?: TerrainProps;
     transparency?: number | false;
     useDepthBuffer?: boolean;
 }
 
+// @beta
+export class BackgroundMapProvider {
+    equals(other: BackgroundMapProvider): boolean;
+    // @internal (undocumented)
+    static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider;
+    static fromJSON(props: BackgroundMapProviderProps): BackgroundMapProvider;
+    readonly name: BackgroundMapProviderName;
+    toJSON(): BackgroundMapProviderProps;
+    readonly type: BackgroundMapType;
+}
+
 // @public
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+// @beta
+export interface BackgroundMapProviderProps {
+    name?: BackgroundMapProviderName;
+    type?: BackgroundMapType;
+}
 
 // @public
 export class BackgroundMapSettings {
     readonly applyTerrain: boolean;
     clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
-    // (undocumented)
     equals(other: BackgroundMapSettings): boolean;
     equalsJSON(json?: BackgroundMapProps): boolean;
+    equalsPersistentJSON(json?: PersistentBackgroundMapProps): boolean;
     static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
+    static fromPersistentJSON(json?: PersistentBackgroundMapProps): BackgroundMapSettings;
     readonly globeMode: GlobeMode;
     readonly groundBias: number;
     get locatable(): boolean;
-    readonly mapType: BackgroundMapType;
     // @beta
     readonly planarClipMask: PlanarClipMaskSettings;
-    // @internal (undocumented)
-    static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined;
-    readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
-    // (undocumented)
     toJSON(): BackgroundMapProps;
+    toPersistentJSON(): PersistentBackgroundMapProps;
     readonly transparency: number | false;
     get transparencyOverride(): number | undefined;
     readonly useDepthBuffer: boolean;
@@ -457,10 +467,39 @@ export namespace Base64EncodedString {
 }
 
 // @beta
-export type BaseLayerProps = MapLayerProps | ColorDefProps;
+export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
 
 // @beta
-export type BaseLayerSettings = MapLayerSettings | ColorDef;
+export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
+
+// @beta (undocumented)
+export namespace BaseLayerSettings {
+    export function fromJSON(props: BaseLayerProps): BaseLayerSettings | undefined;
+}
+
+// @beta
+export interface BaseMapLayerProps extends MapLayerProps {
+    // (undocumented)
+    provider?: BackgroundMapProviderProps;
+}
+
+// @beta
+export class BaseMapLayerSettings extends MapLayerSettings {
+    clone(changedProps: MapLayerProps): BaseMapLayerSettings;
+    // @internal (undocumented)
+    cloneProps(changedProps: MapLayerProps): BaseMapLayerProps;
+    // @alpha (undocumented)
+    cloneWithProvider(provider: BackgroundMapProvider): BaseMapLayerSettings;
+    // @internal (undocumented)
+    static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BaseMapLayerSettings;
+    static fromJSON(props?: BaseMapLayerProps): BaseMapLayerSettings | undefined;
+    static fromProvider(provider: BackgroundMapProvider, options?: {
+        invisible?: boolean;
+        transparency?: number;
+    }): BaseMapLayerSettings;
+    get provider(): BackgroundMapProvider | undefined;
+    toJSON(): BaseMapLayerProps;
+}
 
 // @public
 export enum BatchType {
@@ -500,7 +539,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     getOperationFromPath(path: string): SerializedRpcOperation;
     inflateToken(tokenFromBody: IModelRpcProps, request: SerializedRpcRequest): IModelRpcProps;
     protocolVersionHeaderName: string;
-    serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
+    serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined): string;
     // @internal
     supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
@@ -1800,6 +1839,16 @@ export interface DeletedElementGeometryChange {
     readonly type: DbOpcode.Delete;
 }
 
+// @public
+export interface DeprecatedBackgroundMapProps {
+    // @deprecated
+    providerData?: {
+        mapType?: BackgroundMapType;
+    };
+    // @deprecated
+    providerName?: string;
+}
+
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
     static getClient(): DevToolsRpcInterface;
@@ -1949,7 +1998,7 @@ export class DisplayStyleSettings {
     is3d(): this is DisplayStyle3dSettings;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
-    // @alpha
+    // @beta
     get mapImagery(): MapImagerySettings;
     set mapImagery(mapImagery: MapImagerySettings);
     get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
@@ -1968,7 +2017,7 @@ export class DisplayStyleSettings {
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
     readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
-    // @alpha
+    // @beta
     readonly onMapImageryChanged: BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>;
     readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>;
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
@@ -2017,7 +2066,7 @@ export interface DisplayStyleSettingsProps {
     analysisFraction?: number;
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
-    backgroundMap?: BackgroundMapProps;
+    backgroundMap?: PersistentBackgroundMapProps;
     clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
@@ -2462,15 +2511,15 @@ export interface EmphasizeElementsProps {
 }
 
 // @public
-export class EmptyLocalizationClient implements LocalizationClient {
+export class EmptyLocalization implements Localization {
     // (undocumented)
-    getEnglishString(namespace: string, key: string | string[]): string;
+    getEnglishString(_namespace: string, key: string | string[]): string;
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
     getLocalizedString(key: string | string[]): string;
     // (undocumented)
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[]): string;
+    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
     // (undocumented)
     getNamespace(): Promise<void> | undefined;
     // (undocumented)
@@ -4790,14 +4839,12 @@ export type LocalDirName = string;
 export type LocalFileName = string;
 
 // @public
-export interface LocalizationClient {
+export interface Localization {
     // (undocumented)
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
-    // (undocumented)
     getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
     // (undocumented)
     getNamespace(name: string): Promise<void> | undefined;
@@ -4829,7 +4876,9 @@ export class MapImagerySettings {
     get backgroundLayers(): MapLayerSettings[];
     // @internal
     get baseTransparency(): number;
-    static fromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps): MapImagerySettings;
+    // @internal (undocumented)
+    static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps): MapImagerySettings;
+    static fromJSON(imageryJson?: MapImageryProps): MapImagerySettings;
     // (undocumented)
     get overlayLayers(): MapLayerSettings[];
     // (undocumented)
@@ -4859,20 +4908,25 @@ export interface MapLayerProps {
 
 // @beta
 export class MapLayerSettings {
+    // @internal
+    protected constructor(url: string, name: string, formatId?: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
     // (undocumented)
-    readonly accessKey?: MapLayerKey;
+    accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
     clone(changedProps: MapLayerProps): MapLayerSettings;
+    // @internal (undocumented)
+    protected cloneProps(changedProps: MapLayerProps): MapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
     readonly formatId: string;
     static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined;
-    static fromMapSettings(mapSettings: BackgroundMapSettings): MapLayerSettings;
     getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
     // (undocumented)
     readonly isBase: boolean;
     isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
+    // @internal (undocumented)
+    protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // @internal (undocumented)
     matchesNameAndUrl(name: string, url: string): boolean;
     // (undocumented)
@@ -5167,14 +5221,14 @@ export interface NativeAppFunctions {
     deleteBriefcaseFiles(_fileName: string): Promise<void>;
     downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number): Promise<LocalBriefcaseProps>;
     // (undocumented)
-    getAccessTokenProps(): Promise<AccessTokenProps>;
+    getAccessToken: () => Promise<AccessToken | undefined>;
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
     getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
-    initializeAuth(props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
+    initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
     // (undocumented)
-    setAccessTokenProps(token: AccessTokenProps): Promise<void>;
+    setAccessToken(token: AccessToken): Promise<void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
@@ -5193,7 +5247,7 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
     // (undocumented)
-    notifyUserStateChanged(accessToken?: AccessTokenProps): void;
+    notifyUserStateChanged(accessToken?: AccessToken): void;
 }
 
 // @internal (undocumented)
@@ -5557,6 +5611,9 @@ export interface PartReference {
     // (undocumented)
     type: "partReference";
 }
+
+// @public
+export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
 
 // @public
 export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
@@ -6724,6 +6781,12 @@ export interface RootSubjectProps {
 }
 
 // @public
+export interface RpcActivity extends SessionProps {
+    readonly accessToken: AccessToken;
+    readonly activityId: GuidString;
+}
+
+// @public
 export abstract class RpcConfiguration {
     // @alpha (undocumented)
     allowAttachedInterfaces: boolean;
@@ -6880,11 +6943,11 @@ export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
     // (undocumented)
-    static currentRequest: ClientRequestContext;
+    static currentActivity: RpcActivity;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
     // @internal
-    static logRpcException(currentRequest: ClientRequestContext, error: any): void;
+    static logRpcException(activity: RpcActivity, operationName: string, error: unknown): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
@@ -6893,7 +6956,7 @@ export class RpcInvocation {
     }
 
 // @public
-export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
+export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 // @public
 export class RpcManager {
@@ -6963,7 +7026,7 @@ export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
     allowTokenMismatch: boolean;
     forceStrictMode: boolean;
-    invocationCallback: RpcInvocationCallback_T;
+    invocationCallback: RpcInvocationCallback;
     requestCallback: RpcRequestCallback_T;
     retryInterval: RpcRequestInitialRetryIntervalSupplier_T;
     sentCallback: RpcRequestCallback_T;
@@ -7022,7 +7085,7 @@ export abstract class RpcProtocol {
     abstract readonly requestType: typeof RpcRequest;
     serialize(request: RpcRequest): Promise<SerializedRpcRequest>;
     // (undocumented)
-    serializedClientRequestContextHeaderNames: SerializedClientRequestContext;
+    serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string;
     transferChunkThreshold: number;
 }
@@ -7230,9 +7293,9 @@ export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 // @public
 export interface RpcRequestContext {
-    deserialize: (request: SerializedRpcRequest) => Promise<ClientRequestContext>;
+    deserialize: (request: SerializedRpcActivity) => RpcActivity;
     getId: (request: RpcRequest) => string;
-    serialize: (request: RpcRequest) => Promise<SerializedClientRequestContext>;
+    serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }
 
 // @public
@@ -7410,6 +7473,25 @@ export enum SectionType {
 }
 
 // @public
+export interface SerializedRpcActivity {
+    // (undocumented)
+    applicationId: string;
+    // (undocumented)
+    applicationVersion: string;
+    // (undocumented)
+    authorization: string;
+    // (undocumented)
+    csrfToken?: {
+        headerName: string;
+        headerValue: string;
+    };
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    sessionId: string;
+}
+
+// @public
 export interface SerializedRpcOperation {
     // (undocumented)
     encodedRequest?: string;
@@ -7422,7 +7504,7 @@ export interface SerializedRpcOperation {
 }
 
 // @public
-export interface SerializedRpcRequest extends SerializedClientRequestContext {
+export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     caching: RpcResponseCacheControl;
     // (undocumented)
@@ -7447,6 +7529,13 @@ export class ServerError extends IModelError {
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
     constructor(message: string);
+}
+
+// @public
+export interface SessionProps {
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString_2;
 }
 
 // @beta

@@ -72,7 +72,7 @@ export class HyperModeling {
     }
 
     const namespace = "HyperModeling";
-    await IModelApp.localizationClient.registerNamespace(namespace);
+    await IModelApp.localization.registerNamespace(namespace);
 
     const loadImages = [
       tryImageElementFromUrl("section-marker.svg"),
@@ -85,14 +85,14 @@ export class HyperModeling {
     this.resources = {
       namespace,
       markers: {
-        section: { image: images[0], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.SectionCallout") },
-        detail: { image: images[1], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.DetailCallout") },
-        elevation: { image: images[2], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.ElevationCallout") },
-        plan: { image: images[3], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.PlanCallout") },
+        section: { image: images[0], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.SectionCallout") },
+        detail: { image: images[1], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.DetailCallout") },
+        elevation: { image: images[2], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.ElevationCallout") },
+        plan: { image: images[3], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.PlanCallout") },
       },
     };
 
-    registerTools(namespace, IModelApp.localizationClient);
+    registerTools(namespace, IModelApp.localization);
     this.replaceConfiguration(config);
   }
 

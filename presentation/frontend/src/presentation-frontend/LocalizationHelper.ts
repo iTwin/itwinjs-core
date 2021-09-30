@@ -12,16 +12,16 @@ const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 /** @internal */
 export class LocalizationHelper {
   public static async registerNamespaces() {
-    const localizationPromises = NAMESPACES.map(async (namespace) => Presentation.localizationClient.registerNamespace(namespace));
+    const localizationPromises = NAMESPACES.map(async (namespace) => Presentation.localization.registerNamespace(namespace));
     await Promise.all(localizationPromises);
   }
 
   public static unregisterNamespaces() {
-    NAMESPACES.map((namespace) => Presentation.localizationClient.unregisterNamespace(namespace));
+    NAMESPACES.map((namespace) => Presentation.localization.unregisterNamespace(namespace));
   }
 
   public getLocalizedString(text: string) {
-    return text.replace(KEY_PATTERN, (key) => Presentation.localizationClient.getLocalizedString(key.replace(/^@|@$/g, ""), { defaultValue: key }));
+    return text.replace(KEY_PATTERN, (key) => Presentation.localization.getLocalizedString(key.replace(/^@|@$/g, ""), { defaultValue: key }));
   }
 
   public getLocalizedNodes(nodes: Node[]): Node[] {

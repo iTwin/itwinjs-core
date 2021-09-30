@@ -180,7 +180,7 @@ export class NotificationManager implements MessagePresenter {
   /** Output a prompt, given a localization key.
    * @param key The key of the localized string with the prompt message.
    */
-  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.localizationClient.getLocalizedString(key)); }
+  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.localization.getLocalizedString(key)); }
 
   /** Output a localized prompt to the user. A 'prompt' indicates an action the user should take to proceed.
    * @param _prompt The localized string with the prompt message.

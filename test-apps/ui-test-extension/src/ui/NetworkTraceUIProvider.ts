@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import {
   BadgeType,
   CommonToolbarItem,
@@ -26,17 +26,17 @@ export class TraceUiItemsProvider implements UiItemsProvider {
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
 
   public readonly id = "TraceUiItemsProvider";
-  private static _localizationClient: LocalizationClient;
+  private static _localization: Localization;
   private static _defaultNs: string;
   private static _traceAvailableProperty = false;
 
-  public constructor(localizationClient: LocalizationClient, defaultNs: string) {
-    TraceUiItemsProvider._localizationClient = localizationClient;
+  public constructor(localization: Localization, defaultNs: string) {
+    TraceUiItemsProvider._localization = localization;
     TraceUiItemsProvider._defaultNs = defaultNs;
   }
 
   public static translate(key: string) {
-    return TraceUiItemsProvider._localizationClient.getLocalizedString(
+    return TraceUiItemsProvider._localization.getLocalizedString(
       `${TraceUiItemsProvider._defaultNs}:${key}`
     );
   }

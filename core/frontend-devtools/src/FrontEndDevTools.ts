@@ -80,7 +80,7 @@ export class FrontendDevTools {
     this._initialized = true;
 
     const namespace = "FrontendDevTools";
-    const namespacePromise = IModelApp.localizationClient.registerNamespace(namespace);
+    const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,

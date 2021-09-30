@@ -49,11 +49,11 @@ class TestApp extends MockRender.App {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuDraw = new TestAccuDraw();
-    opts.localizationClient = new I18N("iModelJs", this.supplyI18NOptions());
+    opts.localization = new I18N("iModelJs", this.supplyI18NOptions());
     await MockRender.App.startup(opts);
 
     const namespace = "TestApp";
-    this.testNamespace = IModelApp.localizationClient.registerNamespace(namespace);
+    this.testNamespace = IModelApp.localization.registerNamespace(namespace);
     TestImmediate.register(namespace);
     AnotherImmediate.register(namespace);
     ThirdImmediate.register(namespace);
@@ -73,7 +73,7 @@ class TestApp extends MockRender.App {
 
 describe("IModelApp", () => {
   before(async () => {
-    await TestApp.startup({localizationClient: new I18N("iModelJs")});
+    await TestApp.startup({ localization: new I18N("iModelJs") });
     await TestApp.testNamespace;  // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());
@@ -117,16 +117,16 @@ describe("IModelApp", () => {
 
   it("Should do localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
-    assert.equal(IModelApp.localizationClient.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
-    assert.equal(IModelApp.localizationClient.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-    assert.equal(IModelApp.localizationClient.getLocalizedString("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+    assert.equal(IModelApp.localization.getLocalizedString("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
 
     // there is no key for TrivialTest.Test3
-    assert.equal(IModelApp.localizationClient.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
 
     // Should properly substitute the values in localized strings with interpolations
-    assert.equal(IModelApp.localizationClient.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
-    assert.equal(IModelApp.localizationClient.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
+    assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
 
     assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
     assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");

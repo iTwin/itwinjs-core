@@ -14,8 +14,8 @@ import { StyleMapLayerSettings } from "../Interfaces";
 export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const settingsRef = React.useRef<HTMLButtonElement>(null);
-  const [labelDetach] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:LayerMenu.Detach"));
-  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
+  const [labelDetach] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
+  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
   const [hasRangeData, setHasRangeData] = React.useState<boolean | undefined>();
   const [transparency, setTransparency] = React.useState(mapLayerSettings.transparency);
 

@@ -203,7 +203,7 @@ export class MarkupApp {
   }
 
   /** @internal */
-  public static getActionName(action: string) { return IModelApp.localizationClient.getLocalizedString(`${this.namespace}:actions.${action}`); }
+  public static getActionName(action: string) { return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`); }
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
@@ -265,13 +265,13 @@ export class MarkupApp {
   public static async initialize(): Promise<void> {
     if (undefined === this.namespace) {     // only need to do this once
       this.namespace = "MarkupTools";
-      const namespacePromise = IModelApp.localizationClient.registerNamespace(this.namespace);
+      const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
       IModelApp.tools.register(SelectTool, this.namespace);
       IModelApp.tools.registerModule(redlineTool, this.namespace);
       IModelApp.tools.registerModule(textTool, this.namespace);
       return namespacePromise;
     }
-    return IModelApp.localizationClient.getNamespace(this.namespace)!; // so caller can make sure localized messages are ready.
+    return IModelApp.localization.getNamespace(this.namespace)!; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics

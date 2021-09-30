@@ -63,7 +63,7 @@ export class EditTextTool extends MarkupTool {
   constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localizationClient.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 

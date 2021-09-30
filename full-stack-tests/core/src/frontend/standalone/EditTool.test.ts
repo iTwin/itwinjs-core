@@ -40,7 +40,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     before(async () => {
       await ElectronApp.startup();
       const namespace = "TestApp";
-      await IModelApp.localizationClient.registerNamespace(namespace);
+      await IModelApp.localization.registerNamespace(namespace);
       IModelApp.tools.register(TestEditTool1, namespace);
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 

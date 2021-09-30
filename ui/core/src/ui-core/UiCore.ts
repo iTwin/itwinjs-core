@@ -13,7 +13,7 @@ import "./layout-variables.scss";
 import "./classes.scss";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 
 // cSpell:ignore colorthemes colorvariables
@@ -24,29 +24,29 @@ import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
  */
 export class UiCore {
   private static _initialized = false;
-  private static _localizationClient?: LocalizationClient;
+  private static _localization?: Localization;
 
   /**
    * Registers the localization service namespace for UiCore. Also initializes UiAbstract.
-   * @param localizationClient The internationalization service created by the application.
+   * @param localization The internationalization service created by the application.
    */
-  public static async initialize(localizationClient: LocalizationClient): Promise<void> {
+  public static async initialize(localization: Localization): Promise<void> {
     if (UiCore._initialized) {
       Logger.logInfo(UiCore.loggerCategory(UiCore), `UiCore.initialize already called`);
       return;
     }
 
-    UiCore._localizationClient = localizationClient;
-    await UiCore._localizationClient.registerNamespace(UiCore.localizationNamespace);
-    await UiAbstract.initialize(localizationClient);
+    UiCore._localization = localization;
+    await UiCore._localization.registerNamespace(UiCore.localizationNamespace);
+    await UiAbstract.initialize(localization);
     UiCore._initialized = true;
   }
 
   /** Unregisters the UiCore localization namespace */
   public static terminate() {
-    if (UiCore._localizationClient)
-      UiCore._localizationClient.unregisterNamespace(UiCore.localizationNamespace);
-    UiCore._localizationClient = undefined;
+    if (UiCore._localization)
+      UiCore._localization.unregisterNamespace(UiCore.localizationNamespace);
+    UiCore._localization = undefined;
 
     UiAbstract.terminate();
     UiCore._initialized = false;
@@ -56,10 +56,10 @@ export class UiCore {
   public static get initialized(): boolean { return UiCore._initialized; }
 
   /** The internationalization service created by the application. */
-  public static get localizationClient(): LocalizationClient {
-    if (!UiCore._localizationClient)
-      throw new UiError(UiCore.loggerCategory(this), "localization: UiCore.initialize has not been called. Unable to return localizationClient object.");
-    return UiCore._localizationClient;
+  public static get localization(): Localization {
+    if (!UiCore._localization)
+      throw new UiError(UiCore.loggerCategory(this), "localization: UiCore.initialize has not been called. Unable to return localization object.");
+    return UiCore._localization;
   }
 
   /** The internationalization service namespace. */
@@ -75,7 +75,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore.initialize has not been called. Returning blank string.`);
       return "";
     }
-    return UiCore.localizationClient.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
+    return UiCore.localization.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
   }
 
   /** @internal */

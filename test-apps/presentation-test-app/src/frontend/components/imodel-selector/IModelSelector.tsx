@@ -66,14 +66,14 @@ export class IModelSelector extends React.Component<Props, State> {
   public override render() {
     let error = null;
     if (this.state.error)
-      error = (<div className="Error">{IModelApp.localizationClient.getLocalizedString("Sample:controls.notifications.error")}: {this.state.error.message}</div>);
+      error = (<div className="Error">{IModelApp.localization.getLocalizedString("Sample:controls.notifications.error")}: {this.state.error.message}</div>);
 
     return (
       <div className="IModelSelector">
         <Select
           options={this.state.availableImodels}
           value={this.props.activeIModelPath}
-          placeholder={IModelApp.localizationClient.getLocalizedString("Sample:controls.notifications.select-imodel")}
+          placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-imodel")}
           onChange={this.onImodelSelected}
         />
         {error}

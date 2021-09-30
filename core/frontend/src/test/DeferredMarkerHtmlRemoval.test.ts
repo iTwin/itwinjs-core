@@ -13,7 +13,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
-    await IModelApp.startup({localizationClient: new I18N("iModelJs")});
+    await IModelApp.startup({ localization: new I18N("iModelJs") });
   });
   afterEach(async () => {
     if (IModelApp.initialized) await IModelApp.shutdown();

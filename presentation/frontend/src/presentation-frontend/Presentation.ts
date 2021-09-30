@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
@@ -16,7 +16,7 @@ import { PresentationManager, PresentationManagerProps } from "./PresentationMan
 import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
-let localizationClient: LocalizationClient | undefined;
+let localization: Localization | undefined;
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
@@ -67,13 +67,13 @@ export class Presentation {
       throw new PresentationError(PresentationStatus.NotInitialized,
         "IModelApp.startup must be called before calling Presentation.initialize");
     }
-    if (!localizationClient) {
-      localizationClient = IModelApp.localizationClient;
+    if (!localization) {
+      localization = IModelApp.localization;
     }
     if (!presentationManager) {
       const managerProps = props?.presentation ?? {};
       if (!managerProps.activeLocale) {
-        const languages = Presentation.localizationClient.languageList();
+        const languages = Presentation.localization.languageList();
         managerProps.activeLocale = (languages.length ? languages[0] : undefined);
       }
       presentationManager = PresentationManager.create(managerProps);
@@ -109,7 +109,7 @@ export class Presentation {
     terminationHandlers.forEach((handler) => handler());
     terminationHandlers.length = 0;
 
-    if (localizationClient)
+    if (localization)
       LocalizationHelper.unregisterNamespaces();
 
     if (presentationManager)
@@ -121,7 +121,7 @@ export class Presentation {
     favoritePropertiesManager = undefined;
 
     selectionManager = undefined;
-    localizationClient = undefined;
+    localization = undefined;
   }
 
   /**
@@ -180,14 +180,14 @@ export class Presentation {
   /**
    * The localization manager used by Presentation frontend. Returns the result of `IModelApp.i18n`.
    */
-  public static get localizationClient(): LocalizationClient {
-    if (!localizationClient)
+  public static get localization(): Localization {
+    if (!localization)
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
-    return localizationClient;
+    return localization;
   }
 
   /** @internal */
-  public static setLocalizationClient(value: LocalizationClient) {
-    localizationClient = value;
+  public static setLocalization(value: Localization) {
+    localization = value;
   }
 }

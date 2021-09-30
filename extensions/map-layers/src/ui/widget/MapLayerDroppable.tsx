@@ -39,11 +39,11 @@ interface MapLayerDroppableProps {
 export function MapLayerDroppable(props: MapLayerDroppableProps) {
   const containsLayer = props.layersList && props.layersList.length > 0;
   const droppableId = props.isOverlay ? "overlayMapLayers" : "backgroundMapLayers";
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
-  const [requireAuthTooltip] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.RequireAuthTooltip"));
-  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.NoBackgroundLayers"));
-  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.NoOverlayLayers"));
-  const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.DropLayerLabel"));
+  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
+  const [requireAuthTooltip] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.RequireAuthTooltip"));
+  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.NoBackgroundLayers"));
+  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.NoOverlayLayers"));
+  const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.DropLayerLabel"));
 
   const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
     assert(props.layersList !== undefined);

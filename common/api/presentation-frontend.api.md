@@ -35,7 +35,7 @@ import { Key } from '@bentley/presentation-common';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
-import { LocalizationClient } from '@bentley/imodeljs-common';
+import { Localization } from '@bentley/imodeljs-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -259,7 +259,7 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
     static initialize(props?: PresentationProps): Promise<void>;
-    static get localizationClient(): LocalizationClient;
+    static get localization(): Localization;
     static get presentation(): PresentationManager;
     // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
@@ -267,7 +267,7 @@ export class Presentation {
     // @internal (undocumented)
     static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
     // @internal (undocumented)
-    static setLocalizationClient(value: LocalizationClient): void;
+    static setLocalization(value: Localization): void;
     // @internal (undocumented)
     static setPresentationManager(value: PresentationManager): void;
     // @internal (undocumented)

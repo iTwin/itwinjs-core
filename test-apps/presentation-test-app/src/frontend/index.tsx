@@ -7,7 +7,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
@@ -32,16 +33,13 @@ export class SampleApp {
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
     } else if (ProcessDetector.isBrowserProcess) {
-      await WebViewerApp.startup({
-        iModelApp: iModelAppOpts,
-        webViewerApp: {
-          rpcParams: { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" },
-        },
-      });
+      const rpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      await IModelApp.startup(iModelAppOpts);
+      BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []);
     }
     const readyPromises = new Array<Promise<void>>();
 
-    const namespacePromise = IModelApp.localizationClient.registerNamespace("Sample");
+    const namespacePromise = IModelApp.localization.registerNamespace("Sample");
     if (namespacePromise !== undefined) {
       readyPromises.push(namespacePromise);
     }
@@ -51,7 +49,7 @@ export class SampleApp {
       process.env.IMJS_DEV_CORS_PROXY_SERVER = `http://${window.location.hostname}:3001`; // By default, this will run on port 3001
 
     readyPromises.push(this.initializePresentation());
-    readyPromises.push(UiComponents.initialize(IModelApp.localizationClient));
+    readyPromises.push(UiComponents.initialize(IModelApp.localization));
     this._ready = Promise.all(readyPromises).then(() => { });
   }
 
@@ -60,7 +58,7 @@ export class SampleApp {
     await Presentation.initialize({
       presentation: {
         // specify locale for localizing presentation data, it can be changed afterwards
-        activeLocale: IModelApp.localizationClient.languageList()[0],
+        activeLocale: IModelApp.localization.languageList()[0],
 
         // specify the preferred unit system
         activeUnitSystem: "metric",

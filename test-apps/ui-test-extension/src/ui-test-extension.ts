@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import { ExtensionUiItemsProvider } from "./ui/ExtensionUiItemsProvider";
 import { TraceUiItemsProvider } from "./ui/NetworkTraceUIProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
@@ -25,32 +25,32 @@ import { OpenTraceDialogTool } from "./ui/tools/OpenTraceDialogTool";
  */
 export class UiTestExtension {
 
-  private static localizationClient: LocalizationClient;
+  private static localization: Localization;
   /** We'll register the uiTestExtension.json as the Extension's namespace/ */
   private static _localizationNamespace?: string;
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
 
   private static registerUiComponents(): void {
-    SampleTool.register(this._localizationNamespace, this.localizationClient);
-    GenericTool.register(this._localizationNamespace, this.localizationClient);
-    OpenTraceDialogTool.register(this._localizationNamespace, this.localizationClient);
+    SampleTool.register(this._localizationNamespace, this.localization);
+    GenericTool.register(this._localizationNamespace, this.localization);
+    OpenTraceDialogTool.register(this._localizationNamespace, this.localization);
 
     ConfigurableUiManager.addFrontstageProvider(new ExtensionFrontstage());
     ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
 
     // register to add items to "General" usage stages"
-    UiItemsManager.register(new ExtensionUiItemsProvider(this.localizationClient));
-    UiItemsManager.register(new TraceUiItemsProvider(this.localizationClient, "uiTestExtension"));
+    UiItemsManager.register(new ExtensionUiItemsProvider(this.localization));
+    UiItemsManager.register(new TraceUiItemsProvider(this.localization, "uiTestExtension"));
   }
 
-  public static async initialize(localizationClient: LocalizationClient): Promise<void> {
-    if (undefined === this.localizationClient)
-      this.localizationClient = localizationClient;
+  public static async initialize(localization: Localization): Promise<void> {
+    if (undefined === this.localization)
+      this.localization = localization;
     /** Register the localized strings for this extension
-     * We'll pass the localizationClient member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
+     * We'll pass the localization member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
      */
     this._localizationNamespace = "uiTestExtension";
-    await this.localizationClient.registerNamespace("uiTestExtension");
+    await this.localization.registerNamespace("uiTestExtension");
     this.registerUiComponents();
   }
 

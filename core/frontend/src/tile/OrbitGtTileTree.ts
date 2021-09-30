@@ -6,13 +6,12 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
+import { AccessToken, BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
@@ -345,8 +344,8 @@ export namespace OrbitGtTileTree {
   }
 
   async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
-      return undefined; // Not signed in
+    if (!IModelApp.authorizationClient)
+      return undefined;
 
     try {
       return await IModelApp.authorizationClient.getAccessToken();
@@ -537,10 +536,10 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const strings = [];
-    strings.push(IModelApp.localizationClient.getLocalizedString("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
+    strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
 
     if (this._name)
-      strings.push(`${IModelApp.localizationClient.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

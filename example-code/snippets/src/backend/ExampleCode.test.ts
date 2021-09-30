@@ -4,19 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { AccessToken, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: StandaloneDb;
 
-  const accessToken: AccessToken = (AccessToken as any);
-  const user = new AuthorizedClientRequestContext(accessToken);
+  const user: AccessToken = "";
 
   before(async () => {
     iModel = IModelTestUtils.openIModelForWrite("test.bim");

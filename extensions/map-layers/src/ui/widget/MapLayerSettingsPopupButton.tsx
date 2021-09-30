@@ -15,7 +15,7 @@ import "./MapLayerSettingsPopupButton.scss";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerSettingsPopupButton() {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const [buttonTooltip] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.SettingsButtonTooltip"));
+  const [buttonTooltip] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.SettingsButtonTooltip"));
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

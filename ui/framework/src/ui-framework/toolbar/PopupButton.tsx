@@ -32,7 +32,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
 /** Arguments of [[PopupButtonChildrenRenderProp]].
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export interface PopupButtonChildrenRenderPropArgs {
   closePanel: () => void;
 }
@@ -40,13 +40,13 @@ export interface PopupButtonChildrenRenderPropArgs {
 /** Type of [[PopupButtonProps.children]] when used as render prop.
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
 /** Properties for the [[PopupButton]] React component
  * @public
  * @deprecated use PopupItem in ToolbarWithOverflow or popupPanelNode in CustomItemDef
- */
+ */
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;
@@ -79,7 +79,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this._label = props.label;
     // istanbul ignore else
     else if (props.labelKey)
-      this._label = UiFramework.localizationClient.getLocalizedString(props.labelKey);
+      this._label = UiFramework.localization.getLocalizedString(props.labelKey);
 
     this.state = {
       isVisible: undefined !== props.isVisible ? props.isVisible : true, // eslint-disable-line deprecation/deprecation

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
@@ -18,7 +18,7 @@ import { ConfigurableUiManager } from "@bentley/ui-framework";
  * @beta
  */
 export class MapLayersUI {
-  private static _localizationClient?: LocalizationClient;
+  private static _localization?: Localization;
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
@@ -30,13 +30,13 @@ export class MapLayersUI {
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
    * ```
    */
-  public static async initialize(registerItemsProvider = true, localizationClient?: LocalizationClient): Promise<void> {
+  public static async initialize(registerItemsProvider = true, localization?: Localization): Promise<void> {
     // register namespace containing localized strings for this package
-    this._localizationClient = (localizationClient ? localizationClient : IModelApp.localizationClient);
-    await this._localizationClient.registerNamespace(this.localizationNamespace);
+    this._localization = (localization ? localization : IModelApp.localization);
+    await this._localization.registerNamespace(this.localizationNamespace);
 
-    // _uiItemsProvider always created to provide access to localizationClient.
-    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._localizationClient);
+    // _uiItemsProvider always created to provide access to localization.
+    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._localization);
     if (registerItemsProvider)
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
     else
@@ -45,9 +45,9 @@ export class MapLayersUI {
 
   /** Unregisters the GeoTools internationalization service namespace */
   public static terminate() {
-    if (MapLayersUI._localizationClient)
-      MapLayersUI._localizationClient.unregisterNamespace(this.localizationNamespace);
-    MapLayersUI._localizationClient = undefined;
+    if (MapLayersUI._localization)
+      MapLayersUI._localization.unregisterNamespace(this.localizationNamespace);
+    MapLayersUI._localization = undefined;
   }
 
   /** The internationalization service namespace. */

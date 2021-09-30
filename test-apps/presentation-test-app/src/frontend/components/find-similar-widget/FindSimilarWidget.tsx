@@ -38,9 +38,9 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
     return (
       <div className="find-similar-widget">
         <div className="find-similar-header">
-          <h3>{IModelApp.localizationClient.getLocalizedString("Sample:controls.find-similar.results")}</h3>
+          <h3>{IModelApp.localization.getLocalizedString("Sample:controls.find-similar.results")}</h3>
           <button onClick={this._onDismissClicked}>
-            {IModelApp.localizationClient.getLocalizedString("Sample:controls.find-similar.dismiss-button.label")}
+            {IModelApp.localization.getLocalizedString("Sample:controls.find-similar.dismiss-button.label")}
           </button>
         </div>
         <div className="find-similar-widget-content">

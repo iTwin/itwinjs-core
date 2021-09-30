@@ -6,7 +6,7 @@
  * @module Localization
  */
 
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { Localization } from "@bentley/imodeljs-common";
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
@@ -20,7 +20,7 @@ interface LocalizationInitOptions {
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
-export class I18N implements LocalizationClient {
+export class I18N implements Localization {
   private _i18next: i18n;
   private readonly _namespaceRegistry: Map<string, Promise<void>> = new Map<string, Promise<void>>();
 
@@ -103,7 +103,7 @@ export class I18N implements LocalizationClient {
    * followed by a colon, followed by the property in the JSON file.
    * For example:
    * ``` ts
-   * const dataString: string = IModelApp.localizationClient.getLocalizedString("iModelJs:BackgroundMap.BingDataAttribution");
+   * const dataString: string = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.BingDataAttribution");
    *  ```
    * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
    * @returns The string corresponding to the first key that resolves.
