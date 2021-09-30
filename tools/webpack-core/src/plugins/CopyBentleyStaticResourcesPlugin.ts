@@ -74,26 +74,6 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
 
   public async runAsync(compiler: Compiler) {
     const paths = getPaths();
-<<<<<<< HEAD
-    const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
-    let subDirectoryNames: string[];
-    try {
-      subDirectoryNames = await fs.readdir(bentleyDir);
-    } catch (err) {
-      this.logger.error(`Can't locate ${err.path}`);
-      return;
-    }
-    for (const thisSubDir of subDirectoryNames) {
-      if (!(await isDirectory(path.resolve(bentleyDir, thisSubDir))))
-        continue;
-
-      const fullDirName = path.resolve(bentleyDir, thisSubDir);
-      for (const staticAssetsDirectoryName of this._directoryNames) {
-        await tryCopyDirectoryContents(
-          path.join(fullDirName, "lib", staticAssetsDirectoryName),
-          this._useDirectoryName ? compiler.outputPath : path.join(compiler.outputPath, staticAssetsDirectoryName),
-        );
-=======
 
     const copyContents = async (basePath: string) => {
       let subDirectoryNames: string[];
@@ -101,7 +81,6 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
         subDirectoryNames = await fs.readdir(basePath);
       } catch (err: any) {
         return;
->>>>>>> 8737e85ae5 (Update copy static plugin to support the '@itwin' scope (#2389))
       }
       for (const thisSubDir of subDirectoryNames) {
         if (!(await isDirectory(path.resolve(basePath, thisSubDir))))
