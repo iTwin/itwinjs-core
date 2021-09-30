@@ -4,8 +4,8 @@
   "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run webpack:frontend",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",
