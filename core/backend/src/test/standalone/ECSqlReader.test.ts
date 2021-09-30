@@ -34,17 +34,21 @@ describe("ECSqlReader and ECSqlBlobReader", async () => {
       const reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE Name=:name", params, config.config);
       while (await reader.step()) {
         // eslint-disable-next-line no-console
-        console.log(`id          : ${reader.current.id}`);
-        console.log(`ecinstanceid: ${reader.current.ecinstanceid}`);
-        console.log(`name        : ${reader.current.name}`);
-        console.log(`ID          : ${reader.current.ID}`);
-        console.log(`ECINSTANCEID: ${reader.current.ECINSTANCEID}`);
-        console.log(`NAME        : ${reader.current.NAME}`);
-        console.log(`[0]         : ${reader.current[0]}`);
-        console.log(`[1]         : ${reader.current[1]}`);
+        assert.equal(reader.current.id, "0x32");
+        assert.equal(reader.current.ecinstanceid, "0x32");
+        assert.equal(reader.current.name, "CompositeUnitRefersToUnit");
+        assert.equal(reader.current.ID, "0x32");
+        assert.equal(reader.current.ECINSTANCEID, "0x32");
+        assert.equal(reader.current[0], "0x32");
+        assert.equal(reader.current[1], "CompositeUnitRefersToUnit");
 
-        console.log(JSON.stringify(reader.current.toRow(), undefined, 3));
-        console.log(JSON.stringify(reader.current.toJsRow(), undefined, 3));
+        const row0 = reader.current.toRow();
+        assert.equal(row0.ECInstanceId, "0x32");
+        assert.equal(row0.Name, "CompositeUnitRefersToUnit");
+
+        const row1 = reader.current.toJsRow();
+        assert.equal(row1.id, "0x32");
+        assert.equal(row1.name, "CompositeUnitRefersToUnit");
       }
     });
   });
