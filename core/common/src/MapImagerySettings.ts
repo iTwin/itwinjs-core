@@ -38,7 +38,7 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace BaseLayerSettings {
   /** Create a base layer from its JSON representation. */
-  export function fromJSON(props: BaseLayerProps): BaseLayerSettings | undefined {
+  export function fromJSON(props: BaseLayerProps): BaseLayerSettings {
     return typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
   }
 }
@@ -96,9 +96,7 @@ export class MapImagerySettings {
 
   /** @internal */
   public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps) {
-    let baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
-    if (!baseLayer)
-      baseLayer = BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+    const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
 
     return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }
