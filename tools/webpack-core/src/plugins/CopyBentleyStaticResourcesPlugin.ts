@@ -75,7 +75,6 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
   public async runAsync(compiler: Compiler) {
     const paths = getPaths();
 
-
     const copyContents = async (basePath: string) => {
       let subDirectoryNames: string[];
       try {
@@ -96,7 +95,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
           );
         }
       }
-    }
+    };
 
     const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
     const itwinDir = path.resolve(paths.appNodeModules, "@itwin");
