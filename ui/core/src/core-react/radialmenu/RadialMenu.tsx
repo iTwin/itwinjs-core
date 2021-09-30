@@ -16,7 +16,7 @@ import { CommonProps } from "../utils/Props";
 import { AnnularSector, Annulus } from "./Annulus";
 
 /** Properties for [[RadialMenu]]
- * @beta
+ * @public
  */
 export interface RadialMenuProps extends CommonProps {
   /** Whether to show RadialMenu */
@@ -48,7 +48,7 @@ interface RadialMenuState {
 
 /**
  * A context menu arranged in a radial layout.
- * @beta
+ * @public
  */
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
   private _root: HTMLDivElement | null = null;
@@ -174,7 +174,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
 }
 
 /** Properties for [[RadialButton]] component
- * @beta
+ * @public
  */
 export interface RadialButtonProps extends CommonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
@@ -196,7 +196,7 @@ interface RadialButtonState {
 
 /**
  * Button for use within a [[RadialMenu]]
- * @beta
+ * @public
  */
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
 

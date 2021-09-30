@@ -15,12 +15,12 @@ import { Button } from "@itwin/itwinui-react";
 // cSpell:ignore multilinetextbox
 
 /** The available editors for the fields in a [[Form]].
- * @beta
+ * @public
  */
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
 /** Interface used to define each [[Field]] in a [[Form]]
- * @beta
+ * @public
  */
 export interface FieldDef {
   /* The label text for the field */
@@ -37,14 +37,14 @@ export interface FieldDef {
 }
 
 /** Key/value pairs for all the field values with key being the field HTML Id.
- * @beta
+ * @public
  */
 export interface FieldValues {
   [key: string]: any;
 }
 
 /** The state data used by [[Form]] to hold state of each [[Field]] and the result of submit button processing.
- * @beta
+ * @public
  */
 interface FormState {
   /* The field values */
@@ -59,28 +59,28 @@ interface FormState {
 
 /**
  * FormContextState combines the Form's state data with the callbacks used to update the value of the state data.
- * @beta
+ * @public
  */
 export interface FormContextState extends FormState {
   setValues: (values: FieldValues) => void;
 }
 
 /** React context used by Form as a Provider and by the Fields as Consumers and updaters.
- * @beta
+ * @public
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const FormContext = React.createContext<FormContextState | undefined>(undefined);
 FormContext.displayName = "core-react:FormContext";
 
 /** Key/value pairs for all the field definitions to be displayed in a [[Form]].
- * @beta
+ * @public
  */
 export interface FieldDefinitions {
   [key: string]: FieldDef;
 }
 
 /** Properties that define [[Form]] including the callback to be called when the Submit button is pressed.
- * @beta
+ * @public
  */
 export interface FormProps {
   /** Required async callback the processes the Form data and throws and Error if the data cannot be processed.  */
@@ -143,7 +143,7 @@ export interface FormProps {
  *     </div >
  *   );
  * }
- * @beta
+ * @public
  */
 export class Form extends React.Component<FormProps, FormState> {
   private _submitButtonLabel = UiCore.translate("form.submitButtonLabel");

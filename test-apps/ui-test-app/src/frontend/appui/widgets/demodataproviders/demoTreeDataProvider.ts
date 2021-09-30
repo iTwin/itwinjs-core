@@ -47,6 +47,7 @@ export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [ // eslint-disable-line
   },
 ];
 
+// eslint-disable-next-line deprecation/deprecation
 export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
   private _data: DelayLoadedTreeNodeItem[];

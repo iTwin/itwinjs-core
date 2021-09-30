@@ -455,7 +455,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     render(): React.ReactNode;
 }
 
-// @beta
+// @public
 export function ActivityMessage(props: ActivityMessageProps): JSX.Element;
 
 // @public
@@ -470,10 +470,10 @@ export interface ActivityMessageEventArgs {
     restored?: boolean;
 }
 
-// @beta
+// @public
 export function ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null;
 
-// @beta
+// @public
 export interface ActivityMessagePopupProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -481,7 +481,7 @@ export interface ActivityMessagePopupProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @beta
+// @public
 export interface ActivityMessageProps {
     // (undocumented)
     activityMessageInfo: ActivityMessageEventArgs;
@@ -546,7 +546,7 @@ export class AppNotificationManager extends NotificationManager {
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
 }
 
-// @beta
+// @public
 export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
@@ -687,7 +687,7 @@ export enum BackstageItemType {
     StageLauncher = 2
 }
 
-// @beta
+// @beta @deprecated
 export class BackstageItemUtilities {
     // @deprecated
     static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, overrides?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
@@ -696,7 +696,7 @@ export class BackstageItemUtilities {
     static getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 }
 
-// @beta
+// @public
 export class BackstageManager {
     // (undocumented)
     close(): void;
@@ -730,7 +730,7 @@ export interface BackstageStageLauncher extends BackstageStageLauncher_2 {
     readonly type: BackstageItemType.StageLauncher;
 }
 
-// @beta
+// @public
 export interface BackstageToggledArgs {
     // (undocumented)
     readonly isOpen: boolean;
@@ -757,10 +757,10 @@ export interface BasicNavigationWidgetProps {
     additionalVerticalItems?: CommonToolbarItem[];
 }
 
-// @beta
+// @public
 export function BasicToolWidget(props: BasicToolWidgetProps): JSX.Element;
 
-// @beta
+// @public
 export interface BasicToolWidgetProps {
     additionalHorizontalItems?: CommonToolbarItem[];
     additionalVerticalItems?: CommonToolbarItem[];
@@ -959,7 +959,7 @@ export interface CategoryTreeProps {
     width: number;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface ChildWindowLocationProps {
     // (undocumented)
     height: number;
@@ -971,7 +971,7 @@ export interface ChildWindowLocationProps {
     width: number;
 }
 
-// @beta
+// @public
 export class ChildWindowManager {
     closeAllChildWindows(): void;
     // (undocumented)
@@ -1417,7 +1417,6 @@ export class CoreTools {
     static get fitViewCommand(): ToolItemDef;
     // (undocumented)
     static get flyViewCommand(): ToolItemDef;
-    // @beta
     static get keyinBrowserButtonItemDef(): CustomItemDef;
     // (undocumented)
     static get keyinPaletteButtonItemDef(): ToolItemDef;
@@ -1752,7 +1751,7 @@ export interface DefaultContentToolsAppData {
     };
 }
 
-// @beta
+// @public
 export function DefaultDialogGridContainer({ componentGenerator, isToolSettings }: {
     componentGenerator: ComponentGenerator;
     isToolSettings?: boolean;
@@ -2728,9 +2727,8 @@ export interface FrontstageProps extends CommonProps {
     bottomCenter?: React.ReactElement<ZoneProps>;
     // @deprecated
     bottomLeft?: React.ReactElement<ZoneProps>;
-    // @beta @deprecated
+    // @deprecated
     bottomMostPanel?: React.ReactElement<StagePanelProps>;
-    // @beta
     bottomPanel?: React.ReactElement<StagePanelProps>;
     // @deprecated
     bottomRight?: React.ReactElement<ZoneProps>;
@@ -2739,35 +2737,28 @@ export interface FrontstageProps extends CommonProps {
     // @deprecated
     centerRight?: React.ReactElement<ZoneProps>;
     contentGroup: ContentGroup | ContentGroupProvider;
-    // @beta
     contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
     defaultTool: ToolItemDef;
     id: string;
     isInFooterMode?: boolean;
-    // @beta
     leftPanel?: React.ReactElement<StagePanelProps>;
-    // @beta
     rightPanel?: React.ReactElement<StagePanelProps>;
     // @internal (undocumented)
     runtimeProps?: FrontstageRuntimeProps;
-    // @beta
     statusBar?: React.ReactElement<ZoneProps>;
-    // @beta
     toolSettings?: React.ReactElement<ZoneProps>;
     // @deprecated
     topCenter?: React.ReactElement<ZoneProps>;
     // @deprecated
     topLeft?: React.ReactElement<ZoneProps>;
-    // @beta @deprecated
+    // @deprecated
     topMostPanel?: React.ReactElement<StagePanelProps>;
-    // @beta
     topPanel?: React.ReactElement<StagePanelProps>;
     // @deprecated
     topRight?: React.ReactElement<ZoneProps>;
     usage?: string;
     version?: number;
-    // @beta
     viewNavigationTools?: React.ReactElement<ZoneProps>;
 }
 
@@ -3067,13 +3058,13 @@ export class IModelAppUiSettings extends UserSettingsStorage {
 // @beta @deprecated
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
 
-// @beta
+// @public
 export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@itwin/imodel-components-react").ViewportProps & import("@itwin/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
 
-// @beta
+// @public
 export class IModelViewportControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, _options: IModelViewportControlOptions);
     // (undocumented)
@@ -3102,7 +3093,7 @@ export class IModelViewportControl extends ViewportContentControl {
     protected _viewState: ViewStateProp | undefined;
 }
 
-// @beta
+// @public
 export interface IModelViewportControlOptions {
     alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
@@ -3125,7 +3116,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface InitialAppUiSettings {
     // (undocumented)
     colorTheme: string;
@@ -4081,7 +4072,7 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface OpenChildWindowInfo {
     // (undocumented)
     childWindowId: string;
@@ -5846,10 +5837,10 @@ export interface StatusFieldProps extends CommonProps {
     openWidget: StatusBarFieldId;
 }
 
-// @beta
+// @public
 export function StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null;
 
-// @beta
+// @public
 export interface StatusMessageRendererProps extends CommonProps {
     // (undocumented)
     cancelActivityMessage?: () => void;
@@ -5859,10 +5850,10 @@ export interface StatusMessageRendererProps extends CommonProps {
     dismissActivityMessage?: () => void;
 }
 
-// @beta
+// @public
 export function StickyMessage(props: StickyMessageProps): JSX.Element;
 
-// @beta
+// @public
 export interface StickyMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -6056,7 +6047,7 @@ export interface TaskPropsList {
 // @public
 export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, import("react-redux").Omit<React.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity">>;
 
-// @beta
+// @public
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
     constructor(props: StatusFieldProps);
     // (undocumented)
@@ -6066,10 +6057,10 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export function ToastMessage(props: ToastMessageProps): JSX.Element;
 
-// @beta
+// @public
 export interface ToastMessageProps {
     // (undocumented)
     closeMessage: (id: string) => void;
@@ -6150,7 +6141,7 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     render(): JSX.Element | null;
     }
 
-// @beta
+// @public
 export class ToolbarButtonHelper {
     static getAppButton(): HTMLButtonElement | null;
     static getToolbarButtonByTitle(title: string): HTMLButtonElement | null;
@@ -6341,7 +6332,7 @@ export interface ToolSettingsEntry {
 // @internal
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
 
-// @beta
+// @public
 export function ToolSettingsGridContainer({ componentGenerator }: {
     componentGenerator: ComponentGenerator;
 }): JSX.Element;
@@ -6352,7 +6343,7 @@ export interface ToolSettingsGridProps {
     settings?: ToolSettingsEntry[];
 }
 
-// @beta
+// @public
 export class ToolSettingsManager {
     static get activeToolDescription(): string;
     static get activeToolLabel(): string;
@@ -6418,7 +6409,6 @@ export class ToolUiProvider extends ConfigurableUiControl {
     // (undocumented)
     protected _dataProvider: UiDataProvider | undefined;
     getType(): ConfigurableUiControlType;
-    // @beta
     get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
     set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined);
     // (undocumented)
@@ -6498,10 +6488,10 @@ export interface UiActivityEventArgs {
     event: Event;
 }
 
-// @beta
+// @public
 export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps): JSX.Element;
 
-// @beta
+// @public
 export interface UiDataProvidedDialogProps {
     height?: string | number;
     id?: string;
@@ -6519,17 +6509,16 @@ export interface UiDataProvidedDialogProps {
 
 // @public
 export class UiFramework {
-    // @beta (undocumented)
+    // (undocumented)
     static get backstageManager(): BackstageManager;
-    // @beta (undocumented)
+    // (undocumented)
     static get childWindowManager(): ChildWindowManager;
-    // @beta (undocumented)
+    // (undocumented)
     static closeCursorMenu(): void;
     // (undocumented)
     static dispatchActionToStore(type: string, payload: any, immediateSync?: boolean): void;
-    // @beta
     static get frameworkState(): FrameworkState | undefined;
-    // @beta (undocumented)
+    // (undocumented)
     static get frameworkStateKey(): string;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
@@ -6537,11 +6526,11 @@ export class UiFramework {
     static getActiveIModelId(): string;
     // (undocumented)
     static getActiveSelectionScope(): string;
-    // @beta (undocumented)
+    // (undocumented)
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // (undocumented)
     static getColorTheme(): string;
-    // @beta (undocumented)
+    // (undocumented)
     static getCursorMenuData(): CursorMenuData | undefined;
     // (undocumented)
     static getDefaultIModelViewportControlId(): string | undefined;
@@ -6553,9 +6542,9 @@ export class UiFramework {
     static getIModelConnection(): IModelConnection | undefined;
     // (undocumented)
     static getIsUiVisible(): boolean;
-    // @beta (undocumented)
+    // (undocumented)
     static getUiSettingsStorage(): UiSettingsStorage;
-    // @beta (undocumented)
+    // (undocumented)
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
     static getWidgetOpacity(): number;
@@ -6576,7 +6565,7 @@ export class UiFramework {
     // @internal
     static readonly onFrameworkVersionChangedEvent: FrameworkVersionChangedEvent;
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
-    // @beta (undocumented)
+    // (undocumented)
     static openCursorMenu(menuData: CursorMenuData | undefined): void;
     // @internal (undocumented)
     static get packageName(): string;
@@ -6584,7 +6573,7 @@ export class UiFramework {
     static postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
-    // @alpha
+    // @beta
     static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
@@ -6606,15 +6595,14 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
-    // @beta
     static get settingsManager(): SettingsManager;
-    // @beta (undocumented)
+    // (undocumented)
     static setUiSettingsStorage(storage: UiSettingsStorage, immediateSync?: boolean): Promise<void>;
     // (undocumented)
     static setUiVersion(version: string): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
-    // @beta (undocumented)
+    // (undocumented)
     static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setWidgetOpacity(opacity: number): void;
@@ -6622,7 +6610,6 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
-    // @beta
     static get uiVersion(): string;
     // (undocumented)
     static useDefaultPopoutUrl: boolean;
@@ -6650,10 +6637,10 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
 }): JSX.Element;
 
-// @beta
+// @public
 export function UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element;
 
-// @beta
+// @public
 export interface UiSettingsProviderProps {
     // (undocumented)
     children?: React.ReactNode;
@@ -6732,7 +6719,7 @@ export interface UnitSystemSelectorProps {
 // @internal (undocumented)
 export function useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined;
 
-// @beta
+// @public
 export const useActiveFrontstageId: () => string;
 
 // @public
@@ -6753,16 +6740,16 @@ export function useAnalysisAnimationDataProvider(viewport: ScreenViewport | unde
 // @internal
 export function useAvailableUiItemsProviders(): readonly string[];
 
-// @beta
+// @public
 export const useBackstageManager: () => BackstageManager;
 
 // @internal
 export const useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
-// @beta
+// @public
 export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
 
-// @beta
+// @public
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
 // @internal (undocumented)
@@ -6777,7 +6764,7 @@ export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedIt
 // @internal (undocumented)
 export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
 
-// @beta
+// @public
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
 // @internal (undocumented)
@@ -6835,7 +6822,7 @@ export class UserInfo {
     } | undefined;
 }
 
-// @beta
+// @public
 export interface UserSettingsProvider {
     loadUserSettings(storage: UiSettingsStorage): Promise<void>;
     providerId: string;
@@ -6872,16 +6859,16 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
 
-// @beta
+// @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
-// @beta
+// @public
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
 
-// @beta
+// @public
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
 
-// @beta (undocumented)
+// @public (undocumented)
 export function useUiSettingsStorageContext(): UiSettingsStorage;
 
 // @internal (undocumented)

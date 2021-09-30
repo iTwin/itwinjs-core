@@ -26,7 +26,7 @@ const saveChanges = React.useCallback((afterSaveFunction: (args: any) => void, a
 ---------------------------------------------------------------------------------------------------------- */
 
 /** Hook to use within Settings Page component to allow saving the current page's data before the Setting Container is closed.
- * @beta
+ * @public
  */
 export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void) {
   React.useEffect (()=>{
@@ -38,7 +38,7 @@ export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsM
 }
 
 /** Hook to use within Settings Page component to allow saving the current page's data before loading to the requested Setting Tab's page.
- * @beta
+ * @public
  */
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void) {
   React.useEffect (()=>{
@@ -50,7 +50,7 @@ export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsM
 }
 
 /**
- * @beta
+ * @public
  */
 export interface SettingsContainerProps {
   tabs: SettingsTabEntry[];
@@ -67,7 +67,7 @@ export interface SettingsContainerProps {
 /**
  * SettingsContainer component that displays Setting Tabs on Left and the P
  * Note: that SettingsContainer is not rendered if tabs array is empty
- * @beta
+ * @public
  */
 export const SettingsContainer = ({tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader}: SettingsContainerProps) => {
   // sort the tabs based on itemPriority

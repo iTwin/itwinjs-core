@@ -33,7 +33,7 @@ export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPro
 // -----------------------------------------------------------------------------
 
 /** Tool Settings Manager class. Used to generate UI components for Tool Settings.
- * @beta
+ * @public
  */
 export class ToolSettingsManager {
   private static _useDefaultToolSettingsProvider = false;

@@ -381,7 +381,7 @@ export interface CubeRotationChangeEventArgs {
 // @internal
 export function CustomThumb(): JSX.Element;
 
-// @beta
+// @public
 export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
     constructor(props: DrawingNavigationAidProps);
     // (undocumented)
@@ -400,7 +400,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     readonly state: Readonly<DrawingNavigationAidState>;
     }
 
-// @beta
+// @public
 export interface DrawingNavigationAidProps extends CommonProps {
     // @internal (undocumented)
     animationTime?: number;
@@ -659,7 +659,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps> {
     // @internal
     constructor(props: LineWeightSwatchProps);
@@ -669,7 +669,7 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef?: ColorDef;
     disabled?: boolean;
@@ -1171,7 +1171,7 @@ export interface ViewRotationChangeEventArgs {
 // @public
 export type ViewStateProp = ViewState | (() => ViewState);
 
-// @beta
+// @public
 export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
     // @internal (undocumented)
@@ -1192,7 +1192,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     readonly state: Readonly<WeightEditorState>;
 }
 
-// @beta
+// @public
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
     // @internal
     constructor(props: WeightPickerProps);
@@ -1208,7 +1208,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     setFocus(): void;
     }
 
-// @beta
+// @public
 export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     activeWeight: number;
     colorDef?: ColorDef;
@@ -1220,7 +1220,7 @@ export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButton
     weights: number[];
 }
 
-// @beta
+// @public
 export class WeightPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;

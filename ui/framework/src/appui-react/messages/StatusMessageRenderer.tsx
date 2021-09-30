@@ -15,7 +15,7 @@ import { StatusMessage } from "./StatusMessageManager";
 import { StatusMessagesContainer } from "./StatusMessagesContainer";
 
 /** Properties for [[StatusMessageRenderer]] component
- * @beta
+ * @public
  */
 export interface StatusMessageRendererProps extends CommonProps {
   closeMessage?: (id: string) => void;
@@ -25,7 +25,7 @@ export interface StatusMessageRendererProps extends CommonProps {
 
 /** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message without a StatusBar.
  * @note This component was formerly named MessageRenderer in previous releases.
- * @beta
+ * @public
  */
 export function StatusMessageRenderer(props: StatusMessageRendererProps) {
   const [messages, setMessages] = React.useState<ReadonlyArray<StatusMessage>>(MessageManager.activeMessageManager.messages);

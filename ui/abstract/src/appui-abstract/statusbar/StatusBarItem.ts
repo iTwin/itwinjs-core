@@ -27,9 +27,7 @@ export enum StatusBarSection {
   Selection = 2,
   /** Select scope and selection info */
   Right = 2,
-  /** items that only show based on context
-   * @beta
-   */
+  /** items that only show based on context */
   Context = 3,
 }
 

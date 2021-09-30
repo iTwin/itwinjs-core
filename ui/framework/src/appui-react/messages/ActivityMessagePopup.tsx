@@ -14,7 +14,7 @@ import { CommonProps } from "@itwin/core-react";
 import { ActivityMessage } from "./ActivityMessage";
 
 /** Properties for [[ActivityMessagePopup]] component
- * @beta
+ * @public
  */
 export interface ActivityMessagePopupProps extends CommonProps {
   cancelActivityMessage?: () => void;
@@ -22,7 +22,7 @@ export interface ActivityMessagePopupProps extends CommonProps {
 }
 
 /** Activity Message Popup React component
- * @beta
+ * @public
  */
 export function ActivityMessagePopup(props: ActivityMessagePopupProps) {
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);

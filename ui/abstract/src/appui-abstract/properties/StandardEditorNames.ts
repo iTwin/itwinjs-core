@@ -8,7 +8,7 @@
 
 /**
  * Standard Editor Names for property editors.
- * @beta
+ * @public
  */
 export enum StandardEditorNames {
   ColorPicker = "color-picker",

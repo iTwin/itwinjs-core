@@ -40,7 +40,7 @@ import { WidgetManager } from "./widgets/WidgetManager";
 // cSpell:ignore Mobi
 
 /** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
- * @beta
+ * @public
  */
 export interface UserSettingsProvider {
   /** Unique provider Id */
@@ -102,7 +102,7 @@ export class UiFramework {
   private static _PopupWindowManager = new ChildWindowManager();
   public static useDefaultPopoutUrl = false;
 
-  /** @beta */
+  /** @public */
   public static get childWindowManager(): ChildWindowManager {
     return UiFramework._PopupWindowManager;
   }
@@ -110,7 +110,7 @@ export class UiFramework {
   /** Registers class that will be informed when the UserSettingsStorage location has been set or changed. This allows
    * classes to load any previously saved settings from the new storage location. Common storage locations are the browser's
    * local storage, or the iTwin Product Settings cloud storage available via the SettingsAdmin see `IModelApp.settingsAdmin`.
-   * @alpha
+   * @beta
    */
   public static registerUserSettingsProvider(entry: UserSettingsProvider) {
     if (this._uiSettingsProviderRegistry.has(entry.providerId))
@@ -227,20 +227,20 @@ export class UiFramework {
   public static get initialized(): boolean { return UiFramework._initialized; }
 
   /** Property that returns the SettingManager used by AppUI-based applications.
-   *  @beta */
+   *  @public */
   public static get settingsManager() {
     if (undefined === UiFramework._settingsManager)
       UiFramework._settingsManager = new SettingsManager();
     return UiFramework._settingsManager;
   }
 
-  /** @beta */
+  /** @public */
   public static get frameworkStateKey(): string {
     return UiFramework._frameworkStateKeyInStore;
   }
 
   /** The UiFramework state maintained by Redux
-   * @beta
+   * @public
    */
   public static get frameworkState(): FrameworkState | undefined {
     try {
@@ -276,7 +276,7 @@ export class UiFramework {
     return "UiFramework";
   }
 
-  /** @beta */
+  /** @public */
   public static get backstageManager(): BackstageManager {
     // istanbul ignore next
     if (!UiFramework._backstageManager)
@@ -360,17 +360,17 @@ export class UiFramework {
     }
   }
 
-  /** @beta */
+  /** @public */
   public static openCursorMenu(menuData: CursorMenuData | undefined): void {
     UiFramework.dispatchActionToStore(SessionStateActionId.UpdateCursorMenu, menuData);
   }
 
-  /** @beta */
+  /** @public */
   public static closeCursorMenu(): void {
     UiFramework.dispatchActionToStore(SessionStateActionId.UpdateCursorMenu, undefined);
   }
 
-  /** @beta */
+  /** @public */
   public static getCursorMenuData(): CursorMenuData | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : /* istanbul ignore next */ undefined;
   }
@@ -396,7 +396,7 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @beta */
+  /** @public */
   public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) {
     if (UiFramework._uiSettingsStorage === storage)
       return;
@@ -416,17 +416,17 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiSettingsChanged);
   }
 
-  /** @beta */
+  /** @public */
   public static getUiSettingsStorage(): UiSettingsStorage {
     return UiFramework._uiSettingsStorage;
   }
 
-  /** @beta */
+  /** @public */
   public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
   }
 
-  /** @beta */
+  /** @public */
   public static getUserInfo(): UserInfo | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
   }
@@ -454,7 +454,7 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewState : /* istanbul ignore next */  undefined;
   }
 
-  /** @beta */
+  /** @public */
   public static getAvailableSelectionScopes(): PresentationSelectionScope[] {
     return UiFramework.frameworkState ?
       UiFramework.frameworkState.sessionState.availableSelectionScopes :
@@ -500,7 +500,7 @@ export class UiFramework {
   }
 
   /** Returns the Ui Version.
-   * @beta
+   * @public
    */
   public static get uiVersion(): string {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;

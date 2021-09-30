@@ -14,7 +14,7 @@ import { ClassNameProps } from "../utils/Props";
 // cSpell:ignore dompurify
 
 /** Properties for the [[MessageRenderer]] component
- * @beta
+ * @public
  */
 export interface MessageRendererProps extends ClassNameProps {
   /** Message to render */
@@ -24,7 +24,7 @@ export interface MessageRendererProps extends ClassNameProps {
 }
 
 /** React component renders a string, HTMLElement or React node in a `div` or `span`
- * @beta
+ * @public
  */
 export function MessageRenderer(props: MessageRendererProps) {
   let messageNode = null;
