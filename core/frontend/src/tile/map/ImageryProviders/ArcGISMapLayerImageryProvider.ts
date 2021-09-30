@@ -106,7 +106,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
   protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) {
-    if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel)) {
+    if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
       resolveChildren();
       return;
     }
