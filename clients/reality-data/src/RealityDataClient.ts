@@ -10,8 +10,8 @@
 import { URL } from "url";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext, AccessToken, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
-import { IModelConnection, SpatialModelState, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { AccessToken, AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { AuthorizedFrontendRequestContext, IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";

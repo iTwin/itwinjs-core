@@ -105,7 +105,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
           available = await new RealityDataAccessClient().queryRealityData(accessToken, { iTwinId: this._iTwinId, range });
         }
       }
-      } catch (_error) {
+    } catch (_error) {
       // eslint-disable-next-line no-console
       console.error("Error in query RealitydataList, you need to set SVT_STANDALONE_SIGNIN=true, and are your SVT_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");
     }

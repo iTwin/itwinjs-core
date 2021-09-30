@@ -5,5 +5,6 @@ internal;DefaultSupportedTypes
 internal;FileAccessKey 
 internal;RealityData 
 internal;RealityDataAccessClient 
+public;RealityDataQueryCriteria
 internal;RealityDataRelationship 
 internal;RealityDataRequestQueryOptions 

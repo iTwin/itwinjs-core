@@ -4,8 +4,13 @@
 
 ```ts
 
+import { AccessToken } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { CartographicRange } from '@bentley/imodeljs-common';
 import { Client } from '@bentley/itwin-client';
+import { ContextRealityModelProps } from '@bentley/imodeljs-common';
+import { GuidString } from '@bentley/bentleyjs-core';
+import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
@@ -153,7 +158,16 @@ export class RealityDataAccessClient extends WsgClient {
     getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
     getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
     getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string>;
+    // @public
+    queryRealityData(accessToken: AccessToken, criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
     updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+}
+
+// @public
+export interface RealityDataQueryCriteria {
+    filterIModel?: IModelConnection;
+    iTwinId: GuidString;
+    range?: CartographicRange;
 }
 
 // @internal

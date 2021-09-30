@@ -4326,7 +4326,7 @@ export class IModelApp {
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
-    static get realityDataAccess(): RealityDataAccess;
+    static get realityDataAccess(): RealityDataAccess | undefined;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal
@@ -7409,9 +7409,9 @@ export interface RealityData {
 // @beta
 export interface RealityDataAccess {
     // (undocumented)
-    getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;
+    getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
     // (undocumented)
-    getRealityDataUrl: (iTwinId: string | undefined, tileId: string) => Promise<string>;
+    getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }
 
 // @internal (undocumented)
