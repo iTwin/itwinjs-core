@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[ToolbarButtonItem]] component.
- * @beta
+ * @public
  */
 export interface ToolbarButtonItemProps extends CommonProps {
   /** button icon. */
@@ -34,7 +34,7 @@ export interface ToolbarButtonItemProps extends CommonProps {
 }
 
 /** Toolbar item component. Used in [[Toolbar]] component.
- * @beta
+ * @public
  */
 // eslint-disable-next-line react/display-name
 export const ToolbarButtonItem = React.memo<React.FC<ToolbarButtonItemProps>>(

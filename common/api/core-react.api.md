@@ -35,11 +35,11 @@ import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { ToggleSwitchProps } from '@itwin/itwinui-react';
 import { ValueType } from 'react-select/src/types';
 
-// @beta
+// @public
 export class ActivateSettingsTabEvent extends BeUiEvent<ActivateSettingsTabEventArgs> {
 }
 
-// @beta
+// @public
 export interface ActivateSettingsTabEventArgs {
     // (undocumented)
     readonly settingsTabId: string;
@@ -81,10 +81,10 @@ export class Annulus {
     outer: Circle;
 }
 
-// @beta
+// @public
 export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
 
-// @beta
+// @public
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
     // @internal (undocumented)
@@ -97,13 +97,13 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export interface AutoSuggestData {
     label: string;
     value: string;
 }
 
-// @beta
+// @public
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
@@ -697,7 +697,6 @@ export interface ExpandableBlockProps extends CommonProps {
     onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
     title: string | JSX.Element;
-    // @beta
     tooltip?: string;
 }
 
@@ -738,14 +737,14 @@ export interface ExpansionToggleProps extends CommonProps {
 // @beta @deprecated
 export function FeaturedTile(props: TileProps): JSX.Element;
 
-// @beta
+// @public
 export class Field extends React.Component<FieldProps> {
     constructor(props: FieldProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface FieldDef {
     // (undocumented)
     editor?: FieldEditor;
@@ -759,22 +758,22 @@ export interface FieldDef {
     value?: any;
 }
 
-// @beta
+// @public
 export interface FieldDefinitions {
     // (undocumented)
     [key: string]: FieldDef;
 }
 
-// @beta
+// @public
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
-// @beta
+// @public
 export interface FieldProps extends FieldDef {
     // (undocumented)
     id: string;
 }
 
-// @beta
+// @public
 export interface FieldValues {
     // (undocumented)
     [key: string]: any;
@@ -814,23 +813,23 @@ export interface FocusTrapProps extends React.AllHTMLAttributes<any> {
     returnFocusOnDeactivate: boolean;
 }
 
-// @beta
+// @public
 export class Form extends React.Component<FormProps, FormState> {
     constructor(props: FormProps);
     // (undocumented)
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export const FormContext: React.Context<FormContextState | undefined>;
 
-// @beta
+// @public
 export interface FormContextState extends FormState {
     // (undocumented)
     setValues: (values: FieldValues) => void;
 }
 
-// @beta
+// @public
 export interface FormProps {
     fields: FieldDefinitions;
     handleFormSubmit: (values: FieldValues) => Promise<void>;
@@ -846,7 +845,7 @@ export interface GapProps extends CommonProps {
     size?: string;
 }
 
-// @beta
+// @public
 export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
@@ -1086,10 +1085,10 @@ export function LabeledTextarea(props: LabeledTextareaProps): JSX.Element;
 export interface LabeledTextareaProps extends TextareaProps, LabeledComponentProps, MessagedComponentProps {
 }
 
-// @beta
+// @beta @deprecated
 export function LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComponentProps, MessagedComponentProps {
 }
 
@@ -1309,10 +1308,10 @@ export interface MessagedComponentProps {
     messageStyle?: React.CSSProperties;
 }
 
-// @beta
+// @public
 export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
 
-// @beta
+// @public
 export interface MessageRendererProps extends ClassNameProps {
     message: MessageType;
     useSpan?: boolean;
@@ -1355,7 +1354,7 @@ export interface NoChildrenProps {
     children?: undefined;
 }
 
-// @beta
+// @public
 export interface NodeCheckboxProps {
     isDisabled?: boolean;
     onClick?: (newState: CheckBoxState) => void;
@@ -1363,19 +1362,19 @@ export interface NodeCheckboxProps {
     tooltip?: string;
 }
 
-// @beta
+// @public
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
-// @beta
+// @public
 export type NodeCheckboxRenderProps = Omit<CheckboxProps_2, "onChange" | "onClick"> & {
     onChange: (checked: boolean) => void;
     onClick: (e: React.MouseEvent) => void;
 };
 
-// @beta
+// @public
 export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 
-// @beta
+// @public
 export interface NumberInputProps extends Omit<InputProps_2, "min" | "max" | "step" | "onChange"> {
     containerClassName?: string;
     containerStyle?: React.CSSProperties;
@@ -1400,10 +1399,10 @@ export type OmitChildrenProp<T extends {
     children?: React.ReactNode;
 }> = Omit<T, "children">;
 
-// @beta
+// @beta @deprecated
 export type OptionsType = Array<OptionType>;
 
-// @beta
+// @beta @deprecated
 export interface OptionType {
     // (undocumented)
     label: string;
@@ -1480,10 +1479,10 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @beta
+// @public
 export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
 
-// @beta
+// @public
 export interface PopupContextMenuProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
@@ -1534,11 +1533,11 @@ export interface PopupProps extends CommonProps {
     top: number;
 }
 
-// @beta
+// @public
 export class ProcessSettingsContainerCloseEvent extends BeUiEvent<ProcessSettingsContainerCloseEventArgs> {
 }
 
-// @beta
+// @public
 export interface ProcessSettingsContainerCloseEventArgs {
     // (undocumented)
     readonly closeFunc: (args: any) => void;
@@ -1546,11 +1545,11 @@ export interface ProcessSettingsContainerCloseEventArgs {
     readonly closeFuncArgs?: any;
 }
 
-// @beta
+// @public
 export class ProcessSettingsTabActivationEvent extends BeUiEvent<ProcessSettingsTabActivationEventArgs> {
 }
 
-// @beta
+// @public
 export interface ProcessSettingsTabActivationEventArgs {
     // (undocumented)
     readonly requestedSettingsTabId: string;
@@ -1586,7 +1585,7 @@ export interface ProgressSpinnerProps extends CommonProps {
 // @internal
 export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
-// @beta
+// @public
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
     constructor(props: RadialButtonProps);
     // (undocumented)
@@ -1596,7 +1595,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     readonly state: Readonly<RadialButtonState>;
 }
 
-// @beta
+// @public
 export interface RadialButtonProps extends CommonProps {
     // @internal (undocumented)
     annularSector?: AnnularSector;
@@ -1606,7 +1605,7 @@ export interface RadialButtonProps extends CommonProps {
     selected?: boolean;
 }
 
-// @beta
+// @public
 export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
     constructor(props: RadialMenuProps);
     // (undocumented)
@@ -1624,7 +1623,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     readonly state: Readonly<RadialMenuState>;
 }
 
-// @beta
+// @public
 export interface RadialMenuProps extends CommonProps {
     innerRadius: number;
     labelRotate?: boolean;
@@ -1749,7 +1748,7 @@ export const ResizeObserver: ResizeObserverType;
 // @internal (undocumented)
 export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
 
-// @beta
+// @public
 export class ScrollPositionMaintainer implements IDisposable {
     constructor(el: Element);
     // (undocumented)
@@ -1822,10 +1821,10 @@ export class SessionUiSettings extends SessionSettingsStorage {
     constructor(w?: Window);
 }
 
-// @beta
+// @public
 export const SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element;
 
-// @beta (undocumented)
+// @public (undocumented)
 export interface SettingsContainerProps {
     // (undocumented)
     currentSettingsTab?: SettingsTabEntry;
@@ -1839,7 +1838,7 @@ export interface SettingsContainerProps {
     tabs: SettingsTabEntry[];
 }
 
-// @beta
+// @public
 export class SettingsManager {
     activateSettingsTab(settingsTabId: string): void;
     // (undocumented)
@@ -1860,17 +1859,17 @@ export class SettingsManager {
     removeSettingsProvider(providerId: string): boolean;
 }
 
-// @beta
+// @public
 export class SettingsProvidersChangedEvent extends BeUiEvent<SettingsProvidersChangedEventArgs> {
 }
 
-// @beta
+// @public
 export interface SettingsProvidersChangedEventArgs {
     // (undocumented)
     readonly providers: ReadonlyArray<SettingsTabsProvider>;
 }
 
-// @beta
+// @public
 export interface SettingsTabEntry {
     readonly icon?: string | JSX.Element;
     readonly isDisabled?: boolean | ConditionalBooleanValue;
@@ -1883,7 +1882,7 @@ export interface SettingsTabEntry {
     readonly tooltip?: string | JSX.Element;
 }
 
-// @beta
+// @public
 export interface SettingsTabsProvider {
     // (undocumented)
     getSettingEntries(stageId: string, stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined;
@@ -2012,7 +2011,7 @@ export interface SplitButtonProps extends CommonProps {
     toolTip?: string;
 }
 
-// @beta
+// @public
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 // @public
@@ -2053,7 +2052,7 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
-// @beta
+// @public
 export interface TabLabel {
     // (undocumented)
     disabled?: boolean;
@@ -2083,7 +2082,6 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
-    // @beta
     labels: Array<string | TabLabel>;
     onActivateTab?: (index: number) => any;
 }
@@ -2102,10 +2100,10 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
 
-// @beta
+// @beta @deprecated
 export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
 
-// @beta
+// @beta @deprecated
 export type ThemedSelectProps = {
     "aria-label"?: string;
     "aria-labelledby"?: string;
@@ -2325,7 +2323,6 @@ export interface TreeNodePlaceholderProps extends CommonProps {
 export interface TreeNodeProps extends CommonProps {
     // (undocumented)
     ["data-testid"]?: string;
-    // @beta
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
     children?: React.ReactNode;
@@ -2505,10 +2502,10 @@ export function useRefState<T>(): [React.Ref<T>, T | undefined];
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: Element | null) => void;
 
-// @beta
+// @public
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;
 
-// @beta
+// @public
 export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void;
 
 // @internal

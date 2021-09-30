@@ -17,9 +17,7 @@ export interface PropertyLabelRendererProps {
   children: string|JSX.Element;
   /** Indicates whether to render a colon after the label */
   renderColon?: boolean;
-  /** Custom tooltip for the component.
-   * @beta
-   */
+  /** Custom tooltip for the component. */
   tooltip?: string;
 }
 

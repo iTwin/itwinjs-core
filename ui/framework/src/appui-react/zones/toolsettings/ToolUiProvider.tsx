@@ -32,7 +32,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
   public set toolSettingsNode(r: React.ReactNode) { this._toolSettingsNode = r; }
 
   /** An array of entries to load into the horizontal tool settings
-   * @beta
+   * @public
    */
   public get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined { return this._horizontalToolSettingNodes; }
   public set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined) { this._horizontalToolSettingNodes = r; }

@@ -41,12 +41,10 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly isStatusBar?: boolean;
   /** Indicates whether this Widget should fill the available space in the Zone. */
   readonly fillZone?: boolean;
-  /** Indicates if widget can be popped out to a child window.
-   * @beta */
+  /** Indicates if widget can be popped out to a child window. */
   readonly canPopout?: boolean;
   /** If the widget state is changed to `floating` and the floatingContainerId is defined then the widget will be added to a
-   * floating panel by that name. If no name is specified the current practice of using a GUID is used.
-   * @beta */
+   * floating panel by that name. If no name is specified the current practice of using a GUID is used. */
   readonly floatingContainerId?: string;
   /** Indicates if widget can be in floating state. */
   readonly isFloatingStateSupported?: boolean;

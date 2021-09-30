@@ -10,7 +10,7 @@ import * as React from "react";
 import { CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager } from "@itwin/appui-abstract";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
- * @beta
+ * @public
  */
 export const useDefaultToolbarItems = (manager: ToolbarItemsManager): readonly CommonToolbarItem[] => {
   const [items, setItems] = React.useState(() => manager.items);
