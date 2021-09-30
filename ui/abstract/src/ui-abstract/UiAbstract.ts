@@ -23,7 +23,7 @@ export class UiAbstract {
 
   /**
    * Registers the I18N service namespace for UiAbstract
-   * @param i18n The internationalization service created by the application.
+   * @param localization The internationalization service created by the application.
    */
   public static async initialize(localization: Localization): Promise<void> {
     if (UiAbstract._initialized) {

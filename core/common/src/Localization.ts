@@ -6,8 +6,6 @@
  * @module Localization
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-
 /** @public */
 // This should be more clearly defined or removed as we remove I18N and its dependencies (Formerly i18next::TranslationOptions).
 type LocalizationOptions = any;

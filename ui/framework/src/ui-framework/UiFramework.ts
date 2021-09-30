@@ -11,9 +11,8 @@
 import { Store } from "redux";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { RpcActivity } from "@bentley/imodeljs-common";
+import { Localization, RpcActivity } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
-import { Localization } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";

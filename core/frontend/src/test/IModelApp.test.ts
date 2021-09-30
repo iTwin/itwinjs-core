@@ -71,7 +71,7 @@ class TestApp extends MockRender.App {
 describe("IModelApp", () => {
   before(async () => {
     await TestApp.startup({ localization: new I18N("iModelJs") });
-    await IModelApp.localization.registerNamespace("TestApp")  // we must wait for the localization read to finish.
+    await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());
 

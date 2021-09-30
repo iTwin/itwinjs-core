@@ -327,7 +327,7 @@ export class IModelApp {
       this._localization = opts.localization;
     } else {
       this._localization = new EmptyLocalization();
-      Logger.logWarning("Localization", "No localization client provided. Localization will not be performed.")
+      Logger.logWarning("Localization", "No localization client provided. Localization will not be performed.");
     }
 
     // first register all the core tools. Subclasses may choose to override them.
