@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
+
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
  * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
