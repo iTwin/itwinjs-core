@@ -6,7 +6,7 @@
  * @module RealityData
  */
 
- import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken } from "@itwin/core-bentley";
 
 /**
  * All of the currently supported ProjectWise ContextShare reality data types
