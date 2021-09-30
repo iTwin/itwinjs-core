@@ -12,7 +12,6 @@ import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocati
 import { AsyncLocalStorage } from "async_hooks";
 import { Logger } from "@itwin/core-bentley";
 
-let initialized = false;
 
 export class RpcTracer {
   private static storage = new AsyncLocalStorage();
@@ -26,6 +25,8 @@ export class RpcTracer {
     return RpcTracer.storage.run(activity, fn);
   }
 }
+
+let initialized = false;
 
 /** @internal */
 export function initializeRpcBackend() {

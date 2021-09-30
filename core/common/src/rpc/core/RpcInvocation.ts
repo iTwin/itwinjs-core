@@ -44,9 +44,7 @@ export interface SerializedRpcActivity {
   csrfToken?: { headerName: string, headerValue: string };
 }
 
-/** Notification callback for an RPC invocation.
- * @public
- */
+/** @internal */
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 /** An RPC operation invocation in response to a request.
@@ -78,18 +76,11 @@ export class RpcInvocation {
 
   /** The status for this request. */
   public get status(): RpcRequestStatus {
-    if (this._threw) {
-      return RpcRequestStatus.Rejected;
-    } else {
-      if (this._pending)
-        return RpcRequestStatus.Pending;
-      else if (this._notFound)
-        return RpcRequestStatus.NotFound;
-      else if (this._noContent)
-        return RpcRequestStatus.NoContent;
-      else
-        return RpcRequestStatus.Resolved;
-    }
+    return this._threw ? RpcRequestStatus.Rejected :
+      this._pending ? RpcRequestStatus.Pending :
+        this._notFound ? RpcRequestStatus.NotFound :
+          this._noContent ? RpcRequestStatus.NoContent :
+            RpcRequestStatus.Resolved;
   }
 
   /** The elapsed time for this invocation. */
