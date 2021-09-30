@@ -12,8 +12,8 @@
   },
   "private": true,
   "scripts": {
-    "compile": "npm run build:backend & tsc",
-    "build": "npm run build:backend & npm run build:frontend",
+    "compile": "npm run -s build:backend & tsc",
+    "build": "npm run -s build:backend & npm run -s build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_NEW_ASSET_COPY=true DISABLE_ESLINT=true TRANSPILE_DEPS=false USE_FAST_SASS=true DISABLE_TERSER=true NODE_OPTIONS=--max_old_space_size=4096 react-scripts build",
@@ -29,14 +29,14 @@
     "test": "",
     "cover": "",
     "copy:config": "internal-tools copy-config",
-    "build:ios-backend": "npm run build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
+    "build:ios-backend": "npm run -s build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
     "install-ios-lib": "node ./ios/scripts/installIosNativeLib.js",
     "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
-    "build:ios": "npm run install-ios-lib && npm run build:frontend && npm run build:ios-backend && npm run copy:ios-frontend",
-    "build:android-backend": "npm run build:backend && webpack --config ./android/backend.config --env.outdir=./lib/android --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
+    "build:ios": "npm run -s install-ios-lib && npm run -s build:frontend && npm run -s build:ios-backend && npm run -s copy:ios-frontend",
+    "build:android-backend": "npm run -s build:backend && webpack --config ./android/backend.config --env.outdir=./lib/android --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
     "install-android-lib": "node ./android/scripts/installAndroidNativeLib.js",
     "copy:android-assets": "node ./android/scripts/copyAndroidAssets.js",
-    "build:android": "npm run install-android-lib && npm run build:frontend && npm run build:android-backend && npm run copy:android-assets"
+    "build:android": "npm run -s install-android-lib && npm run -s build:frontend && npm run -s build:android-backend && npm run -s copy:android-assets"
   },
   "repository": {},
   "dependencies": {
