@@ -8,8 +8,8 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { Id64String } from "@itwin/core-bentley";
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
@@ -100,7 +100,11 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
 
-  /** A directory for Presentation hierarchy cache. Defaults to location of the iModel. */
+  /**
+   * A directory for Presentation hierarchy cache. If set, the directory must exist.
+   *
+   * The default directory depends on the iModel and the way it's opened.
+   */
   directory?: string;
 }
 
