@@ -61,9 +61,9 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingiModels: false,
         isLoadingiModel: false,
         currentITwin: {
-          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @bentley/react-set-state-usage
+          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @itwin/react-set-state-usage
         },
-        iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line @itwin/react-set-state-usage
       });
     }
 
