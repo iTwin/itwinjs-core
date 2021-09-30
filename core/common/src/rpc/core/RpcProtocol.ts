@@ -78,12 +78,12 @@ export namespace RpcRequestFulfillment {
 }
 
 /** Handles RPC protocol events.
- * @public
+ * @internal
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
 /** An application protocol for an RPC interface.
- * @public
+ * @internal
  */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */

@@ -4259,6 +4259,7 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
+    static getAccessToken(): Promise<AccessToken>;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     // @internal
@@ -6483,7 +6484,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
 }
