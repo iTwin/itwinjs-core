@@ -7082,12 +7082,12 @@ export enum RpcProtocolEvent {
 // @internal
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
-// @alpha
+// @internal
 export class RpcPushChannel<T> {
     static create<T>(name: string, service?: RpcPushService): RpcPushChannel<T>;
     // (undocumented)
     dispose(): void;
-    // @internal (undocumented)
+    // (undocumented)
     static enabled: boolean;
     // (undocumented)
     get enabled(): boolean;
@@ -7106,7 +7106,7 @@ export class RpcPushChannel<T> {
     subscribe(): RpcPushSubscription<T>;
     }
 
-// @alpha
+// @internal
 export abstract class RpcPushConnection<T> {
     protected constructor(channel: RpcPushChannel<T>, client: unknown);
     // (undocumented)
@@ -7119,10 +7119,10 @@ export abstract class RpcPushConnection<T> {
     abstract send(messageData: T): Promise<void>;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export type RpcPushMessageListener<T> = (message: T) => void;
 
-// @alpha
+// @internal
 export class RpcPushService {
     constructor(name: string);
     static dedicated: RpcPushService;
@@ -7130,9 +7130,8 @@ export class RpcPushService {
     readonly name: string;
 }
 
-// @alpha
+// @internal
 export class RpcPushSubscription<T> {
-    // @internal
     constructor(channel: RpcPushChannel<T>);
     // (undocumented)
     readonly channel: RpcPushChannel<T>;
@@ -7140,7 +7139,7 @@ export class RpcPushSubscription<T> {
     readonly onMessage: BeEvent<RpcPushMessageListener<T>>;
 }
 
-// @alpha
+// @internal
 export abstract class RpcPushTransport {
     // (undocumented)
     onMessage?: (channelId: string, messageData: any) => void;
@@ -7270,7 +7269,7 @@ export enum RpcRequestEvent {
 // @internal
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
-// @public
+// @internal
 export interface RpcRequestFulfillment {
     id: string;
     interfaceName: string;
@@ -7281,7 +7280,7 @@ export interface RpcRequestFulfillment {
     status: number;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export namespace RpcRequestFulfillment {
     // (undocumented)
     export function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment>;
@@ -7355,7 +7354,7 @@ export namespace RpcRoutingMap {
     export function create(): RpcRoutingMap;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class RpcRoutingToken {
     // (undocumented)
     readonly debugLabel: string;
@@ -7367,7 +7366,7 @@ export class RpcRoutingToken {
     readonly id: number;
     }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface RpcSerializedValue {
     // (undocumented)
     chunks?: number;
@@ -7379,7 +7378,7 @@ export interface RpcSerializedValue {
     stream?: Readable;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export namespace RpcSerializedValue {
     // (undocumented)
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
@@ -7450,7 +7449,7 @@ export interface SerializedRpcActivity {
     sessionId: string;
 }
 
-// @public
+// @internal
 export interface SerializedRpcOperation {
     // (undocumented)
     encodedRequest?: string;
@@ -7462,7 +7461,7 @@ export interface SerializedRpcOperation {
     operationName: string;
 }
 
-// @public
+// @internal
 export interface SerializedRpcRequest extends SerializedRpcActivity {
     // (undocumented)
     caching: RpcResponseCacheControl;

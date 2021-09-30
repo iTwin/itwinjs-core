@@ -545,20 +545,20 @@ public;RpcPendingResponse
 internal;class RpcProtocol
 public;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
-alpha;RpcPushChannel
-alpha;class RpcPushConnection
-alpha;RpcPushMessageListener
-alpha;RpcPushService
-alpha;RpcPushSubscription
-alpha;class RpcPushTransport
+internal;RpcPushChannel
+internal;class RpcPushConnection
+internal;RpcPushMessageListener
+internal;RpcPushService
+internal;RpcPushSubscription
+internal;class RpcPushTransport
 internal;RpcRegistry
 internal;class RpcRequest
 internal;RpcRequestCallback_T = (request: RpcRequest) => void
 internal;RpcRequestContext
 public;RpcRequestEvent
 internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
-public;RpcRequestFulfillment
-public;RpcRequestFulfillment
+internal;RpcRequestFulfillment
+internal;RpcRequestFulfillment
 internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
 internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
@@ -568,17 +568,17 @@ public;RpcResponseCacheControl
 internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 internal;RpcRoutingMap 
 internal;RpcRoutingMap
-public;RpcRoutingToken
-public;RpcSerializedValue
-public;RpcSerializedValue
+internal;RpcRoutingToken
+internal;RpcSerializedValue
+internal;RpcSerializedValue
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
 public;SectionType
 public;SerializedRpcActivity
-public;SerializedRpcOperation
-public;SerializedRpcRequest 
+internal;SerializedRpcOperation
+internal;SerializedRpcRequest 
 public;ServerError 
 public;ServerTimeoutError 
 public;SessionProps
