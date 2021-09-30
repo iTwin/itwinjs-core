@@ -10,7 +10,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
  * @internal
  */
 export class IModelBankDummyAuthorizationClient implements FrontendAuthorizationClient {
-  private _token: AccessToken = ""
+  private _token: AccessToken = "";
 
   public constructor(private _userCredentials: any) {
   }
