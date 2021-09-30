@@ -163,7 +163,13 @@ export class IModelTileRequestChannels {
   }
 
   public [Symbol.iterator](): Iterator<TileRequestChannel> {
-    const channels = this._cloudStorage ? [this._cloudStorage, this.rpc] : [this.rpc];
+    const channels = [this.rpc];
+    if (this._cloudStorage)
+      channels.push(this._cloudStorage);
+
+    if (this._contentCache)
+      channels.push(this._contentCache);
+
     return channels[Symbol.iterator]();
   }
 
@@ -172,6 +178,6 @@ export class IModelTileRequestChannels {
   }
 
   public getChannelForTile(tile: IModelTile): TileRequestChannel {
-    return tile.requestChannel || this._cloudStorage || this.rpc;
+    return tile.requestChannel || this._contentCache || this._cloudStorage || this.rpc;
   }
 }
