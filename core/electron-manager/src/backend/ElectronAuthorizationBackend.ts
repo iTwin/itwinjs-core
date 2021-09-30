@@ -65,7 +65,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   public async refreshToken(): Promise<AccessToken> {
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
-      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()");
+      return "";
 
     const token = `Bearer ${this._tokenResponse.refreshToken}`;
     return this.refreshAccessToken(token);
@@ -74,15 +74,14 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
-  private async loadAccessToken(): Promise<AccessToken | undefined> {
+  private async loadAccessToken(): Promise<AccessToken> {
     const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
-      return undefined;
+      return "";
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
-      Logger.logError(loggerCategory, `Error refreshing access token`, BentleyError.getErrorProps(err));
-      return undefined;
+      return "";
     }
   }
 
@@ -93,8 +92,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signInComplete(): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addOnce((token) => {
-        if (token !== undefined) {
+      NativeHost.onAccessTokenChanged.addOnce((token) => {
+        if (token !== "") {
           resolve(token);
         } else {
           reject(new Error("Failed to sign in"));
@@ -205,8 +204,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signOutComplete(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addOnce((token) => {
-        if (token === undefined) {
+      NativeHost.onAccessTokenChanged.addOnce((token) => {
+        if (token === "") {
           resolve();
         } else {
           reject(new Error("Failed to sign out"));
@@ -219,7 +218,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private async clearTokenResponse() {
     this._tokenResponse = undefined;
     await this.tokenStore.delete();
-    this.setAccessToken(undefined);
+    this.setAccessToken("");
   }
 
   private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
@@ -241,9 +240,9 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   }
 
   public override async getAccessToken(): Promise<AccessToken> {
-    if (this._hasExpired || !this._accessToken) // TODO: THis should happen on a timer, not here
+    if (this._hasExpired || !this._accessToken)
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken ?? "";
+    return this._accessToken;
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {

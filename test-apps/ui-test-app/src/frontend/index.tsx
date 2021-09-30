@@ -621,7 +621,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
-  private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
+  private _onAccessTokenChanged = async (_accessToken: AccessToken) => {
     const authorized = !!IModelApp.authorizationClient;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
@@ -640,7 +640,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
-      oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+      oidcClient.onAccessTokenChanged.addListener(this._onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
   }
@@ -648,7 +648,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
   public override componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
-      oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+      oidcClient.onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
   }

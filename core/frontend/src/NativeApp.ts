@@ -44,9 +44,9 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(accessToken?: AccessToken) {
+  public notifyAccessTokenChanged(accessToken: AccessToken) {
     const client = (IModelApp.authorizationClient as NativeAppAuthorization);
-    client?.onUserStateChanged.raiseEvent(accessToken ?? undefined);
+    client?.onAccessTokenChanged.raiseEvent(accessToken);
   }
 }
 
@@ -60,10 +60,10 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  */
 export class NativeAppAuthorization implements AuthorizationClient {
   private _config?: NativeAppAuthorizationConfiguration;
-  private _cachedToken?: AccessToken;
+  private _cachedToken: AccessToken = "";
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
@@ -75,9 +75,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
    */
   public constructor(config?: NativeAppAuthorizationConfiguration) {
     this._config = config;
-    this.onUserStateChanged.addListener((token?: AccessToken) => {
-      this._cachedToken = token;
-    });
+    this.onAccessTokenChanged.addListener((token: AccessToken) => this._cachedToken = token);
   }
 
   /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */

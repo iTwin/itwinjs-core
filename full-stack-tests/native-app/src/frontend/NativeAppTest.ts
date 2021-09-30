@@ -24,7 +24,7 @@ export class NativeAppTest {
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
       const authorizationClient = bank.getAuthorizationClient(user);
-      await bank.bootstrapIModelBankProject(await authorizationClient.getAccessToken(), props.projectName);
+      await bank.bootstrapIModelBankProject((await authorizationClient.getAccessToken())!, props.projectName);
       this.imodelCloudEnv = bank;
     } else {
       this.imodelCloudEnv = new IModelHubCloudEnv();

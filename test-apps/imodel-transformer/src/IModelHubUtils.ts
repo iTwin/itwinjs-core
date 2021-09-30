@@ -24,8 +24,8 @@ export namespace IModelHubUtils {
       scope: "openid email profile organization itwinjs",
     });
     return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addListener((token) => {
-        if (token !== undefined) {
+      NativeHost.onAccessTokenChanged.addListener((token) => {
+        if (token !== "") {
           resolve(token);
         } else {
           reject(new Error("Failed to sign in"));

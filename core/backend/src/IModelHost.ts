@@ -220,7 +220,11 @@ export class IModelHost {
 
   /** Get the current access token, or a blank string one is not available. */
   public static async getAccessToken(): Promise<AccessToken> {
-    return (await this.authorizationClient?.getAccessToken()) ?? "";
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
   }
 
   /** @internal */

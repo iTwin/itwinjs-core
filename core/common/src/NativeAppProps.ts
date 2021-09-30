@@ -43,7 +43,7 @@ export enum OverriddenBy {
  */
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
-  notifyUserStateChanged(accessToken?: AccessToken): void;
+  notifyAccessTokenChanged(accessToken: AccessToken): void;
 }
 
 /**

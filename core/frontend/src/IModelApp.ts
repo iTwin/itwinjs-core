@@ -482,7 +482,11 @@ export class IModelApp {
 
   /** Get the user access token, or a blank string if one is not available. */
   public static async getAccessToken(): Promise<AccessToken> {
-    return (await this.authorizationClient?.getAccessToken()) ?? "";
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
   }
 
   /** @internal */
