@@ -99,9 +99,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
     let available = new Array<ContextRealityModelProps>();
     try {
-      if (this._iTwinId !== undefined) {
-        if (IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn) {
-          const accessToken = await IModelApp.authorizationClient.getAccessToken();
+      if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
+        const accessToken = await IModelApp.authorizationClient.getAccessToken();
+        if (accessToken) {
           available = await new RealityDataAccessClient().queryRealityData(accessToken, { iTwinId: this._iTwinId, range });
         }
       }

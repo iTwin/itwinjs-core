@@ -8,8 +8,8 @@
  */
 
 import { URL } from "url";
-import { Angle } from "@bentley/core-geometry";
-import { AuthorizedFrontendRequestContext, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { Angle } from "@itwin/core-geometry";
+import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import { getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
@@ -492,18 +492,17 @@ export class RealityDataAccessClient extends WsgClient {
     if (!accessToken)
       return availableRealityModels;
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
     const client = new RealityDataAccessClient();
 
     let realityData: RealityData[];
     if (criteria.range) {
       const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
-      realityData = await client.getRealityDataInProjectOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
+      realityData = await client.getRealityDataInProjectOverlapping(accessToken, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
         Angle.radiansToDegrees(iModelRange.high.x),
         Angle.radiansToDegrees(iModelRange.low.y),
         Angle.radiansToDegrees(iModelRange.high.y));
     } else {
-      realityData = await client.getRealityDataInProject(requestContext, iTwinId);
+      realityData = await client.getRealityDataInProject(accessToken, iTwinId);
     }
 
     // Get set of URLs that are directly attached to the model.
@@ -540,7 +539,7 @@ export class RealityDataAccessClient extends WsgClient {
         let opcConfig: OrbitGtBlobProps | undefined;
 
         if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
-          const rootDocUrl: string = await currentRealityData.getBlobStringUrl(requestContext, currentRealityData.rootDocument);
+          const rootDocUrl: string = await currentRealityData.getBlobStringUrl(accessToken, currentRealityData.rootDocument);
           opcConfig = {
             rdsUrl: "",
             containerName: "",

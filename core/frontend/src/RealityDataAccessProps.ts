@@ -6,7 +6,7 @@
  * @module RealityData
  */
 
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+ import { AccessToken } from "@itwin/core-bentley";
 
 /**
  * All of the currently supported ProjectWise ContextShare reality data types
@@ -35,9 +35,9 @@ export interface RealityData {
   rootDocument?: string;
   type?: string;
 
-  getBlobUrl: (requestContext: AuthorizedClientRequestContext) => Promise<URL>;
-  getTileContent: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
-  getTileJson: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
+  getBlobUrl: (accessToken: AccessToken) => Promise<URL>;
+  getTileContent: (accessToken: AccessToken, name: string) => Promise<any>;
+  getTileJson: (accessToken: AccessToken, name: string) => Promise<any>;
 }
 
 /**
@@ -47,6 +47,6 @@ export interface RealityData {
  * @beta
  */
 export interface RealityDataAccess {
-  getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
+  getRealityData: (accessToken: AccessToken, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
   getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }
