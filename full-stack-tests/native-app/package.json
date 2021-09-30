@@ -36,7 +36,7 @@
     "@itwin/electron-manager": "workspace:*",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
-    "electron": "^11.1.0"
+    "electron": "^14.0.0"
   },
   "devDependencies": {
     "@itwin/certa": "workspace:*",

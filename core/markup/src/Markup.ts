@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { getErrorProps, Logger } from "@itwin/core-bentley";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
@@ -326,7 +326,7 @@ export class MarkupApp {
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
     } catch (e) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => getErrorProps(e));
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", BentleyError.getErrorProps(e));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }

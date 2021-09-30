@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetApplyOption, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -369,12 +369,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, reverse: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
     if (changesetFile.changesType === ChangesetType.Schema)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    // eslint-disable-next-line deprecation/deprecation
-    db.nativeDb.applyChangeset(changesetFile, reverse ? ChangeSetApplyOption.Reverse : ChangeSetApplyOption.Merge);
+    db.nativeDb.applyChangeset(changesetFile);
     db.changeset = db.nativeDb.getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -407,7 +406,7 @@ export class BriefcaseManager {
       changesets.reverse();
 
     for (const changeset of changesets)
-      await this.applySingleChangeset(db, changeset, reverse);
+      await this.applySingleChangeset(db, changeset);
 
     // notify listeners
     db.notifyChangesetApplied();

@@ -4,7 +4,7 @@ publish: false
 
 # NextVersion
 
-## Update minimum requirements
+## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
 
@@ -13,6 +13,7 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 The following dependencies of iTwin.js have been updated;
 
 - `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
+- `electron` updated to from `^11.1.0` -> `^14.0.0`,
 
 ## Package name changes
 
@@ -80,9 +81,13 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 ## BentleyError constructor no longer logs
 
-In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about _why_ the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught _somewhere_, logging should be done when exceptions are caught, not when they're thrown.
+In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
 
-The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
+The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`metaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two. Also, the previous version of the constructor required the metaData argument to be a function that returns an object. It may now also just be an object.
+
+## Logger functions
+
+The optional `metaData` argument for the [Logger]($core-bentley) functions was previously a function returning an object or undefined. That was to permit cases where it may be expensive to create the metadata to be elided when logging is turned off. However, there are many cases where the metaData object is directly available, so creating a function to return it created overhead whether or not logging is enabled. It may now also be just an object so you don't have to make a function.
 
 ## ClientRequestContext and AuthorizedClientRequestContext have been removed
 
@@ -606,6 +611,9 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                       | `AnalysisStyle.thematic`                                       |
+| `AnalysisStyleScalar`                        | `AnalysisStyleThematic`                                        |
+| `AnalysisStyleScalarProps`                   | `AnalysisStyleThematicProps`                                   |
 | `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
 | `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |

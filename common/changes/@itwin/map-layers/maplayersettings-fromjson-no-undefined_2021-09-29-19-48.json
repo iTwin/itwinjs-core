@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Now use 'DisplayStyleState.backgroundMapBase' instead of 'DisplayStyleState.changeBaseMapProps' to update the mapImagery.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

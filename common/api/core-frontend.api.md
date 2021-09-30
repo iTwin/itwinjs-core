@@ -112,7 +112,6 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
-import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GlobeMode } from '@itwin/core-common';
 import { GltfBufferData } from '@itwin/core-common';
 import { GltfBufferView } from '@itwin/core-common';
@@ -156,6 +155,7 @@ import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
+import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -2327,8 +2327,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
-    // @internal (undocumented)
-    get backgroundMapBase(): BaseLayerSettings | undefined;
+    // @beta (undocumented)
+    get backgroundMapBase(): BaseLayerSettings;
+    set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
     get backgroundMapElevationBias(): number | undefined;
     // @internal (undocumented)
@@ -2340,15 +2341,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     // @internal (undocumented)
-    changeBaseMapProps(props: MapLayerProps | ColorDef): void;
-    // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
     // (undocumented)
     changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
     // @internal (undocumented)
-    changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean): void;
+    changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
     // (undocumented)
-    changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
+    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
@@ -6496,13 +6495,13 @@ export class NativeAppLogger {
     // (undocumented)
     static initialize(): void;
     // (undocumented)
-    static logError(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logError(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logInfo(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logInfo(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logTrace(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logTrace(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    static logWarning(category: string, message: string, metaData: LoggingMetaData): void;
     }
 
 // @public

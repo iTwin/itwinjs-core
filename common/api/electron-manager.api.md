@@ -85,6 +85,7 @@ export interface ElectronHostOpts extends NativeHostOpts {
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
     // (undocumented)
     storeWindowName?: string;
+    titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
 }
 
 // @beta

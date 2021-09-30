@@ -183,7 +183,7 @@ export class AnalysisStyle {
     static fromJSON(props?: AnalysisStyleProps): AnalysisStyle;
     readonly normalChannelName?: string;
     // (undocumented)
-    readonly scalar?: AnalysisStyleScalar;
+    readonly thematic?: AnalysisStyleThematic;
     toJSON(): AnalysisStyleProps;
 }
 
@@ -206,22 +206,22 @@ export interface AnalysisStyleDisplacementProps {
 export interface AnalysisStyleProps {
     displacement?: AnalysisStyleDisplacementProps;
     normalChannelName?: string;
-    scalar?: AnalysisStyleScalarProps;
+    scalar?: AnalysisStyleThematicProps;
 }
 
 // @public
-export class AnalysisStyleScalar {
+export class AnalysisStyleThematic {
     readonly channelName: string;
-    equals(other: AnalysisStyleScalar): boolean;
-    static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar;
+    equals(other: AnalysisStyleThematic): boolean;
+    static fromJSON(props: AnalysisStyleThematicProps): AnalysisStyleThematic;
     get gradient(): Gradient.Symb;
     readonly range: Readonly<Range1d>;
     readonly thematicSettings: ThematicGradientSettings;
-    toJSON(): AnalysisStyleScalarProps;
+    toJSON(): AnalysisStyleThematicProps;
 }
 
 // @public
-export interface AnalysisStyleScalarProps {
+export interface AnalysisStyleThematicProps {
     channelName: string;
     range: Range1dProps;
     thematicSettings?: ThematicGradientSettingsProps;
@@ -474,7 +474,7 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 
 // @beta (undocumented)
 export namespace BaseLayerSettings {
-    export function fromJSON(props: BaseLayerProps): BaseLayerSettings | undefined;
+    export function fromJSON(props: BaseLayerProps): BaseLayerSettings;
 }
 
 // @beta
@@ -485,14 +485,14 @@ export interface BaseMapLayerProps extends MapLayerProps {
 
 // @beta
 export class BaseMapLayerSettings extends MapLayerSettings {
-    clone(changedProps: MapLayerProps): BaseMapLayerSettings;
+    clone(changedProps: Partial<MapLayerProps>): BaseMapLayerSettings;
     // @internal (undocumented)
-    cloneProps(changedProps: MapLayerProps): BaseMapLayerProps;
+    cloneProps(changedProps: Partial<MapLayerProps>): BaseMapLayerProps;
     // @alpha (undocumented)
     cloneWithProvider(provider: BackgroundMapProvider): BaseMapLayerSettings;
     // @internal (undocumented)
     static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BaseMapLayerSettings;
-    static fromJSON(props?: BaseMapLayerProps): BaseMapLayerSettings | undefined;
+    static fromJSON(props: BaseMapLayerProps): BaseMapLayerSettings;
     static fromProvider(provider: BackgroundMapProvider, options?: {
         invisible?: boolean;
         transparency?: number;
@@ -4858,31 +4858,31 @@ export interface MapLayerKey {
 // @beta
 export interface MapLayerProps {
     accessKey?: MapLayerKey;
-    formatId?: string;
+    formatId: string;
     isBase?: boolean;
-    name?: string;
+    name: string;
     subLayers?: MapSubLayerProps[];
     transparency?: number;
     transparentBackground?: boolean;
-    url?: string;
+    url: string;
     visible?: boolean;
 }
 
 // @beta
 export class MapLayerSettings {
     // @internal
-    protected constructor(url: string, name: string, formatId?: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
+    protected constructor(url: string, name: string, formatId: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
     // (undocumented)
     accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
-    clone(changedProps: MapLayerProps): MapLayerSettings;
+    clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
     // @internal (undocumented)
-    protected cloneProps(changedProps: MapLayerProps): MapLayerProps;
+    protected cloneProps(changedProps: Partial<MapLayerProps>): MapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
     readonly formatId: string;
-    static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined;
+    static fromJSON(json: MapLayerProps): MapLayerSettings;
     getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
     // (undocumented)
     readonly isBase: boolean;
@@ -4920,7 +4920,7 @@ export interface MapSubLayerProps {
     // (undocumented)
     id?: SubLayerId;
     // (undocumented)
-    name?: string;
+    name: string;
     // (undocumented)
     parent?: SubLayerId;
     // (undocumented)
@@ -4933,10 +4933,10 @@ export interface MapSubLayerProps {
 export class MapSubLayerSettings {
     constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]);
     readonly children?: SubLayerId[];
-    clone(changedProps: MapSubLayerProps): MapSubLayerSettings;
+    clone(changedProps: Partial<MapSubLayerProps>): MapSubLayerSettings;
     // @internal (undocumented)
     displayMatches(other: MapSubLayerSettings): boolean;
-    static fromJSON(json: MapSubLayerProps): MapSubLayerSettings | undefined;
+    static fromJSON(json: MapSubLayerProps): MapSubLayerSettings;
     readonly id: SubLayerId;
     get idString(): string;
     get isLeaf(): boolean;
