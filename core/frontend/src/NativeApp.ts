@@ -53,7 +53,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
 /**
  * Object to be set as `IModelApp.authorizationClient` for the frontend of NativeApps.
  * Since NativeApps use the backend for all authorization, this class sends signIn/signOut requests to the backend
- * and then listens for the `onUserStateChanged` event to cache the accessToken. The token is cached
+ * and then listens for the `onAccessTokenChanged` event to cache the accessToken. The token is cached
  * here on the frontend because it is used for every RPC operation, even when we're running as a NativeApp.
  * We must therefore check for expiration and request refreshes as/when necessary.
  * @public
