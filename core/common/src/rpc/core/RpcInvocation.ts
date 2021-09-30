@@ -44,12 +44,12 @@ export interface SerializedRpcActivity {
 }
 
 /** Notification callback for an RPC invocation.
- * @public
+ * @internal
  */
 export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request.
- * @public
+ * @internal
  */
 export class RpcInvocation {
   public static currentActivity: RpcActivity;

@@ -84,7 +84,7 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   }
 
   public async createChangeSummary(iModelRpcProps: IModelRpcProps): Promise<string> {
-    const accessToken = (await IModelHost.getAccessToken())!;
+    const accessToken = await IModelHost.getAccessToken();
     return ChangeSummaryManager.createChangeSummary(accessToken, BriefcaseDb.findByKey(iModelRpcProps.key));
   }
 

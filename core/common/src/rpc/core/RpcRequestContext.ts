@@ -9,7 +9,7 @@ import { RpcActivity, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcRequest } from "./RpcRequest";
 
 /** Interface to enable passing application-specific context with each RPC request.
- * @public
+ * @internal
  */
 export interface RpcRequestContext {
   /** Used to get the id of the request at the frontend */

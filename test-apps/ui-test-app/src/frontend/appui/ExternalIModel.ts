@@ -45,7 +45,7 @@ export class ExternalIModel {
     const projectName = this.projectName;
     const iModelName = this.imodelName;
 
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
 
     const connectClient = new ITwinAccessClient();
     const iTwinList: ITwin[] = await connectClient.getAll(accessToken, {
