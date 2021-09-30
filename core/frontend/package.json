@@ -3,7 +3,7 @@
   "version": "3.0.0-dev.70",
   "description": "iModel.js frontend components",
   "main": "lib/cjs/imodeljs-frontend.js",
-  "typings": "lib/cjs/imodeljs-frontend.js",
+  "typings": "lib/cjs/imodeljs-frontend",
   "module": "lib/esm/imodeljs-frontend.js",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
@@ -20,7 +20,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
-    "cover": "npm test -- --cover",
+    "cover": "npm test",
     "test:debug": "certa -r chrome --debug",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },

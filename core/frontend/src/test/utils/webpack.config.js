@@ -18,7 +18,9 @@ function createConfig(shouldInstrument) {
       filename: "bundled-tests.js",
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
+    // resolve: { mainFields: ["main", "module"] },
     devtool: "nosources-source-map",
+    // devtool: "none",
     module: {
       noParse: [
         // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
@@ -40,6 +42,7 @@ function createConfig(shouldInstrument) {
       ]
     },
     stats: "errors-only",
+    // stats: "verbose",
     optimization: {
       nodeEnv: "production"
     },
@@ -67,7 +70,9 @@ function createConfig(shouldInstrument) {
       exclude: path.join(frontendLib, "test"),
       loader: require.resolve("istanbul-instrumenter-loader"),
       options: {
-        debug: true
+        debug: true,
+        // esModules: true,
+        produceSourceMap: true
       },
       enforce: "post",
     });
@@ -78,6 +83,6 @@ function createConfig(shouldInstrument) {
 
 // Exporting two configs in a array like this actually tells webpack to run twice - once for each config.
 module.exports = [
-  createConfig(true),
+  // createConfig(true), // FIXME: need to look at other reporter
   createConfig(false)
 ]
