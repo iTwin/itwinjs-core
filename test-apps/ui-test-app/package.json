@@ -98,6 +98,7 @@
     "@bentley/presentation-common": "workspace:*",
     "@bentley/presentation-components": "workspace:*",
     "@bentley/presentation-frontend": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-components": "workspace:*",

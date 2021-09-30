@@ -15,6 +15,7 @@ import {
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
@@ -181,6 +182,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: this.curConfig.renderOptions,
           tileAdmin: this.curConfig.tileProps,
+          realityDataAccess: new RealityDataAccessClient(),
         });
       }
 

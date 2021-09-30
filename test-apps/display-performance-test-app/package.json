@@ -52,6 +52,7 @@
     "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/hypermodeling-frontend": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

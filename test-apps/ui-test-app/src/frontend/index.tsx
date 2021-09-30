@@ -38,6 +38,7 @@ import {
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { BeDragDropContext } from "@bentley/ui-components";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -702,6 +703,7 @@ async function main() {
       uiAdmin: new FrameworkUiAdmin(),
       accuDraw: new FrameworkAccuDraw(),
       viewManager: new AppViewManager(true),  // Favorite Properties Support
+      realityDataAccess: new RealityDataAccessClient(),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
       mapLayerOptions: mapLayerOpts,

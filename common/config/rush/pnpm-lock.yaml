@@ -3063,6 +3063,7 @@ importers:
       '@bentley/mobile-manager': workspace:*
       '@bentley/perf-tools': workspace:*
       '@bentley/react-scripts': 4.0.3
+      '@bentley/reality-data-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
@@ -3099,6 +3100,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/mobile-manager': link:../../core/mobile-manager
+      '@bentley/reality-data-client': link:../../clients/reality-data
       '@bentley/ui-abstract': link:../../ui/abstract
       body-parser: 1.19.0
     devDependencies:
@@ -3630,6 +3632,7 @@ importers:
       '@bentley/presentation-components': workspace:*
       '@bentley/presentation-frontend': workspace:*
       '@bentley/react-scripts': 4.0.3
+      '@bentley/reality-data-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -3699,6 +3702,7 @@ importers:
       '@bentley/presentation-common': link:../../presentation/common
       '@bentley/presentation-components': link:../../presentation/components
       '@bentley/presentation-frontend': link:../../presentation/frontend
+      '@bentley/reality-data-client': link:../../clients/reality-data
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
