@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point2d, Point3d } from "@itwin/core-geometry";
+
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  Limit,
-  PropertyInfo, QueryConfig, QueryConfigBuilder, QueryParams, QueryRequest, QueryResponse, QueryRowFormat, RequestExecutor, RequestKind,
-  ResponseError,
-  ResponseStatus,
+  ConcurrentQueryError, PropertyInfo, QueryConfig, QueryConfigBuilder, QueryParams, QueryRequest, QueryResponse, QueryRowFormat, RequestExecutor,
+  RequestKind, ResponseStatus,
 } from "./ConcurrentQuery";
 
+/** @beta */
 export class PropertyList implements Iterable<PropertyInfo> {
   private _byPropName = new Map<string, number>();
   private _byJsonName = new Map<string, number>();
@@ -50,7 +49,12 @@ export class PropertyList implements Iterable<PropertyInfo> {
     return undefined;
   }
 }
+/**
+ * @beta
+*/
 export type PropertyValueType = any;
+
+/** @beta */
 export interface IRowProxy {
   toJsRow<T extends object>(): T;
   toRow<T extends object>(): T;
@@ -59,6 +63,7 @@ export interface IRowProxy {
   [propertyName: string]: PropertyValueType;
   [propertyIndex: number]: PropertyValueType;
 }
+/** @beta */
 export class ECSqlReader {
   private _localRows: any[] = [];
   private _localOffset: number = 0;
@@ -107,6 +112,7 @@ export class ECSqlReader {
     },
   });
   private _config: QueryConfig = new QueryConfigBuilder().config;
+  /** @internal */
   public constructor(private _executor: RequestExecutor<QueryRequest, QueryResponse>, public readonly query: string, param?: QueryParams, config?: QueryConfig) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
@@ -193,7 +199,7 @@ export class ECSqlReader {
   private async runWithRetry(request: QueryRequest) {
     let resp = await this._executor.execute(request);
     let retry = 10;
-    ResponseError.throwIfError(resp, request);
+    ConcurrentQueryError.throwIfError(resp, request);
     while (--retry > 0 && resp.data.length === 0 && (resp.status === ResponseStatus.Partial || resp.status === ResponseStatus.QueueFull || resp.status === ResponseStatus.TimeOut)) {
       // add timeout
       resp = await this._executor.execute(request);
