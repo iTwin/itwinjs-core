@@ -46,8 +46,6 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { SpatialViewDefinitionProps } from "@itwin/core-common";
-import { ChangesetIndexAndId } from "@itwin/core-common";
 
 /// cspell:ignore ecef
 
