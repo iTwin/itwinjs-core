@@ -56,8 +56,8 @@ export type PropertyValueType = any;
 
 /** @beta */
 export interface IRowProxy {
-  toJsRow<T extends object>(): T;
-  toRow<T extends object>(): T;
+  toJsRow(): any;
+  toRow(): any;
   asArray(): PropertyValueType[];
   getPropertyDefs(): PropertyList;
   [propertyName: string]: PropertyValueType;

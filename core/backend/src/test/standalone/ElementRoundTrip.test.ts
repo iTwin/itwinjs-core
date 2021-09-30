@@ -4,15 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 import {
-  BriefcaseIdValue,
-  Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
+import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { QueryRowFormat } from "@itwin/core-common";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

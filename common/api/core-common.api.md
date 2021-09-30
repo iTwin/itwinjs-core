@@ -4740,9 +4740,9 @@ export interface IRowProxy {
     // (undocumented)
     getPropertyDefs(): PropertyList;
     // (undocumented)
-    toJsRow<T extends object>(): T;
+    toJsRow(): any;
     // (undocumented)
-    toRow<T extends object>(): T;
+    toRow(): any;
 }
 
 // @internal
