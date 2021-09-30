@@ -89,7 +89,7 @@ export interface FrontstageProps extends CommonProps {
   /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition. */
   statusBar?: React.ReactElement<ZoneProps>;
 
-  /** The StagePanel on the top of the 9-zone area. */
+  /** The StagePanel on the top of the AppUi container. */
   topPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very top across the full width.
    * @deprecated Only topPanel is supported in UI 2.0 */
@@ -98,7 +98,7 @@ export interface FrontstageProps extends CommonProps {
   leftPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the right.  */
   rightPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the bottom of the 9-zone area.  */
+  /** The StagePanel on the bottom of the AppUi container.  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very bottom across the full width.
    * @deprecated Only bottomPanel is supported in UI 2.0  */
