@@ -12,6 +12,6 @@ import { AccessToken } from "@itwin/core-bentley";
  * @beta
  */
 export interface AuthorizationClient {
-  /** Get the AccessToken of the currently authorized user. The token is refreshed if necessary and possible. */
-  getAccessToken(): Promise<AccessToken | undefined>;
+  /** Get the AccessToken of the currently authorized user, or blank string if no token is available. */
+  getAccessToken(): Promise<AccessToken>;
 }

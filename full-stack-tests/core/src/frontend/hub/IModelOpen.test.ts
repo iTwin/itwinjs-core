@@ -30,7 +30,7 @@ describe("Opening IModelConnection (#integration)", () => {
     testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.stadium);
 
     // Setup a testChangeSetId somewhere in the middle of the change history
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const changeSets: ChangeSet[] = await (new IModelHubClient()).changeSets.get(accessToken, testIModelId, new ChangeSetQuery().latest());
     assert.isAbove(changeSets.length, 5);
     testChangeSetId = changeSets[Math.floor(changeSets.length / 2)].wsgId;

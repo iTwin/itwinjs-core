@@ -29,7 +29,7 @@ export async function signIn(): Promise<boolean> {
     return true;
 
   return new Promise<boolean>((resolve, reject) => {
-    browserAuth.onUserStateChanged.addOnce((token?: AccessToken) => resolve(token !== undefined));
+    browserAuth.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
     browserAuth.signIn().catch((err) => reject(err));
   });
 }

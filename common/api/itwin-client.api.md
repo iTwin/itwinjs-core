@@ -12,7 +12,7 @@ import { HttpStatus } from '@itwin/core-bentley';
 
 // @beta
 export interface AuthorizationClient {
-    getAccessToken(): Promise<AccessToken | undefined>;
+    getAccessToken(): Promise<AccessToken>;
 }
 
 // @beta

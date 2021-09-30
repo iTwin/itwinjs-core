@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import { Angle } from "@itwin/core-geometry";
 import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@itwin/core-common";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -16,17 +16,6 @@ import { IModelConnection } from "./IModelConnection";
 import { SpatialModelState } from "./ModelState";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
-
-async function getAccessToken(): Promise<AccessToken | undefined> {
-  if (!IModelApp.authorizationClient)
-    return undefined;
-
-  try {
-    return await IModelApp.authorizationClient.getAccessToken();
-  } catch (_) {
-    return undefined;
-  }
-}
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
  * reality model in a [[Viewport]].
@@ -103,10 +92,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   const iTwinId = criteria.iTwinId;
   const availableRealityModels: ContextRealityModelProps[] = [];
 
-  const accessToken = await getAccessToken();
-  if (!accessToken)
-    return availableRealityModels;
-
+  const accessToken = await IModelApp.getAccessToken();
   const client = new RealityDataClient();
 
   let realityData: RealityData[];
