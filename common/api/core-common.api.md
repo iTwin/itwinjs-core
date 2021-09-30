@@ -466,6 +466,18 @@ export namespace Base64EncodedString {
     const replacer: (_name: string, value: any) => any;
 }
 
+// @beta (undocumented)
+export interface BaseConfig {
+    // (undocumented)
+    priority?: number;
+    // (undocumented)
+    quota?: Quota;
+    // (undocumented)
+    restartToken?: string;
+    // (undocumented)
+    usePrimaryConn?: boolean;
+}
+
 // @beta
 export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
 
@@ -596,6 +608,46 @@ export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
 
 // @internal (undocumented)
 export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
+
+// @beta (undocumented)
+export interface BlobConfig extends BaseConfig {
+    // (undocumented)
+    range?: Range;
+}
+
+// @beta (undocumented)
+export class BlobConfigBuilder {
+    // (undocumented)
+    get config(): BlobConfig;
+    // (undocumented)
+    setPriority(val: number): this;
+    // (undocumented)
+    setQuota(val: Quota): this;
+    // (undocumented)
+    setRange(val: Range): this;
+    // (undocumented)
+    setRestartToken(val: string): this;
+    // (undocumented)
+    setUsePrimaryConnection(val: boolean): this;
+}
+
+// @internal (undocumented)
+export interface BlobRequest extends Request, BlobConfig {
+    // (undocumented)
+    accessString: string;
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    instanceId: Id64String;
+}
+
+// @internal (undocumented)
+export interface BlobResponse extends Response {
+    // (undocumented)
+    data?: Uint8Array;
+    // (undocumented)
+    rawBlobSize: number;
+}
 
 // @public
 export class BoundingSphere {
@@ -1645,6 +1697,17 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
 
+// @public (undocumented)
+export class ConcurrentQueryError extends BentleyError {
+    constructor(response: any, request?: any, rc?: DbResult);
+    // (undocumented)
+    readonly request?: any;
+    // (undocumented)
+    readonly response: any;
+    // (undocumented)
+    static throwIfError(response: any, request?: any): void;
+}
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -2208,6 +2271,34 @@ export interface EcefLocationProps {
 export class ECJsNames {
     static systemPropertyToJsName(systemPropertyType: ECSqlSystemProperty): string;
     static toJsName(propName: string, isSystemProperty?: boolean): string;
+}
+
+// @beta (undocumented)
+export class ECSqlReader {
+    // @internal
+    constructor(_executor: RequestExecutor<QueryRequest, QueryResponse>, query: string, param?: QueryParams, config?: QueryConfig);
+    // (undocumented)
+    get current(): IRowProxy;
+    // (undocumented)
+    get done(): boolean;
+    // (undocumented)
+    formatCurrentRow(format: QueryRowFormat): any[] | object;
+    // (undocumented)
+    getRowInternal(): any[];
+    // (undocumented)
+    get properties(): PropertyList;
+    // (undocumented)
+    readonly query: string;
+    // (undocumented)
+    reset(config?: QueryConfig): void;
+    // (undocumented)
+    resetBindings(): void;
+    // (undocumented)
+    setParams(param: QueryParams): void;
+    // (undocumented)
+    step(): Promise<boolean>;
+    // (undocumented)
+    toArray(format: QueryRowFormat): Promise<any[]>;
 }
 
 // @public
@@ -4341,6 +4432,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
+    queryBlob(_iModelToken: IModelRpcProps, _request: BlobRequest): Promise<BlobResponse>;
+    // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)
     queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]>;
@@ -4349,7 +4442,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _request: QueryRequest): Promise<QueryResponse>;
     // (undocumented)
     queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)
@@ -4636,6 +4729,22 @@ export abstract class IpcWebSocketTransport {
     abstract send(message: IpcWebSocketMessage): void;
 }
 
+// @beta (undocumented)
+export interface IRowProxy {
+    // (undocumented)
+    [propertyName: string]: PropertyValueType;
+    // (undocumented)
+    [propertyIndex: number]: PropertyValueType;
+    // (undocumented)
+    asArray(): PropertyValueType[];
+    // (undocumented)
+    getPropertyDefs(): PropertyList;
+    // (undocumented)
+    toJsRow<T extends object>(): T;
+    // (undocumented)
+    toRow<T extends object>(): T;
+}
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -4715,6 +4824,14 @@ export interface LightSettingsProps {
     };
     solar?: SolarLightProps;
     specularIntensity?: number;
+}
+
+// @beta (undocumented)
+export interface Limit {
+    // (undocumented)
+    count?: number;
+    // (undocumented)
+    offset?: number;
 }
 
 // @public
@@ -5953,6 +6070,39 @@ export interface ProjectionProps {
 // @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
+// @beta (undocumented)
+export interface PropertyInfo {
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    generated: boolean;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    jsonName: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    system: boolean;
+    // (undocumented)
+    typeName: string;
+}
+
+// @beta (undocumented)
+export class PropertyList implements Iterable<PropertyInfo> {
+    // (undocumented)
+    [Symbol.iterator](): Iterator<PropertyInfo, any, undefined>;
+    constructor(_properties: PropertyInfo[]);
+    // (undocumented)
+    findByJsonName(name: string): PropertyInfo | undefined;
+    // (undocumented)
+    findByName(name: string): PropertyInfo | undefined;
+    // (undocumented)
+    findByNoCase(name: string): PropertyInfo | undefined;
+    // (undocumented)
+    get length(): number;
+    }
+
 // @beta
 export class PropertyMetaData implements PropertyMetaDataProps {
     constructor(jsonObj: PropertyMetaDataProps);
@@ -6035,6 +6185,9 @@ export interface PropertyMetaDataProps {
     // (undocumented)
     structName?: string;
 }
+
+// @beta (undocumented)
+export type PropertyValueType = any;
 
 // @public
 export class QParams2d {
@@ -6161,51 +6314,110 @@ export namespace Quantization {
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
-// @public
-export interface QueryLimit {
-    maxRowAllowed?: number;
-    startRowOffset?: number;
+// @beta (undocumented)
+export interface QueryConfig extends BaseConfig {
+    // (undocumented)
+    abbreviateBlobs?: boolean;
+    // (undocumented)
+    includeMetaData?: boolean;
+    // (undocumented)
+    limit?: Limit;
+    // (undocumented)
+    suppressLogErrors?: boolean;
 }
 
-// @public
-export enum QueryPriority {
+// @beta (undocumented)
+export class QueryConfigBuilder {
     // (undocumented)
-    High = 2,
+    get config(): QueryConfig;
     // (undocumented)
-    Low = 0,
+    setAbbreviateBlobs(val: boolean): this;
     // (undocumented)
-    Normal = 1
+    setLimit(val: Limit): this;
+    // (undocumented)
+    setPriority(val: number): this;
+    // (undocumented)
+    setQuota(val: Quota): this;
+    // (undocumented)
+    setRestartToken(val: string): this;
+    // (undocumented)
+    setSuppressLogErrors(val: boolean): this;
+    // (undocumented)
+    setUsePrimaryConnection(val: boolean): this;
 }
 
-// @public
-export interface QueryQuota {
-    maxMemoryAllowed?: number;
-    maxTimeAllowed?: number;
+// @beta (undocumented)
+export class QueryParams {
+    // (undocumented)
+    bindBlob(indexOrName: string | number, val: Uint8Array): this;
+    // (undocumented)
+    bindBoolean(indexOrName: string | number, val: boolean): this;
+    // (undocumented)
+    bindDouble(indexOrName: string | number, val: number): this;
+    // (undocumented)
+    bindId(indexOrName: string | number, val: Id64String): this;
+    // (undocumented)
+    bindIdSet(indexOrName: string | number, val: Id64Set): this;
+    // (undocumented)
+    bindInt(indexOrName: string | number, val: number): this;
+    // (undocumented)
+    bindLong(indexOrName: string | number, val: number): this;
+    // (undocumented)
+    bindNull(indexOrName: string | number): this;
+    // (undocumented)
+    bindPoint2d(indexOrName: string | number, val: Point2d): this;
+    // (undocumented)
+    bindPoint3d(indexOrName: string | number, val: Point3d): this;
+    // (undocumented)
+    bindString(indexOrName: string | number, val: string): this;
+    // (undocumented)
+    bindStruct(indexOrName: string | number, val: object): this;
+    // (undocumented)
+    static from(args: any[] | object | undefined): QueryParams;
+    // (undocumented)
+    serialize(): object;
+    }
+
+// @internal (undocumented)
+export interface QueryRequest extends Request, QueryConfig {
+    // (undocumented)
+    args?: object;
+    // (undocumented)
+    query: string;
 }
 
-// @public
-export interface QueryResponse {
+// @internal (undocumented)
+export interface QueryResponse extends Response {
     // (undocumented)
-    rows: any[];
+    data: any[];
     // (undocumented)
-    status: QueryResponseStatus;
+    meta: PropertyInfo[];
+    // (undocumented)
+    rowCount: number;
 }
 
-// @public
-export enum QueryResponseStatus {
+// @public (undocumented)
+export enum QueryRowFormat {
     // (undocumented)
-    Cancelled = 7,
+    Array = 2,
     // (undocumented)
-    Done = 2,
+    Default = 2,
     // (undocumented)
-    Error = 5,
+    UseECSqlPropertyNames = 0,
     // (undocumented)
-    Partial = 3,
-    // (undocumented)
-    PostError = 6,
-    // (undocumented)
-    Timeout = 4
+    UseJsPropertyNames = 1
 }
+
+// @beta (undocumented)
+export interface Quota {
+    // (undocumented)
+    memory?: number;
+    // (undocumented)
+    time?: number;
+}
+
+// @beta (undocumented)
+export type Range = Limit;
 
 // @public
 export enum Rank {
@@ -6658,6 +6870,26 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 
 export { RepositoryStatus }
 
+// @internal (undocumented)
+export interface Request extends BaseConfig {
+    // (undocumented)
+    kind: RequestKind;
+}
+
+// @internal (undocumented)
+export interface RequestExecutor<TRequest extends Request, TResponse extends Response> {
+    // (undocumented)
+    execute(request: TRequest): Promise<TResponse>;
+}
+
+// @internal (undocumented)
+export enum RequestKind {
+    // (undocumented)
+    BlobIO = 0,
+    // (undocumented)
+    ECSql = 1
+}
+
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -6665,6 +6897,28 @@ export interface RequestNewBriefcaseProps {
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
+}
+
+// @internal (undocumented)
+export interface Response {
+    // (undocumented)
+    error?: string;
+    // (undocumented)
+    kind: ResponseKind;
+    // (undocumented)
+    stats: Stats;
+    // (undocumented)
+    status: ResponseStatus;
+}
+
+// @internal (undocumented)
+export enum ResponseKind {
+    // (undocumented)
+    BlobIO = 0,
+    // (undocumented)
+    ECSql = 1,
+    // (undocumented)
+    NoResult = 2
 }
 
 // @public (undocumented)
@@ -6702,6 +6956,22 @@ export class ResponseLike implements Response {
     get type(): ResponseType;
     // (undocumented)
     get url(): string;
+}
+
+// @internal (undocumented)
+export enum ResponseStatus {
+    // (undocumented)
+    Cancel = 2,
+    // (undocumented)
+    Done = 1,
+    // (undocumented)
+    Error = 0,
+    // (undocumented)
+    Partial = 3,
+    // (undocumented)
+    QueueFull = 5,
+    // (undocumented)
+    TimeOut = 4
 }
 
 // @public
@@ -7801,6 +8071,20 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 // @public
 export type StandaloneOpenOptions = OpenDbKey;
+
+// @beta (undocumented)
+export interface Stats {
+    // (undocumented)
+    cpuTime: number;
+    // (undocumented)
+    memLimit: number;
+    // (undocumented)
+    memUsed: number;
+    // (undocumented)
+    timeLimit: number;
+    // (undocumented)
+    totalTime: number;
+}
 
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
