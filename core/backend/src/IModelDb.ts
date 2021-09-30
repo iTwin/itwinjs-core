@@ -14,13 +14,13 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
-  EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
+  CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryConfig,
-  QueryParams, QueryRequest, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
+  QueryOptions, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
@@ -411,12 +411,12 @@ export abstract class IModelDb extends IModel {
    * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
    * @beta
    * */
-  public createQueryReader(ecsql: string, params?: QueryParams, config?: QueryConfig): ECSqlReader {
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
     }
     const executor = {
-      execute: async (request: QueryRequest) => {
+      execute: async (request: DbQueryRequest) => {
         return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
       },
     };
@@ -438,7 +438,7 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
     const reader = this.createQueryReader(ecsql, params, config);
     while (await reader.step())
       yield reader.formatCurrentRow(rowFormat ?? QueryRowFormat.Default);
@@ -456,7 +456,7 @@ export abstract class IModelDb extends IModel {
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRowCount(ecsql: string, params?: QueryParams): Promise<number> {
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
     for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
@@ -481,7 +481,7 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any> {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
     if (!config) {
       config = { restartToken: token };
     } else {

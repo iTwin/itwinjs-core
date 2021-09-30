@@ -4,11 +4,11 @@ import { assert } from "chai";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, using } from "@itwin/core-bentley";
-import { QueryConfigBuilder, QueryParams } from "@itwin/core-common";
+import { QueryBinder, QueryOptionsBuilder } from "@itwin/core-common";
+import { ECDb } from "../../ECDb";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { ECDb } from "../../ECDb";
 
 describe("ECSqlReader and ECSqlBlobReader", async () => {
   const outDir = KnownTestLocations.outputDir;
@@ -28,9 +28,9 @@ describe("ECSqlReader and ECSqlBlobReader", async () => {
       ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       assert.equal(r.id, "0x1");
-      const params = new QueryParams();
+      const params = new QueryBinder();
       params.bindString("name", "CompositeUnitRefersToUnit");
-      const config = new QueryConfigBuilder();
+      const config = new QueryOptionsBuilder();
       const reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE Name=:name", params, config.config);
       while (await reader.step()) {
         // eslint-disable-next-line no-console

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryParams, QueryRowFormat, RelatedElement } from "@itwin/core-common";
+import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
   ModelSelectorState, OrthographicViewState, ViewState,
@@ -16,7 +16,7 @@ import { TestUtility } from "./TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryParams.from(bindings), QueryRowFormat.UseJsPropertyNames)) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames)) {
     rows.push(row);
   }
   return rows;

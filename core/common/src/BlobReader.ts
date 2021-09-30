@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import {
-  BlobConfig, BlobConfigBuilder, BlobRequest, BlobResponse, ConcurrentQueryError, Range, RequestExecutor, RequestKind,
+  BlobOptions, BlobOptionsBuilder, BlobRange, DbBlobRequest, DbBlobResponse, DbQueryError, DbRequestExecutor, DbRequestKind,
 } from "./ConcurrentQuery";
 
 /** @beta */
@@ -33,28 +33,28 @@ export class Uint8Chunks implements Iterable<Uint8Array> {
 export class BlobReader {
   private _chunks = new Uint8Chunks();
   private _lengthToRead: number = -1;
-  private _config = new BlobConfigBuilder().config;
-  public constructor(private _executor: RequestExecutor<BlobRequest, BlobResponse>,
+  private _config = new BlobOptionsBuilder().config;
+  public constructor(private _executor: DbRequestExecutor<DbBlobRequest, DbBlobResponse>,
     public readonly className: string,
     public readonly accessString: string,
     public readonly instanceId: Id64String,
-    config?: BlobConfig) {
+    config?: BlobOptions) {
     this.reset(config);
   }
-  public reset(config?: BlobConfig) {
+  public reset(config?: BlobOptions) {
     if (config) {
       this._config = config;
     }
     this._chunks = new Uint8Chunks();
     this._lengthToRead = this.range.count!;
   }
-  public get range(): Range { return this._config.range!; }
+  public get range(): BlobRange { return this._config.range!; }
   public async step(): Promise<boolean> {
     if (this._lengthToRead === this._chunks.length) {
       return false;
     }
-    const request: BlobRequest = {
-      kind: RequestKind.BlobIO,
+    const request: DbBlobRequest = {
+      kind: DbRequestKind.BlobIO,
       className: this.className,
       accessString: this.accessString,
       instanceId: this.instanceId,
@@ -62,7 +62,7 @@ export class BlobReader {
     };
     request.range = {offset: this._chunks.length, count: this.range ? this._lengthToRead - this._chunks.length : 0};
     const resp = await this._executor.execute(request);
-    ConcurrentQueryError.throwIfError(resp, request);
+    DbQueryError.throwIfError(resp, request);
 
     if (this._lengthToRead === -1) {
       this._lengthToRead = resp.rawBlobSize;
