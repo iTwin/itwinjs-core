@@ -466,15 +466,11 @@ export namespace Base64EncodedString {
     const replacer: (_name: string, value: any) => any;
 }
 
-// @beta (undocumented)
+// @beta
 export interface BaseConfig {
-    // (undocumented)
     priority?: number;
-    // (undocumented)
     quota?: Quota;
-    // (undocumented)
     restartToken?: string;
-    // (undocumented)
     usePrimaryConn?: boolean;
 }
 
@@ -4938,11 +4934,9 @@ export interface LightSettingsProps {
     specularIntensity?: number;
 }
 
-// @beta (undocumented)
+// @beta
 export interface Limit {
-    // (undocumented)
     count?: number;
-    // (undocumented)
     offset?: number;
 }
 
