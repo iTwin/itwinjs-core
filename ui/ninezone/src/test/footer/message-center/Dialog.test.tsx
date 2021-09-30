@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MessageCenterDialog } from "../../../ui-ninezone";
+import { MessageCenterDialog } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<MessageCenterDialog />", () => {

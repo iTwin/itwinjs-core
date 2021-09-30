@@ -10,22 +10,19 @@
 
 import * as path from "path";
 import {
-  BeDuration,
-  ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
-} from "@bentley/bentleyjs-core";
+  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+} from "@itwin/core-bentley";
 import {
-  BriefcaseId,
-  BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps, LocalDirName,
-  LocalFileName, RequestNewBriefcaseProps,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+  BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
+} from "@itwin/core-common";
 import { TelemetryEvent } from "@bentley/telemetry-client";
+import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -254,7 +251,7 @@ export class BriefcaseManager {
    * @note generally, this method should not be called directly. Instead use [[deleteBriefcaseFiles]].
    * @see deleteBriefcaseFiles
    */
-  public static async releaseBriefcase(user: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void> {
+  public static async releaseBriefcase(user: AccessToken, briefcase: BriefcaseProps): Promise<void> {
     if (this.isValidBriefcaseId(briefcase.briefcaseId))
       return IModelHost.hubAccess.releaseBriefcase({ user, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
   }
@@ -266,7 +263,7 @@ export class BriefcaseManager {
    * @param filePath the full file name of the Briefcase to delete
    * @param user for releasing the briefcaseId
    */
-  public static async deleteBriefcaseFiles(filePath: LocalFileName, user?: AuthorizedClientRequestContext): Promise<void> {
+  public static async deleteBriefcaseFiles(filePath: LocalFileName, user?: AccessToken): Promise<void> {
     try {
       const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
       const briefcase: BriefcaseProps = {
@@ -372,12 +369,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, reverse: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
     if (changesetFile.changesType === ChangesetType.Schema)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    // eslint-disable-next-line deprecation/deprecation
-    db.nativeDb.applyChangeset(changesetFile, reverse ? ChangeSetApplyOption.Reverse : ChangeSetApplyOption.Merge);
+    db.nativeDb.applyChangeset(changesetFile);
     db.changeset = db.nativeDb.getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -410,7 +406,7 @@ export class BriefcaseManager {
       changesets.reverse();
 
     for (const changeset of changesets)
-      await this.applySingleChangeset(db, changeset, reverse);
+      await this.applySingleChangeset(db, changeset);
 
     // notify listeners
     db.notifyChangesetApplied();
@@ -427,15 +423,16 @@ export class BriefcaseManager {
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
+      let user = arg.user;
       try {
         // Refresh the access token since this process can take time
-        if (arg.user) {
+        if (user) {
           const auth = IModelHost.authorizationClient;
           if (auth)
-            arg.user.accessToken = await auth.getAccessToken();
+            user = await auth.getAccessToken();
         }
 
-        const index = await IModelHost.hubAccess.pushChangeset({ user: arg.user, iModelId: db.iModelId, changesetProps });
+        const index = await IModelHost.hubAccess.pushChangeset({ user, iModelId: db.iModelId, changesetProps });
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
@@ -483,18 +480,23 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static logUsage(requestContext: ClientRequestContext | undefined, imodel: IModelDb) {
-    // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
-    if (!(requestContext instanceof AuthorizedClientRequestContext))
-      return;
+  public static logUsage(imodel: IModelDb, activity?: RpcActivity) {
 
     const telemetryEvent = new TelemetryEvent(
-      "imodeljs-backend - Open iModel",
+      "core-backend - Open iModel",
       "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
       imodel.iTwinId,
       imodel.iModelId,
       imodel.changeset?.id,
     );
-    IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
+    activity = activity ?? {
+      activityId: "",
+      applicationId: IModelHost.applicationId,
+      applicationVersion: IModelHost.applicationVersion,
+      sessionId: IModelHost.sessionId,
+      accessToken: "", // IModelHost.getAccessToken(); ACCESS_TOKEN_NEEDS_WORK
+    };
+
+    IModelHost.telemetry.postTelemetry(activity, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }

@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
+import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
+import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";

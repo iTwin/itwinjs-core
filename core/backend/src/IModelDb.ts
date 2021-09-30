@@ -8,10 +8,10 @@
 
 import { join } from "path";
 import {
-  BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger,
-  OpenMode,
-} from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+  AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
+  JsonUtils, Logger, OpenMode,
+} from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
   ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
@@ -20,12 +20,11 @@ import {
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit,
-  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
-  SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
-} from "@bentley/imodeljs-common";
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps,
+  SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
+  ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -281,7 +280,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void> { }
+  public async reattachDaemon(_user: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -1236,7 +1235,7 @@ export abstract class IModelDb extends IModel {
    *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
    *    or that shared backends export a limited number of elements at a time.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
-   *  * The results of changing [ExportGraphicsOptions]($imodeljs-backend) during the [ExportGraphicsOptions.onGraphics]($imodeljs-backend) callback are not defined.
+   *  * The results of changing [ExportGraphicsOptions]($core-backend) during the [ExportGraphicsOptions.onGraphics]($core-backend) callback are not defined.
    *
    * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
    * ```ts
@@ -1269,13 +1268,13 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($imodeljs-backend)
+   * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($core-backend)
    * in this IModelDb.
-   * The expected use case is to call [IModelDb.exportGraphics]($imodeljs-backend) and supply the
+   * The expected use case is to call [IModelDb.exportGraphics]($core-backend) and supply the
    * optional partInstanceArray argument, then call this function for each unique GeometryPart from
    * that list.
-   *  * The results of changing [ExportPartGraphicsOptions]($imodeljs-backend) during the
-   *    [ExportPartGraphicsOptions.onPartGraphics]($imodeljs-backend) callback are not defined.
+   *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
+   *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
    *  * See export-gltf under test-apps in the iModel.js monorepo for a working reference.
    * @returns 0 is successful, status otherwise
    * @public
@@ -1303,7 +1302,7 @@ export abstract class IModelDb extends IModel {
   /** Create brep geometry for inclusion in an element's geometry stream.
    * @returns DbResult.BE_SQLITE_OK if successful
    * @throws [[IModelError]] to report issues with input geometry or parameters
-   * @see [IModelDb.elementGeometryUpdate]($imodeljs-backend)
+   * @see [IModelDb.elementGeometryUpdate]($core-backend)
    * @alpha
    */
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
@@ -1489,7 +1488,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
-     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
+     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
@@ -2157,14 +2156,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  */
 export interface UserArg {
   /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  readonly user?: AuthorizedClientRequestContext;
+  readonly user?: AccessToken;
 }
 
 /**
  * Arguments to open a BriefcaseDb
  * @public
  */
-export type OpenBriefcaseArgs = OpenBriefcaseProps & UserArg;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & { rpcActivity?: RpcActivity };
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2282,7 +2281,7 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    BriefcaseManager.logUsage(args.user, briefcaseDb);
+    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
@@ -2471,7 +2470,7 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
-  public override async reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void> {
+  public override async reattachDaemon(user: AccessToken): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
       const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);

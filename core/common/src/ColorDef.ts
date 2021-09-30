@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { Geometry } from "@bentley/geometry-core";
+import { Geometry } from "@itwin/core-geometry";
 import { ColorByName } from "./ColorByName";
 import { HSLColor } from "./HSLColor";
 import { HSVColor, HSVConstants } from "./HSVColor";

@@ -6,9 +6,9 @@ import "./Common.scss";
 import "./IModelViewPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { IModelInfo, UiFramework } from "@itwin/appui-react";
 import { Button, ProgressRadial } from "@itwin/itwinui-react";
 
 interface ViewCardProps {

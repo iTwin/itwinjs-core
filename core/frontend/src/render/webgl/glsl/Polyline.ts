@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import {

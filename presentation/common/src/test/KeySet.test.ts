@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
 import {
   createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,

@@ -1,4 +1,4 @@
-# Change Log - @bentley/express-server
+# Change Log - @itwin/express-server
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 
@@ -618,6 +618,6 @@ Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Moved IModelJsExpressServer class into a new package (@bentley/express-server).
+- Moved IModelJsExpressServer class into a new package (@itwin/express-server).
 - Upgrade TypeDoc dependency to 0.14.2
 

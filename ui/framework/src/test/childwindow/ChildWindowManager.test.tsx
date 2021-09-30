@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ChildWindowManager } from "../../ui-framework";
-import { copyStyles } from "../../ui-framework/childwindow/CopyStyles";
+import { ChildWindowManager } from "../../appui-react";
+import { copyStyles } from "../../appui-react/childwindow/CopyStyles";
 
 describe("ChildWindowManager", () => {
   afterEach(() => {

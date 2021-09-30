@@ -1,0 +1,103 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+@mixin uicore-inputs-labeled-input {
+
+  display:                    block;
+  padding:                    0;
+  margin:                     0 0 $uicore-unbordered-padding;
+  text-align:                 left;
+  font-size:                  $iui-font-size;
+  font-weight:                $iui-font-weight-normal;
+  cursor:                     pointer;
+
+  > .uicore-label {
+
+    padding:                0;
+    margin:                 0;
+    border:                 0 none transparent;
+    display:                block;
+    font-size:              $iui-font-size;
+    font-weight:            $iui-font-weight-semibold;
+    line-height:            $uicore-line-height;
+    text-align:             left;
+    color:                  $buic-text-color;
+  }
+
+  > .input {
+
+    position:               relative;
+    /// Needed to vertically align the icon:
+    display:                inline-block;
+    width:                  100%;
+
+    &.with-icon {
+
+      > input,
+      > .bwx-inputs-input {
+
+        padding-right:  $uicore-bordered-padding + $uicore-line-height;
+        margin-right: $uicore-bordered-padding + $uicore-line-height;
+      }
+    }
+
+    > .icon {
+
+      display:            flex;
+      align-items:        center;
+      position:           absolute;
+      right:              0;
+      top:                0;
+      bottom:             0;
+      padding:            $uicore-bordered-padding;
+
+      font-size:          $iui-font-size;
+      font-weight:        normal;
+    }
+  }
+
+  > .uicore-message {
+
+    display:                block;
+    font-size:              $iui-font-size-small;
+    line-height:            $uicore-line-height;
+    color:                  $buic-text-color-muted;
+  }
+
+
+  /// Status colors ----------------------------------------------------------
+
+  $status-colors: (
+    success:    $buic-foreground-positive-rgb,
+    warning:    $buic-foreground-warning-rgb,
+    error:      $buic-foreground-negative-rgb
+  );
+
+  @each $status, $color in $status-colors {
+
+    &.#{$status},
+    &.#{$status} > .uicore-message {
+
+      color:                rgb($color);
+    }
+
+    &.#{$status} > .input {
+      > input,
+      > .uicore-inputs-input {
+
+        border-color:       rgb($color);
+        box-shadow:         $buic-inputs-boxshadow 0px 1px 1px inset;
+
+        &:focus {
+
+          border-color:     rgb($color);
+          box-shadow:       rgba( $color, $uicore-opacity-boxshadow ) 0px 0px 0px 2px;
+        }
+      }
+    }
+  }
+}

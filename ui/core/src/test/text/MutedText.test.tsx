@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { MutedText } from "../../ui-core";
+import { MutedText } from "../../core-react";
 
 describe("<MutedText />", () => {
   it("should render", () => {

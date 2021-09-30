@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { AccessToken } from "@itwin/core-bentley";
 import * as chai from "chai";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ITwinAccessClient } from "../../ContextRegistryClient";
 import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
@@ -11,15 +11,15 @@ import { TestConfig } from "../TestConfig";
 chai.should();
 describe("ContextRegistryClient (#integration)", () => {
   const iTwinAccessClient: ITwinAccessClient = new ITwinAccessClient();
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async function () {
     this.timeout(0);
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    accessToken = await TestConfig.getAccessToken();
   });
 
   it("should get a list of iTwins (#integration)", async () => {
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken);
 
     // At least one iTwin
     chai.expect(iTwinList).to.not.be.empty;
@@ -29,10 +29,10 @@ describe("ContextRegistryClient (#integration)", () => {
     const numberOfITwins = 3;
 
     // Verify there are enough iTwins to test the paging
-    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
+    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken);
     chai.assert(fullITwinList.length >= numberOfITwins, "Unable to meaningfully run test since there are too few iTwins.");
 
-    const partialITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
+    const partialITwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken,
       {
         pagination: {
           top: numberOfITwins,
@@ -47,10 +47,10 @@ describe("ContextRegistryClient (#integration)", () => {
     const numberSkipped = 4;
 
     // Verify there are enough iTwins to test the paging
-    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
+    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken);
     chai.assert(fullITwinList.length >= numberSkipped, "Unable to meaningfully run test since there are too few iTwins.");
 
-    const partialITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
+    const partialITwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken,
       {
         pagination: {
           skip: numberSkipped,
@@ -69,7 +69,7 @@ describe("ContextRegistryClient (#integration)", () => {
     chai.assert(numberSkipped < numberOfITwins, "There must be overlap between the two pages to run test.");
 
     // Verify there are enough iTwins to test the paging
-    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
+    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken,
       {
         pagination: {
           top: numberOfITwins + numberSkipped,
@@ -77,14 +77,14 @@ describe("ContextRegistryClient (#integration)", () => {
       });
     chai.assert(fullITwinList.length === numberOfITwins + numberSkipped, "Unable to meaningfully run test since there are too few iTwins.");
 
-    const firstPageList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
+    const firstPageList: ITwin[] = await iTwinAccessClient.getAll(accessToken,
       {
         pagination: {
           top: numberOfITwins,
         },
       });
 
-    const secondPageList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
+    const secondPageList: ITwin[] = await iTwinAccessClient.getAll(accessToken,
       {
         pagination: {
           top: numberOfITwins,
@@ -138,12 +138,13 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a list of iTwins by name (#integration)", async () => {
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken, {
       search: {
         searchString: TestConfig.iTwinName,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      },
+    });
 
     // At least one iTwin
     chai.expect(iTwinList).to.not.be.empty;

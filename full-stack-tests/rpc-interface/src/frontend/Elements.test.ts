@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { ElementProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { Id64Set, Id64String } from "@itwin/core-bentley";
+import { ElementProps } from "@itwin/core-common";
+import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;

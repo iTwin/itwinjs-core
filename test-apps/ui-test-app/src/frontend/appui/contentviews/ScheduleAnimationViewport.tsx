@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
-import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@bentley/ui-imodel-components";
-import { LoadingSpinner } from "@bentley/ui-core";
+import { Id64String } from "@itwin/core-bentley";
+import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import { viewWithUnifiedSelection } from "@itwin/presentation-components";
+import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@itwin/imodel-components-react";
+import { LoadingSpinner } from "@itwin/core-react";
 import {
   AnalysisAnimationTimelineDataProvider, ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, ScheduleAnimationTimelineDataProvider,
   UiFramework, ViewportContentControl,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
 
 // create a HOC viewport component that supports unified selection

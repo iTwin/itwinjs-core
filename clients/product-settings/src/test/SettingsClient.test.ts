@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
 import { ConnectSettingsClient } from "../SettingsClient";
 import { TestConfig } from "./TestConfig";
@@ -43,14 +42,14 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    accessToken = await TestConfig.getAccessToken();
 
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
+    projectId = (await TestConfig.getITwinByName(accessToken, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
-    iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
+    iModelId = (await TestConfig.queryIModel(accessToken, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
   });
 
@@ -72,19 +71,19 @@ describe("ConnectSettingsClient-User (#integration)", () => {
 
     // delete all the settings, so we know we are creating new ones.
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
-      const deleteResult: SettingsResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
+      const deleteResult: SettingsResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
 
     // save new settings (deleted above, so we know it's new)
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
-      const saveResult: SettingsResult = await settingsClient.saveUserSetting(requestContext, appUserSettings[iSetting], "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
+      const saveResult: SettingsResult = await settingsClient.saveUserSetting(accessToken, appUserSettings[iSetting], "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
       chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
     }
 
     // read back the AppUser results.
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
-      const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
+      const getResult: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
       chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
       chai.assert(getResult.setting, "Setting should be returned");
       chai.expect(getResult.setting.appString).equals(appUserSettings[iSetting].appString);
@@ -96,9 +95,9 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     appUserSettings[0].appString = "new Application User String";
     appUserSettings[0].appNumber = 8;
     appUserSettings[0].appArray.splice(2, 1);  // is now 1, 2, 4
-    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(requestContext, appUserSettings[0], "TestSettings", `AppUser${settingGuids[0]}`, true);
+    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(accessToken, appUserSettings[0], "TestSettings", `AppUser${settingGuids[0]}`, true);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", `AppUser${settingGuids[0]}`, true);
+    const getResult2: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", `AppUser${settingGuids[0]}`, true);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.appString).equals(appUserSettings[0].appString);
@@ -106,7 +105,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.appArray, appUserSettings[0].appArray), "retrieved array contents correct");
 
     // now try getting all settings by namespace
-    const filterResult: SettingsMapResult = await settingsClient.getUserSettingsByNamespace(requestContext, "TestSettings", true);
+    const filterResult: SettingsMapResult = await settingsClient.getUserSettingsByNamespace(accessToken, "TestSettings", true);
     chai.assert(SettingsStatus.Success === filterResult.status, "Return by namespace should work");
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
       const setting: any | undefined = filterResult.settingsMap!.get(`AppUser${settingGuids[iSetting]}`);
@@ -118,7 +117,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
 
     // clean up all the settings.
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
-      const deleteResult: SettingsResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
+      const deleteResult: SettingsResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", `AppUser${settingGuids[iSetting]}`, true);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
   });
@@ -129,15 +128,15 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     const settingName = `AppProjectUser${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, true, projectId);
+    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), `Delete should work or give SettingNotFound for ${settingName} instead returned ${deleteResult.status}.`);
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveUserSetting(requestContext, appProjectUserSetting, "TestSettings", settingName, true, projectId);
+    const saveResult: SettingsResult = await settingsClient.saveUserSetting(accessToken, appProjectUserSetting, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === saveResult.status, `Save should work for ${settingName}.`);
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, true, projectId);
+    const getResult: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, `Retrieval should work for ${settingName}.`);
     chai.assert(getResult.setting, `Setting should be returned for ${settingName}.`);
     chai.expect(getResult.setting.appString).equals(appProjectUserSetting.appString);
@@ -148,9 +147,9 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     appProjectUserSetting.appString = "new Application Project User String";
     appProjectUserSetting.appNumber = 8;
     appProjectUserSetting.appArray.splice(2, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(requestContext, appProjectUserSetting, "TestSettings", settingName, true, projectId);
+    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(accessToken, appProjectUserSetting, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, true, projectId);
+    const getResult2: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.appString).equals(appProjectUserSetting.appString);
@@ -158,7 +157,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.appArray, appProjectUserSetting.appArray), "retrieved array contents correct");
 
     // Clean up the setting
-    deleteResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, true, projectId);
+    deleteResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -168,15 +167,15 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     const settingName = `AppIModelUser${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), `Delete should work or give SettingNotFound for ${settingName} instead returned ${deleteResult.status}.`);
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveUserSetting(requestContext, appIModelUserSetting, "TestSettings", settingName, true, projectId, iModelId);
+    const saveResult: SettingsResult = await settingsClient.saveUserSetting(accessToken, appIModelUserSetting, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, `Retrieval should work, instead returned ${getResult.status}`);
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.appString).equals(appIModelUserSetting.appString);
@@ -187,9 +186,9 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     appIModelUserSetting.appString = "new Application User iModel String";
     appIModelUserSetting.appNumber = 32757;
     appIModelUserSetting.appArray.splice(3, 2);
-    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(requestContext, appIModelUserSetting, "TestSettings", settingName, true, projectId, iModelId);
+    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(accessToken, appIModelUserSetting, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    const getResult2: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.appString).equals(appIModelUserSetting.appString);
@@ -197,7 +196,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.appArray, appIModelUserSetting.appArray), "retrieved array contents correct");
 
     // Clean up the setting
-    deleteResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    deleteResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -207,15 +206,15 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     const settingName = `ProjectUser${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, false, projectId);
+    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), `Delete should work or give SettingNotFound for ${settingName} instead returned ${deleteResult.status}.`);
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveUserSetting(requestContext, projectUserSetting, "TestSettings", settingName, false, projectId);
+    const saveResult: SettingsResult = await settingsClient.saveUserSetting(accessToken, projectUserSetting, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, false, projectId);
+    const getResult: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.projString).equals(projectUserSetting.projString);
@@ -226,9 +225,9 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     projectUserSetting.projString = "new Project User String";
     projectUserSetting.projNumber = 8;
     projectUserSetting.projArray.splice(2, 2);
-    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(requestContext, projectUserSetting, "TestSettings", settingName, false, projectId);
+    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(accessToken, projectUserSetting, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, false, projectId);
+    const getResult2: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.projString).equals(projectUserSetting.projString);
@@ -236,7 +235,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.projArray, projectUserSetting.projArray), "retrieved array contents correct");
 
     // Clean up the setting
-    deleteResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, false, projectId);
+    deleteResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -246,15 +245,15 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     const settingName = `IModelUser${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    let deleteResult: SettingsResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveUserSetting(requestContext, iModelUserSetting, "TestSettings", settingName, false, projectId, iModelId);
+    const saveResult: SettingsResult = await settingsClient.saveUserSetting(accessToken, iModelUserSetting, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.iModelString).equals(iModelUserSetting.iModelString);
@@ -265,9 +264,9 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     iModelUserSetting.iModelString = "new iModel User String";
     iModelUserSetting.iModelNumber = 327;
     iModelUserSetting.iModelArray.splice(2, 2);
-    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(requestContext, iModelUserSetting, "TestSettings", settingName, false, projectId, iModelId);
+    const saveResult2: SettingsResult = await settingsClient.saveUserSetting(accessToken, iModelUserSetting, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    const getResult2: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.iModelString).equals(iModelUserSetting.iModelString);
@@ -275,7 +274,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.iModelArray, iModelUserSetting.iModelArray), "retrieved array contents correct");
 
     // Clean up the setting
-    deleteResult = await settingsClient.deleteUserSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    deleteResult = await settingsClient.deleteUserSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 });
@@ -284,16 +283,16 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let settingsClient: ConnectSettingsClient;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
     settingsClient = new ConnectSettingsClient("1001");
 
-    requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
+    accessToken = await TestConfig.getAccessToken(TestUsers.super);
 
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
+    projectId = (await TestConfig.getITwinByName(accessToken, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
-    iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
+    iModelId = (await TestConfig.queryIModel(accessToken, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
   });
 
@@ -302,22 +301,22 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     const independentAppSetting = { stringValue: "App independence test", numberValue: 82919, arrayValue: [10, 14, 84, 1, 8, 87, 5, 13, 90, 7, 13, 92] };
     const settingName = `AppUser${settingGuids[0]}`;
 
-    let deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true);
+    let deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save the new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, independentAppSetting, "TestSettings", settingName, true);
+    const saveResult: SettingsResult = await settingsClient.saveSetting(accessToken, independentAppSetting, "TestSettings", settingName, true);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.stringValue).equals(independentAppSetting.stringValue);
     chai.expect(getResult.setting.numberValue).equals(independentAppSetting.numberValue);
     chai.assert(arraysEqual(getResult.setting.arrayValue, independentAppSetting.arrayValue), "retrieved array contents correct");
 
-    deleteResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true);
+    deleteResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -326,15 +325,15 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     const settingName = `AppSetting${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    const deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true);
+    const deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, appSetting, "TestSettings", settingName, true);
+    const saveResult: SettingsResult = await settingsClient.saveSetting(accessToken, appSetting, "TestSettings", settingName, true);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.appString).equals(appSetting.appString);
@@ -344,9 +343,9 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     // change the value of an existing setting
     appSetting.appString = "new Application String";
     appSetting.appArray.splice(2, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveSetting(requestContext, appSetting, "TestSettings", settingName, true);
+    const saveResult2: SettingsResult = await settingsClient.saveSetting(accessToken, appSetting, "TestSettings", settingName, true);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true);
+    const getResult2: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.appString).equals(appSetting.appString);
@@ -361,15 +360,15 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     const settingName = `AppProjectSetting${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true, projectId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, projectAppSetting, "TestSettings", settingName, true, projectId);
+    const saveResult: SettingsResult = await settingsClient.saveSetting(accessToken, projectAppSetting, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true, projectId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.projAppString).equals(projectAppSetting.projAppString);
@@ -380,9 +379,9 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     projectAppSetting.projAppString = "new Project Application String";
     projectAppSetting.projAppNumber = 1578;
     projectAppSetting.projAppArray.splice(2, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveSetting(requestContext, projectAppSetting, "TestSettings", settingName, true, projectId);
+    const saveResult2: SettingsResult = await settingsClient.saveSetting(accessToken, projectAppSetting, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true, projectId);
+    const getResult2: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.projAppString).equals(projectAppSetting.projAppString);
@@ -390,7 +389,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.projAppArray, projectAppSetting.projAppArray), "retrieved array contents correct");
 
     // Clean up
-    deleteResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true, projectId);
+    deleteResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -400,15 +399,15 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     const settingName = `AppIModelSettings${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, iModelAppSetting, "TestSettings", settingName, true, projectId, iModelId);
+    const saveResult: SettingsResult = await settingsClient.saveSetting(accessToken, iModelAppSetting, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.iModelAppString).equals(iModelAppSetting.iModelAppString);
@@ -419,9 +418,9 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     iModelAppSetting.iModelAppString = "new IModel Application String";
     iModelAppSetting.iModelAppNumber = 1578;
     iModelAppSetting.iModelAppArray.splice(2, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveSetting(requestContext, iModelAppSetting, "TestSettings", settingName, true, projectId, iModelId);
+    const saveResult2: SettingsResult = await settingsClient.saveSetting(accessToken, iModelAppSetting, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    const getResult2: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.iModelAppString).equals(iModelAppSetting.iModelAppString);
@@ -429,7 +428,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.iModelAppArray, iModelAppSetting.iModelAppArray), "retrieved array contents correct");
 
     // Clean up
-    deleteResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    deleteResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -445,19 +444,19 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
 
     // start by deleting the settings we're going to create.
     for (let iSetting = 0; iSetting < 5; iSetting++) {
-      const deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
+      const deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
 
     // save new settings (deleted above, so we know they are new)
     for (let iSetting = 0; iSetting < 5; iSetting++) {
-      const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, projectSettings[iSetting], "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
+      const saveResult: SettingsResult = await settingsClient.saveSetting(accessToken, projectSettings[iSetting], "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
     }
 
     // read back the result.
     for (let iSetting = 0; iSetting < 5; iSetting++) {
-      const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
+      const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
       chai.assert(getResult.setting, "Setting should be returned");
       chai.expect(getResult.setting.projString).equals(projectSettings[iSetting].projString);
@@ -469,9 +468,9 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     projectSettings[1].projString = "new Project String";
     projectSettings[1].projNumber = 1578;
     projectSettings[1].projArray.splice(2, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveSetting(requestContext, projectSettings[1], "TestSettings", `ProjectSettings${settingGuids[1]}`, false, projectId);
+    const saveResult2: SettingsResult = await settingsClient.saveSetting(accessToken, projectSettings[1], "TestSettings", `ProjectSettings${settingGuids[1]}`, false, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[1]}`, false, projectId);
+    const getResult2: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", `ProjectSettings${settingGuids[1]}`, false, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.projString).equals(projectSettings[1].projString);
@@ -479,7 +478,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.projArray, projectSettings[1].projArray), "retrieved array contents correct");
 
     // now try getting all the Project settings by namespace
-    const filterResult: SettingsMapResult = await settingsClient.getSettingsByNamespace(requestContext, "TestSettings", false, projectId);
+    const filterResult: SettingsMapResult = await settingsClient.getSettingsByNamespace(accessToken, "TestSettings", false, projectId);
     chai.assert(SettingsStatus.Success === filterResult.status, "Return by namespace should work");
     for (let iSetting: number = 0; iSetting < 5; iSetting++) {
       const settingName = `ProjectSettings${settingGuids[iSetting]}`;
@@ -492,7 +491,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
 
     // Clean up
     for (let iSetting = 0; iSetting < 5; iSetting++) {
-      const deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
+      const deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
   });
@@ -503,15 +502,15 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     const settingName = `IModelSettings${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, iModelSetting, "TestSettings", settingName, false, projectId, iModelId);
+    const saveResult: SettingsResult = await settingsClient.saveSetting(accessToken, iModelSetting, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.iModelString).equals(iModelSetting.iModelString);
@@ -522,9 +521,9 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     iModelSetting.iModelString = "new IModel String";
     iModelSetting.iModelNumber = 1578;
     iModelSetting.iModelArray.splice(3, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveSetting(requestContext, iModelSetting, "TestSettings", settingName, false, projectId, iModelId);
+    const saveResult2: SettingsResult = await settingsClient.saveSetting(accessToken, iModelSetting, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    const getResult2: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.iModelString).equals(iModelSetting.iModelString);
@@ -532,7 +531,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.iModelArray, iModelSetting.iModelArray), "retrieved array contents correct");
 
     // Clean up
-    deleteResult = await settingsClient.deleteSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    deleteResult = await settingsClient.deleteSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 });
@@ -541,19 +540,19 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   let settingsClient: ConnectSettingsClient;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
     settingsClient = new ConnectSettingsClient("1001");
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    accessToken = await TestConfig.getAccessToken();
 
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
+    projectId = (await TestConfig.getITwinByName(accessToken, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
-    iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
+    iModelId = (await TestConfig.queryIModel(accessToken, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
 
     // Setup settings if they do not already exist -- We do not delete these settings since they will be shared by multiple concurrent test runs.
-    const adminContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
+    const adminContext = await TestConfig.getAccessToken(TestUsers.super);
     await settingsClient.saveSetting(adminContext, { appString: "new Application String" }, "TestSettings", "AppSetting", true);
     await settingsClient.saveSetting(adminContext, { projAppString: "new Project Application String" }, "TestSettings", "AppProjectSetting", true, projectId);
     await settingsClient.saveSetting(adminContext, { iModelAppString: "new IModel Application String" }, "TestSettings", "AppIModelSettings", true, projectId, iModelId);
@@ -563,7 +562,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
 
   // Application Setting
   it("should successfully retrieve an Application Setting (#integration)", async () => {
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "AppSetting", true);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", "AppSetting", true);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.appString).equals("new Application String");
@@ -572,7 +571,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   // Application/Project Setting
   it("should successfully retrieve a Project/Application Setting (#integration)", async () => {
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "AppProjectSetting", true, projectId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", "AppProjectSetting", true, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.projAppString).equals("new Project Application String");
@@ -581,7 +580,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   // Application/IModel Setting
   it("should successfully retrieve an iModel/Application Setting (#integration)", async () => {
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "AppIModelSettings", true, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", "AppIModelSettings", true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.iModelAppString).equals("new IModel Application String");
@@ -590,7 +589,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   // Project Setting (application independent)
   it("should successfully retrieve a Project Setting (Application independent)  (#integration)", async () => {
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "ProjectSettings1", false, projectId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", "ProjectSettings1", false, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.projString).equals("new Project String");
@@ -599,7 +598,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   // IModel Setting (application independent)
   it("should successfully retrieve an iModel Setting (Application independent) (#integration)", async () => {
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "IModelSettings", false, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getSetting(accessToken, "TestSettings", "IModelSettings", false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.iModelString).equals("new IModel String");
@@ -611,14 +610,14 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    accessToken = await TestConfig.getAccessToken();
 
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
+    projectId = (await TestConfig.getITwinByName(accessToken, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
-    iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
+    iModelId = (await TestConfig.queryIModel(accessToken, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
   });
 
@@ -630,15 +629,15 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     const settingName = `AppProjectShared${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, true, projectId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, appProjectSharedSetting, "TestSettings", settingName, true, projectId);
+    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(accessToken, appProjectSharedSetting, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, true, projectId);
+    const getResult: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.appString).equals(appProjectSharedSetting.appString);
@@ -649,9 +648,9 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     appProjectSharedSetting.appString = "new Application Project Shared String";
     appProjectSharedSetting.appNumber = 8;
     appProjectSharedSetting.appArray.splice(2, 1);
-    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(requestContext, appProjectSharedSetting, "TestSettings", settingName, true, projectId);
+    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(accessToken, appProjectSharedSetting, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, true, projectId);
+    const getResult2: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.appString).equals(appProjectSharedSetting.appString);
@@ -659,7 +658,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.appArray, appProjectSharedSetting.appArray), "retrieved array contents correct");
 
     // Clean up
-    deleteResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, true, projectId);
+    deleteResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, true, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -669,15 +668,15 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     const settingName = `AppIModelShared${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, appIModelSharedSetting, "TestSettings", settingName, true, projectId, iModelId);
+    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(accessToken, appIModelSharedSetting, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.appString).equals(appIModelSharedSetting.appString);
@@ -688,9 +687,9 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     appIModelSharedSetting.appString = "new Application Shared iModel String";
     appIModelSharedSetting.appNumber = 32757;
     appIModelSharedSetting.appArray.splice(3, 2);
-    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(requestContext, appIModelSharedSetting, "TestSettings", settingName, true, projectId, iModelId);
+    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(accessToken, appIModelSharedSetting, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    const getResult2: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.appString).equals(appIModelSharedSetting.appString);
@@ -698,7 +697,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.appArray, appIModelSharedSetting.appArray), "retrieved array contents correct");
 
     // start by deleting the setting we're going to create.
-    deleteResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, true, projectId, iModelId);
+    deleteResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, true, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -708,15 +707,15 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     const settingName = `ProjectShared${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, false, projectId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, projectSharedSetting, "TestSettings", settingName, false, projectId);
+    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(accessToken, projectSharedSetting, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, false, projectId);
+    const getResult: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.projString).equals(projectSharedSetting.projString);
@@ -727,9 +726,9 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     projectSharedSetting.projString = "new Project Shared String";
     projectSharedSetting.projNumber = 8;
     projectSharedSetting.projArray.splice(2, 2);
-    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(requestContext, projectSharedSetting, "TestSettings", settingName, false, projectId);
+    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(accessToken, projectSharedSetting, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, false, projectId);
+    const getResult2: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.projString).equals(projectSharedSetting.projString);
@@ -737,7 +736,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.projArray, projectSharedSetting.projArray), "retrieved array contents correct");
 
     // Clean up
-    deleteResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, false, projectId);
+    deleteResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, false, projectId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -747,15 +746,15 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     const settingName = `IModelShared${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
-    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    let deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
 
     // save a new setting (deleted above, so we know it's new)
-    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, iModelSharedSetting, "TestSettings", settingName, false, projectId, iModelId);
+    const saveResult: SettingsResult = await settingsClient.saveSharedSetting(accessToken, iModelSharedSetting, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
 
     // read back the result.
-    const getResult: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    const getResult: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
     chai.expect(getResult.setting.iModelString).equals(iModelSharedSetting.iModelString);
@@ -766,9 +765,9 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     iModelSharedSetting.iModelString = "new iModel Shared String";
     iModelSharedSetting.iModelNumber = 327;
     iModelSharedSetting.iModelArray.splice(2, 2);
-    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(requestContext, iModelSharedSetting, "TestSettings", settingName, false, projectId, iModelId);
+    const saveResult2: SettingsResult = await settingsClient.saveSharedSetting(accessToken, iModelSharedSetting, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
-    const getResult2: SettingsResult = await settingsClient.getSharedSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    const getResult2: SettingsResult = await settingsClient.getSharedSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
     chai.expect(getResult2.setting.iModelString).equals(iModelSharedSetting.iModelString);
@@ -776,7 +775,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(arraysEqual(getResult2.setting.iModelArray, iModelSharedSetting.iModelArray), "retrieved array contents correct");
 
     // clean up
-    deleteResult = await settingsClient.deleteSharedSetting(requestContext, "TestSettings", settingName, false, projectId, iModelId);
+    deleteResult = await settingsClient.deleteSharedSetting(accessToken, "TestSettings", settingName, false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
   });
 
@@ -789,19 +788,19 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
 
     // start by deleting the settings we are going to create.
     for (let iSetting = 0; iSetting < 42; ++iSetting) {
-      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "NamespaceTest", `ManySettings${iSetting}`, false, projectId, iModelId);
+      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(accessToken, "NamespaceTest", `ManySettings${iSetting}`, false, projectId, iModelId);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
 
     // now create many settings.
     for (let iSetting = 0; iSetting < 40; ++iSetting) {
       const newSetting: any = { testString: `Setting${iSetting}`, value: iSetting };
-      const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, newSetting, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
+      const saveResult: SettingsResult = await settingsClient.saveSharedSetting(accessToken, newSetting, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
       chai.assert((SettingsStatus.Success === saveResult.status), `Save of ManySettings${iSetting} should work`);
     }
 
     // now read back the (hopefully 40) settings by namespace and check them.
-    let readResult: SettingsMapResult = await settingsClient.getSharedSettingsByNamespace(requestContext, "NamespaceTest", false, projectId, iModelId);
+    let readResult: SettingsMapResult = await settingsClient.getSharedSettingsByNamespace(accessToken, "NamespaceTest", false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === readResult.status), "Reading settings by namespace 'NamespaceTest' should work");
     chai.assert(((undefined !== readResult.settingsMap) && (40 <= readResult.settingsMap.size)), "NamespaceTest should contain at least 40 settings"); // Re-use this namespace for all test runs so there may be more than the 40 we added in this test run
     for (let iSetting = 0; iSetting < 40; iSetting++) {
@@ -812,12 +811,12 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     // add two more and read again.
     for (let iSetting = 40; iSetting < 42; ++iSetting) {
       const newSetting: any = { testString: `Setting${iSetting}`, value: iSetting };
-      const saveResult: SettingsResult = await settingsClient.saveSharedSetting(requestContext, newSetting, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
+      const saveResult: SettingsResult = await settingsClient.saveSharedSetting(accessToken, newSetting, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
       chai.assert((SettingsStatus.Success === saveResult.status), `Save of ManySettings${iSetting} should work`);
     }
 
     // now read back the now (hopefully 42) settings by namespace and check them again/
-    readResult = await settingsClient.getSharedSettingsByNamespace(requestContext, "NamespaceTest", false, projectId, iModelId);
+    readResult = await settingsClient.getSharedSettingsByNamespace(accessToken, "NamespaceTest", false, projectId, iModelId);
     chai.assert((SettingsStatus.Success === readResult.status), "Reading settings by namespace 'NamespaceTest' should work");
     chai.assert(((undefined !== readResult.settingsMap) && (42 <= readResult.settingsMap.size)), "NamespaceTest should contain at least 42 settings"); // Re-use this namespace for all test runs so there may be more than the 40 we added in this test run
     for (let iSetting = 0; iSetting < 42; iSetting++) {
@@ -827,7 +826,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
 
     // Clean up
     for (let iSetting = 0; iSetting < 42; ++iSetting) {
-      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
+      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(accessToken, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
       chai.assert(SettingsStatus.Success === deleteResult.status, "Delete should work or give SettingNotFound");
     }
   });
@@ -838,14 +837,14 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    accessToken = await TestConfig.getAccessToken();
 
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
+    projectId = (await TestConfig.getITwinByName(accessToken, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
-    iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
+    iModelId = (await TestConfig.queryIModel(accessToken, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
   });
 
@@ -855,7 +854,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
 
     // read back the AppUser results.
     for (let iSetting: number = 0; iSetting < 6; iSetting++) {
-      const getResult: SettingsResult = await settingsClient.getUserSetting(requestContext, "TestSettings", "AppUser1", true);
+      const getResult: SettingsResult = await settingsClient.getUserSetting(accessToken, "TestSettings", "AppUser1", true);
       chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
       chai.assert(getResult.setting, "Setting should be returned");
       chai.expect(getResult.setting.appString).equals(appUserSettings.appString);

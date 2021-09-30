@@ -4,11 +4,10 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { IDisposable } from '@bentley/bentleyjs-core';
+import { BeEvent } from '@itwin/core-bentley';
+import { IDisposable } from '@itwin/core-bentley';
 import { Logger } from 'oidc-client';
 import { User } from 'oidc-client';
 import { UserManager } from 'oidc-client';
@@ -48,6 +47,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     checkSessionStatus(): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
+    // (undocumented)
+    protected _expiresAt?: Date;
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     protected getUserManager(): Promise<UserManager>;
@@ -68,7 +69,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     protected _onUserLoaded: (user: User) => void;
     protected _onUserSignedOut: () => void;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;
@@ -126,8 +127,8 @@ export class BrowserAuthorizationLogger implements Logger {
 export interface FrontendAuthorizationClient extends AuthorizationClient {
     readonly hasSignedIn: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext?: ClientRequestContext): Promise<void>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
 }
 
 // @beta

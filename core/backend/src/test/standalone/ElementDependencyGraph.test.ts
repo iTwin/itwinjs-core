@@ -7,15 +7,15 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {

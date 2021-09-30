@@ -5,11 +5,11 @@
 
 import * as chai from "chai";
 import * as path from "path";
-import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 import * as fs from "fs";
+import { AccessToken } from "@itwin/core-bentley";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -33,7 +33,7 @@ chai.should();
 describe("DelegationAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
-  let jwt: AccessToken;
+  let jwt: AccessToken | undefined;
 
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
@@ -77,8 +77,8 @@ describe("DelegationAuthorizationClient (#integration)", () => {
       throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
 
     const delegationJwt = await delegationClient.getJwtFromJwt(jwt);
-    await validator.validateITwinClientAccess(delegationJwt);
-    await validator.validateIModelHubAccess(delegationJwt);
+    await validator.validateITwinClientAccess(delegationJwt ?? "");
+    await validator.validateIModelHubAccess(delegationJwt ?? "");
   });
 
 });

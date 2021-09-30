@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeImageLoader } from "../../ui-components/tree/ImageLoader";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { TreeImageLoader } from "../../components-react/tree/ImageLoader";
 
 describe("TreeImageLoader", () => {
   const imageLoader = new TreeImageLoader();

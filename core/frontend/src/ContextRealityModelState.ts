@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance } from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";

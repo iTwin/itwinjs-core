@@ -1,0 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/text/mixins";
+
+@mixin uicore-text-block {
+  @include iui-text(body);
+  @include iui-text-block-spacing;
+}

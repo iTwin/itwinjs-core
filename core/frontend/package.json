@@ -1,22 +1,22 @@
 {
-  "name": "@bentley/imodeljs-frontend",
-  "version": "3.0.0-dev.69",
-  "description": "iModel.js frontend components",
-  "main": "lib/imodeljs-frontend.js",
-  "typings": "lib/imodeljs-frontend",
+  "name": "@itwin/core-frontend",
+  "version": "3.0.0-dev.72",
+  "description": "iTwin.js frontend components",
+  "main": "lib/core-frontend.js",
+  "typings": "lib/core-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s copy:assets && npm run -s pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
-    "extract-api": "betools extract-api --entry=imodeljs-frontend",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
+    "extract-api": "betools extract-api --entry=core-frontend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "test": "npm run webpackTests && certa -r chrome",
-    "cover": "npm test -- --cover",
+    "test": "npm run -s webpackTests && certa -r chrome",
+    "cover": "npm -s test -- --cover",
     "test:debug": "certa -r chrome --debug",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
@@ -36,41 +36,41 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.69",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.69",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.69",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.69",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.69",
-    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.69",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.69",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.69",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.69",
-    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.69"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.72",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.72",
+    "@itwin/core-common": "workspace:^3.0.0-dev.72",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.72",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.72",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.72",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.72",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.72",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.72",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.72",
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.72"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/orbitgt-core": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/webgl-compatibility": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
@@ -92,7 +92,7 @@
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+    "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
     "fuse.js": "^3.3.0",
@@ -101,15 +101,15 @@
     "xml-js": "~1.6.11"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@bentley/no-internal-barrel-imports": [
+      "@itwin/no-internal-barrel-imports": [
         "error",
         {
           "required-barrel-modules": [
@@ -127,7 +127,7 @@
           "**/test/**/*.tsx"
         ],
         "rules": {
-          "@bentley/no-internal-barrel-imports": "off"
+          "@itwin/no-internal-barrel-imports": "off"
         }
       }
     ]

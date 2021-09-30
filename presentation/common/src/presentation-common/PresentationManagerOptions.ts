@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { Id64String } from "@itwin/core-bentley";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";

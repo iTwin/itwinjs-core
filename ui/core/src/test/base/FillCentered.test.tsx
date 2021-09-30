@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { FillCentered } from "../../ui-core";
+import { FillCentered } from "../../core-react";
 
 describe("<FillCentered />", () => {
   it("should render", () => {

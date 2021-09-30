@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Button, ButtonSize, ButtonType } from "../../ui-core/button/Button";
+import { Button, ButtonSize, ButtonType } from "../../core-react/button/Button";
 
 /* eslint-disable deprecation/deprecation */
 

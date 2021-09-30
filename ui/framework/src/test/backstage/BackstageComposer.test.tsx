@@ -8,9 +8,9 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   BackstageItem, BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
-} from "@bentley/ui-abstract";
-import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
-import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework";
+} from "@itwin/appui-abstract";
+import { Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
+import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 import { act } from "@testing-library/react";

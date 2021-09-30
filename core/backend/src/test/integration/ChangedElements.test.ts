@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, GuidString, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import { IModelError, IModelVersion } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
-import { AuthorizedBackendRequestContext } from "../../BackendRequestContext";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { ChangedElementsDb, ProcessChangesetOptions } from "../../ChangedElementsDb";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
@@ -18,12 +17,12 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 describe("ChangedElements (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
   let testITwinId: GuidString;
   let testIModelId: GuidString;
 
   before(async () => {
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { isLetter } from "../../ui-abstract";
+import { isLetter } from "../../appui-abstract";
 
 describe("isLetter", () => {
   it("should return true for lower-case letters", () => {

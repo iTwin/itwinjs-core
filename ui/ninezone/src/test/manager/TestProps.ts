@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { getDefaultZonesManagerProps, WidgetZoneId, ZonesManagerProps } from "../../ui-ninezone";
+import { getDefaultZonesManagerProps, WidgetZoneId, ZonesManagerProps } from "../../appui-layout-react";
 import { getDefaultProps as getDefaultNestedStagePanelsProps } from "./NestedStagePanels.test";
 
 export namespace NineZoneManagerTestProps {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { getDisplayName } from "../../ui-core";
+import { getDisplayName } from "../../core-react";
 
 describe("getDisplayName", () => {
   class DisplayNameComponentDisplayName extends React.Component {

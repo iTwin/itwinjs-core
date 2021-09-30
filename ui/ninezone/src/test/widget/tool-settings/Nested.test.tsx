@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { NestedToolSettings } from "../../../ui-ninezone";
+import { NestedToolSettings } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<NestedToolSettings />", () => {

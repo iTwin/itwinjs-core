@@ -6,11 +6,11 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
-import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolSettingsManager } from "../../../ui-framework";
+} from "@itwin/appui-abstract";
+import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolSettingsManager } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 // cSpell:Ignore USELENGTH
@@ -167,27 +167,27 @@ describe("ToolSettingsManager", () => {
   describe("focusIntoToolSettings", () => {
     it("should return false if no ToolSettings div found", async () => {
       render(<div data-testid="div"></div>);
-      expect (ToolSettingsManager.focusIntoToolSettings()).to.be.false;
+      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.false;
     });
 
     it("should return true if focusable item in docked ToolSettings", async () => {
-      render(<div className="nz-toolSettings-docked"><button/></div>);
-      expect (ToolSettingsManager.focusIntoToolSettings()).to.be.true;
+      render(<div className="nz-toolSettings-docked"><button /></div>);
+      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.true;
     });
 
     it("should return false if no focusable item in docked ToolSettings", async () => {
       render(<div className="nz-toolSettings-docked"></div>);
-      expect (ToolSettingsManager.focusIntoToolSettings()).to.be.false;
+      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.false;
     });
 
     it("should return true if focusable item in floating ToolSettings", async () => {
-      render(<div className="uifw-tool-settings-grid-container"><button/></div>);
-      expect (ToolSettingsManager.focusIntoToolSettings()).to.be.true;
+      render(<div className="uifw-tool-settings-grid-container"><button /></div>);
+      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.true;
     });
 
     it("should return false if no focusable item in floating ToolSettings", async () => {
       render(<div className="uifw-tool-settings-grid-container"></div>);
-      expect (ToolSettingsManager.focusIntoToolSettings()).to.be.false;
+      expect(ToolSettingsManager.focusIntoToolSettings()).to.be.false;
     });
 
     // NEEDSWORK - need tests with real Tool Settings for V1 & V2

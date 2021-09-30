@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Fixed processing of merged content values under nested content field.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

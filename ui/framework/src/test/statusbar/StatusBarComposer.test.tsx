@@ -5,16 +5,16 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
   UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
   StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("StatusBarComposer", () => {

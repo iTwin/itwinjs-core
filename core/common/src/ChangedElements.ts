@@ -6,7 +6,7 @@
  * @packageDocumentation
  * @module Entities
  */
-import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64String } from "@itwin/core-bentley";
 import { AxisAlignedBox3dProps } from "./geometry/Placement";
 
 // cspell:ignore bboxes
@@ -39,7 +39,7 @@ export interface ChangedElements {
   /** ECClass Ids of elements that changed */
   classIds: Id64String[];
   /** Operation that occurred on the element. Whether the element was inserted, updated or deleted.
-   * See [DbOpcode]($bentleyjs-core)
+   * See [DbOpcode]($core-bentley)
    */
   opcodes: DbOpcode[];
   /** Type of change bitflags, see [[TypeOfChange]] */

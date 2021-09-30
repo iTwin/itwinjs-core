@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Outline } from "../../ui-ninezone";
+import { Outline } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<Outline />", () => {

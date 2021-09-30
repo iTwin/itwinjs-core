@@ -293,7 +293,7 @@ class PolyEdge {
   }
   // Assume both normals are unit length.
   // old logic: use difference of (previously computed) normals as perpendicular to bisector.
-  public static makeUnitPerpendicularToBisector(edgeA: PolyEdge, edgeB: PolyEdge, reverse: boolean): Vector3d | undefined{
+  public static makeUnitPerpendicularToBisector(edgeA: PolyEdge, edgeB: PolyEdge, reverse: boolean): Vector3d | undefined {
     let candidate = edgeB.normal.minus(edgeA.normal);
     if (candidate.normalize(candidate) === undefined) {
       candidate = Vector3d.createStartEnd(edgeA.pointA, edgeB.pointB);
@@ -563,7 +563,7 @@ export class ClipShape extends ClipPrimitive {
     const reverse = direction < 0;
     for (let i = 0; i < polygon.length - 1; i++) {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
-      const dir = Vector3d.createStartEnd (polygon[i], polygon[i + 1]);
+      const dir = Vector3d.createStartEnd(polygon[i], polygon[i + 1]);
       const magnitude = dir.magnitude();
       dir.normalize(dir);
       if (magnitude > samePointTolerance) {

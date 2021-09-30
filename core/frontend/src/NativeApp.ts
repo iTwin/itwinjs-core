@@ -6,15 +6,13 @@
  * @module NativeApp
  */
 
-import {
-  AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
-} from "@bentley/bentleyjs-core";
+import { AccessToken, AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+  RequestNewBriefcaseProps, SessionProps, StorageValue, SyncMode,
+} from "@itwin/core-common";
+import { AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
@@ -46,8 +44,9 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(props?: AccessTokenProps) {
-    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
+  public notifyUserStateChanged(accessToken?: AccessToken) {
+    const client = (IModelApp.authorizationClient as NativeAppAuthorization);
+    client?.onUserStateChanged.raiseEvent(accessToken ?? undefined);
   }
 }
 
@@ -59,14 +58,16 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * We must therefore check for expiration and request refreshes as/when necessary.
  * @public
  */
-export class NativeAppAuthorization {
+export class NativeAppAuthorization implements AuthorizationClient {
   private _config?: NativeAppAuthorizationConfiguration;
   private _cachedToken?: AccessToken;
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
-  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
+  public get isAuthorized(): boolean {
+    return this.hasSignedIn;
+  }
 
   /** ctor for NativeAppAuthorization
    * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
@@ -108,10 +109,11 @@ export class NativeAppAuthorization {
       }
 
       this._refreshingToken = true;
-      this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+      this._cachedToken = (await NativeApp.callNativeHost("getAccessToken"));
       this._refreshingToken = false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return this._cachedToken!;
   }
 }
@@ -121,16 +123,7 @@ export class NativeAppAuthorization {
  * @public
  */
 export interface NativeAppOpts extends IpcAppOptions {
-  nativeApp?: {
-    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized.
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    authConfig?: NativeAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    noInitializeAuthClient?: boolean;
-  };
+  nativeApp?: {};
 }
 
 /**
@@ -199,10 +192,10 @@ export class NativeApp {
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
 
-    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig); // eslint-disable-line deprecation/deprecation
+    const auth = new NativeAppAuthorization();
     IModelApp.authorizationClient = auth;
     const connStatus = await NativeApp.checkInternetConnectivity();
-    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online) { // eslint-disable-line deprecation/deprecation
+    if (connStatus === InternetConnectivityStatus.Online) {
       await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
     }
   }

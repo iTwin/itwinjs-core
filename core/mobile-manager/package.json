@@ -1,13 +1,13 @@
 {
-  "name": "@bentley/mobile-manager",
-  "version": "3.0.0-dev.69",
+  "name": "@itwin/mobile-manager",
+  "version": "3.0.0-dev.72",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/mobile-manager/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
@@ -31,28 +31,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.69",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.69",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.69",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.69",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.69",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.72",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.72",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.72",
+    "@itwin/core-common": "workspace:^3.0.0-dev.72",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.72",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.72",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.72",
     "js-base64": "^3.6.1",
     "ws": "^7.5.3"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
@@ -72,8 +72,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

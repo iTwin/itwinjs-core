@@ -6,18 +6,17 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { AccessToken, BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
+} from "@itwin/core-common";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
-} from "@bentley/orbitgt-core";
+} from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -344,8 +343,8 @@ export namespace OrbitGtTileTree {
   }
 
   async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
-      return undefined; // Not signed in
+    if (!IModelApp.authorizationClient)
+      return undefined;
 
     try {
       return await IModelApp.authorizationClient.getAccessToken();

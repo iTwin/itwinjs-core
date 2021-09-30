@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "rework locks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

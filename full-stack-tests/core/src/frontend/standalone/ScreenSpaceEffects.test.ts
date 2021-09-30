@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import {
   IModelApp, Pixel, SnapshotConnection, VaryingType,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 
 describe("Screen-space effects", () => {

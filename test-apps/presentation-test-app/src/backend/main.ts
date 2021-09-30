@@ -6,13 +6,13 @@ import "./SampleRpcImpl"; // just to get the RPC implementation registered
 import { app as electron } from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { RpcInterfaceDefinition } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization.Imports
-import { Presentation, PresentationProps } from "@bentley/presentation-backend";
+import { Presentation, PresentationProps } from "@itwin/presentation-backend";
 // __PUBLISH_EXTRACT_END__
 // eslint-disable-next-line no-duplicate-imports
-import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory, PresentationManagerMode } from "@bentley/presentation-backend";
+import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory, PresentationManagerMode } from "@itwin/presentation-backend";
 import rpcs from "../common/Rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises

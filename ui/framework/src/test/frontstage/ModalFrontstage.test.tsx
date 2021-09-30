@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../ui-framework";
+import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 const navigationBackSpy = sinon.spy();

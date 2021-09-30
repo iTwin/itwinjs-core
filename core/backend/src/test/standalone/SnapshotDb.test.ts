@@ -35,7 +35,7 @@ describe("SnapshotDb.reattachDaemon", () => {
 
     clock.setSystemTime(Date.parse("2021-01-01T00:30:01Z")); // 1 second past half the expiry time
 
-    await checkpoint.reattachDaemon();
+    await checkpoint.reattachDaemon("");
 
     expect(attachStub.calledTwice).to.be.true;
     expect(attachStub.secondCall.firstArg.iTwinId).to.equal("fakeITwinId");
@@ -60,7 +60,7 @@ describe("SnapshotDb.reattachDaemon", () => {
 
     clock.setSystemTime(Date.parse("2021-01-01T00:29:59Z")); // 1 second before half the expiry time
 
-    await checkpoint.reattachDaemon();
+    await checkpoint.reattachDaemon("");
     expect(attachStub.calledOnce).to.be.true;
   });
 
@@ -73,7 +73,7 @@ describe("SnapshotDb.reattachDaemon", () => {
 
     const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset: fakeChangeset });
     const nowStub = sinon.stub(Date, "now");
-    await snapshot.reattachDaemon();
+    await snapshot.reattachDaemon("");
     expect(nowStub.called).to.be.false;
   });
 });
