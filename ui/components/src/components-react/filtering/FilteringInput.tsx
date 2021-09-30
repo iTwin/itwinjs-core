@@ -43,7 +43,6 @@ export interface FilteringInputProps extends CommonProps {
   onFilterClear: () => void;
   /**
    * Tells the component what is the status of filtering.
-   * @public
    */
   status: FilteringInputStatus;
   /**

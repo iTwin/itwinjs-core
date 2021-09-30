@@ -70,17 +70,13 @@ export interface PropertyRendererProps extends SharedRendererProps {
   propertyValueRendererManager?: PropertyValueRendererManager;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-  /** Indicates property is being edited
-   * @public */
+  /** Indicates property is being edited  */
   isEditing?: boolean;
-  /** Called when property edit is committed.
-   * @public */
+  /** Called when property edit is committed. */
   onEditCommit?: (args: PropertyUpdatedArgs) => void;
-  /** Called when property edit is cancelled.
-   * @public */
+  /** Called when property edit is cancelled. */
   onEditCancel?: () => void;
-  /** Props used for highlighting.
-   * @public */
+  /** Props used for highlighting. */
   highlight?: HighlightingComponentProps;
 }
 
