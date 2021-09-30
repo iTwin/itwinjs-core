@@ -91,7 +91,6 @@ export class ThumbnailHandler {
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
-  // SWB What does context mean here?
   private getRelativeContextUrl(iTwinId: string, iModelId: GuidString, size: ThumbnailSize) {
     return `/Repositories/Context--${this._handler.formatITwinIdForUrl(iTwinId)}/ContextScope/${size}Thumbnail/${iModelId.toString()}/$file`;
   }

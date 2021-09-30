@@ -585,7 +585,6 @@ export class RealityDataClient extends WsgClient {
   public async createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, iTwinId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship> {
     const resultRealityDataRelationship: RealityDataRelationship = await this.postInstance<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${iTwinId}/S3MX/RealityDataRelationship`, relationship);
     if (!resultRealityDataRelationship)
-      // SWB What does context mean here?
       throw new Error(`Could not create new reality data relationship between reality data: ${relationship.realityDataId ? relationship.realityDataId : ""} and context: ${relationship.relatedId ? relationship.relatedId : ""}`);
 
     return resultRealityDataRelationship;

@@ -269,7 +269,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
         return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
     }
   }
-  // SWB What does context mean here?
   // app specific, no context, no shared, no user
   public async saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.saveAnySetting(requestContext, true, settings, settingNamespace, settingName, applicationSpecific, false, iTwinId, iModelId);
