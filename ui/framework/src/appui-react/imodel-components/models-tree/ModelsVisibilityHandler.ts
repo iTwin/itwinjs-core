@@ -15,7 +15,6 @@ import { ContentDataProvider, IFilteredPresentationTreeDataProvider, IPresentati
 import { Presentation } from "@itwin/presentation-frontend";
 import { UiFramework } from "../../UiFramework";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
-import { QueryParams } from "@itwin/core-common";
 
 /**
  * Visibility tree node types.
