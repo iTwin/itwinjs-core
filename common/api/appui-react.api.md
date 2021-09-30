@@ -182,7 +182,7 @@ import { ZonesManagerProps } from '@itwin/appui-layout-react';
 import { ZonesManagerWidgetsProps } from '@itwin/appui-layout-react';
 import { ZoneTargetType } from '@itwin/appui-layout-react';
 
-// @public
+// @beta
 export class AccuDrawCommandItems {
     // (undocumented)
     static get bumpToolSetting(): ToolItemDef;
@@ -222,10 +222,10 @@ export class AccuDrawCommandItems {
     static get setOrigin(): ToolItemDef;
 }
 
-// @public
+// @beta
 export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
-// @public
+// @beta
 export interface AccuDrawDialogProps extends CommonProps {
     dialogId: string;
     onClose?: () => void;
@@ -233,11 +233,11 @@ export interface AccuDrawDialogProps extends CommonProps {
     orientation?: Orientation;
 }
 
-// @public
+// @beta
 export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
-// @public
+// @beta
 export class AccuDrawKeyboardShortcuts {
     static getDefaultShortcuts(): KeyboardShortcutProps[];
 }
@@ -260,31 +260,31 @@ export class AccuDrawPopupManager {
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
 }
 
-// @public
+// @beta
 export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> {
 }
 
-// @public
+// @beta
 export interface AccuDrawSetCompassModeEventArgs {
     // (undocumented)
     mode: CompassMode;
 }
 
-// @public
+// @beta
 export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
 }
 
-// @public
+// @beta
 export interface AccuDrawSetFieldFocusEventArgs {
     // (undocumented)
     field: ItemField;
 }
 
-// @public
+// @beta
 export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
 }
 
-// @public
+// @beta
 export interface AccuDrawSetFieldLockEventArgs {
     // (undocumented)
     field: ItemField;
@@ -292,11 +292,11 @@ export interface AccuDrawSetFieldLockEventArgs {
     lock: boolean;
 }
 
-// @public
+// @beta
 export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
 }
 
-// @public
+// @beta
 export interface AccuDrawSetFieldValueFromUiEventArgs {
     // (undocumented)
     field: ItemField;
@@ -304,11 +304,11 @@ export interface AccuDrawSetFieldValueFromUiEventArgs {
     stringValue: string;
 }
 
-// @public
+// @beta
 export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
 }
 
-// @public
+// @beta
 export interface AccuDrawSetFieldValueToUiEventArgs {
     // (undocumented)
     field: ItemField;
@@ -318,7 +318,7 @@ export interface AccuDrawSetFieldValueToUiEventArgs {
     value: number;
 }
 
-// @public
+// @beta
 export interface AccuDrawUiSettings {
     angleBackgroundColor?: ColorDef | string;
     angleForegroundColor?: ColorDef | string;
@@ -347,14 +347,14 @@ export interface AccuDrawUiSettings {
     zStyle?: React_2.CSSProperties;
 }
 
-// @public
+// @beta
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
-// @public
+// @beta
 export function AccuDrawWidget(): JSX.Element;
 
-// @public
+// @beta
 export class AccuDrawWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
@@ -2166,7 +2166,7 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @public
+// @beta
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;

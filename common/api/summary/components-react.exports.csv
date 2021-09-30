@@ -209,7 +209,8 @@ beta;MutableGridCategory
 beta;MutableGridItemFactory 
 beta;MutablePropertyGridModel 
 public;MutableTableDataProvider 
-public;MutableTreeDataProvider 
+beta;MutableTreeDataProvider 
+deprecated;MutableTreeDataProvider 
 public;MutableTreeModel 
 public;MutableTreeModelNode 
 public;NavigationPropertyTypeConverter 

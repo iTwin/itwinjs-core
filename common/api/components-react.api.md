@@ -1988,7 +1988,7 @@ export interface MutableTableDataProvider extends TableDataProvider {
     moveRow(rowItem: RowItem, newIndex: number): number;
 }
 
-// @public
+// @beta @deprecated
 export interface MutableTreeDataProvider extends ITreeDataProvider {
     // (undocumented)
     getNodeIndex(parent: TreeNodeItem | undefined, child: TreeNodeItem): number;

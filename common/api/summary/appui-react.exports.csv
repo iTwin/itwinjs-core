@@ -1,25 +1,25 @@
 sep=;
 Release Tag;API Item
-public;AccuDrawCommandItems
-public;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
-public;AccuDrawDialogProps 
-public;AccuDrawGrabInputFocusEvent 
-public;AccuDrawKeyboardShortcuts
+beta;AccuDrawCommandItems
+beta;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+beta;AccuDrawDialogProps 
+beta;AccuDrawGrabInputFocusEvent 
+beta;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
-public;AccuDrawSetCompassModeEvent 
-public;AccuDrawSetCompassModeEventArgs
-public;AccuDrawSetFieldFocusEvent 
-public;AccuDrawSetFieldFocusEventArgs
-public;AccuDrawSetFieldLockEvent 
-public;AccuDrawSetFieldLockEventArgs
-public;AccuDrawSetFieldValueFromUiEvent 
-public;AccuDrawSetFieldValueFromUiEventArgs
-public;AccuDrawSetFieldValueToUiEvent 
-public;AccuDrawSetFieldValueToUiEventArgs
-public;AccuDrawUiSettings
-public;AccuDrawUiSettingsChangedEvent 
-public;AccuDrawWidget(): JSX.Element
-public;AccuDrawWidgetControl 
+beta;AccuDrawSetCompassModeEvent 
+beta;AccuDrawSetCompassModeEventArgs
+beta;AccuDrawSetFieldFocusEvent 
+beta;AccuDrawSetFieldFocusEventArgs
+beta;AccuDrawSetFieldLockEvent 
+beta;AccuDrawSetFieldLockEventArgs
+beta;AccuDrawSetFieldValueFromUiEvent 
+beta;AccuDrawSetFieldValueFromUiEventArgs
+beta;AccuDrawSetFieldValueToUiEvent 
+beta;AccuDrawSetFieldValueToUiEventArgs
+beta;AccuDrawUiSettings
+beta;AccuDrawUiSettingsChangedEvent 
+beta;AccuDrawWidget(): JSX.Element
+beta;AccuDrawWidgetControl 
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
 public;class ActionButtonItemDef 
@@ -217,7 +217,7 @@ beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
-public;FrameworkAccuDraw 
+beta;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
