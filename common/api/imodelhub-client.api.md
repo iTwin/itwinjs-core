@@ -6,28 +6,20 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { BriefcaseId } from '@bentley/imodeljs-common';
+import { BriefcaseId } from '@itwin/core-common';
 import { CancelRequest } from '@bentley/itwin-client';
-import { ChangesetId } from '@bentley/imodeljs-common';
+import { ChangesetId } from '@itwin/core-common';
 import { Client } from '@bentley/itwin-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
-<<<<<<< HEAD
-import { FrontendHubAccess } from '@bentley/imodeljs-frontend';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { GuidString } from '@bentley/bentleyjs-core';
-import { HttpStatus } from '@bentley/bentleyjs-core';
-import { Id64String } from '@bentley/bentleyjs-core';
-import { IModelHubStatus } from '@bentley/bentleyjs-core';
-import { IModelIdArg } from '@bentley/imodeljs-frontend';
-import { IModelVersion } from '@bentley/imodeljs-common';
-=======
+import { FrontendHubAccess } from '@itwin/core-frontend';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { HttpStatus } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelHubStatus } from '@itwin/core-bentley';
->>>>>>> master
+import { IModelIdArg } from '@itwin/core-frontend';
+import { IModelVersion } from '@itwin/core-common';
 import { ITwin } from '@bentley/context-registry-client';
 import { LogFunction } from '@itwin/core-bentley';
 import { ProgressCallback } from '@bentley/itwin-client';
