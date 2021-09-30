@@ -59,7 +59,7 @@ export class TestUtility {
 
     const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
     await authorizationClient.signIn();
-    const accessToken = (await authorizationClient.getAccessToken());
+    const accessToken = (await authorizationClient.getAccessToken())!;
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
       await this.imodelCloudEnv.bootstrapIModelBankProject(accessToken, testContextName);
     }

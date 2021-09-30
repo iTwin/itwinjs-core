@@ -186,7 +186,7 @@ export class UiFramework {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
     if (isFrontendAuthorizationClient(oidcClient)) {
-      oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
+      oidcClient.onAccessTokenChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
@@ -560,8 +560,8 @@ export class UiFramework {
   };
 
   // istanbul ignore next
-  private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
-    if (accessToken === undefined) {
+  private static _handleUserStateChanged = (accessToken: AccessToken) => {
+    if (accessToken === "") {
       ConfigurableUiManager.closeUi();
     }
   };

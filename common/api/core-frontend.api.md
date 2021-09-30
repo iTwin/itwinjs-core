@@ -2327,8 +2327,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     attachRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
     get backgroundColor(): ColorDef;
     set backgroundColor(val: ColorDef);
-    // @internal (undocumented)
-    get backgroundMapBase(): BaseLayerSettings | undefined;
+    // @beta (undocumented)
+    get backgroundMapBase(): BaseLayerSettings;
+    set backgroundMapBase(base: BaseLayerSettings);
     // @internal (undocumented)
     get backgroundMapElevationBias(): number | undefined;
     // @internal (undocumented)
@@ -2340,15 +2341,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     // @internal (undocumented)
-    changeBaseMapProps(props: MapLayerProps | ColorDef): void;
-    // @internal (undocumented)
     changeBaseMapTransparency(transparency: number): void;
     // (undocumented)
     changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string): void;
     // @internal (undocumented)
-    changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean): void;
+    changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean): void;
     // (undocumented)
-    changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
+    changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean): void;
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
@@ -4260,6 +4259,7 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
+    static getAccessToken(): Promise<AccessToken>;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     // @internal
@@ -6484,7 +6484,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
 }

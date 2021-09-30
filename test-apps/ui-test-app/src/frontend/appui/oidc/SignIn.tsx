@@ -51,7 +51,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
     // istanbul ignore if
     if (this._oidcClient)
-      this._oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+      this._oidcClient.onAccessTokenChanged.addListener(this._onUserStateChanged);
   }
 
   // istanbul ignore next
@@ -64,7 +64,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   public override componentWillUnmount() {
     // istanbul ignore next
     if (this._oidcClient)
-      this._oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+      this._oidcClient.onAccessTokenChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {

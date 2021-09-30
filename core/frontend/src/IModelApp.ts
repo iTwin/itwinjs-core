@@ -485,7 +485,11 @@ export class IModelApp {
    * returned by this method may change over time throughout the course of a session.
    */
   public static async getAccessToken(): Promise<AccessToken> {
-    return (await this.authorizationClient?.getAccessToken()) ?? "";
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
   }
 
   /** @internal */
