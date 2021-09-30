@@ -43,9 +43,7 @@ export class CheckpointConnection extends IModelConnection {
    */
   public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new Error("Unable to get a valid access token. An access token is required to open a remote iModel Connection. Please configure IModelApp.authorization with a valid implementation.");
+    const accessToken = await IModelApp.getAccessToken();
 
     if (undefined === IModelApp.hubAccess)
       throw new Error("Missing an implementation of FrontendHubAccess on IModelApp, it is required to open a remote iModel Connection. Please provide an implementation to the IModelApp.startup using IModelAppOptions.hubAccess.");

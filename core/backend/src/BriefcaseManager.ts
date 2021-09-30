@@ -423,15 +423,8 @@ export class BriefcaseManager {
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
-      let accessToken = arg.accessToken;
       try {
-        // Refresh the access token since this process can take time
-        if (accessToken) {
-          const auth = IModelHost.authorizationClient;
-          if (auth)
-            accessToken = await auth.getAccessToken();
-        }
-
+        const accessToken = await IModelHost.getAccessToken();
         const index = await IModelHost.hubAccess.pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();

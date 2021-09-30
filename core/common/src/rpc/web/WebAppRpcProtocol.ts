@@ -80,7 +80,7 @@ export interface HttpServerResponse extends Writable {
 }
 
 /** The HTTP application protocol.
- * @public
+ * @internal
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
   public override preserveStreams = true;

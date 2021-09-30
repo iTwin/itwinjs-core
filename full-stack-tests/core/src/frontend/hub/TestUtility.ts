@@ -75,22 +75,22 @@ export class TestUtility {
   }
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const iTwin: ITwin = await this.itwinPlatformEnv.contextMgr.getITwinByName(accessToken, contextName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
     return iModelId!;
   }
 
-  /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
+  /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const briefcaseIds = await this.itwinPlatformEnv.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
 
     if (briefcaseIds.length > acquireThreshold) {
