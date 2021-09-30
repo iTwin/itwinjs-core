@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { BlobConfig, BlobConfigBuilder, BlobRequest, BlobResponse, Range, RequestExecutor, RequestKind, ResponseError } from "./ConcurrentQuery";
+import { BlobConfig, BlobConfigBuilder, BlobRequest, BlobResponse, Range, RequestExecutor, RequestKind, ConcurrentQueryError } from "./ConcurrentQuery";
 /** @beta */
 export class Uint8Chunks implements Iterable<Uint8Array> {
   private _chunks: Uint8Array[] = [];
@@ -59,7 +59,7 @@ export class BlobReader {
     };
     request.range = {offset: this._chunks.length, count: this.range ? this._lengthToRead - this._chunks.length : 0};
     const resp = await this._executor.execute(request);
-    ResponseError.throwIfError(resp, request);
+    ConcurrentQueryError.throwIfError(resp, request);
 
     if (this._lengthToRead === -1) {
       this._lengthToRead = resp.rawBlobSize;
