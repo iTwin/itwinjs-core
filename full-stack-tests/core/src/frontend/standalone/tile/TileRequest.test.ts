@@ -65,7 +65,7 @@ describe("IModelTileRequestChannels", () => {
       await IModelApp.shutdown();
     });
 
-    function getTile() {
+    async function getTile() {
       return getTileForIModel(imodel);
     }
 
@@ -149,7 +149,7 @@ describe("IModelTileRequestChannels", () => {
       await IModelApp.shutdown();
     });
 
-    function getTile() {
+    async function getTile() {
       return getTileForIModel(imodel);
     }
 
@@ -228,8 +228,7 @@ describe("IModelTileRequestChannels", () => {
       if (undefined === a.contentRange)
         expect(b.contentRange).to.be.undefined;
       else
-        expect(a.contentRange!.isAlmostEqual(b.contentRange!)).to.be.true;
-
+        expect(a.contentRange.isAlmostEqual(b.contentRange!)).to.be.true;
 
       expect(a.graphic).not.to.be.undefined;
       expect(b.graphic).not.to.be.undefined;
@@ -286,7 +285,6 @@ describe("IModelTileRequestChannels", () => {
 
     it("is not used again after cache miss", async () => {
       const tile = await getTile();
-      const channel = getChannel();
 
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
@@ -305,7 +303,6 @@ describe("IModelTileRequestChannels", () => {
 
     it("marks tile as failed if not content is produced", async () => {
       const tile = await getTile();
-      const channel = getChannel();
 
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
