@@ -70,7 +70,7 @@ export class I18N implements Localization {
             renderFunction(error, t);
           resolve();
         })
-        .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
+        .changeLanguage(isDevelopment ? "en" : undefined as any, undefined);
       // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
     });
 
