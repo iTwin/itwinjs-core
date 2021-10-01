@@ -183,10 +183,10 @@ export class SampleAppIModelApp {
     const iModelAppOpts = {
       ...opts.iModelApp,
       localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
-    }
+    };
 
     if (ProcessDetector.isElectronAppFrontend) {
-      await ElectronApp.startup(opts);
+      await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
