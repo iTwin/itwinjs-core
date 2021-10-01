@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 /** @packageDocumentation
  * @module PropertyGrid
  */
+
+import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { IDisposable } from "@itwin/core-bentley";
 import { HighlightInfo } from "../../common/HighlightingComponentProps";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
