@@ -6,11 +6,12 @@
  * @module Core
  */
 
+import { IModelHost, IpcHost } from "@itwin/core-backend";
 import { DisposeFunc, Logger } from "@itwin/core-bentley";
-import { IModelHost } from "@itwin/core-backend";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
+import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { TemporaryStorage } from "./TemporaryStorage";
@@ -87,6 +88,7 @@ export class Presentation {
   private static _initProps: PresentationProps | undefined;
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
   private static _requestTimeout: number | undefined;
+  private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
   private static _manager: PresentationManager | undefined;
 
@@ -106,12 +108,9 @@ export class Presentation {
    * @param props Optional properties for [[PresentationManager]]
    */
   public static initialize(props?: PresentationProps): void {
-    try {
-      RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
-    } catch (_e) {
-      // note: RpcManager.registerImpl throws when called more than once with the same
-      // rpc interface. However, it doesn't provide any way to unregister a, interface so we end up
-      // using the one registered first. At least we can avoid an exception...
+    RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
+    if (IpcHost.isValid) {
+      this._disposeIpcHandler = PresentationIpcHandler.register();
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
@@ -153,6 +152,10 @@ export class Presentation {
     if (this._manager) {
       this._manager.dispose();
       this._manager = undefined;
+    }
+    RpcManager.unregisterImpl(PresentationRpcInterface);
+    if (this._disposeIpcHandler) {
+      this._disposeIpcHandler();
     }
     this._initProps = undefined;
     if (this._requestTimeout)

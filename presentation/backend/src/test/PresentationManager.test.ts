@@ -8,8 +8,8 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
@@ -31,7 +31,6 @@ import {
 } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
   HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
@@ -354,8 +353,6 @@ describe("PresentationManager", () => {
 
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
-        sinon.stub(PresentationIpcHandler, "register").returns(() => { });
-
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
         using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
@@ -546,16 +543,6 @@ describe("PresentationManager", () => {
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
       manager.dispose();
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
-    });
-
-    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
-      sinon.stub(IpcHost, "isValid").get(() => true);
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const unregisterSpy = sinon.spy();
-      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
-      manager.dispose();
-      expect(unregisterSpy).to.be.calledOnce;
     });
 
   });
