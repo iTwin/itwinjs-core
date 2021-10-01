@@ -25,7 +25,6 @@ import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentatio
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
-import { I18N } from '@itwin/core-i18n';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -36,6 +35,7 @@ import { Key } from '@itwin/presentation-common';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
+import { Localization } from '@itwin/core-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';

@@ -12,7 +12,6 @@ import { Cluster } from '@itwin/core-frontend';
 import { DecorateContext } from '@itwin/core-frontend';
 import { Decorator } from '@itwin/core-frontend';
 import { DrawingViewState } from '@itwin/core-frontend';
-import { I18NNamespace } from '@itwin/core-i18n';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { Marker } from '@itwin/core-frontend';

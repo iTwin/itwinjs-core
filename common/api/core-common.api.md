@@ -2510,6 +2510,26 @@ export interface EmphasizeElementsProps {
 }
 
 // @public
+export class EmptyLocalization implements Localization {
+    // (undocumented)
+    getEnglishString(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getLocalizedKeys(inputString: string): string;
+    // (undocumented)
+    getLocalizedString(key: string | string[]): string;
+    // (undocumented)
+    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getNamespace(): Promise<void> | undefined;
+    // (undocumented)
+    languageList(): string[];
+    // (undocumented)
+    registerNamespace(): Promise<void>;
+    // (undocumented)
+    unregisterNamespace(): void;
+}
+
+// @public
 export interface EntityIdAndClassId {
     classId: Id64String;
     id: Id64String;
@@ -4816,6 +4836,24 @@ export type LocalDirName = string;
 
 // @public (undocumented)
 export type LocalFileName = string;
+
+// @public
+export interface Localization {
+    // (undocumented)
+    getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+    // (undocumented)
+    getLocalizedKeys(inputString: string): string;
+    getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+    // (undocumented)
+    getNamespace(name: string): Promise<void> | undefined;
+    // (undocumented)
+    languageList(): string[];
+    // (undocumented)
+    registerNamespace(namespace: string): Promise<void>;
+    // (undocumented)
+    unregisterNamespace(namespace: string): void;
+}
 
 export { LogFunction }
 

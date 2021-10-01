@@ -11,10 +11,10 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { GenericUiEventArgs } from '@itwin/appui-abstract';
 import { HSVColor } from '@itwin/core-common';
-import { I18N } from '@itwin/core-i18n';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InputProps } from '@itwin/itwinui-react';
+import { Localization } from '@itwin/core-common';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -1043,10 +1043,10 @@ export enum TimelineScale {
 
 // @public
 export class UiIModelComponents {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n?: I18N): Promise<void>;
+    static initialize(localization?: Localization): Promise<void>;
     static get initialized(): boolean;
+    static get localization(): Localization;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
