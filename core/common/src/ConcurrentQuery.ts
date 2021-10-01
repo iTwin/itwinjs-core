@@ -57,7 +57,7 @@ export interface DbRuntimeStats {
  * Quota hint for the query.
  * @beta
  * */
-export interface QueryLimit {
+export interface QueryQuota {
   /** Max time allowed in seconds. This is hint and may not be honoured but help in prioritize request */
   time?: number;
   /** Max memory allowed in bytes. This is hint and may not be honoured but help in prioritize request */
@@ -77,7 +77,7 @@ export interface BaseReaderOptions {
   */
   usePrimaryConn?: boolean;
   /** Restrict time or memory for query but use as hint and may be changed base on backend settings */
-  quota?: QueryLimit;
+  quota?: QueryQuota;
 }
 /**
  * ECSql query config
@@ -113,7 +113,7 @@ export class QueryOptionsBuilder {
   public get config(): QueryOptions { return this._config; }
   public setPriority(val: number) { this._config.priority = val; return this; }
   public setRestartToken(val: string) { this._config.restartToken = val; return this; }
-  public setQuota(val: QueryLimit) { this._config.quota = val; return this; }
+  public setQuota(val: QueryQuota) { this._config.quota = val; return this; }
   public setUsePrimaryConnection(val: boolean) { this._config.usePrimaryConn = val; return this; }
   public setAbbreviateBlobs(val: boolean) { this._config.abbreviateBlobs = val; return this; }
   public setSuppressLogErrors(val: boolean) { this._config.suppressLogErrors = val; return this; }
@@ -125,7 +125,7 @@ export class BlobOptionsBuilder {
   public get config(): BlobOptions { return this._config; }
   public setPriority(val: number) { this._config.priority = val; return this; }
   public setRestartToken(val: string) { this._config.restartToken = val; return this; }
-  public setQuota(val: QueryLimit) { this._config.quota = val; return this; }
+  public setQuota(val: QueryQuota) { this._config.quota = val; return this; }
   public setUsePrimaryConnection(val: boolean) { this._config.usePrimaryConn = val; return this; }
   public setRange(val: BlobRange) { this._config.range = val; return this; }
 }

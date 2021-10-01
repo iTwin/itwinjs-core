@@ -1194,7 +1194,7 @@ enum QueryRowFormat {
   /** Return array of values and can be accessed using index. This is default and preferred way.
    * This format include nulls. Trailing null are not present and return undefine
   */
-  Array,
+  UseArrayIndexes,
   /** Default is set to be array. */
   Default = Array,
 }
@@ -1235,14 +1235,14 @@ When using `QueryRowFormat.UseJsPropertyNames` row access is **backward compilab
   }
 ```
 
-The other parameter changed is `QueryConfig` which use to be multiple parameter but now compounded into one as following
+The other parameter changed is `QueryOptions` which use to be multiple parameter but now compounded into one as following
 
 ```ts
 /**
- * Config for all request made to concurrent query engine.
+ * Options for all request made to concurrent query engine.
  * @beta
  * */
-export interface BaseConfig {
+export interface BaseReaderOptions {
   /** Determine priority of this query default to 0, used as hint and can be overriden by backend. */
   priority?: number;
   /** If specified cancel last query (if any) with same restart token and queue the new query */
@@ -1258,7 +1258,7 @@ export interface BaseConfig {
  * ECSql query config
  * @beta
  * */
-export interface QueryConfig extends BaseConfig {
+export interface QueryOptions extends BaseReaderOptions {
   /**
    * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
    * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
@@ -1272,7 +1272,7 @@ export interface QueryConfig extends BaseConfig {
   /** This is used internally by ECSqlReader. If true it query will return meta data about query. */
   includeMetaData?: boolean;
   /** Limit range of rows returned by query*/
-  limit?: Limit;
+  limit?: QueryLimit;
 }
 ```
 
@@ -1283,7 +1283,7 @@ The new method signature look like following
 The signature of the method have change to following
 
 ```ts
-query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>;
+query(ecsql: string, params?: QueryBinding, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
 ```
 
 The `rowFormat` parameter defaults to `QueryRowFormat.Array` which is more efficient and performant. When using default use `row[0]` instead of `row.id`
@@ -1297,7 +1297,7 @@ To make it simple to use the new method you can simply change the call as follow
 can be changed to following to get exactly same behavior.
 
 ```js
-  con.query("select * from bis.element where ecinstanceid = ?", QueryParams.from(["0x1"], QueryRowFormat.UseJsPropertyNames));
+  con.query("select * from bis.element where ecinstanceid = ?", QueryBinding.from(["0x1"], QueryRowFormat.UseJsPropertyNames));
 ```
 
 In case of object as parameter
@@ -1309,7 +1309,7 @@ In case of object as parameter
 can be changed to following to get exactly same behavior.
 
 ```typescript
-  con.query("select * from bis.element where ecinstanceid = ?", QueryParams.from({id: "0x1"}, QueryRowFormat.UseJsPropertyNames));
+  con.query("select * from bis.element where ecinstanceid = ?", QueryBinding.from({id: "0x1"}, QueryRowFormat.UseJsPropertyNames));
 ```
 
 ## Changes to `restartQuery()` method
@@ -1317,7 +1317,7 @@ can be changed to following to get exactly same behavior.
 It has similar changes as `query()` and implemented using `query()` method internally.
 
 ```ts
-restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>
+restartQuery(token: string, ecsql: string, params?: QueryBinding, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>
 ```
 
 ## Changes to `queryRowCount()` method
@@ -1325,15 +1325,15 @@ restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: Que
 This method behave as before except the params are provided differently. This method is implemented using `query()` method.
 
 ```ts
-queryRowCount(ecsql: string, params?: QueryParams): Promise<number>
+queryRowCount(ecsql: string, params?: QueryBinding): Promise<number>
 ```
 
-## Using `QueryParams` to bind parameters to ecsql
+## Using `QueryBinding` to bind parameters to ecsql
 
-`QueryParams` is new class and help strong type parameter bindings. It can be used directly as below. It allow binding of `Id64Set`as well.
+`QueryBinding` is new class and help strong type parameter bindings. It can be used directly as below. It allow binding of `Id64Set`as well.
 
 ```ts
-  const params = new QueryParams()
+  const params = new QueryBinding()
     .bindString("name", "hello")
     .bindId(1, "id");
 
@@ -1348,14 +1348,14 @@ queryRowCount(ecsql: string, params?: QueryParams): Promise<number>
 This is new api that is what `query()` method use internally. There is case fo this api as well when you need meta information.
 
 ```ts
-  const params = new QueryParams()
+  const params = new QueryBinding()
     .bindString("name", "CompositeUnitRefersToUnit");
   const reader = conn.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE Name=:name");
   // After first time step is called meta data is populated.
 
   while(await reader.step()) {
         if (needMetaData) {
-          setupColumns(reader.properties);
+          setupColumns(reader.getMetaData());
         }
         // access using any property using ECSQL or JS name in case insensitive fashion.
         assert.equal(reader.current.id, "0x32");
