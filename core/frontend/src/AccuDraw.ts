@@ -6,12 +6,12 @@
 /** @packageDocumentation
  * @module AccuDraw
  */
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import {
   Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PointString3d, Ray3d, Transform, Vector3d,
-} from "@bentley/geometry-core";
-import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { ParseError, Parser, QuantityParseResult } from "@bentley/imodeljs-quantity";
+import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
 
 // cspell:ignore dont primitivetools
 
@@ -55,7 +55,7 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @internal */
+/** @alpha */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
@@ -1294,6 +1294,13 @@ export class AccuDraw {
     const rMatrix = out ? out : new Matrix3d();
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
     const useVp = vp ? vp : IModelApp.viewManager.selectedView;
+
+    if (!useACS) {
+      const globeToWorld = vp?.view.getGlobeRotation();
+      if (globeToWorld)
+        rMatrix.multiplyMatrixMatrix(globeToWorld, rMatrix);
+    }
+
     if (!useACS || !useVp)
       return rMatrix;
 
@@ -3114,9 +3121,9 @@ export class AccuDrawHintBuilder {
   public setLockDistance = false;
   /** Lock current angle value in polar mode */
   public setLockAngle = false;
-  /** Lock current x delta value in rectanglar mode */
+  /** Lock current x delta value in rectangular mode */
   public setLockX = false;
-  /** Lock current y delta value in rectanglar mode  */
+  /** Lock current y delta value in rectangular mode  */
   public setLockY = false;
   /** Lock current z delta value in 3d views */
   public setLockZ = false;

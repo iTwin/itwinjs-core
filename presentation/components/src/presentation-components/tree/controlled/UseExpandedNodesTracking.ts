@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { useEffect, useRef } from "react";
-import { Guid } from "@bentley/bentleyjs-core";
-import { isTreeModelNode, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Guid } from "@itwin/core-bentley";
+import { Presentation } from "@itwin/presentation-frontend";
+import { getVisibleDescendants, isTreeModelNode, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /** @internal */
@@ -48,7 +48,7 @@ export function useExpandedNodesTracking(props: UseExpandedNodesTrackingProps) {
 /** @internal */
 export function getExpandedNodeItems(modelSource: TreeModelSource) {
   const expandedItems = new Array<TreeNodeItem>();
-  for (const node of modelSource.getVisibleNodes()) {
+  for (const node of getVisibleDescendants(modelSource.getModel(), modelSource.getModel().getRootNode())) {
     if (isTreeModelNode(node) && node.isExpanded)
       expandedItems.push(node.item);
   }

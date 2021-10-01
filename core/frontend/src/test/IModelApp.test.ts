@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18NNamespace } from "@itwin/core-i18n";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -11,7 +11,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -63,7 +63,7 @@ class TestApp extends MockRender.App {
     IModelApp.toolAdmin.onInitialized();
 
     // register an anonymous class with the toolId "Null.Tool"
-    const testNull = class extends Tool { public static override toolId = "Null.Tool"; public override run() { testVal1 = "fromNullTool"; return true; } };
+    const testNull = class extends Tool { public static override toolId = "Null.Tool"; public override async run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
   }
 
@@ -77,17 +77,17 @@ describe("IModelApp", () => {
   });
   after(async () => TestApp.shutdown());
 
-  it("TestApp should override correctly", () => {
+  it("TestApp should override correctly", async () => {
     assert.instanceOf(IModelApp.accuDraw, TestAccuDraw, "accudraw override");
     assert.instanceOf(IModelApp.toolAdmin.idleTool, TestIdleTool, "idle tool override");
-    assert.isTrue(IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
+    assert.isTrue(await IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
     assert.equal(testVal1, "test1", "arg1 was correct");
     assert.equal(testVal2, "test2", "arg2 was correct");
-    assert.isFalse(IModelApp.tools.run("Not.Found"), "toolId is not registered");
-    assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
+    assert.isFalse(await IModelApp.tools.run("Not.Found"), "toolId is not registered");
+    assert.isTrue(await IModelApp.tools.run("View.Pan"), "run view pan");
     assert.instanceOf(IModelApp.toolAdmin.viewTool, PanViewTool, "pan tool is active");
 
-    assert.isTrue(IModelApp.tools.run("Null.Tool"), "run null");
+    assert.isTrue(await IModelApp.tools.run("Null.Tool"), "run null");
     assert.equal(testVal1, "fromNullTool");
   });
 

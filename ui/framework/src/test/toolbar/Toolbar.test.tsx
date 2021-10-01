@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
+import { Orientation } from "@itwin/core-react";
+import { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
-import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../ui-framework";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
+import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../appui-react";
+import { ItemList } from "../../appui-react/shared/ItemMap";
 import TestUtils from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */

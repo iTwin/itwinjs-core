@@ -6,16 +6,16 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
-import { AccuDrawUiAdmin, SpecialKey } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { ColorByName, ColorDef } from "@itwin/core-common";
+import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
 import TestUtils from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { AccuDrawUiSettings } from "../../ui-framework/accudraw/AccuDrawUiSettings";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { AccuDrawFieldContainer } from "../../appui-react/accudraw/AccuDrawFieldContainer";
+import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
+import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
+import { AccuDrawUiSettings } from "../../appui-react/accudraw/AccuDrawUiSettings";
 
 // cspell:ignore uiadmin
 
@@ -59,7 +59,7 @@ describe("AccuDrawFieldContainer", () => {
 
   it("should emit onAccuDrawSetFieldValueToUiEvent", () => {
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetFieldValueToUiEvent.addListener(spy);
     render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
     IModelApp.accuDraw.onFieldValueChange(ItemField.X_Item);
@@ -82,7 +82,7 @@ describe("AccuDrawFieldContainer", () => {
 
   it("should emit onAccuDrawSetFieldLockEvent", () => {
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldLockEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetFieldLockEvent.addListener(spy);
     render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     IModelApp.accuDraw.setFieldLock(ItemField.X_Item, true);
     spy.calledOnce.should.true;
@@ -104,7 +104,7 @@ describe("AccuDrawFieldContainer", () => {
 
   it("should emit onAccuDrawSetFieldFocusEvent", async () => {
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.addListener(spy);
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
 
@@ -153,7 +153,7 @@ describe("AccuDrawFieldContainer", () => {
 
   it("should emit onAccuDrawSetFieldFocusEvent and show Z field", async () => {
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.addListener(spy);
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
     expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
 
@@ -175,7 +175,7 @@ describe("AccuDrawFieldContainer", () => {
 
   it("should emit onAccuDrawGrabFieldFocusEvent", async () => {
     const spySet = sinon.spy();
-    const removeSet = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spySet);
+    const removeSet = FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.addListener(spySet);
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     expect(IModelApp.accuDraw.hasInputFocus).to.be.false;
 
@@ -192,7 +192,7 @@ describe("AccuDrawFieldContainer", () => {
     expect(document.activeElement === input).to.be.false;
 
     const spyGrab = sinon.spy();
-    const removeGrab = AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.addListener(spyGrab);
+    const removeGrab = FrameworkAccuDraw.onAccuDrawGrabInputFocusEvent.addListener(spyGrab);
     IModelApp.accuDraw.grabInputFocus();
     spyGrab.calledOnce.should.true;
     expect(document.activeElement === input).to.be.true;
@@ -203,7 +203,7 @@ describe("AccuDrawFieldContainer", () => {
 
   it("should emit onAccuDrawSetModeEvent", () => {
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetModeEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetCompassModeEvent.addListener(spy);
     render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
     IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
     spy.calledOnce.should.true;
@@ -215,7 +215,7 @@ describe("AccuDrawFieldContainer", () => {
   it("should call onValueChanged & setFieldValueFromUi", () => {
     const fakeTimers = sinon.useFakeTimers();
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} />);
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
@@ -260,7 +260,7 @@ describe("AccuDrawFieldContainer", () => {
   it("should call onValueChanged & setFieldValueFromUi & show the Z field", () => {
     const fakeTimers = sinon.useFakeTimers();
     const spy = sinon.spy();
-    const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
+    const remove = FrameworkAccuDraw.onAccuDrawSetFieldValueFromUiEvent.addListener(spy);
     const wrapper = render(<AccuDrawFieldContainer orientation={Orientation.Vertical} showZOverride={true} />);
 
     IModelApp.accuDraw.setCompassMode(CompassMode.Rectangular);
@@ -297,11 +297,11 @@ describe("AccuDrawFieldContainer", () => {
     const iconTest = "icon-test";
 
     const fullSettings: AccuDrawUiSettings = {
-      xStyle: {display: "inline"},
-      yStyle: {display: "inline"},
-      zStyle: {display: "inline"},
-      angleStyle: {display: "inline"},
-      distanceStyle: {display: "inline"},
+      xStyle: { display: "inline" },
+      yStyle: { display: "inline" },
+      zStyle: { display: "inline" },
+      angleStyle: { display: "inline" },
+      distanceStyle: { display: "inline" },
       xBackgroundColor: ColorDef.create(bgColorTest),
       yBackgroundColor: ColorDef.create(bgColorTest),
       zBackgroundColor: ColorDef.create(bgColorTest),

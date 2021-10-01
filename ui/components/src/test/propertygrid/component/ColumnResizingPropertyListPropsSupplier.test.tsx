@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
-import { ColumnResizingPropertyListPropsSupplier } from "../../../ui-components/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
-import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
+import { ColumnResizingPropertyListPropsSupplier } from "../../../components-react/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
+import { PropertyList } from "../../../components-react/propertygrid/component/PropertyList";
 import TestUtils from "../../TestUtils";
 
 describe("ColumnResizingPropertyListPropsSupplier", () => {
@@ -37,29 +37,10 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
   }
 
   describe("ratio between label and value when width below minimum column size", () => {
-    const getBoundingClientRect = Element.prototype.getBoundingClientRect;
-
-    before(() => {
-      Element.prototype.getBoundingClientRect = () => ({
-        bottom: 0,
-        height: 0,
-        left: 0,
-        right: 0,
-        toJSON: () => { },
-        top: 0,
-        width: 100,
-        x: 0,
-        y: 0,
-      });
-    });
-
-    after(() => {
-      Element.prototype.getBoundingClientRect = getBoundingClientRect;
-    });
 
     it("changes label-value ratio when it's modified within bounds", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
-        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
+        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal} width={100}>
           {(listProps) => <PropertyList {...listProps} properties={records} />}
         </ColumnResizingPropertyListPropsSupplier>,
       );
@@ -76,7 +57,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
 
     it("changes label-value ratio to 0.15 when it's modified lower than allowed", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
-        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
+        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal} width={100}>
           {(listProps) => <PropertyList {...listProps} properties={records} />}
         </ColumnResizingPropertyListPropsSupplier>,
       );
@@ -93,7 +74,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
 
     it("changes label-value ratio to 0.6 when it's modified higher than allowed", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
-        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
+        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal} width={100}>
           {(listProps) => <PropertyList {...listProps} properties={records} />}
         </ColumnResizingPropertyListPropsSupplier>,
       );
@@ -110,30 +91,12 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
   });
 
   describe("ratio between label and value when width above minimum column size", () => {
-    const getBoundingClientRect = Element.prototype.getBoundingClientRect;
-
-    before(() => {
-      Element.prototype.getBoundingClientRect = () => ({
-        bottom: 0,
-        height: 0,
-        left: 0,
-        right: 0,
-        toJSON: () => { },
-        top: 0,
-        width: 1000,
-        x: 0,
-        y: 0,
-      });
-    });
-
-    after(() => {
-      Element.prototype.getBoundingClientRect = getBoundingClientRect;
-    });
 
     it("changes label-value ratio when it's modified within bounds", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
         <ColumnResizingPropertyListPropsSupplier
           orientation={Orientation.Horizontal}
+          width={1000}
           minLabelWidth={100}
           minValueWidth={100}
           actionButtonWidth={100}
@@ -156,6 +119,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
         <ColumnResizingPropertyListPropsSupplier
           orientation={Orientation.Horizontal}
+          width={1000}
           minLabelWidth={100}
           minValueWidth={100}
           actionButtonWidth={100}
@@ -178,6 +142,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
         <ColumnResizingPropertyListPropsSupplier
           orientation={Orientation.Horizontal}
+          width={1000}
           minLabelWidth={100}
           minValueWidth={100}
           actionButtonWidth={100}
@@ -200,6 +165,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
         <ColumnResizingPropertyListPropsSupplier
           orientation={Orientation.Horizontal}
+          width={1000}
           minLabelWidth={100}
           minValueWidth={100}
           actionButtonWidth={100}
@@ -225,6 +191,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
     it("stops changing label-value ratio after reaching min when element not hovered", () => {
       const propertyBlockMount = mount<ColumnResizingPropertyListPropsSupplier>(
         <ColumnResizingPropertyListPropsSupplier
+          width={1000}
           orientation={Orientation.Horizontal}
           minLabelWidth={100}
           minValueWidth={100}

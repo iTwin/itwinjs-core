@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@itwin/presentation-common";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
-import { SpatialContainmentTree } from "../../../ui-framework";
+import { SpatialContainmentTree } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 describe("SpatialContainmentTree", () => {
@@ -25,18 +25,12 @@ describe("SpatialContainmentTree", () => {
     TestUtils.terminateUiFramework();
   });
 
-  beforeEach(() => {
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
-  });
-
   afterEach(() => {
     sinon.restore();
   });
 
   describe("<SpatialContainmentTree />", () => {
+    const sizeProps = { width: 200, height: 200 };
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     let presentationManagerMock: moq.IMock<PresentationManager>;
@@ -44,13 +38,14 @@ describe("SpatialContainmentTree", () => {
     const createKey = (id: string): ECInstancesNodeKey => {
       return {
         type: StandardNodeTypes.ECInstancesNode,
+        version: 0,
         instanceKeys: [{ className: "MyDomain:SomeElementType", id }],
         pathFromRoot: [],
       };
     };
 
     beforeEach(() => {
-      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() =>imodelMock.object);
+      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() => imodelMock.object);
       sinon.stub(PresentationTreeDataProvider.prototype, "rulesetId").get(() => "");
       sinon.stub(PresentationTreeDataProvider.prototype, "dispose");
       sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves([]);
@@ -76,7 +71,7 @@ describe("SpatialContainmentTree", () => {
     });
 
     it("renders", async () => {
-      const result = render(<SpatialContainmentTree iModel={imodelMock.object} />);
+      const result = render(<SpatialContainmentTree {...sizeProps} iModel={imodelMock.object} />);
       await waitFor(() => result.getByText("test-node"), { container: result.container });
       expect(result.baseElement).to.matchSnapshot();
     });

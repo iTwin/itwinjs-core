@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { StopWatch } from "@bentley/bentleyjs-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { StopWatch } from "@itwin/core-bentley";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;
@@ -64,7 +64,7 @@ export class MeasureTileLoadTimeTool extends Tool {
   /** This method runs the tool, unloading all tile trees, then starts a timer that stops when all tile trees and tiles required for the view are ready. It will then output the elapsed time to notifications manager.
    * @param _args this parameter is unused
    */
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       new TileLoadTimer(vp);

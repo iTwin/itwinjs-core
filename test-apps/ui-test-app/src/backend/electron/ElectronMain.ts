@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
 
 const mainWindowName = "mainWindow";
@@ -14,11 +14,24 @@ const mainWindowName = "mainWindow";
 /** Initializes Electron backend */
 export async function initializeElectron() {
 
+  const baseOidcScopes = [
+    "openid",
+    "email",
+    "profile",
+    "organization",
+    "itwinjs",
+  ];
+
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
       rpcInterfaces: getSupportedRpcs(),
+      authConfig: {
+        clientId: "imodeljs-electron-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.join(" "),
+      },
     },
     nativeHost: {
       applicationName: "ui-test-app",

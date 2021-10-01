@@ -1,10 +1,10 @@
-# @bentley/frontend-devtools
+# @itwin/frontend-devtools
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
+The __@itwin/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
 
 Because this is a developer-only package, its functionality is not expected to ever be promoted from "beta" to "public".
 
@@ -78,6 +78,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+* `fdt wow ignore background` Toggle whether the background color needs to be white for white-on-white reversal to apply.
 
 ### Screen-space effect key-ins
 

@@ -11,10 +11,9 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
+import { AccessToken, assert, AuthStatus, BentleyError, Logger } from "@itwin/core-bentley";
+import { NativeAppAuthorizationBackend, NativeHost } from "@itwin/core-backend";
+import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
   BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, StringMap,
@@ -37,6 +36,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
   private _tokenStore?: ElectronTokenStore;
+  private _expiresAt?: Date;
   public get tokenStore() { return this._tokenStore!; }
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
@@ -65,23 +65,23 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   public async refreshToken(): Promise<AccessToken> {
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
-      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
+      return "";
 
-    return this.refreshAccessToken(this._tokenResponse.refreshToken);
+    const token = `Bearer ${this._tokenResponse.refreshToken}`;
+    return this.refreshAccessToken(token);
   }
 
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
-  private async loadAccessToken(): Promise<AccessToken | undefined> {
+  private async loadAccessToken(): Promise<AccessToken> {
     const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
-      return undefined;
+      return "";
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
-      Logger.logError(loggerCategory, `Error refreshing access token`, () => err);
-      return undefined;
+      return "";
     }
   }
 
@@ -92,8 +92,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signInComplete(): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addOnce((token) => {
-        if (token !== undefined) {
+      NativeHost.onAccessTokenChanged.addOnce((token) => {
+        if (token !== "") {
           resolve(token);
         } else {
           reject(new Error("Failed to sign in"));
@@ -105,7 +105,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   /**
    * Start the sign-in process
-   * - calls the onUserStateChanged() call back after the authorization completes
+   * - calls the onAccessTokenChanged() call back after the authorization completes
    * or if there is an error.
    * - will attempt in order:
    *   (i) load any existing authorized user from storage,
@@ -113,7 +113,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signIn(): Promise<void> {
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()");
     assert(this.config !== undefined);
 
     // Attempt to load the access token from store
@@ -188,7 +188,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   /**
    * Start the sign-out process
-   * - calls the onUserStateChanged() call back after the authorization completes
+   * - calls the onAccessTokenChanged() call back after the authorization completes
    *   or if there is an error.
    * - redirects application to the postSignoutRedirectUri specified in the configuration when the sign out is
    *   complete
@@ -204,8 +204,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signOutComplete(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addOnce((token) => {
-        if (token === undefined) {
+      NativeHost.onAccessTokenChanged.addOnce((token) => {
+        if (token === "") {
           resolve();
         } else {
           reject(new Error("Failed to sign out"));
@@ -215,44 +215,34 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     });
   }
 
-  private async getUserProfile(tokenResponse: TokenResponse): Promise<any | undefined> {
-    const options: RequestOptions = {
-      method: "GET",
-      headers: {
-        authorization: `Bearer ${tokenResponse.accessToken}`,
-      },
-      accept: "application/json",
-    };
-
-    const httpContext = ClientRequestContext.fromJSON(IModelHost.session);
-    const response = await httpRequest(httpContext, this._configuration!.userInfoEndpoint!, options);
-    return response?.body;
-  }
-
-  private async createAccessTokenFromResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
-    const profile = await this.getUserProfile(tokenResponse);
-
-    const json = {
-      access_token: tokenResponse.accessToken,
-      expires_at: tokenResponse.issuedAt + (tokenResponse.expiresIn ?? 0),
-      expires_in: tokenResponse.expiresIn,
-    };
-
-    return AccessToken.fromTokenResponseJson(json, profile);
-  }
-
   private async clearTokenResponse() {
     this._tokenResponse = undefined;
     await this.tokenStore.delete();
-    this.setAccessToken(undefined);
+    this.setAccessToken("");
   }
 
   private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
-    const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
+    const accessToken = tokenResponse.accessToken;
     this._tokenResponse = tokenResponse;
+    const expiresAtMilliseconds = (tokenResponse.issuedAt + (tokenResponse.expiresIn ?? 0)) * 1000;
+    this._expiresAt = new Date(expiresAtMilliseconds);
+
     await this.tokenStore.save(this._tokenResponse);
     this.setAccessToken(accessToken);
     return accessToken;
+  }
+
+  private get _hasExpired(): boolean {
+    if (!this._expiresAt)
+      return false;
+
+    return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
+  }
+
+  public override async getAccessToken(): Promise<AccessToken> {
+    if (this._hasExpired || !this._accessToken)
+      this.setAccessToken(await this.refreshToken());
+    return this._accessToken;
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {
@@ -264,7 +254,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   /** Swap the authorization code for a refresh token and access token */
   private async swapAuthorizationCodeForTokens(authCode: string, codeVerifier: string): Promise<TokenResponse> {
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()");
     assert(this.config !== undefined);
 
     const nativeConfig = this.config;
@@ -285,7 +275,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   private async makeRefreshAccessTokenRequest(refreshToken: string): Promise<TokenResponse> {
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()");
     assert(this.config !== undefined);
 
     const tokenRequestJson: TokenRequestJson = {
@@ -303,7 +293,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   private async makeRevokeTokenRequest(): Promise<void> {
     if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful");
     assert(this.config !== undefined);
 
     const refreshToken = this._tokenResponse.refreshToken!;

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelJsExpressServer } from "@bentley/express-server";
+import { IModelJsExpressServer } from "@itwin/express-server";
 
 export class TestServer extends IModelJsExpressServer {
   protected override _configureHeaders() {

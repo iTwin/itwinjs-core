@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { useResizeDetector } from "react-resize-detector";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { Input } from "@itwin/itwinui-react";
 
 export class NavigationTreeWidgetControl extends WidgetControl {
@@ -99,14 +100,19 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
   });
   const modelSource = nodeLoader.modelSource;
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader, collapsedChildrenDisposalEnabled: true });
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const treeModel = useTreeModel(modelSource);
+  const { width, height, ref } = useResizeDetector();
   return (
-    <ControlledTree
-      visibleNodes={visibleNodes}
-      nodeLoader={nodeLoader}
-      selectionMode={SelectionMode.Single}
-      treeEvents={eventHandler}
-    />
+    <div ref={ref} style={{ width: "100%", height: "100%" }}>
+      {width && height ? <ControlledTree
+        model={treeModel}
+        nodeLoader={nodeLoader}
+        selectionMode={SelectionMode.Single}
+        eventsHandler={eventHandler}
+        width={width}
+        height={height}
+      /> : null}
+    </div>
   );
 };
 

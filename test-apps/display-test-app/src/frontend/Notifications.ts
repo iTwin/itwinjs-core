@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, ToolTipOptions,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { Surface } from "./Surface";
 import { showError, showStatus } from "./Utils";
 import { Window, WindowProps } from "./Window";
@@ -80,14 +80,14 @@ export class Notifications extends NotificationManager {
 
     const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
       button.addEventListener("click", () => {
-        dialog.close();
+        (dialog as any).close();
         rootDiv.removeChild(dialog);
         resolve(MessageBoxValue.Ok);
       });
     });
 
     // add the dialog to the root div element and show it.
-    dialog.showModal();
+    (dialog as any).showModal();
     return promise;
   }
 

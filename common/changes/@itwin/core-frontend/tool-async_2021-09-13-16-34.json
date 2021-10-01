@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "tool.run and tool.parseAndRun are now async methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

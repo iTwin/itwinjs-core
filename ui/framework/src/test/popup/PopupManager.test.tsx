@@ -5,19 +5,19 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@itwin/core-frontend";
 import {
   AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem,
   DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
-} from "@bentley/ui-abstract";
-import { Point } from "@bentley/ui-core";
-import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
-import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
-import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
+} from "@itwin/appui-abstract";
+import { Point } from "@itwin/core-react";
+import { AccuDrawPopupManager } from "../../appui-react/accudraw/AccuDrawPopupManager";
+import { PopupManager, PopupRenderer } from "../../appui-react/popup/PopupManager";
+import { MenuItemProps } from "../../appui-react/shared/MenuItem";
 import TestUtils, { storageMock } from "../TestUtils";
-import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { FrameworkUiAdmin, KeyinEntry } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
 import { Button } from "@itwin/itwinui-react";
 const myLocalStorage = storageMock();

@@ -8,17 +8,17 @@ import { VariableSizeList } from "react-window";
 import { Observable } from "rxjs/internal/Observable";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
 import { act, fireEvent, render } from "@testing-library/react";
-import { TreeNodeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
+import { TreeNodeRendererProps } from "../../../../components-react/tree/controlled/component/TreeNodeRenderer";
+import { TreeRenderer, TreeRendererProps } from "../../../../components-react/tree/controlled/component/TreeRenderer";
+import { from } from "../../../../components-react/tree/controlled/Observable";
+import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
 import {
-  MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
-} from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
+} from "../../../../components-react/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
@@ -137,10 +137,10 @@ describe("TreeRenderer", () => {
         .returns(() => new Observable(() => { }))
         .verifiable(moq.Times.once());
 
-      const { rerender } = render(<TreeRenderer {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
+      const { rerender } = render(<TreeRenderer {...defaultProps} visibleNodes={computeVisibleNodes(treeModel)} />);
       nodeLoaderMock.verifyAll();
 
-      rerender(<TreeRenderer {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
+      rerender(<TreeRenderer {...defaultProps} visibleNodes={computeVisibleNodes(treeModel)} />);
       nodeLoaderMock.verifyAll();
     });
   });

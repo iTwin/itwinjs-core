@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { ClipStyle, HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
+import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -214,7 +214,14 @@ export class BranchUniforms {
       if (undefined !== instancedGeom) {
         // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
         // Shader will compute final model-view matrix based on this and the per-instance transform.
-        mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        if (vio) {
+          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
+          mv.multiplyTransformTransform(viModelMatrix, mv);
+        } else {
+          mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        }
       } else {
         if (undefined !== vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;

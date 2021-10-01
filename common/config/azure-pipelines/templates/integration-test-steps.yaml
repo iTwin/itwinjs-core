@@ -31,7 +31,9 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to imodeljs-backend
+      node ./common/scripts/install-run-rush build -v --to core-backend
+
+      node ./common/scripts/install-run-rush build -v --to core-transformer
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
@@ -62,6 +64,11 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: "core/backend-itwin-client"
     displayName: "Run Backend iTwin Client Tests"
+    condition: succeededOrFailed()
+
+  - script: "npm run test:integration"
+    workingDirectory: "core/transformer"
+    displayName: "Run Transformer Tests"
     condition: succeededOrFailed()
 
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
@@ -126,6 +133,14 @@ steps:
     inputs:
       testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend iTwin Client Tests - ${{ parameters.Node_Version }}"
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Transformer Test Results"
+    inputs:
+      testResultsFiles: "core/transformer/lib/test/junit_results.xml"
+      testRunTitle: "Core - Transformer Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 

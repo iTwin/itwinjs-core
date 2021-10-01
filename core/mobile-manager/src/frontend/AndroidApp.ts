@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { RpcInterfaceDefinition } from "@itwin/core-common";
+import { IModelAppOptions } from "@itwin/core-frontend";
 import { MobileApp } from "./MobileApp";
 
 /** @beta */

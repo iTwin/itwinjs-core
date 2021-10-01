@@ -6,17 +6,17 @@
 
 import * as React from "react";
 import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
-import { Dialog, Icon, InputStatus } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { Dialog, Icon, InputStatus } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
   IModelApp, MapLayerImageryProviderStatus, MapLayerSettingsService, MapLayerSource,
   MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
-} from "@bentley/imodeljs-frontend";
-import { MapLayerProps } from "@bentley/imodeljs-common";
+} from "@itwin/core-frontend";
+import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
-import { DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
+import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -118,7 +118,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return types;
   });
 
-  const [isSettingsStorageAvailable] = React.useState(props?.activeViewport?.iModel?.contextId && props?.activeViewport?.iModel?.iModelId);
+  const [isSettingsStorageAvailable] = React.useState(props?.activeViewport?.iModel?.iTwinId && props?.activeViewport?.iModel?.iModelId);
 
   // Even though the settings storage is available,
   // we don't always want to enable it in the UI.
@@ -224,7 +224,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             } else {
               // Update service settings if storage is available and we are not prompting user for credentials
               if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
-                if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
+                if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.iTwinId!, vp.iModel.iModelId!)))
                   return;
               }
               const layerSettings = source.toLayerSettings(validation.subLayers);
@@ -303,7 +303,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           const vp = props.activeViewport;
           void (async () => {
             if (isSettingsStorageAvailable && vp) {
-              if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.contextId!, vp.iModel.iModelId!))) {
+              if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.iTwinId!, vp.iModel.iModelId!))) {
                 const errorMessage = IModelApp.i18n.translate("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
                 return;

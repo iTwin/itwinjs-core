@@ -9,12 +9,14 @@
 
 import {
   DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties,
-} from "@bentley/imodeljs-common";
+  WhiteOnWhiteReversalSettings,
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
+import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
@@ -38,7 +40,7 @@ export abstract class DisplayStyleTool extends Tool {
   // Return false if failed to parse.
   protected abstract parse(args: string[]): boolean;
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
@@ -46,7 +48,7 @@ export abstract class DisplayStyleTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
       return this.run();
@@ -68,14 +70,14 @@ export class ChangeViewFlagsTool extends Tool {
   public static override get maxArgs() { return undefined; }
   public static override get minArgs() { return 1; }
 
-  public override run(vf: ViewFlags, vp?: Viewport): boolean {
+  public override async run(vf: ViewFlags, vp?: Viewport): Promise<boolean> {
     if (undefined !== vf && undefined !== vp)
       vp.viewFlags = vf;
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
@@ -191,7 +193,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
   }
 }
 
-/** Given a "rendering style" as a partial DispalyStyle3dSettingsProperties JSON string, apply it to the selected viewport's display style.
+/** Given a "rendering style" as a partial DisplayStyle3dSettingsProperties JSON string, apply it to the selected viewport's display style.
  * @see [DisplayStyleSettings.applyOverrides]($common) for details.
  * @beta
  */
@@ -255,6 +257,32 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
     for (const id of this._subcategoryIds)
       vp.displayStyle.overrideSubCategory(id, ovr);
 
+    return true;
+  }
+}
+
+/** Set whether background color is ignored when applying white-on-white reversal.
+ * @beta
+ */
+export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
+  private _ignore?: boolean;
+
+  public static override toolId = "WoWIgnoreBackground";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public parse(args: string[]): boolean {
+    const ignore = parseToggle(args[0]);
+    if (typeof ignore === "string")
+      return false;
+
+    this._ignore = ignore;
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
+    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
     return true;
   }
 }

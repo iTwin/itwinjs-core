@@ -8,15 +8,15 @@
 
 import { sort } from "fast-sort";
 import memoize from "micro-memoize";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
-  Content, createFieldHierarchies, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, NestedContentValue,
-  PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection, StartItemProps,
-  traverseContentItem, Value, ValuesDictionary,
-} from "@bentley/presentation-common";
-import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
-import { HorizontalAlignment, SortDirection as UiSortDirection } from "@bentley/ui-core";
+  Content, createFieldHierarchies, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item,
+  NestedContentValue, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection,
+  StartItemProps, traverseContentItem, Value, ValuesDictionary,
+} from "@itwin/presentation-common";
+import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@itwin/components-react";
+import { HorizontalAlignment, SortDirection as UiSortDirection } from "@itwin/core-react";
 import { FieldHierarchyRecord, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
@@ -183,16 +183,10 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   }
 
   /**
-   * Tells the data provider to _not_ request descriptor and instead configure
-   * content using `getDescriptorOverrides()` call
-   */
-  protected override shouldConfigureContentDescriptor(): boolean { return false; }
-
-  /**
    * Provides content configuration for the property grid
    */
-  protected override getDescriptorOverrides(): DescriptorOverrides {
-    const overrides = super.getDescriptorOverrides();
+  protected override async getDescriptorOverrides(): Promise<DescriptorOverrides> {
+    const overrides = await super.getDescriptorOverrides();
     if (this._sortColumnKey && this._sortDirection !== UiSortDirection.NoSort) {
       overrides.sorting = {
         field: { type: FieldDescriptorType.Name, fieldName: this._sortColumnKey },

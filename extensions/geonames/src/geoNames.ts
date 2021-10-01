@@ -3,26 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, Extension, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
+  BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
-} from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+} from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 
 /*-----------------------------------------------------------------------
-This is the source for an iModel.js Extension that displays on-screen markers
+This is the source for an iTwin.js Extension that displays on-screen markers
 at the latitude and longitude of cities extracted from the geoNames website
 (https://www.geonames.org/).
-
-iModel.js Extensions are javascript fragments that can be loaded at runtime
-into an appropriately configured browser or Electron process.
 -------------------------------------------------------------------------*/
 
-/** Properties that define a geographic entty
+/** Properties that define a geographic entity
  * @beta
  */
 export interface GeoNameProps {
@@ -47,7 +44,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = `${this.title} (${GeoNameExtension.extension!.i18n.translate("geoNames:misc.Population")}: ${props.population})`;
+      this.title = `${this.title} (${GeoNameExtension.i18n.translate("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -59,7 +56,7 @@ class GeoNameMarker extends Marker {
       if (BeButton.Data === ev.button) {
         const evViewport = ev.viewport;
         (async () => {
-          await evViewport.animateFlyoverToGlobalLocation({ center: new Cartographic(this.props.lng * Angle.radiansPerDegree, this.props.lat * Angle.radiansPerDegree) });
+          await evViewport.animateFlyoverToGlobalLocation({ center: Cartographic.fromRadians({ longitude: this.props.lng * Angle.radiansPerDegree, latitude: this.props.lat * Angle.radiansPerDegree }) });
         })().catch(() => { });
       } else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
         window.open(`https://${this.props.wikipedia}`);
@@ -76,8 +73,7 @@ class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
 export class GeoNameMarkerManager {
   private _markerSet: GeoNameMarkerSet;
   public static decorator?: GeoNameMarkerManager; // static variable so we can tell if the manager is active.
-  protected _requestContext = new ClientRequestContext("");
-  private static _scratchCarto = new Cartographic(0, 0, 0);
+  private static _scratchCarto = Cartographic.createZero();
   private static _scratchPoint = Point3d.createZero();
 
   public constructor(vp: ScreenViewport, private _cityMarkerImage: HTMLImageElement, private _cityCount = 50) { this._markerSet = new GeoNameMarkerSet(vp); }
@@ -125,7 +121,7 @@ export class GeoNameMarkerManager {
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.extension!.i18n.translate(`geoNames:messages.${messageKey}`);
+    const message: string = GeoNameExtension.i18n.translate(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }
@@ -138,7 +134,7 @@ export class GeoNameMarkerManager {
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      const locationResponse: Response = await request(this._requestContext, url, requestOptions);
+      const locationResponse: Response = await request(url, requestOptions);
 
       const cities = new Array<GeoNameProps>();
       for (const geoName of locationResponse.body.geonames) {
@@ -154,7 +150,7 @@ export class GeoNameMarkerManager {
   /** Start showing markers if not currently active (or optionally refresh when currently displayed). */
   public static async show(vp: ScreenViewport): Promise<void> {
     if (undefined === GeoNameMarkerManager.decorator) {
-      const cityMarkerImage = await this.loadImage(GeoNameExtension.extension!.resolveResourceUrl("city.ico"));
+      const cityMarkerImage = await this.loadImage("./city.ico");
       if (undefined === cityMarkerImage)
         return; // No point continuing if we don't have a marker image to show...
 
@@ -181,13 +177,10 @@ export class GeoNameMarkerManager {
 abstract class GeoNameTool extends Tool {
   public static override get maxArgs() { return 1; }
   public static override get minArgs() { return 0; }
-  public override parseAndRun(..._args: string[]): boolean {
-    return this.run();
-  }
 
   public abstract doRunWithViewport(vp: ScreenViewport): void;
 
-  public override run(viewport?: ScreenViewport): boolean {
+  public override async run(viewport?: ScreenViewport): Promise<boolean> {
     if (undefined === viewport)
       viewport = IModelApp.viewManager.selectedView;
 
@@ -214,35 +207,19 @@ class GeoNameUpdateTool extends GeoNameTool {
   public doRunWithViewport(vp: ScreenViewport): void { GeoNameMarkerManager.update(vp); }
 }
 
-export class GeoNameExtension extends Extension {
-  private _i18NNamespace?: I18NNamespace;
-  protected override _defaultNs = "geoNames";
-  public static extension: GeoNameExtension | undefined;
+export class GeoNameExtension {
+  private static _i18n: I18N;
+  private static _defaultNs = "mapLayers";
 
-  /** Invoked the first time this extension is loaded. */
-  public override async onLoad(_args: string[]): Promise<void> {
-    // store the extension in the tool prototype.
-    GeoNameExtension.extension = this;
+  public static get i18n(): I18N { return this._i18n; }
 
-    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
-    await this._i18NNamespace!.readFinished;
-    IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.i18n);
-    IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.i18n);
-    IModelApp.tools.register(GeoNameUpdateTool, this._i18NNamespace, this.i18n);
+  public static async initialize(i18n: I18N): Promise<void> {
+    const namespace = this._i18n.registerNamespace(this._defaultNs);
+    await namespace.readFinished;
+    IModelApp.tools.register(GeoNameOnTool, namespace, i18n);
+    IModelApp.tools.register(GeoNameOffTool, namespace, i18n);
+    IModelApp.tools.register(GeoNameUpdateTool, namespace, i18n);
     if (undefined !== IModelApp.viewManager.selectedView)
       await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }
-
-  /** Invoked each time this extension is loaded. */
-  public async onExecute(args: string[]): Promise<void> {
-    // if no args passed in, don't do anything.
-    if (args.length < 1)
-      return;
-
-    await this._i18NNamespace!.readFinished;
-  }
 }
-
-// Register the extension with the extensionAdmin.
-// NOTE: The name used here is how the Extension is registered with the whatever Extension server it is hosted on.
-IModelApp.extensionAdmin.register(new GeoNameExtension("geoNames"));

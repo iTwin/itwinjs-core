@@ -5,9 +5,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import { expect } from "chai";
-import { IDisposable } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { IDisposable } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
@@ -59,7 +59,7 @@ class System extends MockRender.System {
     return ret;
   }
 
-  public createRenderGraphic() {
+  public makeGraphic() {
     const ret = super.createMesh({} as any);
     addIsDisposed(ret);
     return ret;
@@ -74,8 +74,8 @@ function isDisposed(disposable: any): boolean {
 describe("RenderGraphic", () => {
   it("should not be disposed if owned", () => {
     const system = new System();
-    const unowned = system.createRenderGraphic();
-    const owned = system.createRenderGraphic();
+    const unowned = system.makeGraphic();
+    const owned = system.makeGraphic();
     const owner = system.createGraphicOwner(owned);
 
     unowned.dispose();
@@ -93,11 +93,11 @@ describe("RenderGraphic", () => {
 describe("GraphicBranch", () => {
   it("should dispose of entries only if owned", () => {
     const system = new System();
-    const owned = system.createRenderGraphic();
+    const owned = system.makeGraphic();
     const owningBranch = new Branch(true);
     owningBranch.add(owned);
 
-    const unowned = system.createRenderGraphic();
+    const unowned = system.makeGraphic();
     const branch = new Branch(false);
     branch.add(unowned);
 
@@ -114,9 +114,9 @@ describe("GraphicBranch", () => {
 
   it("should not dispose of graphics owned by a graphic owner", () => {
     const system = new System();
-    const owned = system.createRenderGraphic();
+    const owned = system.makeGraphic();
     const owner = system.createGraphicOwner(owned);
-    const unowned = system.createRenderGraphic();
+    const unowned = system.makeGraphic();
 
     const branch = new Branch(true);
     branch.add(owner);

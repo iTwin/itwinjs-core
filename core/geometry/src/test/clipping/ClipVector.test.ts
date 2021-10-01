@@ -15,6 +15,8 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Checker } from "../Checker";
 // External test functions
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
+import { Angle, GeometryQuery, GrowableXYZArray, LineString3d, Loop, PolygonOps, Sample } from "../../core-geometry";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
 const enum PointAdjustment { // eslint-disable-line no-restricted-syntax
@@ -358,4 +360,212 @@ describe("StringifiedClipVector", () => {
 
     expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
+
+  it("OuterAndMask", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const outer = [[-10, -10], [10, 0], [10, 10], [-10, 10], [-10, -10]];
+    const triangle = [[-2, -5], [8, 2], [0, 6], [-2, -5]];
+    const innerNonConvex = [[2, 6], [5, 6], [5, 1], [4, 4], [2, 6]];
+    // const innerCircle = Sample.createArcStrokes(2, Point3d.create(5, 4), 12.0, Angle.createDegrees(12), Angle.createDegrees(372));
+    const innerCircle = Sample.createArcStrokes(2, Point3d.create(0, 0), 5.0, Angle.createDegrees(0), Angle.createDegrees(360));
+    const innerU = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1], [9, 8], [3, 7], [2, 1]];
+    const twoInletsWithWhisker = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1],
+      [10, 8], [5, 8], [5, 9], [9, 9], [9, 12],
+      [10,13],[12,13],[10,13],[9,12],
+      [7, 11], [3, 12], [2, 1]];
+    const innerDart = [
+        [0, 0],
+        [-6, -8],
+        [10, 0],
+        [-6,8],
+//        [5, 0],
+      ];
+      const innerDart1 = [
+        [7, 0],
+        [9, -2],
+        [5, 0],
+        [9, 2],
+//        [9, 0],
+      ];
+
+    let x0 = 0;
+    const shiftAndRotateJson = [
+      [-0.704754, 0.709452, 0, 2],
+      [-0.709452, -0.704754, 0, 4],
+      [0, 0, 1, 0],
+    ];
+    for (const isMask of [true, false]){
+      const jsonTriangle = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
+      const jsonOutsideCircle = [{ shape: { points: innerCircle, mask: isMask}}];
+      const jsonCircle = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask}}];
+      const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask}}];
+      const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
+      const jsonDart = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask}}];
+      const jsonDart1 = [{ shape: { points: outer } }, { shape: { points: innerDart1, mask: isMask}}];
+      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker, mask: isMask}}];
+      const jsonTwoInletsReversed = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker.slice().reverse(), mask: isMask } }];
+      const jsonDart1Trans = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask, trans: shiftAndRotateJson } }];
+      const jsonTriangleTrans =  [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask, trans: shiftAndRotateJson } }];
+      // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));
+      const polygonToClip = Sample.createRectangleXY(-10, -10, 30, 30);
+      const y0 = 0;
+      for (const json of [jsonOutsideCircle, jsonCircle, jsonTriangle, jsonTriangleTrans, jsonDart1Trans, jsonTwoInlets, jsonTwoInletsReversed, jsonDart, jsonDart1, jsonDart, jsonTriangle, jsonC, jsonCircle, jsonD, jsonDart]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, GrowableXYZArray.create (outer), x0, y0);
+        const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
+        const clipVector = ClipVector.fromJSON(json);
+        if (primitive) {
+          exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
+          if (ck.testType(clipVector, ClipVector)) {
+            const y1 = y0 + 200;
+            exerciseClipVector(ck, allGeometry, clipVector, polygonToClip, 0, x0, y1);
+          }
+        }
+        x0 += 200.0;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("OuterAndMaskLargeCoordinateAndTransform", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const clip1 =
+    [
+      {
+        shape: {
+          points: [[0, 0], [97.608056, 0], [-11.108483, 98.118449], [0, 0]],
+          transA: [
+            [-0.704754, 0.709452, 0, 99560.076989],
+            [-0.709452, -0.704754, 0, 80175.346101],
+            [0, 0, 1, 0],
+          ],
+        },
+      },
+      {
+        shape: {
+          mask: true,
+          points: [
+            [28.449347, 15.11684],
+            [5.096967, 59.735151],
+            [83.292234, 6.542878],
+            [28.449347, 15.11684],
+          ],
+          transA: [
+            [-0.704754, 0.709452, 0, 99560.076989],
+            [-0.709452, -0.704754, 0, 80175.346101],
+            [0, 0, 1, 0],
+          ],
+        },
+      },
+      ];
+    const _extraClipper = ClipPrimitive.fromJSON(
+      {
+        shape: {
+          points: [
+            [99415.230141, 80036.940295],
+            [99637.538271, 80036.940295],
+            [99637.538271, 80201.560936],
+            [99415.230141, 80201.560936],
+            [99415.230141, 80036.940295],
+          ],
+          zhigh: 5.001e-4,
+          zlow: -5.0005e-4,
+        },
+      });
+
+    let x0 = 0;
+    const y0 = 0;
+    for (const json of [clip1]) {
+      // const polygonToClip = Sample.createRectangleXY(99400, 80000, 400, 400);
+      const polygonToClip = Sample.createRectangleXY(0,-0, 100, 100);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+      const cv = ClipVector.fromJSON(json);
+      if (cv) {
+        {
+          exerciseClipVector(ck, allGeometry, cv, polygonToClip, 40, x0, y0);
+          for (const primitive of cv.clips) {
+            x0 += 200;
+            exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, false, x0, y0);
+          }
+        }
+      }
+      x0 += 200.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMaskLargeCoordinateAndTransform");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
+
+function exerciseClipVector(ck: Checker, allGeometry: GeometryQuery[], cv: ClipVector, polygonToClip: Point3d[], testDensity: number, x0: number, y0: number) {
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+  const range = Range3d.createArray(polygonToClip);
+  // const a = 2 * range.yLength();
+  const b = range.xLength() / (4 * testDensity);
+  const loops: Point3d[][] = [];
+
+  if (ck.testType(cv, ClipVector, "parsed clip vector")) {
+    cv. extractBoundaryLoops(loops);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+    for (let ii = 1; ii < testDensity; ii++){
+      for (let jj = 1; jj < testDensity; jj++){
+        const xyz = range.fractionToPoint(ii / testDensity, jj / testDensity, 0);
+        const inside = cv.pointInside(xyz);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, inside ? -3 : 0, xyz, b, x0, y0);
+      }
+}
+  }
+}
+export function exerciseClipPrimitive(ck: Checker, allGeometry: GeometryQuery[], primitive: ClipPrimitive, polygonToClip: Point3d[],
+  expectContainment: boolean, // true if caller expects that the primitive shape is contained in the polygonToClip
+  x0: number, y0: number) {
+    const range2 = Range3d.createArray(polygonToClip);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+  if (primitive instanceof ClipShape) {
+    if (primitive.transformIsValid){
+      const transformedPolygon = primitive.transformFromClip!.multiplyPoint3dArray(primitive.polygon);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, transformedPolygon, x0, y0);
+    } else {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, primitive.polygon, x0, y0);
+    }
+  }
+  const range = Range3d.createArray(polygonToClip);
+  const a = 2 * range.yLength();
+  y0 += a;
+  const planeSets = primitive.fetchClipPlanesRef();
+  // eslint-disable-next-line no-console
+  // console.log(planeSets?.toJSON());
+  const workArray = new GrowableXYZArray();
+  if (planeSets) {
+    const convexSets = planeSets.convexSets;
+    let area0 = 0.0;
+    for (let i = 0; i < convexSets.length; i++) {
+      const convexSet = planeSets.convexSets[i];
+      // const clips: GrowableXYZArray[] = [];
+      const xyz = GrowableXYZArray.create(polygonToClip);
+      convexSet.clipConvexPolygonInPlace(xyz, workArray);
+      // convexSet.polygonClip(polygonToClip, clips);
+      xyz.forceClosure();
+      area0 += PolygonOps.areaXY(xyz);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, xyz, x0, y0);
+      }
+      if (primitive instanceof ClipShape && expectContainment){
+        const range1 = Range3d.createArray(primitive.polygon);
+        if (range1.containsRange(range2)) {
+          const area1 = PolygonOps.areaXY(primitive.polygon);
+          const area2 = PolygonOps.areaXY(polygonToClip);
+          if (primitive.isMask)
+            ck.testCoordinate(area0, area2 - area1, "Expect mask to remove clip shape from containing polygon");
+          else
+            ck.testCoordinate(area0, area1, "Expect clipper to excise clip shape from containing polygon");
+        }
+      }
+    const compositeClip: GrowableXYZArray[] = [];
+    primitive.fetchClipPlanesRef()?.polygonClip(polygonToClip, compositeClip);
+    for (const c of compositeClip) {
+      c.forceClosure();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, Loop.create (LineString3d.create (c)), x0, y0 + 2 * range2.yLength());
+    }
+  }
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { InputStatus, LabeledTextarea } from "../../ui-core";
+import { InputStatus, LabeledTextarea } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

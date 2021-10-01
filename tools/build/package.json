@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/build-tools",
-  "version": "3.0.0-dev.41",
+  "name": "@itwin/build-tools",
+  "version": "3.0.0-dev.73",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -11,7 +11,7 @@
     "betools": "bin/betools.js"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",
@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@microsoft/api-extractor": "7.7.3",
-    "chai": "^4.1.2",
     "chalk": "^3.0.0",
     "cpx": "^1.5.0",
     "cross-spawn": "^7.0.1",
@@ -41,24 +40,23 @@
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
-    "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "typedoc": "^0.16.8",
     "typedoc-plugin-external-module-name": "3.0.0",
     "typedoc-plugin-internal-external": "2.1.1",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/eslint-plugin": "workspace:*",
-    "@types/node": "10.14.1",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@types/node": "14.14.31",
     "eslint": "^7.11.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "deprecation/deprecation": "off"
     }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { VerticalTabs } from "../../ui-core";
+import { VerticalTabs } from "../../core-react";
 
 describe("<VerticalTabs />", () => {
   it("should render", () => {

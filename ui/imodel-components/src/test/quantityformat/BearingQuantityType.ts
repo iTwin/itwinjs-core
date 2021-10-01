@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
-  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp,
-  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey,
-} from "@bentley/imodeljs-frontend";
+  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextInputFormatPropEditorSpec,
+  TextSelectFormatPropEditorSpec,
+} from "@itwin/core-frontend";
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
-} from "@bentley/imodeljs-quantity";
+  UnitSystemKey,
+} from "@itwin/core-quantity";
 
 /* Interface that defines custom properties used to format and parse Bearing values. */
 interface BearingFormatProps extends CustomFormatProps {

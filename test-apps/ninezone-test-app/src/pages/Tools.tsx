@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup } from "@bentley/ui-core";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { Popup } from "@itwin/core-react";
 import {
   ExpandableItem,
   GroupColumn,
@@ -22,7 +22,7 @@ import {
   ToolbarButton,
   ExpandableButton,
   ToolbarIcon,
-} from "@bentley/ui-ninezone";
+} from "@itwin/appui-layout-react";
 
 interface State {
   direction: RelativePosition;
@@ -81,7 +81,7 @@ export default class Tools extends React.PureComponent<{}, State> {
                 this.state.isPanelVisible &&
                 <Panel>
                   Other Tools
-                  </Panel>
+                </Panel>
               }
             />
           }

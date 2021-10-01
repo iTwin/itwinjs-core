@@ -12,9 +12,6 @@ exports[`<NavigationArea /> renders correctly with horizontal toolbar 1`] = `
     />
   </div>
   <div
-    className="nz-navigation-aid-container"
-  />
-  <div
     className="nz-vertical-toolbar-container"
   />
 </div>
@@ -72,9 +69,6 @@ exports[`<NavigationArea /> renders correctly with vertical toolbar 1`] = `
     className="nz-horizontal-toolbar-container"
   />
   <div
-    className="nz-navigation-aid-container"
-  />
-  <div
     className="nz-vertical-toolbar-container"
   >
     <div
@@ -90,9 +84,6 @@ exports[`<NavigationArea /> renders correctly without app button 1`] = `
 >
   <div
     className="nz-horizontal-toolbar-container"
-  />
-  <div
-    className="nz-navigation-aid-container"
   />
   <div
     className="nz-vertical-toolbar-container"

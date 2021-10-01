@@ -8,12 +8,11 @@ import * as fsextra from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
 import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
@@ -28,14 +27,14 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 
 let imodelBankClient: IModelBankClient;
 
-const authorizationClientFactory = (authScheme: string, userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient => {
+const authorizationClientFactory = (authScheme: string, userCredentials: any): FrontendAuthorizationClient => {
   switch (authScheme) {
     case "bearer":
-      return new TestIModelHubOidcAuthorizationClient(userInfo, userCredentials);
+      return new TestIModelHubOidcAuthorizationClient(userCredentials);
     case "basic":
-      return new IModelBankBasicAuthorizationClient(userInfo, userCredentials);
+      return new IModelBankBasicAuthorizationClient(userCredentials);
     default:
-      return new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      return new IModelBankDummyAuthorizationClient(userCredentials);
   }
 };
 
@@ -50,8 +49,8 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   const orchestratorUrl: string = process.env.IMJS_TEST_IMODEL_BANK_URL ?? "";
 
   const authScheme: string = (process.env.IMJS_TEST_IMODEL_BANK_AUTH_SCHEME ?? "").toLowerCase();
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
-    authorizationClientFactory(authScheme, userInfo, userCredentials);
+  const getAuthorizationClient = (userCredentials: any): FrontendAuthorizationClient =>
+    authorizationClientFactory(authScheme, userCredentials);
 
   let bankClient: IModelBankClient;
   if (imodelBankClient)
@@ -111,7 +110,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     do {
       try {
         await pingServerOnce(url, attempt * pauseBeforePingMillis);
-      } catch (err) {
+      } catch (err: any) {
         if (err.errno === "ECONNREFUSED") {
           continue;
         } else {
@@ -164,8 +163,8 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   }
 
   const authScheme: string = (process.env.IMJS_TEST_IMODEL_BANK_AUTH_SCHEME ?? "").toLowerCase();
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
-    authorizationClientFactory(authScheme, userInfo, userCredentials);
+  const getAuthorizationClient = (userCredentials: any): FrontendAuthorizationClient =>
+    authorizationClientFactory(authScheme, userCredentials);
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());

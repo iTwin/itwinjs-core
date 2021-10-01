@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
@@ -26,7 +25,7 @@ export class TestContext {
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -86,11 +85,10 @@ export class TestContext {
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
     });
 
-    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
-    this.iModelWithChangesets = await IModelSession.create(requestContext, this.settings.iModel);
-    this.contextId = this.iModelWithChangesets.contextId;
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
+    this.iTwinId = this.iModelWithChangesets.iTwinId;
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(requestContext, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
 
     console.log("TestSetup: Done");
   }

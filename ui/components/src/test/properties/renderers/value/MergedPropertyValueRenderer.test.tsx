@@ -5,13 +5,17 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { MergedPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/MergedPropertyValueRenderer";
-import { UiComponents } from "../../../../ui-components/UiComponents";
+import { MergedPropertyValueRenderer } from "../../../../components-react/properties/renderers/value/MergedPropertyValueRenderer";
+import { UiComponents } from "../../../../components-react/UiComponents";
 import TestUtils from "../../../TestUtils";
 
 describe("MergedPropertyValueRenderer", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
   });
 
   describe("render", () => {

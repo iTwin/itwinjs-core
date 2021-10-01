@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { useResizeDetector } from "react-resize-detector";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, ITreeDataProvider, MutableTreeModel, SelectionMode, Subscription,
   TreeCheckboxStateChangeEventArgs, TreeEventHandler, TreeModel, TreeModelChanges, TreeModelNode, TreeNodeItem, TreeSelectionModificationEventArgs,
-  TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
-} from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
+  TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
+} from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
+import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 
 export class TreeSelectionDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -23,16 +24,19 @@ function TreeSelectionDemoWidget() {
   const dataProvider = React.useMemo(createDataProvider, []);
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const treeModel = useTreeModel(modelSource);
   const eventsHandler = useTreeEventsHandler(React.useCallback(() => new DemoTreeEventsHandler(nodeLoader), [nodeLoader]));
+  const { width, height, ref } = useResizeDetector();
   return (
-    <div style={{ height: "100%" }}>
-      <ControlledTree
+    <div ref={ref} style={{ width: "100%", height: "100%" }}>
+      {width && height ? <ControlledTree
         nodeLoader={nodeLoader}
-        visibleNodes={visibleNodes}
-        treeEvents={eventsHandler}
+        model={treeModel}
+        eventsHandler={eventsHandler}
         selectionMode={SelectionMode.Extended}
-      />
+        width={width}
+        height={height}
+      /> : null}
     </div>
   );
 }

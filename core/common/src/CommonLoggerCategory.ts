@@ -12,11 +12,11 @@
  */
 export enum CommonLoggerCategory {
   /** The logger category used by common classes relating to ElementProps. */
-  ElementProps = "imodeljs-common.ElementProps",
+  ElementProps = "core-common.ElementProps",
   /** The logger category used by common classes relating to Geometry. */
-  Geometry = "imodeljs-common.Geometry",
+  Geometry = "core-common.Geometry",
   /** The logger category used by the portions of the RpcInterface framework that run on the backend. */
-  RpcInterfaceBackend = "imodeljs-backend.RpcInterface",
+  RpcInterfaceBackend = "core-backend.RpcInterface",
   /** The logger category used by the portions of the RpcInterface framework that run on the frontend. */
-  RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface",
+  RpcInterfaceFrontend = "core-frontend.RpcInterface",
 }

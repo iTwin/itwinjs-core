@@ -7,18 +7,18 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
-import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
-import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
+import { BeEvent, Logger } from "@itwin/core-bentley";
+import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@itwin/core-geometry";
+import { Frustum, SpatialViewDefinitionProps } from "@itwin/core-common";
 import {
   CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { fireEvent, render } from "@testing-library/react";
-import { ViewportComponentEvents } from "../../ui-imodel-components/viewport/ViewportComponentEvents";
+import { ViewportComponentEvents } from "../../imodel-components-react/viewport/ViewportComponentEvents";
 import { TestUtils } from "../TestUtils";
-import { ViewportComponent } from "../../ui-imodel-components/viewport/ViewportComponent";
-import { Face } from "../../ui-imodel-components/navigationaids/Cube";
+import { ViewportComponent } from "../../imodel-components-react/viewport/ViewportComponent";
+import { Face } from "../../imodel-components-react/navigationaids/Cube";
 
 describe("ViewportComponent", () => {
   // set up descriptors to restore SpatialViewState behavior after testing is complete

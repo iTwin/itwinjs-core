@@ -6,12 +6,11 @@
  * @module iModelHubClient
  */
 
-import * as urllib from "url";
-import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery,
-} from "@bentley/itwin-client";
+import { AccessToken, GuidString, Logger, PerfLogger } from "@itwin/core-bentley";
+import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectFileAccessKey } from "./HubQuery";
@@ -134,14 +133,11 @@ export class CheckpointHandler {
    * @returns Checkpoints that match the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: CheckpointQuery = new CheckpointQuery()): Promise<Checkpoint[]> {
-    requestContext.enter();
+  public async get(accessToken: AccessToken, iModelId: GuidString, query: CheckpointQuery = new CheckpointQuery()): Promise<Checkpoint[]> {
     Logger.logInfo(loggerCategory, "Querying checkpoints for iModel", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const checkpoints = await this._handler.getInstances<Checkpoint>(requestContext, Checkpoint, this.getRelativeUrl(iModelId), query.getQueryOptions());
-    requestContext.enter();
+    const checkpoints = await this._handler.getInstances<Checkpoint>(accessToken, Checkpoint, this.getRelativeUrl(iModelId), query.getQueryOptions());
 
     Logger.logTrace(loggerCategory, "Queried checkpoints for iModel", () => ({ iModelId, count: checkpoints.length }));
     return checkpoints;
@@ -152,7 +148,7 @@ export class CheckpointHandler {
    * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
    */
   private static getSafeUrlForLogging(url: string): string {
-    const safeToLogDownloadUrl = urllib.parse(url);
+    const safeToLogDownloadUrl = new URL(url);
     if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
       safeToLogDownloadUrl.search = "...";
     if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
@@ -172,8 +168,7 @@ export class CheckpointHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.FileHandlerNotSet]($bentley) if [[FileHandler]] instance was not set for [[IModelClient]].
    * @throws [[ResponseError]] if the checkpoint cannot be downloaded.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
-    requestContext.enter();
+  public async download(accessToken: AccessToken, checkpoint: Checkpoint, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     ArgumentCheck.defined("checkpoint", checkpoint);
     ArgumentCheck.defined("path", path);
 
@@ -190,8 +185,7 @@ export class CheckpointHandler {
     Object.assign(checkpointForLog, checkpoint);
     checkpointForLog.downloadUrl = CheckpointHandler.getSafeUrlForLogging(checkpointForLog.downloadUrl!);
     const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path, iModelId: checkpoint.fileId }));
-    await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback, cancelRequest);
-    requestContext.enter();
+    await this._fileHandler.downloadFile(accessToken, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback, cancelRequest);
     perfLogger.dispose();
   }
 }

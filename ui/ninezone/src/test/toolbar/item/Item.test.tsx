@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Item } from "../../../ui-ninezone";
+import { Item } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<Item />", () => {

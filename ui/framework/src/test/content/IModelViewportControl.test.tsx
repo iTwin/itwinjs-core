@@ -6,13 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
 import { render } from "@testing-library/react";
-import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, IModelViewportControl, IModelViewportControlOptions,
   NavigationWidget, SupportsViewSelectorChange, Widget, Zone,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
@@ -67,21 +68,20 @@ describe("IModelViewportControl", () => {
   }
 
   class Frontstage1 extends FrontstageProvider {
-
-    public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
+    public static stageId = "Test1";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       const myContentGroup: ContentGroup = new ContentGroup(
         {
+          id: "test",
+          layout: StandardContentLayouts.singleView,
           contents: [
             {
+              id: "main",
               classId: TestViewportContentControl,
               applicationData: { label: "Content 1a", bgColor: "black" },
             },
@@ -91,9 +91,8 @@ describe("IModelViewportControl", () => {
 
       return (
         <Frontstage
-          id="Test1"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={this.contentLayoutDef}
           contentGroup={myContentGroup}
 
           topRight={
@@ -119,10 +118,11 @@ describe("IModelViewportControl", () => {
   it("Overridden IModelViewportControl should deferNodeInitialization", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+    if (frontstageDef) {
+      expect(ContentLayoutManager.activeLayout).to.exist;
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;

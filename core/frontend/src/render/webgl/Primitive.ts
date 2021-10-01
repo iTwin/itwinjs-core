@@ -6,14 +6,15 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
+import { RenderAreaPattern } from "../RenderSystem";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
-import { InstanceBuffers, InstancedGeometry } from "./InstancedGeometry";
+import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { RenderCommands } from "./RenderCommands";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
@@ -28,25 +29,38 @@ export class Primitive extends Graphic {
 
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
-  public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams): Primitive | undefined {
-    const instanceBuffers = undefined !== instances ? InstanceBuffers.create(instances, false) : undefined;
-    if (undefined === instanceBuffers && undefined !== instances)
+  public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
+    if (!geom)
       return undefined;
 
-    return this.createShared(createGeom, instanceBuffers);
+    if (instances) {
+      assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
+      if (instances instanceof PatternBuffers) {
+        geom = InstancedGeometry.createPattern(geom, true, instances);
+      } else {
+        assert(isInstancedGraphicParams(instances));
+        const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
+        const instanceBuffers = InstanceBuffers.create(instances, range);
+        if (!instanceBuffers)
+          return undefined;
+
+        geom = InstancedGeometry.create(geom, true, instanceBuffers);
+      }
+    }
+
+    return new this(geom);
   }
 
-  public static createShared(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers): Primitive | undefined {
-    let geom = createGeom();
-    if (undefined === geom)
+  public static createShared(geom: CachedGeometry | undefined, instances?: InstanceBuffers | PatternBuffers): Primitive | undefined {
+    if (!geom)
       return undefined;
 
-    if (undefined !== instances) {
+    if (instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      geom = new InstancedGeometry(geom, true, instances);
-
-      // Ensure range computed immediately so we can discard the Float32Array holding the instance transforms...
-      geom.computeRange();
+      if (instances instanceof InstanceBuffers)
+        geom = InstancedGeometry.create(geom, false, instances);
+      else
+        geom = InstancedGeometry.createPattern(geom, false, instances);
     }
 
     return new this(geom);

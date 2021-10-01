@@ -98,7 +98,7 @@ beta;LoseWebGLContextTool
 beta;MapBaseColorTool 
 beta;MapBaseTransparencyTool 
 beta;MapBaseVisibilityTool 
-beta;MapLayerSubLayerVisiblityTool 
+beta;MapLayerSubLayerVisibilityTool 
 beta;MapLayerTransparencyTool 
 beta;MapLayerVisibilityTool 
 beta;MapLayerZoomTool 
@@ -221,3 +221,4 @@ beta;ViewportTileSizeModifierTool
 beta;class ViewportToggleTool 
 beta;VignetteConfig 
 beta;VignetteEffect 
+beta;WoWIgnoreBackgroundTool 

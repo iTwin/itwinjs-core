@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
+import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import {
+  IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
@@ -131,7 +134,7 @@ export class MobileHost {
       }
       const requestId = this.device.createDownloadTask(downloadUrl, false, downloadTo, (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
         if (cancelled)
-          reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+          reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download"));
         else if (err)
           reject(new DownloadFailed(400, "Download failed"));
         else
@@ -149,8 +152,11 @@ export class MobileHost {
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
     if (!this.isValid) {
-      setupMobileRpc();
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
+      // set global device interface.
+      (global as any).__iTwinJsNativeBridge = this._device;
+      // following will provide impl for device specific api.
+      setupMobileRpc();
     }
 
     await NativeHost.startup(opt);

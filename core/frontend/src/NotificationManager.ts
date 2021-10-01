@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Notifications
  */
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Point2d, XAndY } from "@bentley/geometry-core";
-import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@bentley/ui-abstract";
+import { BeDuration } from "@itwin/core-bentley";
+import { Point2d, XAndY } from "@itwin/core-geometry";
+import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
 import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 

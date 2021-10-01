@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ConditionalStringValue } from "../../ui-abstract";
+import { ConditionalStringValue } from "../../appui-abstract";
 
 const helloValue = "hello";
 const goodByeValue = "goodBye";

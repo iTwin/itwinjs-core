@@ -6,11 +6,12 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
+import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
@@ -19,17 +20,39 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
-/* eslint-disable @typescript-eslint/naming-convention */
+/** The properties of an RpcActivity.
+ * @public
+ */
+export interface RpcActivity extends SessionProps {
+  /** Used for logging to correlate an Rpc activity between frontend and backend */
+  readonly activityId: GuidString;
+
+  /** access token for authorization  */
+  readonly accessToken: AccessToken;
+}
+
+/** Serialized format for sending the request across the RPC layer
+ * @public
+ */
+export interface SerializedRpcActivity {
+  id: string;
+  applicationId: string;
+  applicationVersion: string;
+  sessionId: string;
+  authorization: string;
+  csrfToken?: { headerName: string, headerValue: string };
+}
 
 /** Notification callback for an RPC invocation.
- * @public
+ * @internal
  */
-export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
+export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request.
- * @public
+ * @internal
  */
 export class RpcInvocation {
+  public static currentActivity: RpcActivity;
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
@@ -117,11 +140,27 @@ export class RpcInvocation {
     return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 
-  private async resolve(): Promise<any> {
-    try {
-      const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
-      clientRequestContext.enter();
+  /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
+   * @internal
+   */
+  public static logRpcException(activity: RpcActivity, operationName: string, error: unknown) {
+    const props = {
+      error: BentleyError.getErrorProps(error),
+      activity: {
+        activityId: activity.activityId,
+        sessionId: activity.sessionId,
+        app: activity.applicationId,
+        version: activity.applicationVersion,
+      },
+    };
 
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Error in RPC operation [${operationName}]`, () => props);
+  }
+
+  private async resolve(): Promise<any> {
+    let activity: RpcActivity | undefined;
+    try {
+      activity = RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
@@ -130,10 +169,15 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      // @typescript-eslint/return-await doesn't agree with awaiting values that *might* be a promise
-      // eslint-disable-next-line @typescript-eslint/return-await
+      // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
+      // any asynchronous code that may need it, and *not* rely on the global variable remaining unchanged across async calls.
+      RpcInvocation.currentActivity = activity;
+
       return await op.call(impl, ...parameters);
-    } catch (error) {
+    } catch (error: unknown) {
+      if (activity)
+        RpcInvocation.logRpcException(activity, this.request.operation.operationName, error);
+
       return this.reject(error);
     }
   }
@@ -145,7 +189,7 @@ export class RpcInvocation {
 
     for (let i = 0; i !== parameters.length; ++i) {
       const parameter = parameters[i];
-      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("contextId");
+      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("iTwinId");
       if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
@@ -163,7 +207,7 @@ export class RpcInvocation {
 
   private static compareTokens(a: IModelRpcProps, b: IModelRpcProps): boolean {
     return a.key === b.key &&
-      a.contextId === b.contextId &&
+      a.iTwinId === b.iTwinId &&
       a.iModelId === b.iModelId &&
       (undefined === a.changeset || (a.changeset.id === b.changeset?.id));
   }
@@ -220,7 +264,7 @@ export class RpcInvocation {
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
-    const fulfillment = {
+    const fulfillment: RpcRequestFulfillment = {
       result,
       rawResult,
       status: this.protocol.getCode(this.status),
@@ -238,11 +282,10 @@ export class RpcInvocation {
     return fulfillment;
   }
 
-  private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
+  private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => Promise<any> {
     const func = (implementation as any)[this.operation.operationName];
-    if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, CommonLoggerCategory.RpcInterfaceBackend);
-    }
+    if (!func || typeof (func) !== "function")
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
 
     return func;
   }

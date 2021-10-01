@@ -5,15 +5,17 @@
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
-import { Geometry } from "@bentley/geometry-core";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
+import { Geometry } from "@itwin/core-geometry";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { DefaultContentDisplayTypes } from "@itwin/presentation-common";
 import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,
-} from "@bentley/presentation-components";
-import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
+} from "@itwin/presentation-components";
+import { Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { ElementSeparator, Orientation, RatioChangeResult } from "@itwin/core-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { MyAppFrontend, MyAppSettings } from "../../api/MyAppFrontend";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import { GridWidget } from "../grid-widget/GridWidget";
@@ -23,7 +25,6 @@ import { RulesetSelector } from "../ruleset-selector/RulesetSelector";
 import { TreeWidget } from "../tree-widget/TreeWidget";
 import { UnitSystemSelector } from "../unit-system-selector/UnitSystemSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
-import { ToggleSwitch } from "@itwin/itwinui-react";
 
 export interface State {
   imodel?: IModelConnection;
@@ -34,7 +35,7 @@ export interface State {
   contentRatio: number;
   contentWidth?: number;
   similarInstancesProvider?: IPresentationTableDataProvider;
-  activeUnitSystem?: PresentationUnitSystem;
+  activeUnitSystem?: UnitSystemKey;
   persistSettings: boolean;
 }
 
@@ -96,7 +97,7 @@ export default class App extends React.Component<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
+  private onUnitSystemSelected = (unitSystem: UnitSystemKey | undefined) => {
     Presentation.presentation.activeUnitSystem = unitSystem;
     this.setState({ activeUnitSystem: unitSystem }, () => this.updateAppSettings());
   };

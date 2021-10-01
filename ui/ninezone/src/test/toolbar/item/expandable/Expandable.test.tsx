@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ExpandableItem } from "../../../../ui-ninezone";
+import { ExpandableItem } from "../../../../appui-layout-react";
 import { mount } from "../../../Utils";
 
 describe("<ExpandableItem />", () => {

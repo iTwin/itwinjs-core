@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { BackstageItem, SafeAreaInsets } from "../../ui-ninezone";
+import { BackstageItem, SafeAreaInsets } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<Item />", () => {

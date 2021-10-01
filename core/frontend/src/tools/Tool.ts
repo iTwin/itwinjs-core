@@ -6,11 +6,11 @@
  * @module Tools
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { assert } from "@itwin/core-bentley";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
+import { GeometryStreamProps, IModelError } from "@itwin/core-common";
+import { I18N, I18NNamespace } from "@itwin/core-i18n";
+import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
@@ -431,7 +431,7 @@ export class Tool {
    * Run this instance of a Tool. Subclasses should override to perform some action.
    * @returns `true` if the tool executed successfully.
    */
-  public run(..._args: any[]): boolean { return true; }
+  public async run(..._args: any[]): Promise<boolean> { return true; }
 
   /** Run this instance of a tool using a series of string arguments. Override this method to parse the arguments, and if they're
    * acceptable, execute your [[run]] method. If the arguments aren't valid, return `false`.
@@ -439,7 +439,7 @@ export class Tool {
    * @note Generally, implementers of this method are **not** expected to call `super.parseAndRun(...)`. Instead, call your
    * [[run]] method with the appropriate (parsed) arguments directly.
    */
-  public parseAndRun(..._args: string[]): boolean {
+  public async parseAndRun(..._args: string[]): Promise<boolean> {
     return this.run();
   }
 }
@@ -457,28 +457,28 @@ export abstract class InteractiveTool extends Tool {
   public receivedDownEvent = false;
 
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
-  public onInstall(): boolean { return true; }
+  public async onInstall(): Promise<boolean> { return true; }
 
   /** Override to execute additional logic after tool becomes active */
-  public onPostInstall(): void { }
+  public async onPostInstall(): Promise<void> { }
 
-  public abstract exitTool(): void;
+  public abstract exitTool(): Promise<void>;
 
   /** Override Call to reset tool to initial state */
-  public onReinitialize(): void { }
+  public async onReinitialize(): Promise<void> { }
 
   /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup(): void { }
+  public async onCleanup(): Promise<void> { }
 
   /** Notification of a ViewTool or InputCollector starting and this tool is being suspended.
    * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
-  public onSuspend(): void { }
+  public async onSuspend(): Promise<void> { }
 
   /** Notification of a ViewTool or InputCollector exiting and this tool is being unsuspended.
    *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
-  public onUnsuspend(): void { }
+  public async onUnsuspend(): Promise<void> { }
 
   /** Called to support operations on pickable decorations, like snapping. */
   public testDecorationHit(_id: string): boolean { return false; }
@@ -685,7 +685,7 @@ export abstract class InteractiveTool extends Tool {
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
    * @beta
    */
-  public applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean { return true; }
+  public async applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean> { return true; }
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
@@ -717,22 +717,22 @@ export abstract class InteractiveTool extends Tool {
  * @public
  */
 export abstract class InputCollector extends InteractiveTool {
-  public override run(..._args: any[]): boolean {
+  public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
-    if (undefined !== toolAdmin.viewTool || !toolAdmin.onInstallTool(this))
+    if (undefined !== toolAdmin.viewTool || !await toolAdmin.onInstallTool(this))
       return false;
 
-    toolAdmin.startInputCollector(this);
-    toolAdmin.onPostInstallTool(this);
+    await toolAdmin.startInputCollector(this);
+    await toolAdmin.onPostInstallTool(this);
     return true;
   }
 
-  public exitTool(): void {
-    IModelApp.toolAdmin.exitInputCollector();
+  public async exitTool() {
+    return IModelApp.toolAdmin.exitInputCollector();
   }
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.exitTool();
+    await this.exitTool();
     return EventHandled.Yes;
   }
 }
@@ -860,7 +860,7 @@ export class ToolRegistry {
    * @param args arguments to pass to the constructor, and to run.
    * @return true if the tool was found and successfully run.
    */
-  public run(toolId: string, ...args: any[]): boolean {
+  public async run(toolId: string, ...args: any[]): Promise<boolean> {
     const tool = this.create(toolId, ...args);
     return tool !== undefined && tool.run(...args);
   }
@@ -1009,7 +1009,7 @@ export class ToolRegistry {
    * @throws any Error thrown by the tool's `parseAndRun` method.
    * @public
    */
-  public parseAndRun(keyin: string): ParseAndRunResult {
+  public async parseAndRun(keyin: string): Promise<ParseAndRunResult> {
     const parsed = this.parseKeyin(keyin);
     if (!parsed.ok) {
       switch (parsed.error) {
@@ -1024,7 +1024,7 @@ export class ToolRegistry {
       return ParseAndRunResult.BadArgumentCount;
 
     const tool = new parsed.tool();
-    return tool.parseAndRun(...parsed.args) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
+    return await tool.parseAndRun(...parsed.args) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
   }
 
   /**

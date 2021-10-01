@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ViewToolWidgetComposer ViewToolWidgetComposer should render correctly 1`] = `
+<NavigationWidgetComposer
+  className="nz-hidden"
+  horizontalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={0}
+      usage={1}
+    />
+  }
+  verticalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={1}
+      usage={1}
+    />
+  }
+/>
+`;
+
+exports[`ViewToolWidgetComposer ViewToolWidgetComposer with no navigation aid should render correctly 1`] = `
+<NavigationWidgetComposer
+  className="nz-hidden"
+  hideNavigationAid={true}
+  horizontalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={0}
+      usage={1}
+    />
+  }
+  verticalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={1}
+      usage={1}
+    />
+  }
+/>
+`;

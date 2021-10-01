@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/ecschema-metadata",
-  "version": "3.0.0-dev.41",
+  "name": "@itwin/ecschema-metadata",
+  "version": "3.0.0-dev.73",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -11,16 +11,16 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-metadata"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test",
+    "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
-    "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
+    "cover": "nyc npm -s test",
+    "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
   "keywords": [
     "Bentley",
@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
@@ -44,9 +44,9 @@
     "@types/chai-as-promised": "^7",
     "@types/i18next-node-fs-backend": "^2.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
-    "@types/xmldom": "^0.1.30",
+    "@xmldom/xmldom": "^0.7.0",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -57,35 +57,46 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.3.0",
-    "xmldom": "^0.6.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.41",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.41"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.73"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn",
-      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/ECObjects.ts"]}]
+      "@itwin/no-internal-barrel-imports": [
+        "error",
+        {
+          "ignored-barrel-modules": [
+            "./src/ECObjects.ts"
+          ]
+        }
+      ]
     },
     "overrides": [
       {
-        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+        "files": [
+          "*.test.ts",
+          "*.test.tsx",
+          "**/test/**/*.ts",
+          "**/test/**/*.tsx"
+        ],
         "rules": {
-          "@bentley/no-internal-barrel-imports": "off"
+          "@itwin/no-internal-barrel-imports": "off"
         }
       }
     ]

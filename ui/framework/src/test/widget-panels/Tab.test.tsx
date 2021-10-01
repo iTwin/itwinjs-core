@@ -5,10 +5,10 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType } from "@itwin/appui-abstract";
 import {
   FrontstageDef, FrontstageManager, getBadgeClassName, WidgetDef, WidgetPanelsTab,
-} from "../../ui-framework";
+} from "../../appui-react";
 
 describe("WidgetPanelsTab", () => {
   it("should render", () => {

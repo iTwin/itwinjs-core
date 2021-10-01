@@ -2,23 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
-import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
-import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
-import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import { fireEvent, render } from "@testing-library/react";
+import { PropertyCategoryBlock } from "../../../components-react/propertygrid/component/PropertyCategoryBlock";
+import { PropertyGrid } from "../../../components-react/propertygrid/component/PropertyGrid";
+import { PropertyGridCommons } from "../../../components-react/propertygrid/component/PropertyGridCommons";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components/propertygrid/PropertyDataProvider";
+} from "../../../components-react/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { fireEvent, render } from "@testing-library/react";
-import { PropertyGridCommons } from "../../../ui-components/propertygrid/component/PropertyGridCommons";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("PropertyGrid", () => {
@@ -124,49 +125,6 @@ describe("PropertyGrid", () => {
       expect(categoryBlocks.length).to.eq(2);
     });
 
-    it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
-      const testOnClick = (_text: string) => [];
-      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      // eslint-disable-next-line quote-props
-      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
-      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
-      testNestedRecord1.links = {
-        onClick: testOnClick,
-      };
-      testNestedRecord2.links = {
-        onClick: testOnClick,
-      };
-      testStructRecord.links = {
-        onClick: testOnClick,
-      };
-
-      dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: PropertyRecord.fromString(faker.random.word()),
-        description: faker.random.words(),
-        categories: [...categories],
-        records: {
-          Group_1: [testArrayRecord],
-          Group_2: [records[0]],
-        },
-      });
-      const propertyLinkClickFnSpy = sinon.spy();
-      const wrapper = mount(<PropertyGrid
-        orientation={Orientation.Horizontal}
-        dataProvider={dataProvider}
-        onPropertyLinkClick={propertyLinkClickFnSpy} />);
-
-      await TestUtils.flushAsyncOperations();
-
-      wrapper.update();
-
-      testNestedRecord1.links.onClick("test");
-      testStructRecord.links.onClick("test");
-      testNestedRecord2.links.onClick("test");
-
-      expect(propertyLinkClickFnSpy.calledThrice).to.be.true;
-    });
-
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
       const wrapper = mount<PropertyGrid>(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
@@ -221,6 +179,7 @@ describe("PropertyGrid", () => {
       const rootCategoryBlock2 = wrapper.find(PropertyCategoryBlock).at(2);
 
       rootCategoryBlock1.find(".iui-header").first().simulate("click");
+      // NEEDSWORK: This is causing the `Warning: Can't perform a React state update on an unmounted component.` in ExpandableBlock
       childCategoryBlock.find(".iui-header").simulate("click");
       rootCategoryBlock2.find(".iui-header").simulate("click");
 
@@ -723,7 +682,7 @@ describe("PropertyGrid Commons", () => {
 
   describe("handleLinkClick", () => {
     const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
-    let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
+    let spy: sinon.SinonStub<[(string | URL | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
 
     before(() => {
       location = locationMockRef.object;

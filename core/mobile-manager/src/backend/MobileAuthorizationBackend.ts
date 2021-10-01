@@ -6,10 +6,9 @@
  * @module OIDC
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
+import { AccessToken, assert } from "@itwin/core-bentley";
+import { NativeAppAuthorizationBackend } from "@itwin/core-backend";
+import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
@@ -28,19 +27,8 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     await super.initialize(config);
     assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
 
-    MobileHost.device.authStateChanged = (tokenString?: string) => {
-      let token: AccessToken | undefined;
-      if (tokenString) {
-        const tokenJson = JSON.parse(tokenString) as AccessTokenProps;
-        // Patch user info
-        if (typeof tokenJson.userInfo === "undefined")
-          tokenJson.userInfo = { id: "" };
-        else
-          tokenJson.userInfo = UserInfo.fromTokenResponseJson(tokenJson.userInfo);
-
-        token = AccessToken.fromJson(tokenJson);
-      }
-      this.setAccessToken(token);
+    MobileHost.device.authStateChanged = (tokenString?: AccessToken) => {
+      this.setAccessToken(tokenString ?? "");
     };
 
     return new Promise<void>((resolve, reject) => {
@@ -83,13 +71,9 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
 
   /** return accessToken */
   public async refreshToken(): Promise<AccessToken> {
-    return new Promise<AccessToken>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken((tokenString?: string, err?: string) => {
-        if (!err && tokenString) {
-          resolve(AccessToken.fromJson(JSON.parse(tokenString) as AccessTokenProps));
-        } else {
-          reject(new Error(err));
-        }
+    return new Promise<AccessToken>((resolve) => {
+      MobileHost.device.authGetAccessToken((tokenStringJson?: AccessToken) => {
+        resolve(tokenStringJson ?? "");
       });
     });
   }

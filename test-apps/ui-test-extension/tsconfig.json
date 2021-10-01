@@ -1,11 +1,11 @@
 {
-  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
     "outDir": "./lib",
     "types": [
-      "@bentley/extension-webpack-tools"
+      "@bentley/react-scripts"
     ]
   },
   "include": [

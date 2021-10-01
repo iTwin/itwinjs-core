@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ExpandableBlock } from "@itwin/itwinui-react";
-import { ExpandableList } from "../../ui-core";
+import { ExpandableList } from "../../core-react";
 import TestUtils from "../TestUtils";
 
 describe("ExpandableList", () => {

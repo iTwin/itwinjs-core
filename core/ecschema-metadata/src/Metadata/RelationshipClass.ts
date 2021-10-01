@@ -198,11 +198,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
   }
 
-  /** @deprecated */
-  public toJson() {
-    this.toJSON();
-  }
-
   /**
    * Save this RelationshipConstraint's properties to an object for serializing to JSON.
    */
@@ -261,11 +256,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(relationshipConstraintProps: RelationshipConstraintProps) {
-    this.fromJSONSync(relationshipConstraintProps);
-  }
-
   public fromJSONSync(relationshipConstraintProps: RelationshipConstraintProps) {
 
     this._roleLabel = relationshipConstraintProps.roleLabel;
@@ -303,11 +293,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       const constraintClass = loadEachConstraint(constraintClassName);
       this.addClass(constraintClass);
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(relationshipConstraintProps: RelationshipConstraintProps) {
-    await this.fromJSON(relationshipConstraintProps);
   }
 
   public async fromJSON(relationshipConstraintProps: RelationshipConstraintProps) {

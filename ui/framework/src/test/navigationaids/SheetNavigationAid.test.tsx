@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { AnyWidgetProps, ConfigurableUiManager, NavigationWidgetDef, SheetNavigationAid, SheetNavigationAidControl } from "../../ui-framework";
+import { IModelConnection, MockRender } from "@itwin/core-frontend";
+import { AnyWidgetProps, ConfigurableUiManager, NavigationWidgetDef, SheetNavigationAid, SheetNavigationAidControl } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("SheetNavigationAid", () => {

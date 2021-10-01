@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
 import { RenderPlan } from "../RenderPlan";
 import { ColorInfo } from "./ColorInfo";
 import { FloatRgb, FloatRgba } from "./FloatRGBA";
@@ -22,18 +22,20 @@ export class StyleUniforms {
   private readonly _bgRgb = FloatRgb.fromColorDef(this._bgColor);
   private _monoColor = ColorDef.white;
   private readonly _monoRgb = FloatRgb.fromColorDef(this._monoColor);
-  private _isWhiteBackground = true;
+  private _wantWoWReversal = true;
+  private _wowReversalSettings = WhiteOnWhiteReversalSettings.fromJSON();
 
   public syncKey = 0;
 
   public update(plan: RenderPlan): void {
-    if (this._bgColor.equals(plan.bgColor) && this._monoColor.equals(plan.monoColor))
+    if (this._bgColor.equals(plan.bgColor) && this._monoColor.equals(plan.monoColor) && this._wowReversalSettings.equals(plan.whiteOnWhiteReversal))
       return;
 
     desync(this);
 
     this._monoColor = plan.monoColor;
     this._monoRgb.setColorDef(plan.monoColor);
+    this._wowReversalSettings = plan.whiteOnWhiteReversal;
 
     this.updateBackgroundColor(plan.bgColor);
   }
@@ -42,7 +44,7 @@ export class StyleUniforms {
     this._bgColor = bgColor;
     this._bgRgba.setColorDef(bgColor);
     this._bgRgb.setColorDef(bgColor);
-    this._isWhiteBackground = this._bgRgb.isWhite;
+    this._wantWoWReversal = this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
   }
 
   public changeBackgroundColor(bgColor: ColorDef): void {
@@ -91,8 +93,8 @@ export class StyleUniforms {
     this._bgRgba.clone(result);
   }
 
-  public get isWhiteBackground(): boolean {
-    return this._isWhiteBackground;
+  public get wantWoWReversal(): boolean {
+    return this._wantWoWReversal;
   }
 
   public get backgroundColorInfo(): ColorInfo {

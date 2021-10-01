@@ -6,13 +6,12 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
@@ -28,7 +27,7 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
  */
 export class CheckpointConnection extends IModelConnection {
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
 
@@ -42,18 +41,14 @@ export class CheckpointConnection extends IModelConnection {
   /**
    * Open a readonly IModelConnection to an iModel over RPC.
    */
-  public static async openRemote(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
+  public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+    const accessToken = await IModelApp.getAccessToken();
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
+    const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ accessToken, iModelId, version }) };
 
-    const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version }) };
-    requestContext.enter();
-
-    const iModelRpcProps: IModelRpcOpenProps = { contextId, iModelId, changeset };
-    const openResponse = await this.callOpen(requestContext, iModelRpcProps, routingContext);
-    requestContext.enter();
+    const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
+    const openResponse = await this.callOpen(iModelRpcProps, routingContext);
 
     const connection = new this(openResponse);
     RpcManager.setIModel(connection);
@@ -64,9 +59,7 @@ export class CheckpointConnection extends IModelConnection {
     return connection;
   }
 
-  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcOpenProps, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
-    requestContext.enter();
-
+  private static async callOpen(iModelToken: IModelRpcOpenProps, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
     // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
@@ -88,7 +81,6 @@ export class CheckpointConnection extends IModelConnection {
       if (!(openForReadOperation && request.operation === openForReadOperation))
         return;
 
-      requestContext.enter();
       Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
 
       const connectionTimeElapsed = Date.now() - startTime;
@@ -104,14 +96,12 @@ export class CheckpointConnection extends IModelConnection {
       }
     });
 
-    requestContext.useContextForRpc = true;
     const openPromise = IModelReadRpcInterface.getClientForRouting(routingContext.token).openForRead(iModelToken);
 
     let openResponse: IModelConnectionProps;
     try {
       openResponse = await openPromise;
     } finally {
-      requestContext.enter();
       Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", () => iModelToken);
       removeListener();
     }
@@ -127,21 +117,17 @@ export class CheckpointConnection extends IModelConnection {
     if (this._fileKey !== iModelRpcProps.key)
       return; // The handler is called for a different connection than this
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
-    requestContext.enter();
-
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
     try {
-      const openResponse = await CheckpointConnection.callOpen(requestContext, iModelRpcProps, this.routingContext);
+      const openResponse = await CheckpointConnection.callOpen(iModelRpcProps, this.routingContext);
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
       this.changeset = openResponse.changeset!;
 
     } catch (error) {
-      reject(error.message);
+      reject(BentleyError.getErrorMessage(error));
     } finally {
-      requestContext.enter();
     }
 
     Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelRpcProps);
@@ -155,17 +141,11 @@ export class CheckpointConnection extends IModelConnection {
       return;
 
     this.beforeClose();
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
-    requestContext.useContextForRpc = true;
 
-    const closePromise: Promise<boolean> = IModelReadRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps()); // Ensure the method isn't awaited right away.
     try {
-      await closePromise;
+      await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
     } finally {
-      requestContext.enter();
       this._isClosed = true;
     }
   }

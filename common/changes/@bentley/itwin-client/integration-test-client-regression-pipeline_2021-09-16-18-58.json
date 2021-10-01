@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "Fix issue where trailing slash was not always removed from URL",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client"
+}

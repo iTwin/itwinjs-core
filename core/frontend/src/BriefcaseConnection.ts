@@ -6,10 +6,11 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndexAndId, IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps, StandaloneOpenOptions,
-} from "@bentley/imodeljs-common";
+  ChangesetIndex,
+  ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
+} from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";
@@ -159,7 +160,7 @@ export class BriefcaseConnection extends IModelConnection {
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
@@ -210,12 +211,12 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   private requireTimeline() {
-    if (this.contextId === Guid.empty)
+    if (this.iTwinId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 
   /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.txns.hasPendingTxns();
   }
 
@@ -227,12 +228,12 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
-   * @param version The version to pull changes to. If `undefined`, pull all changes.
+   * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
     this.requireTimeline();
-    this.changeset = await IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
+    this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex);
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.

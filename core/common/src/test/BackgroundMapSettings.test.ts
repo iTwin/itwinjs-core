@@ -4,24 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
-import { MapLayerSettings } from "../MapLayerSettings";
+import { BackgroundMapSettings, GlobeMode, PersistentBackgroundMapProps } from "../BackgroundMapSettings";
+import { BackgroundMapType } from "../BackgroundMapProvider";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
   it("round-trips through JSON", () => {
-    const roundTrip = (input: BackgroundMapProps | undefined, expected: BackgroundMapProps | "input") => {
+    const roundTrip = (input: PersistentBackgroundMapProps | undefined, expected: PersistentBackgroundMapProps | "input") => {
       if (!input)
         input = {};
 
       if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as BackgroundMapProps;
+        expected = JSON.parse(JSON.stringify(input)) as PersistentBackgroundMapProps;
 
-      const settings = BackgroundMapSettings.fromJSON(input);
-      const output = settings.toJSON();
+      const settings = BackgroundMapSettings.fromPersistentJSON(input);
+      const output = settings.toPersistentJSON();
 
       expect(output.groundBias).to.equal(expected.groundBias);
+      // eslint-disable-next-line deprecation/deprecation
       expect(output.providerName).to.equal(expected.providerName);
+      // eslint-disable-next-line deprecation/deprecation
       expect(output.providerData?.mapType).to.equal(expected.providerData?.mapType);
       expect(output.transparency).to.equal(expected.transparency);
       expect(output.useDepthBuffer).to.equal(expected.useDepthBuffer);
@@ -44,19 +46,13 @@ describe("BackgroundMapSettings", () => {
         expect(outTerrain.applyLighting).to.equal(expTerrain.applyLighting);
         expect(outTerrain.heightOrigin).to.equal(expTerrain.heightOrigin);
         expect(outTerrain.heightOriginMode).to.equal(expTerrain.heightOriginMode);
-        expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable); // eslint-disable-line deprecation/deprecation
+        expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable);
       }
 
-      expect(settings.equalsJSON(expected)).to.be.true;
+      expect(settings.equalsPersistentJSON(expected)).to.be.true;
 
-      const expectedSettings = BackgroundMapSettings.fromJSON(expected);
+      const expectedSettings = BackgroundMapSettings.fromPersistentJSON(expected);
       expect(settings.equals(expectedSettings)).to.be.true;
-
-      // Check synch through base map layer.
-      const mapLayer = MapLayerSettings.fromMapSettings(settings);
-      const providerProps = BackgroundMapSettings.providerFromMapLayer(mapLayer.toJSON());
-      const synchedFromProvider = settings.clone(providerProps);
-      expect(settings.equals(synchedFromProvider)).to.be.true;
     };
 
     roundTrip(undefined, {});
@@ -113,8 +109,8 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
 
-    roundTrip({ terrainSettings: { nonLocatable: false } }, {}); // eslint-disable-line deprecation/deprecation
-    roundTrip({ terrainSettings: { nonLocatable: true } }, "input"); // eslint-disable-line deprecation/deprecation
+    roundTrip({ terrainSettings: { nonLocatable: false } }, {});
+    roundTrip({ terrainSettings: { nonLocatable: true } }, "input");
 
     roundTrip({
       providerName: "BingProvider",
@@ -129,7 +125,7 @@ describe("BackgroundMapSettings", () => {
         exaggeration: 1,
         heightOrigin: 0,
         heightOriginMode: TerrainHeightOriginMode.Geodetic,
-        nonLocatable: false, // eslint-disable-line deprecation/deprecation
+        nonLocatable: false,
       },
     }, {});
   });

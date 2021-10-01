@@ -6,9 +6,9 @@ import "./Common.scss";
 import "./IModelViewPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { IModelInfo, UiFramework } from "@itwin/appui-react";
 import { Button, ProgressRadial } from "@itwin/itwinui-react";
 
 interface ViewCardProps {
@@ -110,11 +110,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   private async startRetrieveViews() {
     if (this.props.iModelInfo) {
-      const projectInfo = this.props.iModelInfo.projectInfo;
-      const iModelWsgId = this.props.iModelInfo.wsgId;
-
-      // this.setState({ waitingForViews: true });
-      this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo.wsgId, iModelWsgId);
+      this._iModelConnection = await UiFramework.iModelServices.openIModel(this.props.iModelInfo.iTwinId, this.props.iModelInfo.wsgId);
     } else if (this.props.iModelConnection) {
       this._iModelConnection = this.props.iModelConnection;
     } else {

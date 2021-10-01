@@ -5,13 +5,13 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@bentley/ui-core";
+import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, NineZoneProvider, NineZoneProviderProps } from "../Providers";
 
 describe("WidgetPanelGrip", () => {
@@ -100,8 +100,7 @@ describe("WidgetPanelGrip", () => {
     fireEvent.mouseDown(handle);
     fakeTimers.tick(300);
 
-    const event = document.createEvent("MouseEvent");
-    event.initEvent("mousemove");
+    const event = new MouseEvent("mousemove");
     sinon.stub(event, "clientX").get(() => 220);
     fireEvent(document, event);
 

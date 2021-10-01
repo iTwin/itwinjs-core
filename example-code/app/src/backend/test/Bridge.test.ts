@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
+
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
-import { HubIModel } from "@bentley/imodelhub-client";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
-  BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, IModelHubBackend, ModelSelector,
+  BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
-} from "@bentley/imodeljs-backend";
-import { ColorByName, IModel } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+} from "@itwin/core-backend";
+import { ColorByName, IModel, LocalFileName } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";
@@ -54,47 +53,50 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-  return (new ContextRegistryClient()).getProject(requestContext, {
-    $select: "*",
-    $filter: `Name+eq+'${projectName}'`,
+async function getITwinByName(requestContext: AccessToken, name: string): Promise<ITwin> {
+  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+    search: {
+      searchString: name,
+      propertyName: ITwinSearchableProperty.Name,
+      exactMatch: true,
+    },
   });
+
+  if (iTwinList.length === 0)
+    throw new Error(`ITwin ${name} was not found for the user.`);
+  else if (iTwinList.length > 1)
+    throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+  return iTwinList[0];
 }
 
-async function createIModel(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, seedFile: string) {
+async function createIModel(user: AccessToken, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
   try {
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
     if (iModelId !== undefined)
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId });
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(requestContext, contextId, iModelName, { path: seedFile });
+  const newIModelId = await IModelHost.hubAccess.createNewIModel({ user, iModelName, iTwinId, revision0 });
   // __PUBLISH_EXTRACT_END__
-  return imodelRepository;
+  return newIModelId;
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
-async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
+async function runBridgeFirstTime(user: AccessToken, iModelId: GuidString, iTwinId: GuidString, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
-  requestContext.enter();
 
-  const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId: projectId, iModelId });
-  requestContext.enter();
-  const briefcase = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
-  requestContext.enter();
-
-  briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+  const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
+  const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
 
   // I. Import the schema.
-  await briefcase.importSchemas(requestContext, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
-  //    You must acquire all locks and reserve all Codes used before saving or pushing.
-  await briefcase.concurrencyControl.request(requestContext);
+  await briefcase.importSchemas([path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
-  await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext, "bridge test");
+  await briefcase.pullChanges({ user });
+  await briefcase.pushChanges({ user, description: "bridge test" });
 
   // II. Import data
 
@@ -139,33 +141,27 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   OrthographicViewDefinition.insert(briefcase, defModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
   //  III. Push the data changes to iModel Server
-
-  // 1. Acquire Resources
-  //    You must acquire all locks and reserve all Codes used before saving or pushing.
-  await briefcase.concurrencyControl.request(requestContext);
-
-  // 2. Pull and then push.
   //    Note that you pull and merge first, in case another user has pushed.
   //    Also note that after pushing, all locks will be released.
   briefcase.saveChanges();
-  await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext, "bridge test");
+  await briefcase.pullChanges({ user });
+  await briefcase.pushChanges({ user, description: "bridge test" });
 }
 // __PUBLISH_EXTRACT_END__
 
 describe.skip("Bridge", async () => {
 
-  let requestContext: AuthorizedClientRequestContext;
-  let testProjectId: string;
-  let seedPathname: string;
-  let imodelRepository: HubIModel;
+  let user: AccessToken;
+  let testITwinId: GuidString;
+  let revision0: LocalFileName;
+  let iModelId: GuidString;
 
   before(async () => {
     await IModelHost.startup();
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
-    seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
-    imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
+    user = await TestUtility.getAccessToken(TestUsers.superManager);
+    testITwinId = (await getITwinByName(user, "iModelJsIntegrationTest")).id;
+    revision0 = path.join(KnownTestLocations.assetsDir, "empty.bim");
+    iModelId = await createIModel(user, testITwinId, "BridgeTest", revision0);
     await IModelHost.shutdown();
   });
 
@@ -175,6 +171,6 @@ describe.skip("Bridge", async () => {
 
   it("should run bridge the first time", async () => {
     const assetsDir = path.join(__dirname, "..", "assets");
-    await runBridgeFirstTime(requestContext, imodelRepository.wsgId, testProjectId, assetsDir);
+    await runBridgeFirstTime(user, iModelId, testITwinId, assetsDir);
   });
 });

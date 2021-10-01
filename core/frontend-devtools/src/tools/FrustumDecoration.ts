@@ -7,16 +7,16 @@
  * @module Tools
  */
 
-import { Map4d, Point3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@bentley/imodeljs-common";
+import { Map4d, Point3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@itwin/core-common";
 import {
   CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 interface FrustumDecorationOptions {
   showPreloadFrustum?: boolean;
-  showBackgroundIntersecctions?: boolean;
+  showBackgroundIntersections?: boolean;
 }
 
 /**
@@ -65,7 +65,7 @@ class FrustumDecoration {
       if (options.showPreloadFrustum)
         FrustumDecoration.drawPreloadFrustum(builder, this._preloadFrustum);
 
-      if (options?.showBackgroundIntersecctions) {
+      if (options?.showBackgroundIntersections) {
         const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
         if (backgroundMapGeometry)
           backgroundMapGeometry.addFrustumDecorations(builder, this._adjustedWorldFrustum);
@@ -205,7 +205,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 2; }
 
-  public override run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean {
+  public override async run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -215,7 +215,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
 
     if (enable !== FrustumDecorator.isEnabled) {
       if (enable) {
-        FrustumDecorator.enable(vp, { showPreloadFrustum, showBackgroundIntersecctions });
+        FrustumDecorator.enable(vp, { showPreloadFrustum, showBackgroundIntersections });
         vp.onChangeView.addOnce(() => FrustumDecorator.disable());
       } else {
         FrustumDecorator.disable();
@@ -225,7 +225,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     let showPreload, showBackgroundIntersections, enable;
     for (const arg of args) {
       if (arg === "preload")
@@ -237,7 +237,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
     }
 
     if (typeof enable !== "string")
-      this.run(enable, showPreload, showBackgroundIntersections);
+      await this.run(enable, showPreload, showBackgroundIntersections);
 
     return true;
   }
@@ -339,7 +339,7 @@ export class ToggleSelectedViewFrustumTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -355,10 +355,10 @@ export class ToggleSelectedViewFrustumTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }
@@ -438,7 +438,7 @@ export class ToggleShadowFrustumTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
       ShadowFrustumDecoration.toggle(vp, enable);
@@ -446,10 +446,10 @@ export class ToggleShadowFrustumTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

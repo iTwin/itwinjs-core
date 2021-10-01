@@ -9,13 +9,13 @@
 
 import {
   ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
-} from "@bentley/imodeljs-common";
-import { IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 
-/** This tool specifies or unspecifies a clip color to use for pixels inside or outside the clip region.
+/** This tool specifies or un-specifies a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
  * - clear
  * - inside   <color string> | clear
@@ -67,7 +67,7 @@ export class ClipColorTool extends Tool {
    * "blanchedAlmond" (see possible values from [[ColorByName]]). Case insensitive.
    * @beta
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (1 === args.length) {
       if (args[0] === "clear")
         this._clearClipColors();
@@ -94,7 +94,7 @@ export class ToggleSectionCutTool extends Tool {
   /** This method runs the tool, controlling a view state's view details' flag for producing cut geometry for a clip style.
    * @param produceCutGeometry whether to produce cut geometry
    */
-  public override run(produceCutGeometry?: boolean): boolean {
+  public override async run(produceCutGeometry?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       const style = vp.view.displayStyle.settings.clipStyle;
@@ -116,10 +116,10 @@ export class ToggleSectionCutTool extends Tool {
   /** Executes this tool's run method with args[0] containing `produceCutGeometry`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

@@ -8,10 +8,10 @@ import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs,
   ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
-} from "../../../ui-framework";
-import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
+} from "../../../appui-react";
+import { ToolInformation } from "../../../appui-react/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
-import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
+import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin/appui-abstract";
 import { Input, Slider } from "@itwin/itwinui-react";
 
 describe("ToolUiProvider", () => {
@@ -64,13 +64,17 @@ describe("ToolUiProvider", () => {
     });
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ToolUiProvider-TestFrontstage";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolUiProvider-TestFrontstage"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             topCenter={
               <Zone
                 widgets={[
@@ -99,7 +103,7 @@ describe("ToolUiProvider", () => {
   });
 
   it("starting a tool with tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

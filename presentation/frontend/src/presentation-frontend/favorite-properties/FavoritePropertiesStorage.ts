@@ -6,11 +6,11 @@
  * @module Core
  */
 
-import { compareStrings, Dictionary, Guid, IDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
-import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import { IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
+import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { InternetConnectivityStatus } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
+import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 
 const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
@@ -50,31 +50,55 @@ export interface IFavoritePropertiesStorage {
 }
 
 /**
+ * Available implementations of [[IFavoritePropertiesStorage]].
+ * @public
+ */
+export enum DefaultFavoritePropertiesStorageTypes {
+  /** A no-op storage that doesn't store or return anything. Used for cases when favorite properties aren't used by the application. */
+  Noop,
+  /** A storage that stores favorite properties information in a browser local storage. */
+  BrowserLocalStorage,
+  /** A storage that stores favorite properties in a user settings service (see [[IModelApp.settings]]). */
+  UserSettingsServiceStorage,
+}
+
+/**
+ * A factory method to create one of the available [[IFavoritePropertiesStorage]] implementations.
+ * @public
+ */
+export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage {
+  switch (type) {
+    case DefaultFavoritePropertiesStorageTypes.Noop: return new NoopFavoritePropertiesStorage();
+    case DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage: return new BrowserLocalFavoritePropertiesStorage();
+    case DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
+  }
+}
+
+/**
  * @internal
  */
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private get isSignedIn() {
-    // note: these checks are also done when creating `AuthorizedFrontendRequestContext` but instead of just
-    // throwing it also logs error messages which we want to avoid
-    return IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
+  private async isSignedIn(): Promise<boolean> {
+    // If the authorization client is provided, it should give a valid response to getAccessToken
+    return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
   }
 
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    let settingResult = await IModelApp.settings.getUserSetting(requestContext, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
+    const accessToken = await IModelApp.getAccessToken();
+    let settingResult = await IModelApp.settings.getUserSetting(accessToken, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
     let setting = settingResult.setting;
 
     if (setting !== undefined)
       return new Set<PropertyFullName>(setting);
 
     // try to check the old namespace
-    settingResult = await IModelApp.settings.getUserSetting(requestContext, DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
+    settingResult = await IModelApp.settings.getUserSetting(accessToken, DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
     setting = settingResult.setting;
 
     if (setting !== undefined && setting.hasOwnProperty("nestedContentInfos") && setting.hasOwnProperty("propertyInfos") && setting.hasOwnProperty("baseFieldInfos"))
@@ -84,54 +108,57 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void> {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    await IModelApp.settings.saveUserSetting(requestContext, Array.from(properties), IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
+    const accessToken = await IModelApp.getAccessToken();
+    await IModelApp.settings.saveUserSetting(accessToken, Array.from(properties), IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
   }
 
   public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const settingResult = await IModelApp.settings.getUserSetting(requestContext, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, projectId, imodelId);
+    const accessToken = await IModelApp.getAccessToken();
+    const settingResult = await IModelApp.settings.getUserSetting(accessToken, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, projectId, imodelId);
     return settingResult.setting as FavoritePropertiesOrderInfo[];
   }
 
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string) {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    await IModelApp.settings.saveUserSetting(requestContext, orderInfos, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, projectId, imodelId);
+    const accessToken = await IModelApp.getAccessToken();
+    await IModelApp.settings.saveUserSetting(accessToken, orderInfos, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, projectId, imodelId);
   }
 }
 
 /** @internal */
 export interface OfflineCachingFavoritePropertiesStorageProps {
-  connectivityInfo: IConnectivityInformationProvider;
   impl: IFavoritePropertiesStorage;
+  connectivityInfo?: IConnectivityInformationProvider;
 }
 /** @internal */
 export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
 
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
-  private _unsubscribeFromConnectivityStatusChangedEvent: () => void;
   private _propertiesOfflineCache = new DictionaryWithReservations<ProjectAndIModelIdsKey, Set<PropertyFullName>>(projectAndIModelIdsKeyComparer);
   private _propertiesOrderOfflineCache = new DictionaryWithReservations<ProjectAndIModelIdsKey, FavoritePropertiesOrderInfo[]>(projectAndIModelIdsKeyComparer);
 
   public constructor(props: OfflineCachingFavoritePropertiesStorageProps) {
     this._impl = props.impl;
-    this._connectivityInfo = props.connectivityInfo;
-    this._unsubscribeFromConnectivityStatusChangedEvent = this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
+    // istanbul ignore next
+    this._connectivityInfo = props.connectivityInfo ?? new ConnectivityInformationProvider();
+    this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
   }
 
   public dispose() {
-    this._unsubscribeFromConnectivityStatusChangedEvent();
+    if (isIDisposable(this._connectivityInfo))
+      this._connectivityInfo.dispose();
   }
+
+  public get impl() { return this._impl; }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
@@ -241,4 +268,62 @@ type ProjectAndIModelIdsKey = [string | undefined, string | undefined];
 function projectAndIModelIdsKeyComparer(lhs: ProjectAndIModelIdsKey, rhs: ProjectAndIModelIdsKey) {
   const projectIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");
   return (projectIdCompare !== 0) ? projectIdCompare : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
+}
+
+/** @internal */
+export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+  // istanbul ignore next
+  public async loadProperties(_projectId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined> { return undefined; }
+  // istanbul ignore next
+  public async saveProperties(_properties: Set<PropertyFullName>, _projectId?: string, _imodelId?: string) { }
+  // istanbul ignore next
+  public async loadPropertiesOrder(_projectId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> { return undefined; }
+  // istanbul ignore next
+  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _projectId: string | undefined, _imodelId: string): Promise<void> { }
+}
+
+/** @internal */
+export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+  private _localStorage: Storage;
+
+  public constructor(props?: { localStorage?: Storage }) {
+    // istanbul ignore next
+    this._localStorage = props?.localStorage ?? window.localStorage;
+  }
+
+  public createFavoritesSettingItemKey(projectId?: string, imodelId?: string): string {
+    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_SETTING_NAME}?projectId=${projectId}&imodelId=${imodelId}`;
+  }
+  public createOrderSettingItemKey(projectId?: string, imodelId?: string): string {
+    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}?projectId=${projectId}&imodelId=${imodelId}`;
+  }
+
+  public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
+    const value = this._localStorage.getItem(this.createFavoritesSettingItemKey(projectId, imodelId));
+    if (!value)
+      return undefined;
+
+    const properties: PropertyFullName[] = JSON.parse(value);
+    return new Set(properties);
+  }
+
+  public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string) {
+    this._localStorage.setItem(this.createFavoritesSettingItemKey(projectId, imodelId), JSON.stringify([...properties]));
+  }
+
+  public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+    const value = this._localStorage.getItem(this.createOrderSettingItemKey(projectId, imodelId));
+    if (!value)
+      return undefined;
+
+    const orderInfos: FavoritePropertiesOrderInfo[] = JSON.parse(value).map((json: any) => ({
+      ...json,
+      orderedTimestamp: new Date(json.orderedTimestamp),
+    }));
+    return orderInfos;
+  }
+
+  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void> {
+    this._localStorage.setItem(this.createOrderSettingItemKey(projectId, imodelId), JSON.stringify(orderInfos));
+  }
 }

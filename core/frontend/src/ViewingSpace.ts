@@ -8,8 +8,8 @@
 
 import {
   AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
-} from "@bentley/geometry-core";
-import { Frustum, GridOrientationType, Npc, NpcCorners } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
@@ -177,7 +177,7 @@ export class ViewingSpace {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
 
-      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, extents, globalGeometry.heightRange, gridPlane, this.view.maxGlobalScopeFactor > 1);
+      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, globalGeometry.heightRange, gridPlane, this.view.maxGlobalScopeFactor > 1);
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;

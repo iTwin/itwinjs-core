@@ -7,14 +7,14 @@
  */
 
 import memoize from "micro-memoize";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
   RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,
-} from "@bentley/presentation-common";
-import { IModelContentChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+} from "@itwin/presentation-common";
+import { IModelContentChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { createDiagnosticsOptions, DiagnosticsProps } from "./Diagnostics";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
@@ -255,38 +255,6 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   /**
-   * Called to configure the content descriptor. This is the place where concrete
-   * provider implementations can control things like sorting, filtering, hiding fields, etc.
-   *
-   * The default method implementation takes care of hiding properties. Subclasses
-   * should call the base class method to not lose this functionality.
-   *
-   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
-   */
-  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
-    const fields = descriptor.fields.slice();
-    const fieldsCount = fields.length;
-    for (let i = fieldsCount - 1; i >= 0; --i) {
-      const field = fields[i];
-      // eslint-disable-next-line deprecation/deprecation
-      if (this.shouldExcludeFromDescriptor(field))
-        fields.splice(i, 1);
-    }
-    return new Descriptor({ ...descriptor, fields });
-  }
-
-  /**
-   * Called to check whether the content descriptor needs advanced configuration. If yes,
-   * descriptor is requested from the backend and `configureContentDescriptor()` is called
-   * to configure it before requesting content. If not, the provider calls
-   * `getDescriptorOverrides()` to get basic configuration and immediately requests
-   * content - that saves a trip to the backend.
-   *
-   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
-   */
-  protected shouldConfigureContentDescriptor(): boolean { return true; }
-
-  /**
    * Called to check if content should be requested even when `keys` is empty. If this
    * method returns `false`, then content is not requested and this saves a trip
    * to the backend.
@@ -294,28 +262,12 @@ export class ContentDataProvider implements IContentDataProvider {
   protected shouldRequestContentForEmptyKeyset(): boolean { return false; }
 
   /**
-   * Called to check whether the field should be excluded from the descriptor.
-   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
-   */
-  protected shouldExcludeFromDescriptor(field: Field): boolean {
-    // eslint-disable-next-line deprecation/deprecation
-    return this.isFieldHidden(field);
-  }
-
-  /**
-   * Called to check whether the field should be hidden.
-   * @deprecated Derived classes should override [[getDescriptorOverrides]] to customize content
-   */
-  protected isFieldHidden(_field: Field): boolean { return false; }
-
-  /**
    * Get the content descriptor overrides.
    *
-   * **Note:** The method is only called if `shouldConfigureContentDescriptor()` returns `false` -
-   * in that case when requesting content we skip requesting descriptor and instead just pass
-   * overrides.
+   * The method may be overriden to configure the content based on content descriptor. If necessary,
+   * it may use [[getContentDescriptor]] to get the descriptor first.
    */
-  protected getDescriptorOverrides(): DescriptorOverrides {
+  protected async getDescriptorOverrides(): Promise<DescriptorOverrides> {
     return { displayType: this.displayType };
   }
 
@@ -337,6 +289,10 @@ export class ContentDataProvider implements IContentDataProvider {
 
   /**
    * Get the content descriptor.
+   *
+   * The method may return `undefined ` descriptor if:
+   * - [[shouldRequestContentForEmptyKeyset]] returns `false` and `this.keys` is empty
+   * - there is no content based on the ruleset and input
    */
   public getContentDescriptor = memoize(async (): Promise<Descriptor | undefined> => {
     if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
@@ -346,8 +302,7 @@ export class ContentDataProvider implements IContentDataProvider {
     if (!descriptor)
       return undefined;
 
-    // eslint-disable-next-line deprecation/deprecation
-    return this.configureContentDescriptor(descriptor);
+    return new Descriptor({ ...descriptor });
   });
 
   /**
@@ -385,15 +340,7 @@ export class ContentDataProvider implements IContentDataProvider {
     if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
       return undefined;
 
-    let descriptorOverrides: DescriptorOverrides;
-    if (this.shouldConfigureContentDescriptor()) { // eslint-disable-line deprecation/deprecation
-      const descriptor = await this.getContentDescriptor();
-      if (!descriptor)
-        return undefined;
-      descriptorOverrides = descriptor.createDescriptorOverrides();
-    } else {
-      descriptorOverrides = this.getDescriptorOverrides();
-    }
+    const descriptorOverrides = await this.getDescriptorOverrides();
 
     // istanbul ignore if
     if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {

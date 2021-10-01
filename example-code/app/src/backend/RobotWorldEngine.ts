@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import {
   Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+} from "@itwin/core-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
 import { Robot } from "./RobotElement";
@@ -117,7 +116,7 @@ export class RobotWorldEngine {
     return iModelDb.elements.insertElement(props);
   }
 
-  public static async initialize(_requestContext: ClientRequestContext): Promise<void> {
+  public static async initialize(): Promise<void> {
     const config = new IModelHostConfiguration();
     config.appAssetsDir = path.join(__dirname, "assets");
     await IModelHost.startup(config);
@@ -134,8 +133,8 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
-    BriefcaseDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: IModelDb) => {
-      RobotWorld.importSchema(requestContext, iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
+    BriefcaseDb.onOpened.addListener((iModel: BriefcaseDb) => {
+      RobotWorld.importSchema(iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
     // __PUBLISH_EXTRACT_END__
   }

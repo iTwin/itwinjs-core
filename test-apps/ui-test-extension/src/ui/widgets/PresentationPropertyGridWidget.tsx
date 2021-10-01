@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/components-react";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
 import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
@@ -171,13 +171,18 @@ export function PresentationPropertyGridWidget() {
     return null;
   }, [dataProvider, iModelConnection]);
 
+  const [gridSize, setGridSize] = React.useState<{ width: number, height: number }>();
+  const onGridResize = React.useCallback((width, height) => setGridSize({ width, height }), []);
+
   return (
     <div data-component-id={componentId} style={style}>
-      {dataProvider &&
+      {dataProvider && gridSize?.width && gridSize.height &&
         <>
           <PresentationPropertyGrid
             dataProvider={dataProvider}
             orientation={Orientation.Horizontal}
+            width={gridSize.width}
+            height={gridSize.height}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={onPropertyContextMenu}
             actionButtonRenderers={[favoriteActionButtonRenderer]}
@@ -206,6 +211,7 @@ export function PresentationPropertyGridWidget() {
           }
         </>
       }
+      <ResizableContainerObserver onResize={onGridResize} />
     </div>
   );
 }

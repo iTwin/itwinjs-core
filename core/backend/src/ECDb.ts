@@ -6,10 +6,10 @@
  * @module ECDb
  */
 
-import { ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -148,12 +148,13 @@ export class ECDb implements IDisposable {
    * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
    */
-  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql);
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -175,12 +176,13 @@ export class ECDb implements IDisposable {
    * For statements that will be reused often, instead use [[withPreparedStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.prepareStatement(ecsql);
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
       const val = callback(stmt);
@@ -198,11 +200,12 @@ export class ECDb implements IDisposable {
 
   /** Prepare an ECSQL statement.
    * @param ecsql The ECSQL statement to prepare
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
    */
-  public prepareStatement(ecsql: string): ECSqlStatement {
+  public prepareStatement(ecsql: string, logErrors = true): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, ecsql);
+    stmt.prepare(this.nativeDb, ecsql, logErrors);
     return stmt;
   }
 
@@ -214,12 +217,13 @@ export class ECDb implements IDisposable {
    * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
@@ -241,11 +245,12 @@ export class ECDb implements IDisposable {
    * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @public
    */
-  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this.prepareSqliteStatement(sql);
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this.prepareSqliteStatement(sql, logErrors);
     const release = () => stmt.dispose();
     try {
       const val: T = callback(stmt);
@@ -263,12 +268,13 @@ export class ECDb implements IDisposable {
 
   /** Prepare an SQL statement.
    * @param sql The SQLite SQL statement to prepare
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
    * @internal
    */
-  public prepareSqliteStatement(sql: string): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb);
+    stmt.prepare(this.nativeDb, logErrors);
     return stmt;
   }
 
@@ -383,7 +389,7 @@ export class ECDb implements IDisposable {
     return new Promise<QueryResponse>((resolve) => {
       let sessionRestartToken = restartToken ? restartToken.trim() : "";
       if (sessionRestartToken !== "")
-        sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
+        sessionRestartToken = `${IModelHost.sessionId}:${sessionRestartToken}`;
 
       const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
       if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)

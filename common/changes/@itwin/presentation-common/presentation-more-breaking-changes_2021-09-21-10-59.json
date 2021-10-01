@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Remove `priority` attribute from presentation request options type.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

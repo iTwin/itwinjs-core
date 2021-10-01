@@ -8,8 +8,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
-} from "../../ui-framework";
-import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+} from "../../appui-react";
+import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
 import TestUtils, { mockUserInfo, mount } from "../TestUtils";
 
 describe("Backstage", () => {
@@ -59,6 +59,7 @@ describe("Backstage", () => {
           <SeparatorBackstageItem />
           <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
           <SeparatorBackstageItem />
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
         </Backstage>, // eslint-disable-line deprecation/deprecation
       ).dive().should.matchSnapshot();
