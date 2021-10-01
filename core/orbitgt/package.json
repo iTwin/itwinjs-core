@@ -1,21 +1,21 @@
 {
-  "name": "@bentley/orbitgt-core",
-  "version": "3.0.0-dev.63",
+  "name": "@itwin/core-orbitgt",
+  "version": "3.0.0-dev.73",
   "description": "",
-  "main": "lib/imodeljs-orbitgt.js",
-  "typings": "lib/imodeljs-orbitgt",
+  "main": "lib/core-orbitgt.js",
+  "typings": "lib/core-orbitgt",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-orbitgt",
     "lint": "",
-    "test": "betools test",
-    "cover": "nyc npm test"
+    "test": "mocha",
+    "cover": "nyc npm -s test"
   },
   "repository": {
     "type": "git",
@@ -29,12 +29,12 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "debug": "^2.6.9",
@@ -43,15 +43,15 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

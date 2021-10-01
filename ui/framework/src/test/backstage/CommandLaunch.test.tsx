@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher } from "../../ui-framework";
+import { Logger } from "@itwin/core-bentley";
+import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
+import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { testOnScreenViewport } from "../TestViewport";
 
 /* eslint-disable deprecation/deprecation */
@@ -36,51 +36,6 @@ describe("FeatureOverrideProvider", () => {
     expect(flags.featureOverrideProvider).to.equal(expectDirty);
     flags.clear();
   }
-
-  it("should support deprecated getter and setter", async () => {
-    await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
-      checkDirty(vp, false);
-
-      const provider1 = new Provider();
-      vp.featureOverrideProvider = provider1;
-      expect(vp.featureOverrideProvider).to.equal(provider1);
-      checkDirty(vp, true);
-
-      // Setting the same provider again does not dirty the viewport's change flags.
-      vp.featureOverrideProvider = provider1;
-      expect(vp.featureOverrideProvider).to.equal(provider1);
-      checkDirty(vp, false);
-
-      // Setting to a different provider changes the viewport's change flags.
-      const provider2 = new Provider();
-      vp.featureOverrideProvider = provider2;
-      expect(vp.featureOverrideProvider).to.equal(provider2);
-      checkDirty(vp, true);
-
-      // If more than 1 provider is registered, featureOverrideProvider returns undefined.
-      vp.addFeatureOverrideProvider(provider1);
-      expect(vp.featureOverrideProvider).to.be.undefined;
-      checkDirty(vp, true);
-
-      vp.dropFeatureOverrideProvider(provider2);
-      expect(vp.featureOverrideProvider).to.equal(provider1);
-      checkDirty(vp, true);
-
-      vp.featureOverrideProvider = undefined;
-      expect(vp.featureOverrideProvider).to.be.undefined;
-      checkDirty(vp, true);
-
-      vp.featureOverrideProvider = undefined;
-      checkDirty(vp, false);
-
-      vp.addFeatureOverrideProvider(provider1);
-      expect(vp.featureOverrideProvider).to.equal(provider1);
-      checkDirty(vp, true);
-      vp.featureOverrideProvider = provider1;
-      expect(vp.featureOverrideProvider).to.equal(provider1);
-      checkDirty(vp, false);
-    });
-  });
 
   it("adds and drops", async () => {
     await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {

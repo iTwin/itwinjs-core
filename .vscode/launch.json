@@ -1033,7 +1033,7 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE",
+        "IMJS_LOG_LEVEL": "TRACE",
         "NODE_ENV": "development"
       },
       "outFiles": [
@@ -1105,7 +1105,7 @@
       "type": "pwa-node",
       "request": "launch",
       "env": {
-        "SVT_LOG_LEVEL": "TRACE"
+        "IMJS_LOG_LEVEL": "TRACE"
       },
       "program": "${workspaceFolder}/test-apps/display-test-app/lib/backend/WebMain.js",
       "outFiles": [
@@ -1148,8 +1148,8 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE",
-        "SVT_NO_DEV_TOOLS": "1",
+        "IMJS_LOG_LEVEL": "TRACE",
+        "IMJS_NO_DEV_TOOLS": "1",
         "NODE_ENV": "development"
       },
       "outFiles": [

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "..";
 
 /* eslint-disable deprecation/deprecation */
@@ -38,7 +38,7 @@ export class ExternalIModel {
     const iTwinName = this.iTwinName;
     const imodelName = this.imodelName;
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await IModelApp.getAccessToken();
 
     const iTwinClient = new ITwinAccessClient();
     const iTwinList: ITwin[] = await iTwinClient.getAll(requestContext, {
@@ -55,9 +55,9 @@ export class ExternalIModel {
 
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, iTwinList[0].id, imodelQuery);
+    const imodels = await IModelHubFrontend.iModelClient.iModels.get(accessToken, iTwinList[0].id, imodelQuery);
     if (imodels.length === 0) {
-      throw new Error(`iModel with name "${imodelName}" does not exist in project "${iTwinName}"`);
+      throw new Error(`iModel with name "${imodelName}" does not exist in iTwin "${iTwinName}"`);
     }
     return { iTwinId: iTwinList[0].id, iModelId: imodels[0].wsgId };
   }

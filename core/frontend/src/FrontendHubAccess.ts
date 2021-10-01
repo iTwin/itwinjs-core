@@ -6,10 +6,9 @@
  * @module HubAccess
  */
 
-import { GuidString, IModelStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, IModelStatus } from "@itwin/core-bentley";
 import { addCsrfHeader, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelError, IModelVersion } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 
 /** @internal */
@@ -18,7 +17,7 @@ export type ChangeSetId = string;
 /** @internal */
 export interface IModelIdArg {
   iModelId: GuidString;
-  requestContext: AuthorizedClientRequestContext;
+  accessToken: AccessToken;
 }
 
 /** @internal */
@@ -46,12 +45,12 @@ export class IModelHubFrontend {
   }
 
   public static async getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId> {
-    const changeSets: ChangeSet[] = await this.iModelClient.changeSets.get(arg.requestContext, arg.iModelId, new ChangeSetQuery().top(1).latest());
+    const changeSets: ChangeSet[] = await this.iModelClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().top(1).latest());
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }
 
   public static async getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangeSetId> {
-    const versions = await this.iModelClient.versions.get(arg.requestContext, arg.iModelId, new VersionQuery().select("ChangeSetId").byName(arg.versionName));
+    const versions = await this.iModelClient.versions.get(arg.accessToken, arg.iModelId, new VersionQuery().select("ChangeSetId").byName(arg.versionName));
     if (!versions[0] || !versions[0].changeSetId)
       throw new IModelError(IModelStatus.NotFound, `Named version ${arg.versionName} not found`);
     return versions[0].changeSetId;

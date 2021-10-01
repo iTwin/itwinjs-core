@@ -5,9 +5,11 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
-import { AuthorizedClientRequestContext, request, RequestOptions, Response, WsgError, WsgInstance } from "@bentley/itwin-client";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgError, WSStatus } from "../wsg/WsgClient";
 import { ITwinManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
@@ -17,7 +19,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelBank;
 // Format of the imodelContext.json file found in the root directory of an iModel file system context master directory.
 // TODO: Remove this when we
 /** @internal */
-export interface IModelFileSystemContextProps {
+export interface IModelFileSystemITwinProps {
   name: string;
   id: string;
   description: string;
@@ -28,23 +30,23 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   constructor(public baseUri: string) {
   }
 
-  private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
+  private async queryITwinProps(accessToken: AccessToken, iTwinName: string): Promise<IModelFileSystemITwinProps[]> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
     Logger.logInfo(loggerCategory, `Sending GET request to ${url}`);
 
     const queryOptions = {      // use the same ODATA-style queries that Connect and iModelHub use
       $select: "*",
-      $filter: `name+eq+'${projectName}'`,
+      $filter: `name+eq+'${iTwinName}'`,
     };
 
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
       qs: queryOptions,
       accept: "application/json",
     };
 
-    const res: Response = await request(requestContext, url, options);
+    const res: Response = await request(url, options);
     if (!res.body || !res.body.instances) {
       throw new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`);
     }
@@ -58,41 +60,41 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
 
     Logger.logTrace(loggerCategory, `Successful GET request to ${url}`);
 
-    return props.map((value) => value.properties as IModelFileSystemContextProps);
+    return props.map((value) => value.properties as IModelFileSystemITwinProps);
   }
 
-  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const props = await this.queryContextProps(requestContext, name);
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+    const props = await this.queryITwinProps(accessToken, name);
 
     // Get first iTwin
     return props[0] as ITwin;
   }
 
-  public async createITwin(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+  public async createITwin(accessToken: AccessToken, name: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
 
     Logger.logInfo(loggerCategory, `Sending POST request to ${url}`);
 
-    const body = { instance: { className: "Context", schemaName: "GlobalScope", properties: { name, id: "", description: "" } } };
+    const body = { instance: { className: "ITwin", schemaName: "GlobalScope", properties: { name, id: "", description: "" } } };
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
       body,
     };
 
-    await request(requestContext, url, options);
+    await request(url, options);
   }
 
-  public async deleteITwin(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
-    const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${contextId}`;
+  public async deleteITwin(accessToken: AccessToken, iTwinId: string): Promise<void> {
+    const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${iTwinId}`;
     Logger.logInfo(loggerCategory, `Sending DELETE request to ${url}`);
 
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
     };
 
-    await request(requestContext, url, options);
+    await request(url, options);
   }
 }

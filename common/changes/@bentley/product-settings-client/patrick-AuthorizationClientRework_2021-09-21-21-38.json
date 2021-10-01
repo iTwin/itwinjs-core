@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/product-settings-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/product-settings-client"
+}

@@ -7,9 +7,9 @@
  */
 
 import { parse as parseVersion } from "semver";
-import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Element, IModelDb } from "@bentley/imodeljs-backend";
-import { InstanceKey } from "@bentley/presentation-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Element, IModelDb } from "@itwin/core-backend";
+import { InstanceKey } from "@itwin/presentation-common";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -24,15 +24,6 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
   });
   return key;
 }
-
-/**
- * A type that injects [[ClientRequestContext]] attribute into another given type. *
- * @public
- */
-export type WithClientRequestContext<T> = T & {
-  /** Context of a client request */
-  requestContext: ClientRequestContext;
-};
 
 /** @internal */
 export function normalizeVersion(version?: string) {

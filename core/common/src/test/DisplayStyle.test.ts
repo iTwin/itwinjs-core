@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BackgroundMapType } from "../BackgroundMapProvider";
+import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import {
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
@@ -16,14 +17,13 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { MapLayerSettings } from "../MapLayerSettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {
     it("round-trips through JSON", () => {
       function test(props: WhiteOnWhiteReversalProps | undefined, newSettings: WhiteOnWhiteReversalSettings, expected?: WhiteOnWhiteReversalProps | "input"): void {
-        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : { } };
+        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : {} };
         const style = new DisplayStyle3dSettings(styleProps);
         style.whiteOnWhiteReversal = newSettings;
         const result = style.toJSON();
@@ -41,7 +41,7 @@ describe("DisplayStyleSettings", () => {
     });
 
     it("raises event", () => {
-      const style = new DisplayStyle3dSettings({ styles: { } });
+      const style = new DisplayStyle3dSettings({ styles: {} });
       function test(expectEvent: boolean, newSettings: WhiteOnWhiteReversalSettings): void {
         let eventRaised = false;
         const remove = style.onWhiteOnWhiteReversalChanged.addListener((s) => {
@@ -160,15 +160,12 @@ describe("DisplayStyleSettings", () => {
         const settings = new DisplayStyleSettings({});
         func(settings);
 
-        // eslint-disable-next-line deprecation/deprecation
         expect(settings.toJSON().excludedElements).to.equal(expectedExcludedElements);
         expect(settings.compressedExcludedElementIds).to.equal(undefined === expectedExcludedElements ? "" : expectedExcludedElements);
 
         const excludedIds = Array.from(settings.excludedElementIds);
-        // eslint-disable-next-line deprecation/deprecation
-        expect(settings.excludedElements.size).to.equal(excludedIds.length);
-        // eslint-disable-next-line deprecation/deprecation
-        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElements));
+        expect(new Set<string>(settings.excludedElementIds).size).to.equal(excludedIds.length);
+        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElementIds));
         expect(set).to.deep.equal(excludedIds);
       };
 
@@ -181,22 +178,15 @@ describe("DisplayStyleSettings", () => {
       test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
 
-      // eslint-disable-next-line deprecation/deprecation
-      test("+3", (settings) => settings.excludedElements.add("0x3"));
-      // eslint-disable-next-line deprecation/deprecation
-      test(undefined, (settings) => { settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x2"); });
-      // eslint-disable-next-line deprecation/deprecation
-      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x1"); });
-      // eslint-disable-next-line deprecation/deprecation
-      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.delete("0x2"); });
-      // eslint-disable-next-line deprecation/deprecation
-      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
+      test("+3", (settings) => settings.addExcludedElements("0x3"));
+      test(undefined, (settings) => { settings.addExcludedElements("0x2"); settings.dropExcludedElement("0x2"); });
+      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements("0x2"); settings.dropExcludedElements("0x1"); });
+      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements("0x2"); });
+      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.dropExcludedElements("0x1"); });
 
-      // eslint-disable-next-line deprecation/deprecation
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.clear(); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.clearExcludedElements(); });
 
-      // eslint-disable-next-line deprecation/deprecation
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.addExcludedElements("0x3"); settings.clearExcludedElements(); });
     });
   });
 
@@ -303,27 +293,6 @@ describe("DisplayStyleSettings", () => {
       expectEvents([]);
     });
   });
-
-  // ###TODO @rbbentley
-  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
-    const style = new DisplayStyleSettings({});
-    expect(style.backgroundMap.providerName).to.equal("BingProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
-
-    let base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base).instanceOf(MapLayerSettings);
-    expect(base.formatId).to.equal("BingMaps");
-    expect(base.url.indexOf("AerialWithLabels")).least(1);
-
-    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
-    base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base.formatId).to.equal("MapboxImagery");
-    expect(base.url.indexOf("mapbox.streets/")).least(1);
-
-    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
-    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
-  });
 });
 
 describe("DisplayStyleSettings overrides", () => {
@@ -410,8 +379,22 @@ describe("DisplayStyleSettings overrides", () => {
       terrainSettings: {
         exaggeration: 2.5,
         heightOrigin: -42,
-        nonLocatable: true, // eslint-disable-line deprecation/deprecation
+        nonLocatable: true,
         heightOriginMode: 0,
+      },
+    },
+    mapImagery: {
+      backgroundBase: {
+        formatId: "BingMaps",
+        isBase: true,
+        name: "Bing Maps: Aerial Imagery",
+        provider: {
+          name: "BingProvider",
+          type: 2,
+        },
+        transparentBackground: false,
+        url: "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
+        visible: true,
       },
     },
   };
@@ -457,7 +440,6 @@ describe("DisplayStyleSettings overrides", () => {
       nonLocatable: true,
       emphasized: true,
     }],
-    // eslint-disable-next-line deprecation/deprecation
     excludedElements: CompressedId64Set.compressIds(["0x4", "0x8", "0x10"]),
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -629,7 +611,6 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
-    // eslint-disable-next-line deprecation/deprecation
     test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xbaadf00d", "0xdeadbeef"]) });
 
     test({

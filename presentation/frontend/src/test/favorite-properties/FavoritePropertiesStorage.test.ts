@@ -2,15 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { InternetConnectivityStatus } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { configureForPromiseResult } from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
 import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
@@ -26,13 +27,13 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   let authorizationClientMock: moq.IMock<FrontendAuthorizationClient>;
 
   beforeEach(async () => {
-    const requestConextMock = moq.Mock.ofType<AuthorizedFrontendRequestContext>();
+    const requestConextMock = moq.Mock.ofType<AccessToken>();
     configureForPromiseResult(requestConextMock);
-    sinon.stub(AuthorizedFrontendRequestContext, "create").resolves(requestConextMock.object);
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
-    authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => true);
+    const accessToken: AccessToken = "TestToken";
+    authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
 
     storage = new IModelAppFavoritePropertiesStorage();
@@ -92,7 +93,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
@@ -112,7 +113,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
     });
 
@@ -178,7 +179,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 

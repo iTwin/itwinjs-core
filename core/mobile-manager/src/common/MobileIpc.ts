@@ -9,7 +9,7 @@
 import {
   IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
   SerializedRpcRequest,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 import { MobileRpcRequest } from "./MobileRpcRequest";

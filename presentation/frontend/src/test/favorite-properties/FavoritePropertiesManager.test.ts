@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
   createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
+} from "@itwin/presentation-common/lib/test/_helpers/Content";
+import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
 import {
   createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
 } from "../../presentation-frontend";

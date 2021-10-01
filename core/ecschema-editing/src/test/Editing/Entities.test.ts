@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   ECClassModifier, EntityClass, EntityClassProps, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Entities tests", () => {

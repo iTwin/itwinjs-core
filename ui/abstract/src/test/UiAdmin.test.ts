@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { AbstractMenuItemProps } from "../ui-abstract/items/AbstractMenuItemProps";
-import { AbstractToolbarProps } from "../ui-abstract/items/AbstractToolbarProps";
-import { RelativePosition } from "../ui-abstract/items/RelativePosition";
-import { PropertyDescription } from "../ui-abstract/properties/Description";
-import { UiAdmin } from "../ui-abstract/UiAdmin";
-import { UiDataProvider } from "../ui-abstract/dialogs/UiDataProvider";
-import { StandardTypeNames } from "../ui-abstract/properties/StandardTypeNames";
-import { DialogLayoutDataProvider } from "../ui-abstract/dialogs/UiLayoutDataProvider";
-import { DialogItem, DialogPropertySyncItem } from "../ui-abstract/dialogs/DialogItem";
+import { AbstractMenuItemProps } from "../appui-abstract/items/AbstractMenuItemProps";
+import { AbstractToolbarProps } from "../appui-abstract/items/AbstractToolbarProps";
+import { RelativePosition } from "../appui-abstract/items/RelativePosition";
+import { PropertyDescription } from "../appui-abstract/properties/Description";
+import { UiAdmin } from "../appui-abstract/UiAdmin";
+import { UiDataProvider } from "../appui-abstract/dialogs/UiDataProvider";
+import { StandardTypeNames } from "../appui-abstract/properties/StandardTypeNames";
+import { DialogLayoutDataProvider } from "../appui-abstract/dialogs/UiLayoutDataProvider";
+import { DialogItem, DialogPropertySyncItem } from "../appui-abstract/dialogs/DialogItem";
 
 describe("UiAdmin", () => {
 

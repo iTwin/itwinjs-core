@@ -6,19 +6,19 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { RpcInvocationCallback } from "./RpcInvocation";
 import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
 import {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
 } from "./RpcRequest";
 
 /** The policy for an RPC operation.
- * @public
+ * @internal
  */
 export class RpcOperationPolicy {
   /** Supplies the IModelRpcProps for an operation request. */
@@ -34,7 +34,7 @@ export class RpcOperationPolicy {
   public sentCallback: RpcRequestCallback_T = (_request) => { };
 
   /** Called for every operation invocation on the backend. */
-  public invocationCallback: RpcInvocationCallback_T = (_invocation) => { };
+  public invocationCallback: RpcInvocationCallback = (_invocation) => { };
 
   /**
    * Determines if caching is permitted for an operation response.
@@ -50,7 +50,7 @@ export class RpcOperationPolicy {
 }
 
 /** An RPC operation descriptor.
- * @public
+ * @internal
  */
 export class RpcOperation {
   /** A fallback token to use for RPC requests that do not semantically depend on an iModel. */
@@ -108,10 +108,10 @@ export class RpcOperation {
   }
 }
 
-/** @public */
+/** @internal */
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
-/** @public */
+/** @internal */
 export namespace RpcOperation { // eslint-disable-line no-redeclare
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {

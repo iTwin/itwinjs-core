@@ -6,29 +6,14 @@
  * @module Core
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { Id64String } from "@itwin/core-bentley";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
-
-/**
- * Enumeration of standard request priorities.
- * @public
- */
-export enum RequestPriority {
-  /** Priority for pre-loading requests */
-  Preload = 0,
-
-  /** Priority for general requests */
-  Normal = 1000,
-
-  /** Max possible priority */
-  Max = Number.MAX_SAFE_INTEGER,
-}
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -46,12 +31,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /**
-   * Optional request priority. Higher priority requests are handled first.
-   * Defaults to [[RequestPriority.Normal]]
-   */
-  priority?: number;
 
   /** @alpha */
   diagnostics?: DiagnosticsOptionsWithHandler;
@@ -221,4 +200,13 @@ export interface PageOptions {
 export type Paged<TOptions extends {}> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
+};
+
+/**
+ * A wrapper type that injects priority into supplied type.
+ * @public
+ */
+export type Prioritized<TOptions extends {}> = TOptions & {
+  /** Optional priority */
+  priority?: number;
 };

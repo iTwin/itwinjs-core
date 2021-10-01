@@ -15,9 +15,8 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * **Important:** Prefer [[InstanceLabelOverride]] over this rule when possible as it
  * has better performance.
  *
- * @see [More details]($docs/learning/presentation/Customization/LabelOverride.md)
+ * @see [More details]($docs/presentation/Customization/LabelOverride.md)
  * @public
- * @deprecated Use [[InstanceLabelOverride]]
  */
 export interface LabelOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
@@ -25,16 +24,16 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
    * Defines the label that should be used for node. This is
-   * an [ECExpression]($docs/learning/presentation/Customization/ECExpressions.md), so label
+   * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so label
    * can be defined/formatted dynamically based on the context - for example
-   * ECInstance property value. May be [localized]($docs/learning/presentation/Localization.md).
+   * ECInstance property value. May be [localized]($docs/presentation/Advanced/Localization.md).
    *
    * @minLength 1
    */
@@ -42,9 +41,9 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
 
   /**
    * Defines the description that should be used for node. This is
-   * an [ECExpression]($docs/learning/presentation/Customization/ECExpressions.md), so
+   * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so
    * description can be defined/formatted dynamically based on the context - for example
-   * ECInstance property value. May be [localized]($docs/learning/presentation/Localization.md).
+   * ECInstance property value. May be [localized]($docs/presentation/Advanced/Localization.md).
    *
    * @minLength 1
    */

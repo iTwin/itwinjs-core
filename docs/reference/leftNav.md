@@ -4,18 +4,18 @@ packageClassification:  [
       "order":"1",
       "header":"Core Packages",
       "packages":[
-         "imodeljs-frontend",
-         "imodeljs-common",
-         "imodeljs-backend",
-         "imodeljs-transformer",
-         "imodeljs-markup",
-         "imodeljs-i18n",
-         "imodeljs-quantity",
+         "core-frontend",
+         "core-common",
+         "core-backend",
+         "core-transformer",
+         "core-markup",
+         "core-i18n",
+         "core-quantity",
          "backend-itwin-client",
-         "bentleyjs-core",
+         "core-bentley",
          "ecschema-metadata",
          "ecschema-editing",
-         "geometry-core",
+         "core-geometry",
          "frontend-devtools",
          "hypermodeling-frontend",
          "webgl-compatibility"
@@ -38,12 +38,12 @@ packageClassification:  [
       "order":"3",
       "header":"UI Packages",
       "packages":[
-         "ui-abstract",
-         "ui-core",
-         "ui-components",
-         "ui-imodel-components",
-         "ui-ninezone",
-         "ui-framework"
+         "appui-abstract",
+         "core-react",
+         "components-react",
+         "imodel-components-react",
+         "appui-layout-react",
+         "appui-react"
       ]
    },
    {

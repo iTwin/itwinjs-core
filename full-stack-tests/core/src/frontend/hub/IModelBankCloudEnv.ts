@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { WSStatus } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
+import { ITwin } from "@bentley/itwin-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelBankClient, IModelBankFileSystemITwinClient, IModelClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankClient, IModelBankFileSystemITwinClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { AuthorizedClientRequestContext, UserInfo, WsgError } from "@bentley/itwin-client";
-import { ITwin } from "@bentley/itwin-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
@@ -22,13 +21,13 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
     this.iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
   }
 
-  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient {
+  public getAuthorizationClient(userCredentials: any): FrontendAuthorizationClient {
     return this._basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   }
 
-  public async bootstrapITwin(requestContext: AuthorizedClientRequestContext, iTwinName: string): Promise<void> {
+  public async bootstrapIModelBankITwin(requestContext: AccessToken, iTwinName: string): Promise<void> {
     let iTwin: ITwin | undefined;
     try {
       iTwin = await this.iTwinMgr.getITwinByName(requestContext, iTwinName);

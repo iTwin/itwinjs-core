@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/color";
+
+// @warn "data-viz.scss is deprecated. Use '~@itwin/itwinui-css/scss/style/colors' instead.";
+
+/** iTwin.js Data Visualization Colors */
+
+$buic-dataviz-skyblue:        $iui-color-dataviz-skyblue;
+$buic-dataviz-celery:	        $iui-color-dataviz-celery;
+$buic-dataviz-froly:	        $iui-color-dataviz-froly;
+$buic-dataviz-steelblue:	    $iui-color-dataviz-steelblue;
+$buic-dataviz-sunglow:	      $iui-color-dataviz-sunglow;
+$buic-dataviz-seabuckthorn:	  $iui-color-dataviz-seabuckthorn;
+$buic-dataviz-montecarlo:	    $iui-color-dataviz-montecarlo;
+$buic-dataviz-poloblue:	      $iui-color-dataviz-poloblue;
+$buic-dataviz-bouquet:	      $iui-color-dataviz-bouquet;
+$buic-dataviz-ash:	          $iui-color-dataviz-ash;
+$buic-dataviz-oak:	          $iui-color-dataviz-oak;
+
+// cSpell:ignore dataviz froly seabuckthorn montecarlo poloblue

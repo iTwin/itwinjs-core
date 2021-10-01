@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, isIDisposable } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ClassId, Field, NestedContentField, PropertiesField } from "@bentley/presentation-common";
+import { BeEvent, IDisposable, isIDisposable } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
 
 /**

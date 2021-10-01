@@ -5,16 +5,18 @@
 import "./ProjectDropdown.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup } from "@bentley/ui-core";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { Popup } from "@itwin/core-react";
 import { ITwin } from "@bentley/itwin-registry-client";
 
-/** Properties for the [[ITwinDropdown]] component */
-export interface ITwinDropdownProps {
-  numVisibleITwins?: number;
-  recentITwins?: ITwin[];
-  currentITwin?: ITwin;
-  onITwinClicked: (itwin: ITwin) => any;
+// SWB Should we rename all references to project in this file and file names?
+
+/** Properties for the [[ProjectDropdown]] component */
+export interface ProjectDropdownProps {
+  numVisibleProjects?: number;
+  recentProjects?: ITwin[];
+  currentProject?: ITwin;
+  onProjectClicked: (project: ITwin) => any;
 }
 
 interface ITwinDropdownState {
@@ -43,10 +45,15 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     this.setState({ showITwinsDialog: true });
   };
 
-  private _onItemClick(itwin: ITwin) {
+  private _onItemClick(iTwin: ITwin) {
     this.closeDropdown();
-    this.props.onITwinClicked(itwin);
+    this.props.onProjectClicked(iTwin);
   }
+
+  private _onProjectSelected = (iTwin: ITwin) => {
+    this.closeDialog();
+    this.props.onProjectClicked(iTwin);
+  };
 
   private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
     this.setState((prevState) => ({ isDropdownOpen: !prevState.isDropdownOpen }));
@@ -60,15 +67,19 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     this.setState({ isDropdownOpen: false });
   }
 
-  private getITwins(): ITwin[] {
-    if (this.props.recentITwins) {
-      return this.props.recentITwins;
+  private closeDialog() {
+    this.setState({ showProjectsDialog: false });
+  }
+
+  private getProjects(): ITwin[] {
+    if (this.props.recentProjects) {
+      return this.props.recentProjects;
     }
     return [];
   }
 
-  private renderITwins() {
-    const itwins: ITwin[] = this.getITwins();
+  private renderProjects() {
+    const projects: ITwin[] = this.getProjects();
     const ulStyle: React.CSSProperties = {
       height: `${this.props.numVisibleITwins! * this._itemHeight}em`,
     };
@@ -83,7 +94,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     } else {
       return (
         <ul style={ulStyle}>
-          {itwins && itwins.map((project: ITwin, i: number) => (
+          {projects && projects.map((project: ITwin, i: number) => (
             <li style={liStyle} key={i} onClick={() => this._onItemClick(project)}>
               <span className="pp-icon icon icon-placeholder" />
               <div className="pp-details">
@@ -121,8 +132,8 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
       <div className="pp">
         <div className="pp-content" onClick={this._splitterClicked} ref={(element) => { this._target = element; }}>
           <div>
-            <span className="number">{this.props.currentITwin ? this.props.currentITwin.code : ""}</span>
-            <span className="name">{this.props.currentITwin ? this.props.currentITwin.name : ""}</span>
+            <span className="number">{this.props.currentProject ? this.props.currentProject.code : ""}</span>
+            <span className="name">{this.props.currentProject ? this.props.currentProject.name : ""}</span>
           </div>
           <span className={splitterClassName} />
         </div>

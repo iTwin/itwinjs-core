@@ -237,29 +237,6 @@ export enum HttpStatus {
   ServerError = 0x17004,
 }
 
-/** Server returned WSG errors
- * @beta Right name? Right package?
- */
-export enum WSStatus {
-  Success = 0,
-  WSERROR_BASE = 0x18000,
-  Unknown = WSERROR_BASE + 1,
-  LoginFailed = WSERROR_BASE + 2,
-  SslRequired = WSERROR_BASE + 3,
-  NotEnoughRights = WSERROR_BASE + 4,
-  RepositoryNotFound = WSERROR_BASE + 5,
-  SchemaNotFound = WSERROR_BASE + 6,
-  ClassNotFound = WSERROR_BASE + 7,
-  PropertyNotFound = WSERROR_BASE + 8,
-  InstanceNotFound = WSERROR_BASE + 9,
-  FileNotFound = WSERROR_BASE + 10,
-  NotSupported = WSERROR_BASE + 11,
-  NoServerLicense = WSERROR_BASE + 12,
-  NoClientLicense = WSERROR_BASE + 13,
-  TooManyBadLoginAttempts = WSERROR_BASE + 14,
-  LoginRequired = WSERROR_BASE + 15,
-}
-
 /** iModelHub Services Errors
  * @beta Right package?
  */
@@ -342,21 +319,6 @@ export enum AuthStatus {
   Error = AUTHSTATUS_BASE,
 }
 
-/** iModel.js Extensions
- * @beta
- */
-export enum ExtensionStatus {
-  Success = 0,
-  EXTENSIONSTATUS_BASE = 0x23000,
-  UnknownError = EXTENSIONSTATUS_BASE + 1,
-  BadRequest = EXTENSIONSTATUS_BASE + 2,
-  ExtensionNotFound = EXTENSIONSTATUS_BASE + 3,
-  BadExtension = EXTENSIONSTATUS_BASE + 4,
-  ExtensionAlreadyExists = EXTENSIONSTATUS_BASE + 5,
-  UploadError = EXTENSIONSTATUS_BASE + 6,
-  DownloadError = EXTENSIONSTATUS_BASE + 7,
-}
-
 /** GeoServiceStatus errors
  * @public
  */
@@ -382,36 +344,57 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
   message: string;
 }
 
-/** Defines the *signature* for a function that returns meta-data related to an error.
- * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
+/** A function that returns a metadata object for a [[BentleyError]].
+ * This is generally used for logging. However not every exception is logged, so use this if the metadata for an exception is expensive to create.
  * @public
  */
 export type GetMetaDataFunction = () => object | undefined;
+
+/** Optional metadata attached to a [[BentleyError]]. May either be an object or a function that returns an object.
+ * If this exception is logged and metadata is present, the metaData object is attached to the log entry via `JSON.stringify`
+ * @public
+ */
+export type LoggingMetaData = GetMetaDataFunction | object | undefined;
+
+function isObject(obj: unknown): obj is { [key: string]: unknown } {
+  return typeof obj === "object" && obj !== null;
+}
+
+interface ErrorProps {
+  message: string;
+  stack?: string;
+  metadata?: object;
+}
 
 /** Base exception class for iTwin.js exceptions.
  * @public
  */
 export class BentleyError extends Error {
-  private readonly _getMetaData: GetMetaDataFunction | undefined;
+  private readonly _metaData: LoggingMetaData;
 
   /**
    * @param errorNumber The a number that identifies of the problem.
    * @param message  message that describes the problem (should not be localized).
-   * @param getMetaData a function to be stored on the exception object that provides metaData about the problem.
+   * @param metaData metaData about the exception.
    */
-  public constructor(public errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(public errorNumber: number, message?: string, metaData?: LoggingMetaData) {
     super(message);
     this.errorNumber = errorNumber;
-    this._getMetaData = getMetaData;
+    this._metaData = metaData;
     this.name = this._initName();
   }
 
-  /** Returns true if this BentleyError includes (optional) meta data. */
-  public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
+  /** Returns true if this BentleyError includes (optional) metadata. */
+  public get hasMetaData(): boolean { return undefined !== this._metaData; }
 
-  /** Return the meta data associated with this BentleyError. */
+  /** get the meta data associated with this BentleyError, if any. */
   public getMetaData(): object | undefined {
-    return this.hasMetaData ? this._getMetaData!() : undefined;
+    return BentleyError.getMetaData(this._metaData);
+  }
+
+  /** get the metadata object associated with an ExceptionMetaData, if any. */
+  public static getMetaData(metaData: LoggingMetaData): object | undefined {
+    return (typeof metaData === "function") ? metaData() : metaData;
   }
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
@@ -624,20 +607,6 @@ export class BentleyError extends Error {
       case HttpStatus.Redirection: return "HTTP Redirection";
       case HttpStatus.ClientError: return "HTTP Client error";
       case HttpStatus.ServerError: return "HTTP Server error";
-      case WSStatus.Unknown: return "Unknown error";
-      case WSStatus.ClassNotFound: return "Class not found";
-      case WSStatus.FileNotFound: return "File not found";
-      case WSStatus.InstanceNotFound: return "Instance not found";
-      case WSStatus.LoginFailed: return "Login failed";
-      case WSStatus.NoClientLicense: return "No client license";
-      case WSStatus.NoServerLicense: return "No server license";
-      case WSStatus.NotEnoughRights: return "Not enough rights";
-      case WSStatus.NotSupported: return "Not supported";
-      case WSStatus.PropertyNotFound: return "Property not found";
-      case WSStatus.RepositoryNotFound: return "Repository not found";
-      case WSStatus.SchemaNotFound: return "Schema not found";
-      case WSStatus.SslRequired: return "SSL required";
-      case WSStatus.TooManyBadLoginAttempts: return "Too many bad login attempts";
       case IModelHubStatus.Unknown: return "Unknown error";
       case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
       case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";
@@ -693,12 +662,6 @@ export class BentleyError extends Error {
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
       case AuthStatus.Error: return "Authorization error";
-      case ExtensionStatus.UnknownError: return "Unknown error from backend";
-      case ExtensionStatus.BadExtension: return "Bad file extension";
-      case ExtensionStatus.BadRequest: return "Bad request";
-      case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
-      case ExtensionStatus.ExtensionNotFound: return "Extension not found";
-      case ExtensionStatus.UploadError: return "Failed to upload file";
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
@@ -716,5 +679,77 @@ export class BentleyError extends Error {
       default:
         return `Error (${this.errorNumber})`;
     }
+  }
+
+  /** Use run-time type checking to safely get a useful string summary of an unknown error value, or `""` if none exists.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+   * @public
+   */
+  public static getErrorMessage(error: unknown): string {
+    if (typeof error === "string")
+      return error;
+
+    if (error instanceof Error)
+      return error.toString();
+
+    if (isObject(error)) {
+      if (typeof error.message === "string")
+        return error.message;
+
+      if (typeof error.msg === "string")
+        return error.msg;
+
+      if (error.toString() !== "[object Object]")
+        return error.toString();
+    }
+
+    return "";
+  }
+
+  /** Use run-time type checking to safely get the call stack of an unknown error value, if possible.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+   * @public
+   */
+  public static getErrorStack(error: unknown): string | undefined {
+    if (isObject(error) && typeof error.stack === "string")
+      return error.stack;
+
+    return undefined;
+  }
+
+  /** Use run-time type checking to safely get the metadata with an unknown error value, if possible.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof BentleyError`
+   * @see [[BentleyError.getMetaData]]
+   * @public
+   */
+  public static getErrorMetadata(error: unknown): object | undefined {
+    if (isObject(error) && typeof error.getMetaData === "function") {
+      const metadata = error.getMetaData();
+      if (typeof metadata === "object" && metadata !== null)
+        return metadata;
+    }
+
+    return undefined;
+  }
+
+  /** Returns a new `ErrorProps` object representing an unknown error value.  Useful for logging or wrapping/re-throwing caught errors.
+   * @note Unlike `Error` objects (which lose messages and call stacks when serialized to JSON), objects
+   *       returned by this are plain old JavaScript objects, and can be easily logged/serialized to JSON.
+   * @public
+   */
+  public static getErrorProps(error: unknown): ErrorProps {
+    const serialized: ErrorProps = {
+      message: BentleyError.getErrorMessage(error),
+    };
+
+    const stack = BentleyError.getErrorStack(error);
+    if (stack)
+      serialized.stack = stack;
+
+    const metadata = BentleyError.getErrorMetadata(error);
+    if (metadata)
+      serialized.metadata = metadata;
+
+    return serialized;
   }
 }

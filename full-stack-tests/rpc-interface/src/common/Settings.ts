@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@bentley/imodeljs-common";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { LogLevel } from "@itwin/core-bentley";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 
 /* eslint-disable @typescript-eslint/indent */
 
@@ -191,14 +191,6 @@ export class Settings {
       email: process.env.USER_WITH_ACCESS_USERNAME || "",
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
-
-    // Get client configuration
-    if (process.env.CLIENT_WITH_ACCESS_ID === undefined)
-      throw new Error("Could not find CLIENT_WITH_ACCESS_ID");
-    if (process.env.CLIENT_WITH_ACCESS_SECRET === undefined)
-      throw new Error("Could not find CLIENT_WITH_ACCESS_SECRET");
-    if (process.env.CLIENT_WITH_ACCESS_SCOPES === undefined)
-      throw new Error("Could not find CLIENT_WITH_ACCESS_SCOPES");
 
     if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
       this.clientConfiguration = {

@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { HorizontalAnchor, WidgetContent } from "../../../ui-ninezone";
+import { HorizontalAnchor, WidgetContent } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<WidgetContent />", () => {

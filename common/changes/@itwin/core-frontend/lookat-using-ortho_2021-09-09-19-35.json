@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added lookAtPerspectiveOrOrtho to ViewState3d",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

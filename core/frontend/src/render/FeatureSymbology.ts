@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
-import { FeatureAppearance, FeatureAppearanceProps, FeatureOverrides } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { FeatureAppearance, FeatureOverrides } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 
@@ -17,12 +17,6 @@ import { ViewState } from "../ViewState";
  * @public
  */
 export namespace FeatureSymbology {
-  /** @deprecated use [FeatureAppearanceProps]($common) */
-  export interface AppearanceProps extends FeatureAppearanceProps { } // eslint-disable-line @typescript-eslint/no-empty-interface
-
-  /** @deprecated use [FeatureAppearance]($common) */
-  export class Appearance extends FeatureAppearance { } // eslint-disable-line @typescript-eslint/no-empty-interface
-
   /** Allows a [[Viewport]] to customize the appearance of individual [Feature]($common)s within it.
    *
    * The Viewport computes its base Overrides based on the following:

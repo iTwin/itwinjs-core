@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-layout",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-layout"
+}

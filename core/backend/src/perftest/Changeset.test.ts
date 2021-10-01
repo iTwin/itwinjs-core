@@ -6,28 +6,27 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ChangeSetApplyOption, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
+import { AccessToken, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { IModelHubBackend  } from "../IModelHubBackend";
 import {
   BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
-} from "../imodeljs-backend";
+} from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { IModelHubBackend } from "../IModelHubBackend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-async function getIModelAfterApplyingCS(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString, imodelId: string, client: IModelHubClient) {
+async function getIModelAfterApplyingCS(user: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelId: string, client: IModelHubClient) {
   const changeSets = await client.changeSets.get(user, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
@@ -74,7 +73,7 @@ async function getIModelAfterApplyingCS(user: AuthorizedClientRequestContext, re
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
-async function pushIModelAfterMetaChanges(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString, imodelPushId: string) {
+async function pushIModelAfterMetaChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelPushId: string) {
   const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelPushId });
   assert.exists(iModelPullAndPush);
 
@@ -112,7 +111,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb) {
   return { modelId, spatialCategoryId };
 }
 
-async function pushIModelAfterDataChanges(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString) {
+async function pushIModelAfterDataChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
@@ -138,7 +137,7 @@ async function pushIModelAfterDataChanges(user: AuthorizedClientRequestContext, 
   await IModelTestUtils.closeAndDeleteBriefcaseDb(user, rwIModel);
 }
 
-async function pushIModelAfterSchemaChanges(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString) {
+async function pushIModelAfterSchemaChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
@@ -171,7 +170,7 @@ const getElementCount = (iModel: IModelDb): number => {
   return count;
 };
 
-async function executeQueryTime(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString, imodelId: string) {
+async function executeQueryTime(user: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelId: string) {
   const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
@@ -183,7 +182,7 @@ async function executeQueryTime(user: AuthorizedClientRequestContext, reporter: 
   iModelDb.close();
 }
 
-async function reverseChanges(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString) {
+async function reverseChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "reverseChangeTest";
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
@@ -225,7 +224,7 @@ async function reverseChanges(user: AuthorizedClientRequestContext, reporter: Re
   rwIModel.close();
 }
 
-async function reinstateChanges(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString) {
+async function reinstateChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "reinstateChangeTest";
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
@@ -276,7 +275,7 @@ describe("ImodelChangesetPerformance", () => {
   let imodelId: string;
   let imodelPushId: string;
   let client: IModelHubClient;
-  let requestContext: AuthorizedClientRequestContext;
+  let requestContext: AccessToken;
 
   before(async () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
@@ -289,7 +288,7 @@ describe("ImodelChangesetPerformance", () => {
 
     client = new IModelHubClient();
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAccessToken(TestUsers.regular);
   });
 
   after(() => {
@@ -356,7 +355,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
     return csSummary;
   }
 
-  async function downloadChangesets(requestContext: AuthorizedClientRequestContext, imodelId: string, changeSets: ChangeSet[], downloadDir: string) {
+  async function downloadChangesets(requestContext: AccessToken, imodelId: string, changeSets: ChangeSet[], downloadDir: string) {
     if (fs.existsSync(downloadDir))
       fs.removeSync(downloadDir);
     // get first changeset as betweenChangeSets skips the first entry
@@ -381,7 +380,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
     if (!fs.existsSync(downloadDir)) {
       fs.mkdirSync(downloadDir);
     }
-    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    const requestContext = await TestUtility.getAccessToken(TestUsers.regular);
 
     // first get all info and save it
     const iModel = await HubUtility.queryIModelByName(requestContext, modelInfo.projId, modelInfo.modelName);
@@ -482,7 +481,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const imodelId: string = ds.modelId;
 
       const client: IModelHubClient = new IModelHubClient();
-      let user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+      let user = await TestUtility.getAccessToken(TestUsers.regular);
       const changeSets = await client.changeSets.get(user, imodelId);
       const startNum: number = ds.csStart ? ds.csStart : 0;
       const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
@@ -509,7 +508,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
         if (apply) {
           // eslint-disable-next-line no-console
           console.log(`For iModel: ${ds.modelName}: Applying changeset: ${(j + 1).toString()} / ${endNum.toString()}`);
-          user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+          user = await TestUtility.getAccessToken(TestUsers.regular);
           const startTime = new Date().getTime();
           await iModelDb.pullChanges({ user }); // needs work - get index IModelVersion.asOfChangeSet(cs.wsgId));
           const endTime = new Date().getTime();
@@ -582,7 +581,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
 
 describe("ImodelChangesetPerformance own data", () => {
   const seedVersionName: string = "Seed data";
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
   const outDir: string = path.join(KnownTestLocations.outputDir, "ChangesetPerfOwn");
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerfOwnData.csv");
   const reporter = new Reporter();
@@ -600,7 +599,7 @@ describe("ImodelChangesetPerformance own data", () => {
   const className: string = `${baseClassName}Sub${(hier - 1).toString()}`;
 
   async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: projId, iModelId: modelId, asOf: IModelVersion.named(seedVersionName).toJSON() });
     const pathName = iModelDb.pathName;
     iModelDb.close();
@@ -615,7 +614,7 @@ describe("ImodelChangesetPerformance own data", () => {
   }
 
   async function lastChangesetToken(modelId: string): Promise<IModelJsNative.ChangesetFileProps> {
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     const changeSets = await IModelHubBackend.iModelClient.changeSets.get(user, modelId);
     const changeSet = changeSets[changeSets.length - 1];
     const query = new ChangeSetQuery();
@@ -637,7 +636,7 @@ describe("ImodelChangesetPerformance own data", () => {
     if (!fs.existsSync(outDir))
       fs.mkdirSync(outDir);
 
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     for (const opSize of opSizes) {
       for (const baseName of baseNames) {
         const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;
@@ -671,7 +670,7 @@ describe("ImodelChangesetPerformance own data", () => {
             const id = iModelDb.elements.insertElement(geomElement);
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
-          user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+          user = await TestUtility.getAccessToken(TestUsers.regular);
           iModelDb.saveChanges();
           await iModelDb.pushChanges({ user, description: `Seed data for ${className}` });
 
@@ -758,13 +757,12 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Insert changeset to iModel ${iModelName}.`);
-        user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+        user = await TestUtility.getAccessToken(TestUsers.regular);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeset(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetInsert", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
@@ -790,12 +788,11 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Delete changeset to iModel ${iModelName}.`);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeset(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetDelete", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
@@ -821,12 +818,11 @@ describe("ImodelChangesetPerformance own data", () => {
         const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
         // download last changeset file
         const csToken = await lastChangesetToken(iModel.id!);
-        const applyOption = ChangeSetApplyOption.Merge;
         // eslint-disable-next-line no-console
         console.log(`Applying Update changeset to iModel ${iModelName}.`);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeset(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetUpdate", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });

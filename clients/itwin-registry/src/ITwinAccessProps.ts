@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ITwinRegistry
+ * @module ContextRegistry
  */
 
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-/** The iTwin object, for general properties covering Projects, Assets, and custom contexts
+import { AccessToken } from "@itwin/core-bentley";
+
+/** The iTwin context object, for generalized properties of Projects, Assets, custom contexts, etc.
  * @beta
  */
 export interface ITwin {
@@ -53,5 +54,5 @@ export interface ITwinQueryArg {
 */
 export interface ITwinAccess {
   /** Get iTwins associated with the requester */
-  getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
+  getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]>;
 }

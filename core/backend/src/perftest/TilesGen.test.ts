@@ -6,11 +6,10 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { AccessToken, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { IModelVersion } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { Reporter } from "@itwin/perf-tools/lib/Reporter";
 import { StandaloneDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { IModelTestUtils } from "../test/IModelTestUtils";
@@ -116,7 +115,7 @@ async function generateResultFiles(result: TileResult, configData: ConfigData, r
   await writeOverallStats(result, configData, resultFilePath);
 }
 
-async function generateIModelDbTiles(user: AuthorizedClientRequestContext, config: ConfigData): Promise<TileResult | undefined> {
+async function generateIModelDbTiles(user: AccessToken, config: ConfigData): Promise<TileResult | undefined> {
   let peakMemUsage: number = 0;
   let peakCPUUsage: number = 0;
 
@@ -193,7 +192,7 @@ describe("TilesGenerationPerformance", () => {
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
-  let requestContext: AuthorizedClientRequestContext;
+  let requestContext: AccessToken;
   let csvResultPath: string;
 
   before(async () => {
@@ -214,7 +213,7 @@ describe("TilesGenerationPerformance", () => {
       for (const tileFile of tileFiles)
         IModelJsFs.removeSync(path.join(config.iModelLocation, tileFile));
     } else {
-      requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
+      requestContext = await TestUtility.getAccessToken(TestUsers.super);
     }
   });
 

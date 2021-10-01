@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Fix `RulesetVariablesManager.onVariableChanged` event not being fired when a mutable value is set.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}

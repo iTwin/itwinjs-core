@@ -5,12 +5,11 @@
 
 import * as chai from "chai";
 import * as path from "path";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 import * as fs from "fs";
+import { AccessToken } from "@itwin/core-bentley";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -34,8 +33,7 @@ chai.should();
 describe("DelegationAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
-  let jwt: AccessToken;
-  const requestContext = new ClientRequestContext();
+  let jwt: AccessToken | undefined;
 
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
@@ -54,20 +52,20 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    jwt = await agentClient.getAccessToken(requestContext);
+    jwt = await agentClient.getAccessToken();
   });
 
   it("should get valid OIDC delegation tokens", async () => {
 
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId:process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
+      clientId: process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET ?? "",
       scope: "imodelhub",
     };
 
     const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
 
-    const url = await delegationClient.getUrl(new ClientRequestContext());
+    const url = await delegationClient.getUrl();
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not allow a token delegation workflow.
     if (-1 === url.indexOf("imsoidc"))
@@ -78,9 +76,9 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     if (process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET === undefined)
       throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
 
-    const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
-    await validator.validateITwinClientAccess(delegationJwt);
-    await validator.validateIModelHubAccess(delegationJwt);
+    const delegationJwt = await delegationClient.getJwtFromJwt(jwt);
+    await validator.validateITwinClientAccess(delegationJwt ?? "");
+    await validator.validateIModelHubAccess(delegationJwt ?? "");
   });
 
 });

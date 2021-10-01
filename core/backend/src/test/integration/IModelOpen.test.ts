@@ -3,24 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { AccessToken, BentleyError, GuidString } from "@itwin/core-bentley";
+import { IModelVersion } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { SnapshotDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseManager, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 describe("IModelOpen (#integration)", () => {
 
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
   let testIModelId: GuidString;
   let testITwinId: GuidString;
 
   before(async () => {
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    user = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(user);
 
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
@@ -32,12 +31,8 @@ describe("IModelOpen (#integration)", () => {
   };
 
   it("Unauthorized requests should cause an obvious error", async () => {
-    const badToken = new AccessToken("ThisIsABadToken");
-    const badRequestContext = new AuthorizedBackendRequestContext(badToken);
-
-    // SWB What does context mean here?
     // Try the bad request context
-    await expect(IModelTestUtils.downloadAndOpenCheckpoint({ user: badRequestContext, iTwinId: testITwinId, iModelId: testIModelId }))
+    await expect(IModelTestUtils.downloadAndOpenCheckpoint({ user: "bad", iTwinId: testITwinId, iModelId: testIModelId }))
       .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
 
   });

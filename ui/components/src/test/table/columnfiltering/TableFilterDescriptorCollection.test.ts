@@ -5,12 +5,12 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { SortDirection } from "@bentley/ui-core";
-import { StandardTypeNames } from "@bentley/ui-abstract";
-import { FilterCompositionLogicalOperator, FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
-import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
+import { SortDirection } from "@itwin/core-react";
+import { StandardTypeNames } from "@itwin/appui-abstract";
+import { FilterCompositionLogicalOperator, FilterOperator } from "../../../components-react/table/columnfiltering/ColumnFiltering";
+import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
+import { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [

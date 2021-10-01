@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
-import { ImageSource } from "@bentley/imodeljs-common";
+import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bentley";
+import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet } from "../ViewportSet";
@@ -84,7 +84,7 @@ export class TileRequest {
 
       // Set this now, so our `isCanceled` check can see it.
       this._state = TileRequest.State.Loading;
-    } catch (err) {
+    } catch (err: any) {
       if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();

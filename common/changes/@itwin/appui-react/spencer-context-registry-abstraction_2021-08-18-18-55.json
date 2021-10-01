@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Replaced ContextRegistry with generalized ITwinAccess interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

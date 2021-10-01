@@ -6,11 +6,11 @@
  * @module iModels
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps,
   YawPitchRollAngles, YawPitchRollProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { Cartographic, CartographicProps } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";

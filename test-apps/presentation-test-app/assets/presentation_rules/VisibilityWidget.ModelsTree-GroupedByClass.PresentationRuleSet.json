@@ -1,11 +1,11 @@
 {
-  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "$schema": "../../node_modules/@itwin/presentation-common/Ruleset.schema.json",
   "id": "VisibilityWidget.ModelsTree-GroupedByClass",
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    }
+  ],
   "rules": [
     {
       "ruleType": "RootNodes",

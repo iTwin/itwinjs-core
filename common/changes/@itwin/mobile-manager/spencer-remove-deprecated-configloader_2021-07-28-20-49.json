@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/mobile-manager",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/mobile-manager",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

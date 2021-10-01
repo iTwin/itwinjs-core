@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SectionType } from "@bentley/imodeljs-common";
-import { IModelApp, ParseAndRunResult } from "@bentley/imodeljs-frontend";
+import { SectionType } from "@itwin/core-common";
+import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
 import { HyperModeling } from "../HyperModeling";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";

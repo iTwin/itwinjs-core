@@ -10,19 +10,18 @@ import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
-import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
+import { BeDuration } from "@itwin/core-bentley";
+import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@itwin/appui-abstract";
+import { HorizontalAlignment, LocalSettingsStorage } from "@itwin/core-react";
 import {
   CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
   TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
-} from "../../../ui-components";
-import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
+} from "../../../components-react";
+import { DragDropHeaderWrapper } from "../../../components-react/table/component/DragDropHeaderCell";
+import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
+import { FilterRenderer } from "../../../components-react/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { createDOMRect } from "../../Utils";
 let columnIndex = 0;
 let useSmallWidth = false;
 
@@ -46,21 +45,21 @@ describe("Table", () => {
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("react-grid-Container")) {
         const totalTableWidth = useSmallWidth ? 160 : 250;
-        return createDOMRect({ width: totalTableWidth, height: 500 });
+        return DOMRect.fromRect({ width: totalTableWidth, height: 500 });
       } else if (this.classList.contains("react-grid-Cell") || this.classList.contains("react-grid-HeaderCell")) {
         columnIndex = columnIndex + 1;
         switch (columnIndex) {
           case 1:
-            return createDOMRect({ width: 80 });
+            return DOMRect.fromRect({ width: 80 });
           case 2:
-            return createDOMRect({ width: 90 });
+            return DOMRect.fromRect({ width: 90 });
           case 3:
-            return createDOMRect({ width: 80 });
+            return DOMRect.fromRect({ width: 80 });
           default:
-            return createDOMRect({ width: 80 });
+            return DOMRect.fromRect({ width: 80 });
         }
       }
-      return createDOMRect();
+      return new DOMRect();
     });
   });
 

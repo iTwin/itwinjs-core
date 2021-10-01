@@ -6,13 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render, RenderResult, waitFor } from "@testing-library/react";
-import { BreadcrumbDetails, BreadcrumbPath } from "../../ui-components";
-import { Table, TableProps } from "../../ui-components/table/component/Table";
-import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { BreadcrumbDetails, BreadcrumbPath } from "../../components-react";
+import { Table, TableProps } from "../../components-react/table/component/Table";
+import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../components-react/tree/TreeDataProvider";
 import { waitForUpdate } from "../test-helpers/misc";
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "./mockTreeDataProvider";
-import { createDOMRect } from "../Utils";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -39,9 +38,9 @@ describe("BreadcrumbDetails", () => {
     renderSpy = sinon.spy();
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("react-grid-Container")) {
-        return createDOMRect({ width: 400, height: 500 });
+        return DOMRect.fromRect({ width: 400, height: 500 });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
   });
 

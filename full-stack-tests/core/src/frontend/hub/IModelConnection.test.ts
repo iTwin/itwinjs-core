@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
+import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
   ModelSelectorState, OrthographicViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
@@ -32,14 +32,14 @@ describe("IModelConnection (#integration)", () => {
     });
 
     Logger.initializeToConsole();
-    Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
+    Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
     const authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
     const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testITwinId, TestUtility.testIModelNames.connectionRead);
+    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.connectionRead);
 
     iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
@@ -136,7 +136,7 @@ describe("IModelConnection (#integration)", () => {
 
   it("should be able to open an IModel with no versions", async () => {
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.noVersions);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.noVersions);
     const noVersionsIModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel);
 
@@ -149,7 +149,7 @@ describe("IModelConnection (#integration)", () => {
 
   it("should be able to open the same IModel many times", async () => {
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdbyName(iTwinId, "ReadOnlyTest");
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, "ReadOnlyTest");
 
     const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
@@ -171,7 +171,7 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to request tiles from an IModelConnection", async () => {
     // SWB
     const testProjectId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, "ConnectionReadTest");
+    const testIModelId = await TestUtility.queryIModelIdByName(testProjectId, "ConnectionReadTest");
     iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });

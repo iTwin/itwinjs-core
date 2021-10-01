@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/linear-referencing-common",
-  "version": "3.0.0-dev.63",
+  "name": "@itwin/linear-referencing-common",
+  "version": "3.0.0-dev.73",
   "main": "lib/linear-referencing-common.js",
   "typings": "lib/linear-referencing-common",
   "license": "MIT",
@@ -8,10 +8,10 @@
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-common",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
@@ -31,18 +31,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
+    "@itwin/core-common": "workspace:^3.0.0-dev.73"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
@@ -52,15 +52,15 @@
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

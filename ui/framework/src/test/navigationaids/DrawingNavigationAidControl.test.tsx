@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnyWidgetProps, ConfigurableUiManager, DrawingNavigationAidControl, NavigationWidgetDef } from "../../ui-framework";
+import { AnyWidgetProps, ConfigurableUiManager, DrawingNavigationAidControl, NavigationWidgetDef } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 
 describe("DrawingNavigationAidControl", () => {

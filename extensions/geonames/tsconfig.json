@@ -1,23 +1,6 @@
 {
-  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "declaration": false,
-    "declarationMap": false,
-    "baseUrl": "./node_modules",
-    "outDir": "./lib",
-    "jsx": "react",
-    "types": [
-      "@bentley/extension-webpack-tools"
-    ]
-  },
-  "include": [
-    "./**/*.ts",
-    "./**/*.tsx"
-  ],
-  "exclude": [
-    "lib",
-    "node_modules",
-  ]
+    "outDir": "./lib"
+  }
 }

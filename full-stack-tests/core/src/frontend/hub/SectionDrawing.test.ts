@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, SectionDrawingModelState } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, IModelHubFrontend, SectionDrawingModelState } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";
 
@@ -12,14 +12,12 @@ describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup();
+    IModelApp.authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
+    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 

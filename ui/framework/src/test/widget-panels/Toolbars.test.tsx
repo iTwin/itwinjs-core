@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsToolbars, ZoneDef } from "../../ui-framework";
+import { FrontstageDef, FrontstageManager, WidgetDef, WidgetPanelsToolbars, ZoneDef } from "../../appui-react";
 
 describe("WidgetPanelsToolbars", () => {
   it("should not render", () => {

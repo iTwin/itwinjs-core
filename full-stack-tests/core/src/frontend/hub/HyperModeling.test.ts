@@ -3,37 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@bentley/geometry-core";
-import { SectionType } from "@bentley/imodeljs-common";
+import { Point3d } from "@itwin/core-geometry";
+import { SectionType } from "@itwin/core-common";
 import {
-  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+  CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend, ParseAndRunResult, SnapshotConnection,
+} from "@itwin/core-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
-} from "@bentley/hypermodeling-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+} from "@itwin/hypermodeling-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
-    await IModelApp.startup({
-      // SWB
-      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup();
+    IModelApp.authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
+    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
     // SWB
     const testContextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
+    const testIModelId = await TestUtility.queryIModelIdByName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
 
     hypermodel = await CheckpointConnection.openRemote(testContextId, testIModelId);
   });

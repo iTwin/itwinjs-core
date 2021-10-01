@@ -10,17 +10,17 @@ import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
   ProcessDetector,
   StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
   isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
   SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
@@ -330,13 +330,6 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public setValidScene() {
     this._sceneValid = true;
-  }
-
-  /** @deprecated Use requestRedraw.
-   * @internal
-   */
-  public setRedrawPending() {
-    this.requestRedraw();
   }
 
   /** Request that the Viewport redraw its contents on the next frame. This is useful when some state outside of the Viewport's control but affecting its display has changed.
@@ -736,6 +729,11 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
+  /** @see [[DisplayStyleState.changeBackgroundMapProvider]] */
+  public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    this.displayStyle.changeBackgroundMapProvider(props);
+  }
+
   /** @internal */
   public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
@@ -1062,10 +1060,13 @@ export abstract class Viewport implements IDisposable {
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
 
-    removals.push(settings.onBackgroundMapChanged.addListener(() => {
+    const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-    }));
+    };
+
+    removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
+    removals.push(settings.onMapImageryChanged.addListener(mapChanged));
 
     removals.push(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
@@ -1124,7 +1125,7 @@ export abstract class Viewport implements IDisposable {
   /** This gives each Viewport a unique Id, which can be used for comparing and sorting Viewport objects inside collections.
    * @internal
    */
-  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($bentleyjs-core)s. */
+  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($core-bentley)s. */
   public get viewportId(): number {
     return this._viewportId;
   }
@@ -1266,6 +1267,15 @@ export abstract class Viewport implements IDisposable {
     return undefined;
   }
 
+  /** The list of [[FeatureOverrideProvider]]s registered with this viewport.
+   * @see [[addFeatureOverrideProvider]] to register a new provider.
+   * @see [[dropFeatureOverrideProvider]] to unregister a provider.
+   * @see [[findFeatureOverrideProvider]] or [[findFeatureOverrideProviderOfType]] to find a registered provider.
+   */
+  public get featureOverrideProviders(): Iterable<FeatureOverrideProvider> {
+    return this._featureOverrideProviders;
+  }
+
   /** Locate the first registered FeatureOverrideProvider of the specified class. For example, to locate a registered [[EmphasizeElements]] provider:
    * ```ts
    * const provider: EmphasizeElements = viewport.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
@@ -1281,34 +1291,6 @@ export abstract class Viewport implements IDisposable {
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
     for (const provider of this._featureOverrideProviders)
       provider.addFeatureOverrides(ovrs, this);
-  }
-
-  /** An object which can customize the appearance of [[Feature]]s within a viewport.
-   * If defined, the provider will be invoked whenever the overrides are determined to need updating.
-   * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
-   * the internal state of the provider changes such that the computed overrides must also change.
-   * @see [[FeatureSymbology.Overrides]]
-   * @see [[findFeatureOverrideProvider]] as a replacement for the deprecated getter.
-   * @see [[addFeatureOverrideProvider]] as the replacement for the deprecated setter.
-   * @note A viewport can now have any number of FeatureOverrideProviders, therefore this property is deprecated. The getter will return undefined unless exactly one provider is registered; the setter will remove any other providers and register only the new provider.
-   * @deprecated Use [[addFeatureOverrideProvider]].
-   */
-  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return 1 === this._featureOverrideProviders.length ? this._featureOverrideProviders[0] : undefined;
-  }
-
-  public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (this.featureOverrideProvider === provider) // eslint-disable-line deprecation/deprecation
-      return;
-
-    if (undefined === provider) {
-      this._featureOverrideProviders.length = 0;
-      this.setFeatureOverrideProviderChanged();
-      return;
-    }
-
-    this._featureOverrideProviders.length = 0;
-    this.addFeatureOverrideProvider(provider);
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -1437,7 +1419,7 @@ export abstract class Viewport implements IDisposable {
    * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
    * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
    * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]].
-   * The setter ignores any string that is not a well-formed [Id64String]($bentleyjs-core). Passing [Id64.invalid]($bentleyjs-core) to the
+   * The setter ignores any string that is not a well-formed [Id64String]($core-bentley). Passing [Id64.invalid]($core-bentley) to the
    * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
    * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
    * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
@@ -1468,16 +1450,6 @@ export abstract class Viewport implements IDisposable {
     } finally {
       this._assigningFlashedId = false;
     }
-  }
-
-  /** Set or clear the currently *flashed* element.
-   * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
-   * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
-   * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
-   * @deprecated Set flashedId directly.
-   */
-  public setFlashed(id: string | undefined, _duration?: number): void {
-    this.flashedId = id;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
@@ -3002,8 +2974,8 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
-  /** Get the ClientRect of the canvas for this Viewport. */
-  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
+  /** Get the DOMRect of the canvas for this Viewport. */
+  public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelCloudEnvironment, IModelHubClient } from "@bentley/imodelhub-client";
-import { UserInfo } from "@bentley/itwin-client";
 import { ITwinRegistryClientWrapper } from "../../common/ITwinRegistryClientWrapper";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 
@@ -15,7 +14,7 @@ export class IModelHubCloudEnv implements IModelCloudEnvironment {
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }
 
-  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient {
-    return new IModelHubUserMgr(userInfo, userCredentials);
+  public getAuthorizationClient(userCredentials: any): FrontendAuthorizationClient {
+    return new IModelHubUserMgr(userCredentials);
   }
 }

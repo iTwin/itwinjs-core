@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { IPropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
-import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource";
+import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { IPropertyGridModel } from "../../../../components-react/propertygrid/internal/PropertyGridModel";
+import { PropertyGridModelSource } from "../../../../components-react/propertygrid/internal/PropertyGridModelSource";
 import { TestUtils } from "../../../TestUtils";
 import { FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
 

@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import {
   Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
-  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, IModelHubFrontend, SpatialViewState, ViewState,
+} from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 function countTileTrees(view: ViewState): number {
@@ -30,16 +30,14 @@ describe("Schedule script (#integration)", () => {
 
   before(async () => {
     await IModelApp.shutdown();
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await IModelApp.startup();
+    IModelApp.authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
+    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const oldIModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.synchro);
+    const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);
     dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
-    const newIModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.synchroNew);
+    const newIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchroNew);
     dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 

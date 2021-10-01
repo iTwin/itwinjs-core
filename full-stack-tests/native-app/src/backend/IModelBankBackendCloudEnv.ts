@@ -10,11 +10,10 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelBankClient, IModelBankFileSystemITwinClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
 
 export const assetsPath = `${__dirname}/../../../lib/test/assets/`;
 export const workDir = `${__dirname}/../../../lib/test/output/`;
@@ -34,10 +33,10 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   const orchestratorUrl: string = process.env.IMJS_TEST_IMODEL_BANK_URL ?? "";
 
   const basicAuthentication: boolean = !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK_BASIC_AUTHENTICATION ?? "");
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+  const getAuthorizationClient = (userCredentials: any) => {
     return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   };
 
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
@@ -94,7 +93,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     do {
       try {
         await pingServerOnce(url, attempt * pauseBeforePingMillis);
-      } catch (err) {
+      } catch (err: any) {
         if (err.errno === "ECONNREFUSED") {
           continue;
         } else {
@@ -147,10 +146,10 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   }
 
   const basicAuthentication: boolean = !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK_BASIC_AUTHENTICATION ?? "");
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+  const getAuthorizationClient = (userCredentials: any) => {
     return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   };
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;

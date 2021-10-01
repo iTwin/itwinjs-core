@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { IModelJsExpressServer } from "@itwin/express-server";
+import { IModelHost } from "@itwin/core-backend";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
 

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle, RectangleProps } from "@bentley/ui-core";
-import { containHorizontally, containVertically, withContainIn } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
+import { containHorizontally, containVertically, withContainIn } from "../../appui-layout-react";
+import { createRect, mount } from "../Utils";
 
 const component = () => <div></div>;
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -54,7 +54,7 @@ describe("<WithContainIn />", () => {
 
   it("should use container bounds", () => {
     const container = document.createElement("div");
-    sinon.stub(container, "getBoundingClientRect").returns(createBoundingClientRect(50, 100, 200, 400));
+    sinon.stub(container, "getBoundingClientRect").returns(createRect(50, 100, 200, 400));
     const containFnSpy = sinon.spy((_: RectangleProps, containerBounds: RectangleProps): RectangleProps => {
       containerBounds.left.should.eq(50);
       containerBounds.top.should.eq(100);

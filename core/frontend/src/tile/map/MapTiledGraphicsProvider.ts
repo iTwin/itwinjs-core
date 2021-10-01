@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { BackgroundMapSettings, MapImagerySettings, MapLayerSettings } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { ViewState } from "../../ViewState";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
@@ -16,7 +16,7 @@ import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, T
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundMap: MapTileTreeReference;
   public readonly overlayMap: MapTileTreeReference;
-  public readonly  backgroundDrapeMap: MapTileTreeReference;
+  public readonly backgroundDrapeMap: MapTileTreeReference;
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
@@ -31,19 +31,15 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     const mapImagery = displayStyle.settings.mapImagery;
     this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
-    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
-    const removals = this._detachFromDisplayStyle;
+    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, true);
 
-    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
-      const mapBase = MapLayerSettings.fromMapSettings(settings);
-      this.backgroundMap.setBaseLayerSettings(mapBase);
-      this.backgroundDrapeMap.setBaseLayerSettings(mapBase);
-      this.backgroundMap.clearLayers();
-      this.backgroundDrapeMap.clearLayers();
+    const removals = this._detachFromDisplayStyle;
+    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings) => {
       this.backgroundMap.settings = settings;
       this.overlayMap.settings = settings;
       this.backgroundDrapeMap.settings = settings;
     }));
+
     removals.push(displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
       this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
       this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
@@ -67,7 +63,9 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       return true;
     });
     const mapImagery = newView.displayStyle.settings.mapImagery;
-    if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings) || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)) {
+    if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings)
+      || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)
+      || (mapImagery.backgroundBase instanceof MapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
     }

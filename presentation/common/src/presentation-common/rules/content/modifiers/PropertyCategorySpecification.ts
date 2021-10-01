@@ -72,7 +72,7 @@ export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifi
 /**
  * Specification to define a custom property category.
  *
- * @see [More details]($docs/learning/presentation/Content/PropertyCategorySpecification.md)
+ * @see [More details]($docs/presentation/Content/PropertyCategorySpecification.md)
  * @public
  */
 export interface PropertyCategorySpecification {
@@ -85,7 +85,7 @@ export interface PropertyCategorySpecification {
    */
   parentId?: string | CategoryIdentifier | NoCategoryIdentifier;
 
-  /** Display label of the category. May be [localized]($docs/learning/presentation/Localization.md). */
+  /** Display label of the category. May be [localized]($docs/presentation/Advanced/Localization.md). */
   label: string;
 
   /** Optional extensive description of the category. */

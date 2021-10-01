@@ -7,12 +7,12 @@ import * as React from "react";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
 import {
   ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, Widget, Zone,
-} from "../../../ui-framework";
+} from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 describe("DefaultToolUiSettingsProvider", () => {
@@ -140,13 +140,17 @@ describe("DefaultToolUiSettingsProvider", () => {
     await TestUtils.initializeUiFramework();
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ToolUiProvider-TestFrontstage";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolUiProvider-TestFrontstage"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             topCenter={
               <Zone
                 widgets={[
@@ -169,7 +173,7 @@ describe("DefaultToolUiSettingsProvider", () => {
   });
 
   it("starting a tool with undefined tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
@@ -194,7 +198,7 @@ describe("DefaultToolUiSettingsProvider", () => {
   });
 
   it("starting a tool with tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -287,7 +291,7 @@ describe("DefaultToolUiSettingsProvider", () => {
   });
 
   it("starting a tool with nested lock toggle in tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

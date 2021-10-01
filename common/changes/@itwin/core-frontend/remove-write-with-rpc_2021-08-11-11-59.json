@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "remove IModelWriteRpcInterface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "33296803+kabentley@users.noreply.github.com"
+}

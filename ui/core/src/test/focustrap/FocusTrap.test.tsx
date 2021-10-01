@@ -7,8 +7,8 @@ import { fireEvent, render } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { focusIntoContainer, FocusTrap } from "../../ui-core/focustrap/FocusTrap";
+import { Logger } from "@itwin/core-bentley";
+import { focusIntoContainer, FocusTrap } from "../../core-react/focustrap/FocusTrap";
 
 // cspell:ignore focustrap
 
@@ -123,7 +123,7 @@ describe("focusIntoContainer", () => {
     const button1 = component.getByTestId("button1");
     const button2 = component.getByTestId("button2");
 
-    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
+    expect(focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
 
     clock.tick(100);
     await Promise.resolve();
@@ -131,7 +131,7 @@ describe("focusIntoContainer", () => {
     expect(document.activeElement).to.eq(button1);
 
     button2.focus();
-    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
+    expect(focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
 
     clock.tick(100);
     await Promise.resolve();
@@ -149,7 +149,7 @@ describe("focusIntoContainer", () => {
     );
 
     const div1 = component.getByTestId("div1");
-    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.false;
+    expect(focusIntoContainer(div1 as HTMLDivElement)).to.be.false;
   });
 
 });

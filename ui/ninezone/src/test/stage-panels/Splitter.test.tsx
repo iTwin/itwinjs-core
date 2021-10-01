@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Splitter } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { Splitter } from "../../appui-layout-react";
+import { createRect, mount } from "../Utils";
 
 describe("<Splitter />", () => {
   it("should render", () => {
@@ -124,15 +124,14 @@ describe("<Splitter />", () => {
     );
 
     const splitterNode = sut.getDOMNode();
-    sinon.stub(splitterNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 100, 0));
+    sinon.stub(splitterNode, "getBoundingClientRect").returns(createRect(0, 0, 100, 0));
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode();
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(40, 0, 60, 0));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(40, 0, 60, 0));
 
     grip.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new PointerEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
@@ -149,15 +148,14 @@ describe("<Splitter />", () => {
     );
 
     const splitterNode = sut.getDOMNode();
-    sinon.stub(splitterNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 0, 100));
+    sinon.stub(splitterNode, "getBoundingClientRect").returns(createRect(0, 0, 0, 100));
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode();
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 40, 0, 60));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(0, 40, 0, 60));
 
     grip.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientY").get(() => 70);
     document.dispatchEvent(pointerMove);
 
@@ -187,14 +185,13 @@ describe("<Splitter />", () => {
 
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode();
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 30, 0));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(20, 0, 30, 0));
 
     grip.simulate("pointerDown");
 
     sinon.stub(gripRef, "current").get(() => null).set(() => { });
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
@@ -218,16 +215,14 @@ describe("<Splitter />", () => {
 
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode();
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 30, 0));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(20, 0, 30, 0));
 
     grip.simulate("pointerDown");
 
-    const pointerUp = document.createEvent("MouseEvent");
-    pointerUp.initEvent("pointerup");
+    const pointerUp = new MouseEvent("pointerup");
     document.dispatchEvent(pointerUp);
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 

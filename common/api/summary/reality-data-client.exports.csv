@@ -1,9 +1,10 @@
 sep=;
 Release Tag;API Item
 internal;DataLocation 
+internal;DefaultSupportedTypes
 internal;FileAccessKey 
 internal;RealityData 
-internal;RealityDataClient 
+internal;RealityDataAccessClient 
+public;RealityDataQueryCriteria
 internal;RealityDataRelationship 
 internal;RealityDataRequestQueryOptions 
-internal;RealityDataType

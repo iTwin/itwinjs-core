@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@itwin/core-bentley";
 import { ITwinAccessClient } from "@bentley/itwin-registry-client";
-import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
-import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelJsFs, IModelJsFsStats } from "@itwin/core-backend/lib/IModelJsFs";
+import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 

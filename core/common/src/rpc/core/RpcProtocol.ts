@@ -6,18 +6,18 @@
  * @module RpcInterface
  */
 
-import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocation } from "./RpcInvocation";
+import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
 
 /** A serialized RPC operation descriptor.
- * @public
+ * @internal
  */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
@@ -27,9 +27,9 @@ export interface SerializedRpcOperation {
 }
 
 /** A serialized RPC operation request.
- * @public
+ * @internal
  */
-export interface SerializedRpcRequest extends SerializedClientRequestContext {
+export interface SerializedRpcRequest extends SerializedRpcActivity {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
@@ -40,7 +40,7 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
 }
 
 /** An RPC operation request fulfillment.
- * @public
+ * @internal
  */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
@@ -62,7 +62,7 @@ export interface RpcRequestFulfillment {
   retry?: string;
 }
 
-/** @public */
+/** @internal */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
     const result = await RpcMarshaling.serialize(undefined, error);
@@ -78,12 +78,12 @@ export namespace RpcRequestFulfillment {
 }
 
 /** Handles RPC protocol events.
- * @public
+ * @internal
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
 /** An application protocol for an RPC interface.
- * @public
+ * @internal
  */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */
@@ -107,7 +107,7 @@ export abstract class RpcProtocol {
   /** The RPC invocation class for this protocol. */
   public readonly invocationType: typeof RpcInvocation = RpcInvocation;
 
-  public serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+  public serializedClientRequestContextHeaderNames: SerializedRpcActivity = {
     /** The name of the request id header. */
     id: "",
 
@@ -122,9 +122,6 @@ export abstract class RpcProtocol {
 
     /** The name of the authorization header. */
     authorization: "",
-
-    /** The id of the authorized user */
-    userId: "",
   };
 
   /** If greater than zero, specifies where to break large binary request payloads. */
@@ -166,7 +163,7 @@ export abstract class RpcProtocol {
 
   /** Serializes a request. */
   public async serialize(request: RpcRequest): Promise<SerializedRpcRequest> {
-    const serializedContext: SerializedClientRequestContext = await RpcConfiguration.requestContext.serialize(request);
+    const serializedContext = await RpcConfiguration.requestContext.serialize(request);
     return {
       ...serializedContext,
       operation: {

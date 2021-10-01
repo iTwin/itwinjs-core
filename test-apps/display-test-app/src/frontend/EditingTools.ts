@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   IModelJson, LineString3d, Point3d, Sphere, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
-} from "@bentley/imodeljs-common";
-import { CreateElementTool, EditTools } from "@bentley/imodeljs-editor-frontend";
+} from "@itwin/core-common";
+import { CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext,
   EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+} from "@itwin/core-frontend";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { setTitle } from "./Title";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.

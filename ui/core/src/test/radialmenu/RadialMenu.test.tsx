@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { RadialButton, RadialMenu } from "../../ui-core";
+import { RadialButton, RadialMenu } from "../../core-react";
 import { TestUtils } from "../TestUtils";
 
 describe("RadialMenu", () => {
@@ -90,8 +90,7 @@ describe("RadialMenu", () => {
       render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onBlur={spyMethod} />);
       await TestUtils.flushAsyncOperations();
 
-      const mouseUp = document.createEvent("HTMLEvents");
-      mouseUp.initEvent("mouseup");
+      const mouseUp = new MouseEvent("mouseup");
       sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseUp);
 

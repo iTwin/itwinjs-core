@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
-import { ReviewToolWidget } from "../../ui-framework/widgets/ReviewToolWidget";
+import { CommandItemDef } from "../../appui-react/shared/CommandItemDef";
+import { ItemList } from "../../appui-react/shared/ItemMap";
+import { ReviewToolWidget } from "../../appui-react/widgets/ReviewToolWidget";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ReviewToolWidget", () => {

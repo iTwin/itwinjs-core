@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { getClassName } from "@bentley/ui-abstract";
+import { getClassName } from "@itwin/appui-abstract";
 
 describe("getClassName", () => {
   class NamedComponent extends React.Component {

@@ -3,26 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestFrontendAuthorizationClient, TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 
 import { TestUtility } from "./TestUtility";
-import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {
   let iTwinId: GuidString;
   let iModelId: GuidString;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
     const authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
 
-    new TestFrontendAuthorizationClient(requestContext.accessToken);
+    new TestFrontendAuthorizationClient(accessToken);
     const options: IModelAppOptions = {
       authorizationClient,
     };
@@ -30,7 +29,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     await IModelApp.startup(options);
     iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     chai.assert.isDefined(iTwinId);
-    iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.readOnly);
+    iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.readOnly);
     chai.assert.isDefined(iModelId);
   });
   after(async () => {
@@ -54,7 +53,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     sources = await MapLayerSettingsService.getSourcesFromSettingsService(iTwinId, iModelId);
     foundSource = sources.some((value) => { return value.name === testName; });
     chai.expect(foundSource).to.be.true;
-    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
+    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
@@ -69,7 +68,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.assert.isTrue(success);
     success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, iTwinId, iModelId);
     chai.assert.isFalse(success); // cant store model setting that collides with a project setting expect a false
-    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
+    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
@@ -84,7 +83,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.assert.isTrue(success);
     success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
+    const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, testName, true, iTwinId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 

@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
-} from "@bentley/imodeljs-common";
+  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+} from "@itwin/core-common";
 import {
   IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 /// cspell:ignore accum
@@ -344,21 +344,13 @@ describe("TxnManager", () => {
     }
 
     private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
-      const source = changes[propName];
-      if (!source)
-        return;
-
       const iterNames = { inserted: "inserts", updated: "updates", deleted: "deletes" } as const;
       const iterName = iterNames[propName];
       const entities = changes[iterName];
 
-      let i = 0;
       const dest = this[propName];
-      for (const entity of entities) {
-        expect(entity.id).to.equal(source.array[i]);
-        ++i;
+      for (const entity of entities)
         dest.push({ ...entity });
-      }
     }
 
     public expectNumValidations(expected: number) {
@@ -685,12 +677,19 @@ describe("TxnManager", () => {
   });
 
   it("dispatches events in batches", async () => {
+    function entityCount(entities: EntityIdAndClassIdIterable): number {
+      let count = 0;
+      for (const _entity of entities)
+        ++count;
+
+      return count;
+    }
+
     const test = (numChangesExpected: number, func: () => void) => {
       const numChanged: number[] = [];
       const prevMax = setMaxEntitiesPerEvent(2);
       const dropListener = imodel.txns.onElementsChanged.addListener((changes) => {
-        // eslint-disable-next-line deprecation/deprecation
-        const numEntities = changes.inserted.length + changes.updated.length + changes.deleted.length;
+        const numEntities = entityCount(changes.inserts) + entityCount(changes.updates) + entityCount(changes.deletes);
         numChanged.push(numEntities);
         expect(numEntities).least(1);
         expect(numEntities <= 2).to.be.true;
@@ -786,4 +785,18 @@ describe("TxnManager", () => {
     dropListener();
   });
 
+  // This bug occurred in one of the authoring apps. This test reproduced the problem, and now serves as a regression test.
+  it("doesn't crash when reversing a single txn that inserts a model and a contained element while geometric model tracking is enabled", () => {
+    imodel.nativeDb.setGeometricModelTrackingEnabled(true);
+
+    const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+    expect(Id64.isValidId64(model)).to.be.true;
+    const elem = imodel.elements.insertElement({ ...props, model });
+    expect(Id64.isValidId64(elem)).to.be.true;
+
+    imodel.saveChanges("insert model and element");
+    imodel.txns.reverseSingleTxn();
+
+    imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+  });
 });

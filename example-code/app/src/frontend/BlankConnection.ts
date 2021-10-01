@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@bentley/geometry-core";
-import { Cartographic, ColorDef } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelConnection, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { Range3d } from "@itwin/core-geometry";
+import { Cartographic, ColorDef } from "@itwin/core-common";
+import { BlankConnection, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 
 export class BlankConnectionExample {
 

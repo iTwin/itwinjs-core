@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/itwin-registry-client",
+      "packageName": "@bentley/context-registry-client",
       "comment": "Replaced ContextRegistry with generalized ITwinAccess interface",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/itwin-registry-client",
+  "packageName": "@bentley/context-registry-client",
   "email": "54333460+SpencerWBarnes@users.noreply.github.com"
 }

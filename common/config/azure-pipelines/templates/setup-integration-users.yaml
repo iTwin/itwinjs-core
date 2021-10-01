@@ -20,6 +20,8 @@ steps:
     echo "##vso[task.setvariable variable=imjs_delegation_test_client_secret;]$delegation_test_client_secret"
     echo "##vso[task.setvariable variable=imjs_qa_seq_api_key;]$qa_seq_api_key"
     echo "##vso[task.setvariable variable=imjs_test_imodelhub_user_password;]$test_hub_password"
+    echo "##vso[task.setvariable variable=test_bing_maps_key;]$bing_key"
+    echo "##vso[task.setvariable variable=test_mapbox_key;]$mapbox_key"
   displayName: 'Add config to environment'
   env:
     test_reg_password: $(imjs_regular_user_password)
@@ -32,3 +34,5 @@ steps:
     agent_client_secret: $(imjs_agent_client_secret)
     delegation_test_client_secret: $(imjs_delegation_client_secret)
     qa_seq_api_key: $(imjs_qa_seq_key)
+    bing_key: $(bing_maps_key)
+    mapbox_key: $(mapbox_key)

@@ -8,12 +8,12 @@
 
 // cspell:ignore elid
 
-import { GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
   ModelProps, RelatedElement,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";

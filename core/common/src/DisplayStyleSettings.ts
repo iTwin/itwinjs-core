@@ -9,12 +9,12 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
-} from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+} from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
@@ -126,7 +126,7 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
 
   /** Settings controlling display of map within views of geolocated models. */
-  backgroundMap?: BackgroundMapProps;
+  backgroundMap?: PersistentBackgroundMapProps;
   /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
@@ -137,7 +137,7 @@ export interface DisplayStyleSettingsProps {
   mapImagery?: MapImageryProps;
   /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core). */
+  /** Style applied by the view's [ClipVector]($core-geometry). */
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
@@ -164,8 +164,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
-  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
-   * @deprecated
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
+   * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
    * @internal
    */
   sceneLights?: { sunDir?: XYZProps };
@@ -239,7 +239,6 @@ export interface DisplayStyleOverridesOptions {
 class ExcludedElements implements OrderedId64Iterable {
   private readonly _json: DisplayStyleSettingsProps;
   private readonly _ids: MutableCompressedId64Set;
-  private _set?: ObservableSet<Id64String>;
   private _synchronizing = false;
 
   public constructor(json: DisplayStyleSettingsProps) {
@@ -252,7 +251,6 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
     this.synchronize(() => {
-      this._set?.clear();
       this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
     });
   }
@@ -263,51 +261,20 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public add(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.add(id);
-        this._set?.add(id);
-      }
     });
   }
 
   public delete(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.delete(id);
-        this._set?.delete(id);
-      }
     });
-  }
-
-  public obtainSet(): Set<Id64String> {
-    if (this._set)
-      return this._set;
-
-    this.synchronize(() => {
-      this._set = new ObservableSet<string>(this._ids);
-      this._set.onAdded.addListener((id) => this.onAdded(id));
-      this._set.onDeleted.addListener((id) => this.onDeleted(id));
-      this._set.onCleared.addListener(() => this.onCleared());
-    });
-
-    assert(undefined !== this._set);
-    return this._set;
   }
 
   public [Symbol.iterator]() {
     return this._ids[Symbol.iterator]();
-  }
-
-  private onAdded(id: Id64String): void {
-    this.synchronize(() => this._ids.add(id));
-  }
-
-  private onDeleted(id: Id64String): void {
-    this.synchronize(() => this._ids.delete(id));
-  }
-
-  private onCleared(): void {
-    this.synchronize(() => this._ids.clear());
   }
 
   /** The JSON must be kept up-to-date at all times. */
@@ -491,7 +458,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[backgroundMap]] property. */
   public readonly onBackgroundMapChanged = new BeEvent<(newMap: BackgroundMapSettings) => void>();
   /** Event raised just prior to assignment to the [[mapImagery]] property.
-   * @alpha
+   * @beta
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
@@ -553,8 +520,12 @@ export class DisplayStyleSettings {
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white;
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
-    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
-    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
+    this._backgroundMap = BackgroundMapSettings.fromPersistentJSON(this._json.backgroundMap);
+    this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
+
+    // Ensure that if we used the deprecated imagery properties from this._backgroundMap to set up the base layer of this._mapImagery,
+    // we update our JSON to include that base layer.
+    this._json.mapImagery = this._mapImagery.toJSON();
 
     this._excludedElements = new ExcludedElements(this._json);
 
@@ -647,16 +618,12 @@ export class DisplayStyleSettings {
     if (!this.backgroundMap.equals(map)) {
       this.onBackgroundMapChanged.raiseEvent(map);
       this._backgroundMap = map; // it's an immutable type.
-      this._json.backgroundMap = map.toJSON();
+      this._json.backgroundMap = map.toPersistentJSON();
     }
   }
 
-  /** Get the map imagery for this display style.  Map imagery includes the background map base as well as background layers and overlay layers.
-   * In earlier versions only a background map image was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
-   * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
-   * the settings are compatible.  The map imagery typically only should be modified only through  [DisplayStyleState]($frontend) methods.
-   * Map imagery should only be modified from backend, changes to map imagery from front end should be handled only through [DisplayStyleState]($frontend) methods.
-   * @alpha
+  /** Settings defining the map imagery layers to be displayed within the view.
+   * @beta
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
 
@@ -828,15 +795,6 @@ export class DisplayStyleSettings {
   }
 
   /** The set of elements that will not be drawn by this display style.
-   * @returns The set of excluded elements.
-   * @note The set and the Ids it contains may be very large. It is allocated the first time this property is requested.
-   * @deprecated Use [[excludedElementIds]] for better performance and reduced memory overhead, unless efficient lookup of Ids within the set is required.
-   */
-  public get excludedElements(): Set<Id64String> {
-    return this._excludedElements.obtainSet();
-  }
-
-  /** The set of elements that will not be drawn by this display style.
    * @returns An iterable over the elements' Ids.
    */
   public get excludedElementIds(): OrderedId64Iterable {
@@ -876,7 +834,7 @@ export class DisplayStyleSettings {
     this.onExcludedElementsChanged.raiseEvent();
   }
 
-  /** The style applied to the view's [ClipVector]($geometry-core). */
+  /** The style applied to the view's [ClipVector]($core-geometry). */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
   }
@@ -918,10 +876,12 @@ export class DisplayStyleSettings {
       whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
-    if (options?.includeBackgroundMap)
-      props.backgroundMap = this.backgroundMap.toJSON();
-    else
+    if (options?.includeBackgroundMap) {
+      props.backgroundMap = this.backgroundMap.toPersistentJSON();
+      props.mapImagery = this.mapImagery.toJSON();
+    } else {
       delete viewflags.backgroundMap;
+    }
 
     if (!options?.includeDrawingAids) {
       delete viewflags.acs;
@@ -1002,7 +962,10 @@ export class DisplayStyleSettings {
       this.monochromeMode = overrides.monochromeMode;
 
     if (overrides.backgroundMap)
-      this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+      this.backgroundMap = BackgroundMapSettings.fromPersistentJSON(overrides.backgroundMap);
+
+    if (overrides.mapImagery)
+      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toPersistentJSON());
 
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;
@@ -1078,7 +1041,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir;
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 

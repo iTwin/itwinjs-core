@@ -5,9 +5,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue } from "@bentley/imodeljs-common";
+import { Guid, OpenMode } from "@itwin/core-bentley";
+import { IModelHost } from "@itwin/core-backend";
+import { BriefcaseIdValue } from "@itwin/core-common";
 
 let prefix = "";
 
@@ -54,7 +54,7 @@ function setToStandalone(iModelName: string) {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveChanges(); // save change to briefcaseId
     nativeDb.closeIModel();
-  } catch (err) {
+  } catch (err: any) {
     log(err.message);
   }
 
@@ -70,7 +70,7 @@ async function processDirectory(dir: string) {
     let isDirectory;
     try {
       isDirectory = fs.statSync(fullPath).isDirectory();
-    } catch (err) {
+    } catch (err: any) {
       log(err);
       continue;
     }

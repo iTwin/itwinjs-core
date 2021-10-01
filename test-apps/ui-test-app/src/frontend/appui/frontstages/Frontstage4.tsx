@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
-} from "@bentley/ui-abstract";
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardContentLayouts, StandardTypeNames, WidgetState,
+} from "@itwin/appui-abstract";
 import {
   ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
   ModelessDialogManager, NavigationWidget, StagePanel, StagePanelState, ToolButton, ToolWidget, Widget, Zone, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { PopupTestDialog } from "../dialogs/PopupTest";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
@@ -137,12 +137,18 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 }
 
 export class Frontstage4 extends FrontstageProvider {
+  public get id(): string {
+    return "Test4";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "CubeContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "navigationCube",
             classId: "CubeContent",
           },
         ],
@@ -151,13 +157,11 @@ export class Frontstage4 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test4"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
@@ -185,7 +185,7 @@ export class RealityTileTree extends TileTree {
     let sortIndices;
 
     if (!this.parentsAndChildrenExclusive) {
-      sortIndices = selectedTiles.map((_x,i) => i);
+      sortIndices = selectedTiles.map((_x, i) => i);
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
@@ -288,11 +288,11 @@ export class RealityTileTree extends TileTree {
     const reprojectChildren = new Array<ChildReprojection>();
     for (const child of children) {
       const realityChild = child as RealityTile;
-      const childRange  = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
+      const childRange = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
       const dbCenter = childRange.center;
       const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
       const dbPoints = [dbCenter, dbCenter.plusXYZ(1), dbCenter.plusXYZ(0, 1), dbCenter.plusXYZ(0, 0, 1)];
-      reprojectChildren.push({child: realityChild, ecefCenter, dbPoints});
+      reprojectChildren.push({ child: realityChild, ecefCenter, dbPoints });
     }
     if (reprojectChildren.length === 0)
       resolve(children);
@@ -438,6 +438,6 @@ export class RealityTileTree extends TileTree {
 
     depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
     // eslint-disable-next-line no-console
-    console.log(`${label  }: ${  count  } Min: ${  min  } Max: ${  max  } Depths: ${  depthString}`);
+    console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
   }
 }

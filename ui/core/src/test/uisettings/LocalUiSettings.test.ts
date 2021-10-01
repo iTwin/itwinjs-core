@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LocalSettingsStorage, LocalUiSettings, UiSettingsStatus } from "../../ui-core";
+import { LocalSettingsStorage, LocalUiSettings, UiSettingsStatus } from "../../core-react";
 
 import { storageMock } from "../TestUtils";
 
@@ -41,9 +41,15 @@ describe("LocalUiSettings", () => {
   describe("deleteSetting", async () => {
     const localUiSettings = new LocalSettingsStorage({ localStorage: storageMock() } as Window);
     await localUiSettings.saveSetting("Testing", "TestData", { test123: "4567" });
+    let hasSettings = await localUiSettings.hasSetting("Testing", "TestData");
+    expect(hasSettings).to.be.true;
     it("Should remove setting correctly", async () => {
       const result = await localUiSettings.deleteSetting("Testing", "TestData");
       expect(result.status).to.equal(UiSettingsStatus.Success);
+
+      hasSettings = await localUiSettings.hasSetting("Testing", "TestData");
+      expect(hasSettings).to.be.false;
+
       const result2 = await localUiSettings.deleteSetting("Testing", "TestData");
       expect(result2.status).to.equal(UiSettingsStatus.NotFound);
       expect(result2.setting).to.be.undefined;

@@ -7,9 +7,9 @@
  */
 
 import {
-  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
-} from "@bentley/bentleyjs-core";
-import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+} from "@itwin/core-bentley";
+import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -39,19 +39,6 @@ export interface ValidationError {
  * @public
  */
 export interface TxnChangedEntities {
-  /** Ids of entities that were inserted by the transaction.
-   * @deprecated use [[inserts]].
-   */
-  inserted: OrderedId64Array;
-  /** Ids of entities that were deleted by the transaction.
-   * @deprecated use [[deletes]].
-   */
-  deleted: OrderedId64Array;
-  /** Ids of entities that were modified by the transaction.
-   * @deprecated use [[updates]].
-   */
-  updated: OrderedId64Array;
-
   /** The entities that were inserted by the transaction. */
   readonly inserts: EntityIdAndClassIdIterable;
   /** The entities that were deleted by the transaction. */
@@ -148,9 +135,6 @@ class ChangedEntitiesProc {
 
     // Notify backend listeners.
     const txnEntities: TxnChangedEntities = {
-      inserted: this._inserted.entityIds,
-      deleted: this._deleted.entityIds,
-      updated: this._updated.entityIds,
       inserts: this._inserted.iterable(classIds),
       deletes: this._deleted.iterable(classIds),
       updates: this._updated.iterable(classIds),
@@ -203,7 +187,7 @@ class ChangedEntitiesProc {
 
       changes.sendEvent(iModel, changedEvent, evtName);
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, err.message);
+      Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
     }
   }
 }

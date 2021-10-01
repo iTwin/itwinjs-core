@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BaseTimelineDataProvider } from "../../ui-imodel-components/timeline/BaseTimelineDataProvider";
-import { PlaybackSettings } from "../../ui-imodel-components/timeline/interfaces";
+import { BaseTimelineDataProvider } from "../../imodel-components-react/timeline/BaseTimelineDataProvider";
+import { PlaybackSettings } from "../../imodel-components-react/timeline/interfaces";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public pointerCallbackCalled = false;

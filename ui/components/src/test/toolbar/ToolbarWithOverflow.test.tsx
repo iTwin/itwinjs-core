@@ -6,11 +6,10 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components/toolbar/ToolbarWithOverflow";
-import { Direction } from "../../ui-components/toolbar/utilities/Direction";
-import { createDOMRect } from "../Utils";
+import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../components-react/toolbar/ToolbarWithOverflow";
+import { Direction } from "../../components-react/toolbar/utilities/Direction";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore testid
@@ -57,11 +56,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -73,11 +72,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(
         <ToolbarWithOverflow panelAlignment={ToolbarPanelAlignment.End} expandsTo={Direction.Top} items={toolbarItems} overflowExpandsTo={Direction.Top} />
@@ -91,11 +90,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 168 }); // 4*42 = 168
+          return DOMRect.fromRect({ width: 168 }); // 4*42 = 168
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow panelAlignment={ToolbarPanelAlignment.End} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -121,11 +120,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 168 }); // 4*42 = 168
+          return DOMRect.fromRect({ width: 168 }); // 4*42 = 168
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -162,11 +161,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 168 }); // 4*42 = 168
+          return DOMRect.fromRect({ width: 168 }); // 4*42 = 168
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItemsWithGroup} toolbarOpacitySetting={ToolbarOpacitySetting.Transparent} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -196,11 +195,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 300 }); // plenty of room not no need overflow
+          return DOMRect.fromRect({ width: 300 }); // plenty of room not no need overflow
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItemsWithGroupPriority} toolbarOpacitySetting={ToolbarOpacitySetting.Defaults} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -220,11 +219,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 300 }); // plenty of room not no need overflow
+          return DOMRect.fromRect({ width: 300 }); // plenty of room not no need overflow
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItemsWithGroupPriority} toolbarOpacitySetting={ToolbarOpacitySetting.Transparent} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -244,11 +243,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 300 }); // plenty of room not no need overflow
+          return DOMRect.fromRect({ width: 300 }); // plenty of room not no need overflow
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItemsWithGroupPriority} toolbarOpacitySetting={undefined} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -271,11 +270,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ height: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ height: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ height: 40 });
+          return DOMRect.fromRect({ height: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow expandsTo={Direction.Right} panelAlignment={ToolbarPanelAlignment.Start} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -286,11 +285,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ height: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ height: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ height: 40 });
+          return DOMRect.fromRect({ height: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow expandsTo={Direction.Left} panelAlignment={ToolbarPanelAlignment.End} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -301,11 +300,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ height: 168 }); // 4*42 = 168
+          return DOMRect.fromRect({ height: 168 }); // 4*42 = 168
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ height: 40 });
+          return DOMRect.fromRect({ height: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow expandsTo={Direction.Right} panelAlignment={ToolbarPanelAlignment.Start} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -324,11 +323,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -358,11 +357,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const onKeyDownSpy = sinon.spy();
 
@@ -400,11 +399,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -428,11 +427,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -503,11 +502,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -566,11 +565,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -617,11 +616,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -653,11 +652,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -719,11 +718,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
@@ -769,11 +768,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
@@ -800,11 +799,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -839,11 +838,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -876,11 +875,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -909,11 +908,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
       expect(renderedComponent).not.to.be.undefined;
@@ -938,11 +937,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
@@ -986,11 +985,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
@@ -1034,11 +1033,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
@@ -1089,11 +1088,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);
@@ -1131,11 +1130,11 @@ describe("<ToolbarWithOverflow />", () => {
 
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 168 }); // 4*42 = 168
+          return DOMRect.fromRect({ width: 168 }); // 4*42 = 168
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} onItemExecuted={onItemExecuteSpy} />);
 
@@ -1156,11 +1155,11 @@ describe("<ToolbarWithOverflow />", () => {
 
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 168 }); // 4*42 = 168
+          return DOMRect.fromRect({ width: 168 }); // 4*42 = 168
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
       const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} onKeyDown={onKeyDownSpy} />);
 
@@ -1187,11 +1186,11 @@ describe("<ToolbarWithOverflow />", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("components-toolbar-overflow-sizer")) {
-          return createDOMRect({ width: 252 }); // 6*42 = 252
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
         } else if (this.classList.contains("components-toolbar-item-container")) {
-          return createDOMRect({ width: 40 });
+          return DOMRect.fromRect({ width: 40 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<ToolbarWithOverflow useDragInteraction={true} items={toolbarItems} />);

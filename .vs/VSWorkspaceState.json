@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\clients",
+    "\\clients\\context-registry",
+    "\\clients\\context-registry\\src",
+    "\\clients\\context-registry\\src\\test",
+    "\\clients\\context-registry\\src\\test\\integration",
+    "\\clients\\imodelhub",
+    "\\clients\\imodelhub\\src",
+    "\\clients\\imodelhub\\src\\imodelhub"
+  ],
+  "SelectedNode": "\\clients\\imodelhub\\src\\imodelhub\\iModels.ts",
+  "PreviewInSolutionExplorer": false
+}

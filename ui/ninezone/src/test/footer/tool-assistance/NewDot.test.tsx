@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { NewDot } from "../../../ui-ninezone/footer/tool-assistance/NewDot";
+import { NewDot } from "../../../appui-layout-react/footer/tool-assistance/NewDot";
 import { mount } from "../../Utils";
 
 describe("<NewDot />", () => {

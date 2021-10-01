@@ -25,11 +25,6 @@ loadEnv(path.join(__dirname, "..", ".env"));
 // Increase the timeout since iModel creation is taking longer
 RequestGlobalOptions.timeout.response = 60 * 1000; // 60 seconds in ms
 
-function isOfflineSet(): boolean {
-  const index = process.argv.indexOf("--offline");
-  return process.argv[index + 1] === "mock";
-}
-
 /** Basic configuration used by all tests
  */
 export class TestConfig {
@@ -37,7 +32,7 @@ export class TestConfig {
   public static readonly iTwinName: string = process.env.IMJS_TEST_PROJECT_NAME ?? "iModelJsIntegrationTest";
   // SWB
   public static readonly assetName: string = process.env.IMJS_TEST_ASSET_NAME ?? "iModelJsAssetTest";
-  public static readonly enableMocks: boolean = isOfflineSet();
+  public static readonly enableMocks: boolean = process.argv.includes("--enableMocks");
   public static readonly enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
   public static readonly initializeiModelTimeout: number = 15 * 60 * 1000; // 15min
 }

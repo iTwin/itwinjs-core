@@ -8,7 +8,7 @@ import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core";
+import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../core-react";
 import { findInstance } from "../ReactInstance";
 
 describe("<Tabs />", () => {
@@ -41,7 +41,7 @@ describe("<Tabs />", () => {
   ///
 
   it("Home key puts focus on 1st tab", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 1");
     userEvent.type(label, "{home}");
     const first = getAllByRole("button")[0];
@@ -49,7 +49,7 @@ describe("<Tabs />", () => {
   });
 
   it("End key puts focus on last tab", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 1");
     userEvent.type(label, "{end}");
     const last = getAllByRole("button")[2];
@@ -59,7 +59,7 @@ describe("<Tabs />", () => {
   ///
 
   it("Up key in Vertical puts focus on previous tab", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 2");
     userEvent.type(label, "{arrowup}");
     const previous = getAllByRole("button")[0];
@@ -67,7 +67,7 @@ describe("<Tabs />", () => {
   });
 
   it("Down key in Vertical puts focus on next tab", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 2");
     userEvent.type(label, "{arrowdown}");
     const nextTab = getAllByRole("button")[2];
@@ -76,7 +76,7 @@ describe("<Tabs />", () => {
 
   it("Left key in Horizontal puts focus on previous tab", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 2");
     userEvent.type(label, "{arrowleft}");
     const previous = getAllByRole("button")[0];
@@ -85,7 +85,7 @@ describe("<Tabs />", () => {
 
   it("Right key in Horizontal puts focus on next tab", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 2");
     userEvent.type(label, "{arrowright}");
     const nextTab = getAllByRole("button")[2];
@@ -95,7 +95,7 @@ describe("<Tabs />", () => {
   ///
 
   it("Up key in Vertical puts focus on last tab when on first", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 1");
     userEvent.type(label, "{arrowup}");
     const last = getAllByRole("button")[2];
@@ -103,7 +103,7 @@ describe("<Tabs />", () => {
   });
 
   it("Down key in Vertical puts focus on first tab when on last", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 3");
     userEvent.type(label, "{arrowdown}");
     const first = getAllByRole("button")[0];
@@ -112,7 +112,7 @@ describe("<Tabs />", () => {
 
   it("Left key in Horizontal puts focus on last tab when on first", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 1");
     userEvent.type(label, "{arrowleft}");
     const last = getAllByRole("button")[2];
@@ -121,7 +121,7 @@ describe("<Tabs />", () => {
 
   it("Right key in Horizontal puts focus on first tab when on last", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 3");
     userEvent.type(label, "{arrowright}");
     const first = getAllByRole("button")[0];
@@ -131,7 +131,7 @@ describe("<Tabs />", () => {
   ///
 
   it("Left/Right key in Vertical does nothing", () => {
-    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 2");
     userEvent.type(label, "{arrowleft}");
     const first = getAllByRole("button")[0];
@@ -143,7 +143,7 @@ describe("<Tabs />", () => {
 
   it("Up/Down key in Horizontal does nothing", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const { getAllByRole } = render(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = screen.getByText("label 2");
     userEvent.type(label, "{arrowup}");
     const first = getAllByRole("button")[0];
@@ -193,7 +193,7 @@ describe("<Tabs />", () => {
     userEvent.type(label, "{arrowup}");
     expect(document.activeElement).to.eq(tabButtons[0]);
 
-    rerender (<Tabs orientation={Orientation.Horizontal} mainClassName="" labels={["label 1", "label 2", "label 3", "label 4"]} activeIndex={1} />);
+    rerender(<Tabs orientation={Orientation.Horizontal} mainClassName="" labels={["label 1", "label 2", "label 3", "label 4"]} activeIndex={1} />);
     tabButtons = getAllByRole("button");
     expect(tabButtons.length).to.eq(4);
     label = screen.getByText("label 2");
@@ -204,7 +204,7 @@ describe("<Tabs />", () => {
   });
 
   it("Supports updating activeIndex", async () => {
-    const { container, getByText, getAllByRole, rerender } = render (<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
+    const { container, getByText, getAllByRole, rerender } = render(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
     const tabsInstance = findInstance(container.firstChild);
     expect(tabsInstance.state.activeIndex).to.eq(0);
 

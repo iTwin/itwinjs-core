@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@bentley/imodeljs-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-common";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 
 function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: FeatureAppearanceProps, name: string): boolean {
@@ -25,6 +25,10 @@ function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: Fea
   return changed;
 }
 
+function modelChangedString(name: string) {
+  return name === undefined ? `All Models` : `Model: ${name}`;
+}
+
 /** Set model appearance override for transparency in display style.
  * @beta
  */
@@ -37,7 +41,7 @@ export class SetModelTransparencyTool extends Tool {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { transparency }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to transparency: ${transparency}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to transparency: ${transparency}`));
 
     return changed;
   }
@@ -59,7 +63,7 @@ export class SetModelLineWeightTool extends Tool {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { weight }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to line weight: ${weight}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line weight: ${weight}`));
 
     return changed;
   }
@@ -85,7 +89,7 @@ export class SetModelLineCodeTool extends Tool {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { linePixels: SetModelLineCodeTool.linePixels[lineCode] }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to line code: ${lineCode}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line code: ${lineCode}`));
 
     return changed;
   }
@@ -108,7 +112,7 @@ export class SetModelLocateTool extends Tool {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { nonLocatable }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to locate: ${locate}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to locate: ${locate}`));
 
     return changed;
   }
@@ -177,7 +181,7 @@ export class SetModelColorTool extends Tool {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { rgb }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to color: ${rgb}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
 
     return true;
   }

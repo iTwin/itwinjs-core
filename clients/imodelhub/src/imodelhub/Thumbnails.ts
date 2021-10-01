@@ -6,8 +6,9 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, WsgInstance } from "@bentley/itwin-client";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
+import { request, RequestOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { Base64 } from "js-base64";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -22,7 +23,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 export type ThumbnailSize = "Small" | "Large";
 
 /** Base class for Thumbnails.
- * @public
+ * @internal
  */
 export abstract class Thumbnail extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
@@ -30,13 +31,13 @@ export abstract class Thumbnail extends WsgInstance {
 }
 
 /** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SmallThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SmallThumbnail extends Thumbnail { }
 
 /** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.LargeThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class LargeThumbnail extends Thumbnail { }
@@ -53,7 +54,7 @@ export interface TipThumbnail {
 
 /**
  * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
- * @public
+ * @internal
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**
@@ -72,7 +73,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
 
 /**
  * Handler for retrieving [[Thumbnail]]s. Use [[IModelClient.Thumbnails]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class ThumbnailHandler {
   private _handler: IModelBaseHandler;
@@ -116,15 +117,15 @@ export class ThumbnailHandler {
    * @param url Url to download thumbnail.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes
    */
-  private async downloadThumbnail(requestContext: AuthorizedClientRequestContext, url: string): Promise<string> {
+  private async downloadThumbnail(accessToken: AccessToken, url: string): Promise<string> {
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: accessToken },
       responseType: "arraybuffer",
       agent: this._handler.getAgent(),
     };
 
-    const response = await request(requestContext, url, options);
+    const response = await request(url, options);
 
     const byteArray = new Uint8Array(response.body);
     if (!byteArray || byteArray.length === 0) {
@@ -143,14 +144,13 @@ export class ThumbnailHandler {
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
-  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
+  private async downloadTipThumbnail(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
     Logger.logInfo(loggerCategory, `Downloading tip ${size}Thumbnail`, () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iTwinId", iTwinId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(iTwinId, iModelId, size);
-    const pngImage = await this.downloadThumbnail(requestContext, url);
+    const url: string = await this._handler.getUrl() + this.getRelativeContextUrl(iTwinId, iModelId, size);
+    const pngImage = await this.downloadThumbnail(accessToken, url);
 
     Logger.logTrace(loggerCategory, `Downloaded tip ${size}Thumbnail`, () => ({ iModelId }));
     return pngImage;
@@ -164,16 +164,15 @@ export class ThumbnailHandler {
    * @return Array of Thumbnails of the specified size that match the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
+  public async get(accessToken: AccessToken, iModelId: GuidString, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
     Logger.logInfo(loggerCategory, "Querying iModel thumbnails", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     let thumbnails = [];
     if (size === "Small")
-      thumbnails = await this._handler.getInstances<SmallThumbnail>(requestContext, SmallThumbnail, this.getRelativeUrl(iModelId, size, query.getId()), query.getQueryOptions());
+      thumbnails = await this._handler.getInstances<SmallThumbnail>(accessToken, SmallThumbnail, this.getRelativeUrl(iModelId, size, query.getId()), query.getQueryOptions());
     else
-      thumbnails = await this._handler.getInstances<LargeThumbnail>(requestContext, LargeThumbnail, this.getRelativeUrl(iModelId, size, query.getId()), query.getQueryOptions());
+      thumbnails = await this._handler.getInstances<LargeThumbnail>(accessToken, LargeThumbnail, this.getRelativeUrl(iModelId, size, query.getId()), query.getQueryOptions());
 
     Logger.logTrace(loggerCategory, "Queried iModel thumbnails", () => ({ iModelId }));
     return thumbnails;
@@ -188,12 +187,11 @@ export class ThumbnailHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[ResponseError]] if a network issue occurs.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
-    ArgumentCheck.defined("requestContext", requestContext);
+  public async download(accessToken: AccessToken, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     if (this.isTipThumbnail(thumbnail)) {
-      return this.downloadTipThumbnail(requestContext, thumbnail.iTwinId, iModelId, thumbnail.size);
+      return this.downloadTipThumbnail(accessToken, thumbnail.iTwinId, iModelId, thumbnail.size);
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";
@@ -201,8 +199,8 @@ export class ThumbnailHandler {
 
     Logger.logInfo(loggerCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
 
-    const url: string = `${await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
-    const pngImage = await this.downloadThumbnail(requestContext, url);
+    const url: string = `${await this._handler.getUrl() + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
+    const pngImage = await this.downloadThumbnail(accessToken, url);
     Logger.logTrace(loggerCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
     return pngImage;
   }

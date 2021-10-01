@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";

@@ -4,12 +4,10 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClientTelemetryEvent } from '@bentley/telemetry-client';
 import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
@@ -17,6 +15,7 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IntrospectionResponse as IntrospectionResponse_2 } from 'openid-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
+import { RpcActivity } from '@itwin/core-common';
 import { TelemetryClient } from '@bentley/telemetry-client';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { Transform } from 'stream';
@@ -25,14 +24,10 @@ import { TransformCallback } from 'stream';
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
     constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @deprecated
-    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    getAccessToken(): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
     get isAuthorized(): boolean;
-    // @deprecated
-    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -44,14 +39,14 @@ export class AzureFileHandler implements FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+    uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     }
 
 // @beta
@@ -59,9 +54,9 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
     protected _configuration: BackendAuthorizationClientConfiguration;
-    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<Client>>;
+    discoverEndpoints(): Promise<Issuer<Client>>;
     // (undocumented)
-    protected getClient(requestContext: ClientRequestContext): Promise<Client>;
+    protected getClient(): Promise<Client>;
     }
 
 // @beta
@@ -92,14 +87,14 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
     // (undocumented)
     protected readonly _clientAuthManager?: ClientAuthIntrospectionManager | undefined;
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
     // (undocumented)
-    protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: BackendTelemetryEvent): Promise<void>;
+    protected abstract _postTelemetry(requestContext: RpcActivity, telemetryEvent: BackendTelemetryEvent): Promise<void>;
 }
 
 // @alpha
 export class BackendTelemetryEvent extends ClientTelemetryEvent {
-    constructor(telemetryEvent: TelemetryEvent, requestContext: AuthorizedClientRequestContext, backendMachineName?: string | undefined,
+    constructor(telemetryEvent: TelemetryEvent, rpcActivity: RpcActivity, backendMachineName?: string | undefined,
     backendApplicationId?: string | undefined,
     backendApplicationVersion?: string | undefined,
     clientAuth?: ClientAuthDetail | undefined);
@@ -144,7 +139,7 @@ export class ClientAuthDetail {
 export class ClientAuthIntrospectionManager {
     constructor(introspectionClient: IntrospectionClient);
     // (undocumented)
-    getClientAuthDetails(requestContext: AuthorizedClientRequestContext): Promise<ClientAuthDetail>;
+    getClientAuthDetails(requestContext: RpcActivity): Promise<ClientAuthDetail>;
     // (undocumented)
     readonly introspectionClient: IntrospectionClient;
 }
@@ -170,7 +165,7 @@ export interface ConfigData {
 // @beta
 export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     constructor(configuration: DelegationAuthorizationClientConfiguration);
-    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
+    getJwtFromJwt(accessToken?: AccessToken): Promise<AccessToken | undefined>;
 }
 
 // @beta
@@ -200,7 +195,7 @@ export class ImsClientAuthDetail extends ClientAuthDetail {
 // @internal (undocumented)
 export class ImsClientAuthIntrospectionManager extends ClientAuthIntrospectionManager {
     // (undocumented)
-    getClientAuthDetails(requestContext: AuthorizedClientRequestContext): Promise<ImsClientAuthDetail>;
+    getClientAuthDetails(requestContext: RpcActivity): Promise<ImsClientAuthDetail>;
 }
 
 // @internal (undocumented)
@@ -237,9 +232,9 @@ export class IntrospectionClient {
     // (undocumented)
     protected readonly _clientSecret: string;
     // (undocumented)
-    protected getIssuerUrl(requestContext: AuthorizedClientRequestContext): Promise<string>;
+    protected getIssuerUrl(): Promise<string>;
     // (undocumented)
-    introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse>;
+    introspect(accessToken: AccessToken): Promise<IntrospectionResponse>;
     // (undocumented)
     protected _issuerUrl?: string | undefined;
 }
@@ -267,13 +262,13 @@ export class LocalhostHandler implements FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+    uploadFile(_accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @alpha (undocumented)
@@ -318,14 +313,14 @@ export class UrlFileHandler implements FileHandler {
     agent?: https.Agent;
     basename(filePath: string): string;
     // (undocumented)
-    downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
     // (undocumented)
-    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+    uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     // (undocumented)
     protected _uploadMethod: string;
 }

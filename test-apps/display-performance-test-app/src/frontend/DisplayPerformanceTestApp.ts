@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
+import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
+import { I18NOptions } from "@itwin/core-i18n";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
@@ -25,6 +25,17 @@ export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
     iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.tileAdmin = {
+      minimumSpatialTolerance: 0,
+      cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+    };
+
+    /* eslint-disable @typescript-eslint/naming-convention */
+    iModelApp.mapLayerOptions = {
+      MapBoxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
+      BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
+    };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
@@ -38,15 +49,15 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+  const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new NativeAppAuthorization(oidcConfiguration);
-    await desktopClient.initialize(requestContext);
+    await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
@@ -66,20 +77,23 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<N
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const requestContext = new FrontendRequestContext();
-  const oidcClient = await createOidcClient(requestContext);
+  const oidcClient = await createOidcClient({
+    applicationId: IModelApp.applicationId,
+    applicationVersion: IModelApp.applicationVersion,
+    sessionId: IModelApp.sessionId,
+  });
 
   IModelApp.authorizationClient = oidcClient;
-  if (oidcClient.isAuthorized)
+  if ((await oidcClient.getAccessToken()) !== undefined)
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onUserStateChanged.addListener((token) => {
-      resolve(token !== undefined);
+    oidcClient.onAccessTokenChanged.addListener((token) => {
+      resolve(token !== "");
     });
   });
 
-  await oidcClient.signIn(requestContext);
+  await oidcClient.signIn();
   return retPromise;
 }
 
@@ -93,7 +107,7 @@ async function main() {
 
     const runner = new TestRunner(props);
     await runner.run();
-  } catch (err) {
+  } catch (err: any) {
     alert(err.toString());
   }
 

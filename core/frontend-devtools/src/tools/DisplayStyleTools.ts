@@ -10,10 +10,10 @@
 import {
   DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties,
   WhiteOnWhiteReversalSettings,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";

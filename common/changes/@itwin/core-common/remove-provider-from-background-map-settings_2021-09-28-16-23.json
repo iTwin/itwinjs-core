@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Move map imagery provider from BackgroundMapSettings to MapImagerySettings.backgroundBase.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

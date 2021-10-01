@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "Support for Node 16",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client"
+}

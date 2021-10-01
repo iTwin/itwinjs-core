@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes, SelectClassInfo,
-} from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
-import { findFieldByLabel } from "../Utils";
+import { getFieldByLabel } from "../Utils";
 
 import sinon = require("sinon");
 
@@ -128,13 +128,13 @@ describe("Content", () => {
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
 
-      let field = findFieldByLabel(descriptor.fields, "User Label")!;
+      let field = getFieldByLabel(descriptor.fields, "User Label");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "TestClass",
         groupedRawValues: ["TestClass"],
       }]);
 
-      field = findFieldByLabel(descriptor.fields, "True-False")!;
+      field = getFieldByLabel(descriptor.fields, "True-False");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "False",
         groupedRawValues: [false],
@@ -143,7 +143,7 @@ describe("Content", () => {
         groupedRawValues: [true],
       }]);
 
-      field = findFieldByLabel(descriptor.fields, "<0")!;
+      field = getFieldByLabel(descriptor.fields, "<0");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "0.00",
         groupedRawValues: [1e-7, 0.0007575],
@@ -152,7 +152,7 @@ describe("Content", () => {
         groupedRawValues: [0.123456789],
       }]);
 
-      field = findFieldByLabel(descriptor.fields, "<100")!;
+      field = getFieldByLabel(descriptor.fields, "<100");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "100.01",
         groupedRawValues: [100.01],
@@ -191,7 +191,7 @@ describe("Content", () => {
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = findFieldByLabel(descriptor.fields, "Model Label")!;
+      const field = getFieldByLabel(descriptor.fields, "Model Label");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2",
         groupedRawValues: ["Properties_60InstancesWithUrl2"],
@@ -208,7 +208,7 @@ describe("Content", () => {
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = findFieldByLabel(descriptor.fields, "Ñámê")!;
+      const field = getFieldByLabel(descriptor.fields, "Ñámê");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -231,7 +231,7 @@ describe("Content", () => {
         id: Id64.invalid,
       }]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys: consolidatedKeys, displayType: "" }))!;
-      const field = findFieldByLabel(descriptor.fields, "User Label")!;
+      const field = getFieldByLabel(descriptor.fields, "User Label");
 
       await validatePagedDistinctValuesResponse(ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "",
@@ -371,7 +371,7 @@ describe("Content", () => {
         descriptor: {},
         keys: new KeySet(),
       });
-      const field = findFieldByLabel(content!.descriptor.fields, "Test")!;
+      const field = getFieldByLabel(content!.descriptor.fields, "Test");
 
       expect(content?.contentSet.length).to.eq(1);
       expect(content?.contentSet[0].values[field.name]).to.eq("Value");
@@ -495,9 +495,9 @@ describe("Content", () => {
                   label: "Model",
                 },
                 targetClassInfo: {
-                  id: "0x77",
-                  name: "BisCore:Drawing",
-                  label: "Drawing",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -510,71 +510,9 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0x77",
-                  name: "BisCore:Drawing",
-                  label: "Drawing",
-                },
-                targetClassInfo: {
-                  id: "0xa9",
-                  name: "BisCore:RepositoryLink",
-                  label: "Repository Link",
-                },
-                isPolymorphicTargetClass: true,
-                relationshipInfo: {
-                  id: "0x83",
-                  name: "BisCore:ElementHasLinks",
-                  label: "ElementHasLinks",
-                },
-                isPolymorphicRelationship: true,
-                isForwardRelationship: true,
-              },
-            ],
-            [
-              {
-                sourceClassInfo: {
-                  id: "0x1a0",
-                  name: "PCJ_TestSchema:TestClass",
-                  label: "TestClass",
-                },
-                targetClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
-                },
-                isPolymorphicTargetClass: true,
-                relationshipInfo: {
-                  id: "0x40",
-                  name: "BisCore:ModelContainsElements",
-                  label: "ModelContainsElements",
-                },
-                isPolymorphicRelationship: true,
-                isForwardRelationship: false,
-              },
-              {
-                sourceClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
-                },
-                targetClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
-                },
-                isPolymorphicTargetClass: true,
-                relationshipInfo: {
-                  id: "0x43",
-                  name: "BisCore:ModelModelsElement",
-                  label: "ModelModelsElement",
-                },
-                isPolymorphicRelationship: true,
-                isForwardRelationship: true,
-              },
-              {
-                sourceClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 targetClassInfo: {
                   id: "0xa9",

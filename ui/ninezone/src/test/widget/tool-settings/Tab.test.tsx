@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolSettingsTab } from "../../../ui-ninezone";
+import { ToolSettingsTab } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<ToolSettingsTab />", () => {

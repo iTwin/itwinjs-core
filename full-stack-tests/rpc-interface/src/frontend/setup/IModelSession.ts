@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { IModelData } from "../../common/Settings";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelVersion } from "@itwin/core-common";
+import { AccessToken } from "@itwin/core-bentley";
 
 export class IModelSession {
 
@@ -26,7 +27,7 @@ export class IModelSession {
     this._imodelVersion = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
   }
 
-  public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
+  public static async create(requestContext: AccessToken, iModelData: IModelData): Promise<IModelSession> {
     let iTwinId;
     let imodelId;
 
@@ -77,7 +78,7 @@ export class IModelSession {
       console.log(`Environment: ${env}`);
       this._iModel = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId, this._imodelVersion);
       expect(this._iModel).to.exist;
-    } catch (e) {
+    } catch (e: any) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);
     }
 

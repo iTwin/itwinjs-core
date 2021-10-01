@@ -7,7 +7,7 @@ import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, DialogRow,
   PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, StandardEditorNames,
   StandardTypeNames, SuppressLabelEditorParams, UiLayoutDataProvider,
-} from "../../ui-abstract";
+} from "../../appui-abstract";
 
 const value1: DialogItemValue = { value: 3 };
 const value2: DialogItemValue = { value: 10 };
