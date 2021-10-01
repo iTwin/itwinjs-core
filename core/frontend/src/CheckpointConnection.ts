@@ -43,9 +43,7 @@ export class CheckpointConnection extends IModelConnection {
    */
   public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new Error();
+    const accessToken = await IModelApp.getAccessToken();
 
     const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ accessToken, iModelId, version }) };
 

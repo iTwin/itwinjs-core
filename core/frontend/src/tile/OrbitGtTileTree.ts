@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { AccessToken, BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
@@ -342,17 +342,6 @@ export namespace OrbitGtTileTree {
     modelId?: Id64String;
   }
 
-  async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient)
-      return undefined;
-
-    try {
-      return await IModelApp.authorizationClient.getAccessToken();
-    } catch (_) {
-      return undefined;
-    }
-  }
-
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
@@ -425,10 +414,6 @@ export namespace OrbitGtTileTree {
         if (parseOrbitGtBlobUrl(props.blobFileName, props) === false)
           return false;
     }
-
-    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
-    if (!accessToken)
-      return false;
 
     // If there's no rdsUrl, request one from RealityDataAccessClient
     if (!props.rdsUrl) {
