@@ -11,7 +11,7 @@ import { TileTreeContentIds } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
-import { IModelTile, IModelTileContent, Tile, TileContent, TileRequest, TileRequestChannel, TileTree } from "./internal";
+import { IModelTile, IModelTileContent, Tile, TileRequest, TileRequestChannel, TileTree } from "./internal";
 
 /** Handles requests to the cloud storage tile cache, if one is configured. If a tile's content is not found in the cache, subsequent requests for the same tile will
  * use the IModelTileChannel instead.
@@ -73,6 +73,12 @@ interface CachedContent extends Omit<IModelTileContent, "graphic"> {
   hasGraphic: boolean;
 }
 
+/** If TileAdmin.Props.cacheTileMetadata is true, then this is the first channel through which we request content for an IModelTile.
+ * It serves a niche purpose: a tile pre-generation agent that wants to ensure that every tile selected during interaction with the application
+ * has its tile generated and cached in cloud storage. This agent might request thousands of tiles in sequence, causing a given tile to be discarded
+ * and reloaded many times. To avoid pointlessly reloading tiles whose contents have already been generated, this channel caches the metadata for each tile;
+ * on subsequent requests for the same tile, it produces the metadata and an empty RenderGraphic.
+ */
 class IModelTileMetadataCacheChannel extends TileRequestChannel {
   private readonly _cacheByIModel = new Map<IModelConnection, Map<TileTree, SortedArray<CachedContent>>>();
 
@@ -94,7 +100,7 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
   }
 
   public getCachedContent(tile: IModelTile): IModelTileContent | undefined {
-    const cached = this._cacheByIModel.get(tile.iModel)?.get(tile.tree)?.findEquivalent(x => compareStrings(x.contentId, tile.contentId));
+    const cached = this._cacheByIModel.get(tile.iModel)?.get(tile.tree)?.findEquivalent((x) => compareStrings(x.contentId, tile.contentId));
     if (!cached)
       return undefined;
 
@@ -125,7 +131,7 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
     if (!list)
       trees.set(tile.tree, list = new SortedArray<CachedContent>((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId)));
 
-    assert(undefined === list.findEquivalent(x => compareStrings(x.contentId, tile.contentId)));
+    assert(undefined === list.findEquivalent((x) => compareStrings(x.contentId, tile.contentId)));
     list.insert({
       contentId: tile.contentId,
       hasGraphic: undefined !== content.graphic,
@@ -137,15 +143,18 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
   }
 }
 
+/** TileRequestChannels used for requesting content for IModelTiles.
+ * @internal
+ */
 export class IModelTileRequestChannels {
   private _cloudStorage?: TileRequestChannel;
   private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
   public constructor(args: {
-    concurrency: number,
-    usesHttp: boolean,
-    cacheMetadata: boolean,
+    concurrency: number;
+    usesHttp: boolean;
+    cacheMetadata: boolean;
   }) {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
