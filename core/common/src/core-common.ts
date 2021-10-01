@@ -219,3 +219,6 @@ export * from "./WhiteOnWhiteReversalSettings";
  * @docs-group-description NativeApp
  * [Native applications]($docs/learning/NativeApps.md)
  */
+/** @docs-group-description Localization
+ * Classes for internationalization and localization of your app.
+ */
