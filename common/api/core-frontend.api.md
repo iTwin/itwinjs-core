@@ -4532,7 +4532,6 @@ export class IModelTile extends Tile {
     constructor(params: IModelTileParams, tree: IModelTileTree);
     // (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
-    cacheMiss: boolean;
     // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
@@ -4553,6 +4552,7 @@ export class IModelTile extends Tile {
     protected get rangeGraphicColor(): ColorDef;
     // (undocumented)
     readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent>;
+    requestChannel?: TileRequestChannel;
     // (undocumented)
     requestContent(): Promise<TileRequest.Response>;
     // (undocumented)
@@ -4577,6 +4577,28 @@ export interface IModelTileParams extends TileParams {
 
 // @internal (undocumented)
 export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams;
+
+// @internal
+export class IModelTileRequestChannels {
+    // (undocumented)
+    [Symbol.iterator](): Iterator<TileRequestChannel>;
+    constructor(args: {
+        concurrency: number;
+        usesHttp: boolean;
+        cacheMetadata: boolean;
+    });
+    // (undocumented)
+    get cloudStorage(): TileRequestChannel | undefined;
+    // (undocumented)
+    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    getCachedContent(tile: IModelTile): IModelTileContent | undefined;
+    // (undocumented)
+    getChannelForTile(tile: IModelTile): TileRequestChannel;
+    // (undocumented)
+    readonly rpc: TileRequestChannel;
+    // (undocumented)
+    setRpcConcurrency(concurrency: number): void;
+}
 
 // @internal
 export class IModelTileTree extends TileTree {
@@ -10024,6 +10046,8 @@ export namespace TileAdmin {
         alwaysRequestEdges?: boolean;
         // @internal
         alwaysSubdivideIncompleteTiles?: boolean;
+        // @internal
+        cacheTileMetadata?: boolean;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
@@ -10260,7 +10284,9 @@ export class TileRequest {
 
 // @public (undocumented)
 export namespace TileRequest {
-    export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+    export type Response = Uint8Array | ArrayBuffer | string | ImageSource | {
+        content: TileContent;
+    } | undefined;
     export type ResponseData = Uint8Array | ImageSource;
     export enum State {
         Completed = 3,
@@ -10285,6 +10311,8 @@ export class TileRequestChannel {
     get concurrency(): number;
     set concurrency(max: number);
     // @internal
+    contentCallback?: (tile: Tile, content: TileContent) => void;
+    // @internal
     protected dispatch(request: TileRequest): void;
     // @internal
     protected dropActiveRequest(request: TileRequest): void;
@@ -10298,7 +10326,7 @@ export class TileRequestChannel {
     process(): void;
     processCancellations(): void;
     // @internal
-    recordCompletion(tile: Tile): void;
+    recordCompletion(tile: Tile, content: TileContent): void;
     // @internal
     recordFailure(): void;
     // @internal
@@ -10317,20 +10345,20 @@ export class TileRequestChannel {
 export class TileRequestChannels {
     [Symbol.iterator](): Iterator<TileRequestChannel>;
     // @internal
-    constructor(rpcConcurrency: number | undefined);
+    constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
-    // @internal
-    get cloudStorageCache(): TileRequestChannel | undefined;
     readonly elementGraphicsRpc: TileRequestChannel;
     // @internal
     enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
+    // @internal (undocumented)
+    getIModelTileChannel(tile: IModelTile): TileRequestChannel;
     static getNameFromUrl(url: URL | string): string;
     has(channel: TileRequestChannel): boolean;
     readonly httpConcurrency = 6;
     // @internal (undocumented)
-    readonly iModelTileRpc: TileRequestChannel;
+    readonly iModelChannels: IModelTileRequestChannels;
     // @internal
     onIModelClosed(iModel: IModelConnection): void;
     // @internal
