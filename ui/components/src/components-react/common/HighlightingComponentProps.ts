@@ -8,7 +8,7 @@
 
 /**
  * Item highlight info used for identification of a specific highlight in an item
- * @beta
+ * @public
  */
 export interface HighlightInfo {
   /* item's identifier, used for its identification */
@@ -19,7 +19,7 @@ export interface HighlightInfo {
 
 /**
  * Properties used for highlighting parts in item by given text and actively highlighting one highlight in a distinct item specified in `activeHighlight`
- * @beta
+ * @public
  */
 export interface HighlightingComponentProps {
   /* Filter text which we want to highlight */

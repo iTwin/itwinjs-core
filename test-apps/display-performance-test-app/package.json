@@ -52,6 +52,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

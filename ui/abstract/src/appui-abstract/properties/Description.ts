@@ -97,11 +97,11 @@ export interface PropertyDescription {
 }
 
 /** Helper class that builds property descriptions for specific PropertyEditors and processes descriptions.
- * @beta
+ * @public
  */
 export class PropertyDescriptionHelper {
   /** Builds a number description with a "weight-picker" editor name
-   * @beta
+   * @public
    */
   public static buildWeightPickerDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     return {
@@ -116,7 +116,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds an editor that uses [NumberInput]($core-react) control
-   * @beta
+   * @public
    */
   public static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editorParams = [{
@@ -140,7 +140,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a string description
-   * @beta
+   * @public
    */
   public static buildTextEditorDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editor = {
@@ -156,7 +156,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds an enum description
-   * @beta
+   * @public
    */
   public static buildEnumPicklistEditorDescription(name: string, label: string,
     choices: Promise<EnumerationChoice[]> | EnumerationChoice[],
@@ -177,7 +177,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a number description for a tool settings or dialog property that will display a "color-picker" control.
-   * @beta
+   * @public
    */
   public static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number,
     additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
@@ -202,7 +202,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a boolean description for a tool settings or dialog property that will display a "toggle" control.
-   * @beta
+   * @public
    */
   public static buildToggleDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     return {
@@ -217,7 +217,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a boolean description for a tool settings or dialog property that will display a "image-check-box" control.
-   * @beta
+   * @public
    */
   public static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editorParams = [{
@@ -238,7 +238,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a boolean description for a tool settings or dialog property that will display a checkbox control.
-   * @beta
+   * @public
    */
   public static buildCheckboxDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editor = {
@@ -254,7 +254,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a property description for a tool settings or dialog `lock` property. This will create a checkbox control with no label.
-   * @beta
+   * @public
    */
   public static buildLockPropertyDescription(name: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const defaultParams = {
@@ -275,7 +275,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Bumps an enum property description value
-   * @beta
+   * @public
    */
   public static async bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number> {
     let choices: EnumerationChoice[] | undefined;

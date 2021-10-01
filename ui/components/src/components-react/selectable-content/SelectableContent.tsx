@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module SelectableContent
  */
@@ -14,7 +15,7 @@ import { OptionType, ThemedSelect } from "@itwin/core-react";
 /**
  * A definition for content displayed in [[ControlledSelectableContent]] and
  * [[SelectableContent]] components.
- * @beta
+ * @public
  */
 export interface SelectableContentDefinition {
   id: string;
@@ -24,7 +25,7 @@ export interface SelectableContentDefinition {
 
 /**
  * [[ControlledSelectableContent]] component properties
- * @beta
+ * @public
  */
 export interface ControlledSelectableContentProps {
   selectedContentId: string;
@@ -37,7 +38,7 @@ export interface ControlledSelectableContentProps {
  * A fully-controlled component that accepts a list of child components with ids and labels and
  * renders a select box at the top, allowing to choose which of the provided child components
  * should be rendered at the bottom.
- * @beta
+ * @public
  */
 export function ControlledSelectableContent(props: ControlledSelectableContentProps) {
   const { onSelectedContentIdChanged } = props;
@@ -67,7 +68,7 @@ export function ControlledSelectableContent(props: ControlledSelectableContentPr
 
 /**
  * [[SelectableContent]] component properties
- * @beta
+ * @public
  */
 export interface SelectableContentProps {
   defaultSelectedContentId: string;
@@ -79,7 +80,7 @@ export interface SelectableContentProps {
  * An uncontrolled component that accepts a list of child components with ids and labels and
  * renders a select box at the top, allowing to choose which of the provided child components
  * should be rendered at the bottom.
- * @beta
+ * @public
  */
 export function SelectableContent(props: SelectableContentProps) {
   const [selectedContentId, setSelectedContentId] = React.useState(props.defaultSelectedContentId);

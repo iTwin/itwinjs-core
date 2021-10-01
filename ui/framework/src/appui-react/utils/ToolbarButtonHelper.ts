@@ -8,7 +8,7 @@
  */
 
 /** A set of Dom helper methods
- * @beta
+ * @public
  */
 export class ToolbarButtonHelper {
 

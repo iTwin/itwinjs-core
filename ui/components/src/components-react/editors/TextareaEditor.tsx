@@ -34,7 +34,7 @@ interface TextareaEditorState {
 const DEFAULT_ROWS = 3;
 
 /** TextareaEditor React component that is a property editor with text input
- * @beta
+ * @public
  */
 export class TextareaEditor extends React.PureComponent<PropertyEditorProps, TextareaEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -200,7 +200,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
 
 /** Textarea Property Editor registered for the "text" and "string" type names and "multi-line" editor name.
  * It uses the [[Textarea]] React component.
- * @beta
+ * @public
  */
 export class TextareaPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next

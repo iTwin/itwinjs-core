@@ -190,7 +190,7 @@ export class IModelTestUtils {
     return BriefcaseDb.open({ fileName: props.fileName });
   }
 
-  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
+  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
   public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { user: AccessToken, deleteFirst?: boolean }): Promise<BriefcaseDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -232,7 +232,7 @@ export class IModelTestUtils {
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
   }
 
-  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
+  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
   public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { user: AccessToken, deleteFirst?: boolean }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();

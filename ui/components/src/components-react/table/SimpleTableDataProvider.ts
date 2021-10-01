@@ -181,7 +181,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
   }
 
   /** Gets distinct values in a column
-   * @beta
+   * @public
    */
   public async getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection> {
     const distinctValues = new DistinctValueCollection();
@@ -239,7 +239,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
   }
 
   /** Apply a filter descriptor collection
-   * @beta
+   * @public
    */
   public async applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void> {
     this._filterDescriptors = filterDescriptors;

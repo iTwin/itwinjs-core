@@ -57,9 +57,9 @@ export interface BrowserAuthorizationClientRequestOptions {
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 
-  protected _accessToken?: AccessToken;
+  protected _accessToken: AccessToken = "";
   protected _expiresAt?: Date;
 
   public get isAuthorized(): boolean {
@@ -244,7 +244,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   protected initAccessToken(user: User | undefined) {
     if (!user) {
-      this._accessToken = undefined;
+      this._accessToken = "";
       return;
     }
     this._accessToken = `Bearer ${user.access_token}`;
@@ -299,7 +299,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   protected _onUserStateChanged = (user: User | undefined) => {
     this.initAccessToken(user);
     try {
-      this.onUserStateChanged.raiseEvent(this._accessToken);
+      this.onAccessTokenChanged.raiseEvent(this._accessToken);
     } catch (err: any) {
       Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }

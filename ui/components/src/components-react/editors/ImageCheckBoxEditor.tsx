@@ -29,7 +29,7 @@ interface ImageCheckBoxEditorState {
 }
 /** [[ImageCheckBoxEditor]]
  * Boolean editor that renders with an image instead of checkbox
- * @beta
+ * @public
  */
 export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps, ImageCheckBoxEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -152,7 +152,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
 
 /** ImageCheckBox Property Editor registered for the "bool" and "boolean" type names.
  * It uses the [[ImageCheckBoxEditor]] React component.
- * @beta
+ * @public
  */
 export class ImageCheckBoxPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {

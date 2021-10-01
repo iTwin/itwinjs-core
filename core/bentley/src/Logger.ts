@@ -76,7 +76,6 @@ export class Logger {
     Logger._logTrace = logTrace;
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
-    Logger.staticMetaData.clear();
   }
 
   /** Initialize the logger to output to the console. */

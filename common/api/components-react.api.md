@@ -73,13 +73,13 @@ export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends T
     get dataProvider(): TDataProvider;
     }
 
-// @beta
+// @public
 export class ActionButtonList extends React.PureComponent<ActionButtonListProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface ActionButtonListProps {
     actionButtonRenderers: ActionButtonRenderer[];
     isPropertyHovered?: boolean;
@@ -119,7 +119,7 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
-// @beta
+// @public
 export interface AsyncErrorMessage {
     // (undocumented)
     briefMessage: string;
@@ -131,7 +131,7 @@ export interface AsyncErrorMessage {
     severity: MessageSeverity;
 }
 
-// @beta
+// @public
 export interface AsyncValueProcessingResult {
     // (undocumented)
     encounteredError: boolean;
@@ -158,7 +158,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Point, b: Primitives.Point, _ignoreCase?: boolean): number;
 }
 
-// @beta
+// @public
 export class BasicPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
@@ -169,7 +169,7 @@ export function BeDragDropContext(props: {
     children?: React.ReactNode;
 }): JSX.Element;
 
-// @beta
+// @public
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -189,7 +189,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     readonly state: Readonly<BooleanEditorState>;
     }
 
-// @beta
+// @public
 export class BooleanPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesBlur(): boolean;
@@ -489,7 +489,6 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
 
 // @public
 export interface CommonPropertyGridProps extends CommonProps {
-    // @beta
     actionButtonRenderers?: ActionButtonRenderer[];
     actionButtonWidth?: number;
     // @beta
@@ -544,7 +543,7 @@ export interface CompositeFilterDescriptorCollection {
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @beta
+// @public
 export enum CompositeFilterType {
     // (undocumented)
     And = 0,
@@ -552,7 +551,7 @@ export enum CompositeFilterType {
     Or = 1
 }
 
-// @beta
+// @public
 export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
     constructor(_leftFilterer: IPropertyDataFilterer, _operator: CompositeFilterType, _rightFilterer: IPropertyDataFilterer);
     // (undocumented)
@@ -574,10 +573,10 @@ export class CompositeTypeConverter extends TypeConverter {
 // @public
 export function computeVisibleNodes(model: TreeModel): VisibleTreeNodes;
 
-// @beta
+// @public
 export function ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element;
 
-// @beta
+// @public
 export interface ControlledSelectableContentProps {
     // (undocumented)
     children: SelectableContentDefinition[];
@@ -663,7 +662,7 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
+// @public
 export interface CustomToolbarItem extends CustomButtonDefinition {
     // (undocumented)
     buttonNode?: React.ReactNode;
@@ -671,7 +670,7 @@ export interface CustomToolbarItem extends CustomButtonDefinition {
     panelContentNode?: React.ReactNode;
 }
 
-// @beta
+// @public
 export interface DataController {
     // (undocumented)
     commitValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
@@ -679,7 +678,7 @@ export interface DataController {
     validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
 }
 
-// @beta
+// @public
 export abstract class DataControllerBase implements DataController {
     // (undocumented)
     commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult>;
@@ -805,7 +804,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
 
-// @beta
+// @public
 export const DEFAULT_LINKS_HANDLER: LinkElementsInfo;
 
 // @public
@@ -814,7 +813,7 @@ export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
     hasChildren?: boolean;
 }
 
-// @beta
+// @public
 export enum Direction {
     // (undocumented)
     Bottom = 4,
@@ -838,7 +837,7 @@ export class DirectionHelpers {
     static readonly TOP_CLASS_NAME = "components-direction-top";
 }
 
-// @beta
+// @public
 export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -911,7 +910,7 @@ export interface EditorContainerProps extends CommonProps {
     title?: string;
 }
 
-// @beta
+// @public
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -929,7 +928,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     readonly state: Readonly<EnumButtonGroupEditorState>;
 }
 
-// @beta
+// @public
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -949,13 +948,13 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     readonly state: Readonly<EnumEditorState>;
     }
 
-// @beta
+// @public
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
 
-// @beta
+// @public
 export class EnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesEnter(): boolean;
@@ -993,7 +992,7 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     nodeEditorRenderer?: TreeNodeEditorRenderer;
 }
 
-// @beta
+// @public
 export class FavoritePropertiesRenderer {
     // (undocumented)
     hasFavorites(propertyData: PropertyData): boolean;
@@ -1077,9 +1076,8 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     remove(item: TDescriptor): boolean;
 }
 
-// @beta
+// @public
 export interface FilteredPropertyData extends PropertyData {
-    // (undocumented)
     filteredTypes?: FilteredType[];
     // (undocumented)
     getMatchByIndex?: (index: number) => HighlightInfo | undefined;
@@ -1087,7 +1085,7 @@ export interface FilteredPropertyData extends PropertyData {
     matchesCount?: number;
 }
 
-// @beta
+// @public
 export enum FilteredType {
     // (undocumented)
     Category = 0,
@@ -1113,18 +1111,17 @@ export interface FilteringInputProps extends CommonProps {
     onFilterClear: () => void;
     onFilterStart: (searchText: string) => void;
     resultSelectorProps?: ResultSelectorProps;
-    // @beta
     status: FilteringInputStatus;
 }
 
-// @beta
+// @public
 export enum FilteringInputStatus {
     FilteringFinished = 2,
     FilteringInProgress = 1,
     ReadyToFilter = 0
 }
 
-// @beta
+// @public
 export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
     constructor(_dataProvider: IPropertyDataProvider, _filterer: IPropertyDataFilterer);
     // (undocumented)
@@ -1315,10 +1312,10 @@ export interface HighlightableTreeProps {
     searchText: string;
 }
 
-// @beta
+// @public
 export function HighlightedText(props: HighlightedTextProps): JSX.Element;
 
-// @beta
+// @public
 export interface HighlightedTextProps {
     // (undocumented)
     activeMatchIndex?: number;
@@ -1329,7 +1326,7 @@ export interface HighlightedTextProps {
     text: string;
 }
 
-// @beta
+// @public
 export interface HighlightInfo {
     // (undocumented)
     highlightedItemIdentifier: string;
@@ -1337,7 +1334,7 @@ export interface HighlightInfo {
     highlightIndex: number;
 }
 
-// @beta
+// @public
 export interface HighlightingComponentProps {
     // (undocumented)
     activeHighlight?: HighlightInfo;
@@ -1345,7 +1342,7 @@ export interface HighlightingComponentProps {
     highlightedText: string;
 }
 
-// @beta
+// @public
 export class HighlightingEngine {
     constructor(props: HighlightableTreeProps);
     // (undocumented)
@@ -1420,7 +1417,7 @@ export interface IImageLoader {
 // @public
 export type Image = LoadedImage | LoadedBinaryImage;
 
-// @beta
+// @public
 export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps, ImageCheckBoxEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -1440,7 +1437,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
     readonly state: Readonly<ImageCheckBoxEditorState>;
 }
 
-// @beta
+// @public
 export class ImageCheckBoxPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
@@ -1596,7 +1593,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Int): string;
 }
 
-// @beta
+// @public
 export interface IPropertyDataFilterer {
     // (undocumented)
     categoryMatchesFilter: (node: PropertyCategory, parents: PropertyCategory[]) => Promise<PropertyDataFilterResult>;
@@ -1720,7 +1717,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
     readonly dataProvider: TDataProvider;
 }
 
-// @beta
+// @public
 export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -1989,7 +1986,7 @@ export interface MutableTableDataProvider extends TableDataProvider {
     moveRow(rowItem: RowItem, newIndex: number): number;
 }
 
-// @beta
+// @beta @deprecated
 export interface MutableTreeDataProvider extends ITreeDataProvider {
     // (undocumented)
     getNodeIndex(parent: TreeNodeItem | undefined, child: TreeNodeItem): number;
@@ -2110,7 +2107,7 @@ export interface NullableOperatorProcessor {
     isNull(value: Primitives.Value): boolean;
 }
 
-// @beta
+// @public
 export class NumericInputEditor extends React.PureComponent<PropertyEditorProps, NumericInputEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -2130,7 +2127,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     readonly state: Readonly<NumericInputEditorState>;
     }
 
-// @beta
+// @public
 export class NumericInputPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesEnter(): boolean;
@@ -2223,10 +2220,10 @@ export interface PageOptions {
     start?: number;
 }
 
-// @beta
+// @public
 export const ParsedInput: (props: ParsedInputProps) => JSX.Element | null;
 
-// @beta
+// @public
 export interface ParsedInputProps extends CommonProps {
     formatValue: (value: number) => string;
     initialValue: number;
@@ -2254,22 +2251,22 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
     protected getVectorLength(point: Primitives.Point): number | undefined;
 }
 
-// @beta
+// @public
 export function PopupItem(props: PopupItemProps): JSX.Element;
 
 // @internal (undocumented)
 export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 
-// @beta
+// @public
 export interface PopupItemProps extends ToolbarButtonItemProps {
     hideIndicator?: boolean;
     panel?: React.ReactNode;
 }
 
-// @beta
+// @public
 export function PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element;
 
-// @beta
+// @public
 export interface PopupItemWithDragProps extends ToolbarButtonItemProps {
     groupItem: GroupButton;
 }
@@ -2304,7 +2301,6 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
 
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
-    // @beta
     highlight?: HighlightingComponentProps;
     indentation?: number;
     valueElement?: React.ReactNode;
@@ -2313,7 +2309,7 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 
 // @public
 export interface PropertyCategory {
-    // @beta (undocumented)
+    // (undocumented)
     childCategories?: PropertyCategory[];
     // (undocumented)
     expand: boolean;
@@ -2321,7 +2317,7 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @beta (undocumented)
+    // (undocumented)
     renderer?: {
         name: string;
     };
@@ -2337,18 +2333,17 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 // @public
 export interface PropertyCategoryBlockProps extends CommonProps {
     category: PropertyCategory;
-    // @beta
     highlight?: HighlightingComponentProps;
     onExpansionToggled?: (categoryName: string) => void;
 }
 
-// @beta
+// @public
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     recordMatchesFilter(): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -2412,7 +2407,7 @@ export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener
 // @public
 export type PropertyDataChangesListener = () => void;
 
-// @beta
+// @public
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
     // (undocumented)
     abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
@@ -2424,7 +2419,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
     abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export interface PropertyDataFilterResult {
     filteredTypes?: FilteredType[];
     matchesCount?: number;
@@ -2447,7 +2442,7 @@ export interface PropertyEditingArgs {
     propertyRecord: PropertyRecord;
 }
 
-// @beta
+// @public
 export abstract class PropertyEditorBase implements DataController {
     // (undocumented)
     applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void;
@@ -2471,7 +2466,7 @@ export abstract class PropertyEditorBase implements DataController {
     validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
 }
 
-// @beta
+// @public
 export class PropertyEditorManager {
     // (undocumented)
     static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase;
@@ -2494,11 +2489,11 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
-// @beta
+// @public
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
-// @beta
+// @public
 export type PropertyFilterChangesListener = () => void;
 
 // @public
@@ -2614,7 +2609,6 @@ export class PropertyLabelRenderer extends React.PureComponent<PropertyLabelRend
 export interface PropertyLabelRendererProps {
     children: string | JSX.Element;
     renderColon?: boolean;
-    // @beta
     tooltip?: string;
 }
 
@@ -2676,7 +2670,7 @@ export interface PropertyPopupState {
     };
 }
 
-// @beta
+// @public
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
@@ -2700,14 +2694,10 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
 // @public
 export interface PropertyRendererProps extends SharedRendererProps {
-    // @beta
     highlight?: HighlightingComponentProps;
     indentation?: number;
-    // @beta
     isEditing?: boolean;
-    // @beta
     onEditCancel?: () => void;
-    // @beta
     onEditCommit?: (args: PropertyUpdatedArgs) => void;
     propertyValueRendererManager?: PropertyValueRendererManager;
 }
@@ -2834,10 +2824,10 @@ export interface RowProps {
     style?: React.CSSProperties;
 }
 
-// @beta
+// @public
 export function SelectableContent(props: SelectableContentProps): JSX.Element;
 
-// @beta
+// @public
 export interface SelectableContentDefinition {
     // (undocumented)
     id: string;
@@ -2847,7 +2837,7 @@ export interface SelectableContentDefinition {
     render: () => React.ReactNode;
 }
 
-// @beta
+// @public
 export interface SelectableContentProps {
     // (undocumented)
     children: SelectableContentDefinition[];
@@ -2897,7 +2887,6 @@ export enum SelectionModeFlags {
 
 // @public
 export interface SharedRendererProps {
-    // @beta
     actionButtonRenderers?: ActionButtonRenderer[];
     columnInfo?: PropertyGridColumnInfo;
     columnRatio?: number;
@@ -3021,11 +3010,9 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
 export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
     addRow(rowItem: RowItem): number;
-    // @beta
     applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void>;
     deleteRow(rowItem: RowItem, raiseRowsChangedEvent?: boolean): void;
     getColumns(): Promise<ColumnDescription[]>;
-    // @beta
     getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection>;
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
     getRowsCount(): Promise<number>;
@@ -3060,7 +3047,7 @@ export interface SingleSelectionHandler<TItem> {
     select: () => void;
 }
 
-// @beta
+// @public
 export class SliderEditor extends React.PureComponent<PropertyEditorProps, SliderEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -3080,7 +3067,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     readonly state: Readonly<SliderEditorState>;
     }
 
-// @beta
+// @public
 export class SliderPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactNode(): React.ReactNode;
@@ -3265,7 +3252,7 @@ export interface TableCellContentProps extends CommonProps {
     propertyValueRendererManager: PropertyValueRendererManager;
 }
 
-// @beta
+// @public
 export interface TableCellContextMenuArgs {
     cellItem?: CellItem;
     cellKey: string;
@@ -3396,13 +3383,10 @@ export interface TableProps extends CommonProps {
     maximumDistinctValues?: number;
     // @internal (undocumented)
     onApplyFilter?: () => void;
-    // @beta
     onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
     onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
     onCellsSelected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>;
-    // @beta
     onPropertyEditing?: (args: TableCellEditorState) => void;
-    // @beta
     onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
     // @internal
     onRender?: () => void;
@@ -3468,7 +3452,7 @@ export class TableStructValueRenderer extends React.PureComponent<TableSpecificV
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export class TextareaEditor extends React.PureComponent<PropertyEditorProps, TextareaEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -3488,7 +3472,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     readonly state: Readonly<TextareaEditorState>;
     }
 
-// @beta
+// @public
 export class TextareaPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesBlur(): boolean;
@@ -3500,7 +3484,7 @@ export class TextareaPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
+// @public
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -3520,7 +3504,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     readonly state: Readonly<TextEditorState>;
     }
 
-// @beta
+// @beta @deprecated
 export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps, EnumEditorState_2> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -3540,7 +3524,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     readonly state: Readonly<EnumEditorState_2>;
     }
 
-// @beta
+// @beta @deprecated
 export interface ThemedEnumEditorProps extends PropertyEditorProps {
     isSearchable?: boolean;
     noOptionsMessage?: (obj: {
@@ -3549,7 +3533,7 @@ export interface ThemedEnumEditorProps extends PropertyEditorProps {
     placeholder?: string;
 }
 
-// @beta
+// @beta @deprecated
 export class ThemedEnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesBlur(): boolean;
@@ -3591,7 +3575,7 @@ export interface TimeSpec {
 // @public
 export const toDateString: (date: Date, timeZoneOffset?: number | undefined) => string;
 
-// @beta
+// @public
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
     // @internal (undocumented)
     componentDidMount(): void;
@@ -3611,7 +3595,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     readonly state: Readonly<ToggleEditorState>;
     }
 
-// @beta
+// @public
 export class TogglePropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesBlur(): boolean;
@@ -3619,13 +3603,13 @@ export class TogglePropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
+// @public
 export function Toolbar(props: ToolbarProps): JSX.Element;
 
-// @beta
+// @public
 export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButtonItemProps>>;
 
-// @beta
+// @public
 export interface ToolbarButtonItemProps extends CommonProps {
     addGroupSeparator?: boolean;
     badge?: React.ReactNode;
@@ -3637,7 +3621,7 @@ export interface ToolbarButtonItemProps extends CommonProps {
     title: string;
 }
 
-// @beta
+// @public
 export type ToolbarItem = ActionButton | GroupButton | CustomToolbarItem;
 
 // @internal (undocumented)
@@ -3659,7 +3643,7 @@ export interface ToolbarItemContextArgs {
     readonly useHeight: boolean;
 }
 
-// @beta
+// @public
 export enum ToolbarOpacitySetting {
     Defaults = 0,
     Proximity = 1,
@@ -3694,7 +3678,7 @@ export interface ToolbarOverflowContextProps {
     readonly useDragInteraction: boolean;
 }
 
-// @beta
+// @public
 export enum ToolbarPanelAlignment {
     // (undocumented)
     End = 1,
@@ -3721,7 +3705,7 @@ export interface ToolbarPopupContextProps {
     readonly setSelectedItem?: (buttonItem: ActionButton) => void;
 }
 
-// @beta
+// @public
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
     items: CommonToolbarItem[];
@@ -3732,13 +3716,13 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
     useDragInteraction?: boolean;
 }
 
-// @beta
+// @public
 export function ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element;
 
 // @internal
 export const ToolbarWithOverflowDirectionContext: React.Context<ToolbarOverflowContextProps>;
 
-// @beta
+// @public
 export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
     items: CommonToolbarItem[];
@@ -4227,7 +4211,7 @@ export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
-// @beta
+// @public
 export const useAsyncValue: <T extends unknown>(value: T | PromiseLike<T>) => T | undefined;
 
 // @alpha
@@ -4239,7 +4223,7 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
 // @beta
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
-// @beta
+// @public
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
 }): {

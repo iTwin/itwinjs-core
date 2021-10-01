@@ -88,8 +88,8 @@ async function signIn(): Promise<boolean> {
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onUserStateChanged.addListener((token) => {
-      resolve(token !== undefined);
+    oidcClient.onAccessTokenChanged.addListener((token) => {
+      resolve(token !== "");
     });
   });
 

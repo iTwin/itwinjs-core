@@ -21,7 +21,7 @@ interface BooleanEditorState {
 }
 
 /** BooleanEditor React component that is a property editor with checkbox input
- * @beta
+ * @public
  */
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -148,7 +148,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 
 /** Boolean Property Editor registered for the "bool" and "boolean" type names.
  * It uses the [[BooleanEditor]] React component.
- * @beta
+ * @public
  */
 export class BooleanPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next
