@@ -89,17 +89,22 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
 
   public override async requestContent(tile: Tile): Promise<TileRequest.Response> {
     assert(tile instanceof IModelTile);
+    const content = this.getCachedContent(tile);
+    return content ? { content } : undefined;
+  }
+
+  public getCachedContent(tile: IModelTile): IModelTileContent | undefined {
     const cached = this._cacheByIModel.get(tile.iModel)?.get(tile.tree)?.findEquivalent(x => compareStrings(x.contentId, tile.contentId));
     if (!cached)
       return undefined;
 
-    const content: TileContent = {
+    const content: IModelTileContent = {
       ...cached,
       graphic: cached.hasGraphic ? IModelApp.renderSystem.createGraphicList([]) : undefined,
       contentRange: cached.contentRange?.clone(),
     };
 
-    return { content };
+    return content;
   }
 
   public override onIModelClosed(imodel: IModelConnection): void {
@@ -179,5 +184,10 @@ export class IModelTileRequestChannels {
 
   public getChannelForTile(tile: IModelTile): TileRequestChannel {
     return tile.requestChannel || this._contentCache || this._cloudStorage || this.rpc;
+  }
+
+  /** Strictly for tests. */
+  public getCachedContent(tile: IModelTile): IModelTileContent | undefined {
+    return this._contentCache?.getCachedContent(tile);
   }
 }

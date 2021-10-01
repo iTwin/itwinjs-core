@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelTile, IModelTileTree, IpcApp, SnapshotConnection, Tile, TileLoadStatus, TileRequestChannel, Viewport,
+  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus, TileRequestChannel, Viewport,
 } from "@itwin/core-frontend";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
@@ -192,7 +192,6 @@ describe("IModelTileRequestChannels", () => {
       const channel = getChannel();
       expect(tile.channel).to.equal(channel);
 
-      channel.requestContent = async () => Promise.resolve(undefined);
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
@@ -211,7 +210,6 @@ describe("IModelTileRequestChannels", () => {
       const channel = getChannel();
       expect(tile.channel).to.equal(channel);
 
-      channel.requestContent = async () => Promise.resolve(undefined);
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(cloud);
@@ -222,13 +220,100 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
     });
 
-    it("caches metadata from RPC", async () => {
-    });
+    function expectEqualContent(a: IModelTileContent, b: IModelTileContent): void {
+      expect(a).not.to.be.undefined;
+      expect(a.sizeMultiplier).to.equal(b.sizeMultiplier);
+      expect(a.emptySubRangeMask).to.equal(b.emptySubRangeMask);
+      expect(a.isLeaf).to.equal(b.isLeaf);
+      if (undefined === a.contentRange)
+        expect(b.contentRange).to.be.undefined;
+      else
+        expect(a.contentRange!.isAlmostEqual(b.contentRange!)).to.be.true;
 
-    it("obtains metadata and empty graphic from cache if present", async () => {
+
+      expect(a.graphic).not.to.be.undefined;
+      expect(b.graphic).not.to.be.undefined;
+    }
+
+    function graphicSize(graphic: RenderGraphic): number {
+      const stats = new RenderMemory.Statistics();
+      graphic.collectStatistics(stats);
+      return stats.totalBytes;
+    }
+
+    it("caches metadata from RPC", async () => {
+      const tile = await getTile();
+      const channels = IModelApp.tileAdmin.channels.iModelChannels;
+      expect(channels.getCachedContent(tile)).to.be.undefined;
+
+      const channel = getChannel();
+      await loadContent(tile);
+      expect(tile.channel).to.equal(channels.rpc);
+      expect(channels.getCachedContent(tile)).to.be.undefined;
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+
+      const content = channels.getCachedContent(tile)!;
+      expect(content).not.to.be.undefined;
+      const tileContent: IModelTileContent = {
+        graphic: tile.produceGraphics(),
+        emptySubRangeMask: tile.emptySubRangeMask,
+        contentRange: tile.contentRange,
+        sizeMultiplier: tile.sizeMultiplier,
+        isLeaf: tile.isLeaf,
+      };
+
+      if (!content.contentRange)
+        content.contentRange = tile.contentRange;
+
+      expectEqualContent(content, tileContent);
+
+      expect(graphicSize(content.graphic!)).to.equal(0);
+      expect(graphicSize(tile.produceGraphics()!)).least(1);
+
+      tile.disposeContents();
+      tile.requestChannel = undefined;
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(channel);
+
+      const newContent = await channel.requestContent(tile, () => false) as { content: IModelTileContent };
+      expect(newContent).not.to.be.undefined;
+      expect(newContent.content).not.to.be.undefined;
+      expectEqualContent(newContent.content, content);
+      expect(graphicSize(newContent.content.graphic!)).to.equal(0);
     });
 
     it("is not used again after cache miss", async () => {
+      const tile = await getTile();
+      const channel = getChannel();
+
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+
+      tile.disposeContents();
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).to.be.undefined;
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    });
+
+    it("marks tile as failed if not content is produced", async () => {
+      const tile = await getTile();
+      const channel = getChannel();
+
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+
+      tile.channel.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotFound);
     });
   });
 });
