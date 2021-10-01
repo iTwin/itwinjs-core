@@ -213,14 +213,12 @@ export interface DisplayStyleOverridesOptions {
    *    * If the display style settings are associated with a [DisplayStyleState]($frontend), then overriding thematic settings will compute a default height range based on the iModel's project extents.
    */
   includeIModelSpecific?: true;
-  // SWB What does project mean here?
   /** Serialize iTwin-specific settings. These settings are only meaningful within the context of a specific iTwin. These settings are always included if `includeIModelSpecific` is `true`.
    * The following are iTwin-specific settings:
 // SWB What does context mean here?
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
-  // SWB What does project mean here?
   includeITwinSpecific?: true;
   /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
   includeDrawingAids?: true;
@@ -888,7 +886,6 @@ export class DisplayStyleSettings {
       delete viewflags.grid;
     }
 
-    // SWB What does project mean here?
     if (options?.includeITwinSpecific || options?.includeIModelSpecific) {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {

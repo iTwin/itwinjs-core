@@ -116,7 +116,6 @@ export class MapLayerSettingsService {
   private static async deleteOldSettings(accessToken: AccessToken, url: string, name: string, iTwinId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
     const settingFromName = await IModelApp.settings.getSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, name, true, iTwinId, undefined);
     if (settingFromName.setting && storeOnIModel) {
-      // SWB What should be done for localization?
       const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsITwinSetting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
@@ -128,7 +127,6 @@ export class MapLayerSettingsService {
 
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(accessToken, url, iTwinId, undefined); // check if setting with url already exists, if it does, delete it
     if (settingFromUrl && storeOnIModel) {
-      // SWB What should be done for localization?
       const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsITwinSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
@@ -212,7 +210,6 @@ export class MapLayerSettingsService {
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
     }
     if (sharedResultByITwin.status !== SettingsStatus.Success || !sharedResultByITwin.settingsMap) {
-      // SWB What to do about localization
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedITwin", { errorMessage: sharedResultByITwin.errorMessage }));
     }
 

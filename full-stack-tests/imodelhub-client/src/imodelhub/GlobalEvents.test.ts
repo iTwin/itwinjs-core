@@ -168,7 +168,6 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
-    // SWB
     chai.expect(event!.iTwinId).to.be.eq(iTwinId);
   });
 
@@ -344,21 +343,5 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   it("should delete Global Event subscription by InstanceId", async () => {
     mockDeleteGlobalEventsSubscription(globalEventSubscription.wsgId);
     await imodelHubClient.globalEvents.subscriptions.delete(serviceAccountAccessToken, globalEventSubscription.wsgId);
-  });
-
-  it("should receive Global Event iModelCreatedEvent from Asset", async () => {
-    // SWB
-    const assetId = await utils.getAssetId(accessToken, undefined);
-    await utils.createIModel(accessToken, imodelName, assetId);
-
-    // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${assetId}","iTwinId":"${assetId}","iModelId":"${Guid.createValue()}"}`;
-    mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
-    const event = await imodelHubClient.globalEvents.getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
-
-    chai.expect(event).to.be.instanceof(IModelCreatedEvent);
-    chai.assert(!!event!.iModelId);
-    // SWB
-    chai.expect(event!.iTwinId).to.be.eq(assetId);
   });
 });

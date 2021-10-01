@@ -9,7 +9,6 @@ import { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin project */
 export class ITwinRegistryClientWrapper implements ITwinManagerClient {
-  // SWB
   public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();
     const iTwinList: ITwin[] = await client.getAll(accessToken, {

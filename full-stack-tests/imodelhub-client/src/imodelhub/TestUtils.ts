@@ -221,24 +221,6 @@ export async function bootstrapBankITwin(accessToken: AccessToken, name: string)
   bankITwins.push(name);
 }
 
-// SWB
-export async function getAssetId(accessToken: AccessToken, assetName?: string): Promise<string> {
-  if (TestConfig.enableMocks)
-    return Guid.createValue();
-
-  assetName = assetName || TestConfig.assetName;
-
-  await bootstrapBankITwin(accessToken, assetName);
-
-  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(accessToken, assetName);
-
-  if (!iTwin || !iTwin.id)
-  // SWB
-    throw new Error(`Asset with name ${assetName} doesn't exist.`);
-
-  return iTwin.id;
-}
-
 export async function getITwinId(accessToken: AccessToken, iTwinName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();

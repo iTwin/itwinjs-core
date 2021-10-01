@@ -378,9 +378,8 @@ function createTestSequence(type: CodeSequenceType) {
 }
 
 describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
-  // SWB
-  let contextId: string;
-  let imodelId: GuidString;
+  let iTwinId: string;
+  let iModelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
   let accessToken: AccessToken;
@@ -388,39 +387,38 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
   before(async () => {
     accessToken = await utils.login(TestUsers.super);
 
-    // SWB
-    contextId = await utils.getITwinId(accessToken);
-    await utils.createIModel(accessToken, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    iModelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
-    const briefcases = await utils.getBriefcases(accessToken, imodelId, 1);
+    const briefcases = await utils.getBriefcases(accessToken, iModelId, 1);
     briefcaseId = briefcases[0].briefcaseId!;
   });
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(accessToken, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
   it("should acquire code with next available index value", async () => {
     // Get next value in sequence
     const sequence = createTestSequence(CodeSequenceType.NextAvailable);
-    const sequenceResult = await iModelClient.codes.sequences.get(accessToken, imodelId, sequence);
+    const sequenceResult = await iModelClient.codes.sequences.get(accessToken, iModelId, sequence);
     chai.assert(sequenceResult);
 
     // Try to acquire Code with this value
     const code = utils.randomCode(briefcaseId);
     code.value = formatSequenceValue(sequenceResult);
     code.state = CodeState.Used;
-    const reserveResult = await iModelClient.codes.update(accessToken, imodelId, [code]);
+    const reserveResult = await iModelClient.codes.update(accessToken, iModelId, [code]);
     chai.assert(reserveResult);
   });
 
   it("should query a code with largest used index value", async () => {
     // Get next value in sequence
     const sequence = createTestSequence(CodeSequenceType.LargestUsed);
-    const sequenceResult = await iModelClient.codes.sequences.get(accessToken, imodelId, sequence);
+    const sequenceResult = await iModelClient.codes.sequences.get(accessToken, iModelId, sequence);
     chai.assert(sequenceResult);
 
     // Try to acquire Code with this value
@@ -428,7 +426,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     code.value = formatSequenceValue(sequenceResult);
     code.state = CodeState.Used;
     const query = new CodeQuery().byCodes([code]);
-    const queryResult = await iModelClient.codes.get(accessToken, imodelId, query);
+    const queryResult = await iModelClient.codes.get(accessToken, iModelId, query);
     chai.assert(queryResult);
     chai.expect(queryResult.length).to.be.gt(0);
     chai.expect(queryResult[0].value).to.be.equal(code.value);

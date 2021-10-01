@@ -170,10 +170,9 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
-    // SWB
-    const testProjectId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
-    const testIModelId = await TestUtility.queryIModelIdByName(testProjectId, "ConnectionReadTest");
-    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
+    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, "ConnectionReadTest");
+    iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
 
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);

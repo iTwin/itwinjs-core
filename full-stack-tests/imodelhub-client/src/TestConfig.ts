@@ -30,7 +30,7 @@ RequestGlobalOptions.timeout.response = 60 * 1000; // 60 seconds in ms
 export class TestConfig {
   /** Name of iTwin used by most tests */
   public static readonly iTwinName: string = process.env.IMJS_TEST_PROJECT_NAME ?? "iModelJsIntegrationTest";
-  // SWB
+  // SWB What does asset mean here?
   public static readonly assetName: string = process.env.IMJS_TEST_ASSET_NAME ?? "iModelJsAssetTest";
   public static readonly enableMocks: boolean = process.argv.includes("--enableMocks");
   public static readonly enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);

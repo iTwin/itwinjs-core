@@ -70,7 +70,6 @@ describe("iModelHub ChangeSetHandler", () => {
     this.timeout(0);
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    // SWB
     iTwinId = await utils.getITwinId(accessToken);
     await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);

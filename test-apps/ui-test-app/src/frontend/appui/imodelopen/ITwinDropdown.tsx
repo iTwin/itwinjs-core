@@ -9,8 +9,6 @@ import { RelativePosition } from "@itwin/appui-abstract";
 import { Popup } from "@itwin/core-react";
 import { ITwin } from "@bentley/itwin-registry-client";
 
-// SWB Rename all file names
-
 /** Properties for the [[ITwinDropdown]] component */
 export interface ITwinDropdownProps {
   numVisibleITwins?: number;

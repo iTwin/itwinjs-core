@@ -508,7 +508,6 @@ export abstract class ViewState extends ElementState {
   /** Orient this view to one of the [[StandardView]] rotations. */
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
-  // SWB What does project mean here?
   /** Orient this view to one of the [[StandardView]] rotations, if the the view is not viewing the project then the
    * standard rotation is relative to the global position rather than the project.
    */
@@ -1110,7 +1109,6 @@ export abstract class ViewState extends ElementState {
     return area > 1.0E-2;
   }
 
-  // SWB What does project mean here?
   /** If the view is not of the project as determined by [[getIsViewingProject]] then return
    * the rotation from a global reference frame to world coordinates.  The global reference frame includes
    * Y vector towards true north, X parallel to the equator and Z perpendicular to the ellipsoid surface

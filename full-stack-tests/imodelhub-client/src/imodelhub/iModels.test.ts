@@ -82,7 +82,7 @@ function mockGetIModel(iTwinId: string, imodelName: string, imodelId: GuidString
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockPostiModel(iTwinId: string, imodelId: GuidString, imodelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]) {
+function mockPostIModel(iTwinId: string, imodelId: GuidString, imodelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -200,40 +200,39 @@ function mockGetSeedFile(imodelId: GuidString, getFileUrl = false) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-// SWB
-function mockCreateiModel(iTwinId: string, imodelId: GuidString, imodelName: string, description: string, filePath: string, chunks = 1, extent?: number[]) {
+function mockCreateIModel(iTwinId: string, imodelId: GuidString, imodelName: string, description: string, filePath: string, chunks = 1, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
 
   const fileId = Guid.createValue();
-  mockPostiModel(iTwinId, imodelId, imodelName, description, undefined, undefined, extent);
+  mockPostIModel(iTwinId, imodelId, imodelName, description, undefined, undefined, extent);
   mockPostNewSeedFile(imodelId, fileId, filePath, description);
   utils.mockUploadFile(imodelId, chunks);
   mockPostUpdatedSeedFile(imodelId, fileId, filePath, description);
   mockGetSeedFile(imodelId);
 }
 
-function mockCreateEmptyiModel(contextId: string, imodelId: GuidString, imodelName: string, description: string, iModelType = IModelType.Undefined, extent?: number[]) {
+function mockCreateEmptyIModel(iTwinId: string, imodelId: GuidString, imodelName: string, description: string, iModelType = IModelType.Undefined, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
 
-  mockPostiModel(contextId, imodelId, imodelName, description, "Empty", iModelType, extent);
+  mockPostIModel(iTwinId, imodelId, imodelName, description, "Empty", iModelType, extent);
 }
 
-function mockDeleteiModel(contextId: string, imodelId: GuidString) {
+function mockDeleteIModel(iTwinId: string, imodelId: GuidString) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.Context, contextId,
+  const requestPath = utils.createRequestUrl(ScopeType.Context, iTwinId,
     "iModel", imodelId.toString());
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Delete, requestPath);
 }
 
-function mockUpdateiModel(contextId: string, imodel: HubIModel) {
+function mockUpdateIModel(iTwinId: string, imodel: HubIModel) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.Context, contextId, "iModel", imodel.wsgId);
+  const requestPath = utils.createRequestUrl(ScopeType.Context, iTwinId, "iModel", imodel.wsgId);
   const postBody = ResponseBuilder.generatePostBody<HubIModel>(imodel);
   const requestResponse = ResponseBuilder.generatePostResponse<HubIModel>(imodel);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
@@ -241,8 +240,6 @@ function mockUpdateiModel(contextId: string, imodel: HubIModel) {
 
 describe("iModelHub iModelsHandler", () => {
   let iTwinId: string;
-  // SWB
-  let assetId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = utils.getUniqueIModelName(utils.sharedimodelName);
@@ -264,7 +261,7 @@ describe("iModelHub iModelsHandler", () => {
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
     iTwinId = await utils.getITwinId(accessToken);
-    assetId = await utils.getAssetId(accessToken);
+
     imodelClient = utils.getDefaultClient();
 
     await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
@@ -290,9 +287,9 @@ describe("iModelHub iModelsHandler", () => {
       await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
 
-    await utils.deleteIModelByName(accessToken, assetId, createimodelName, false);
-    await utils.deleteIModelByName(accessToken, assetId, updatedimodelName, false);
-    await utils.deleteIModelByName(accessToken, assetId, imodelNameWithSpecialChars, false);
+    await utils.deleteIModelByName(accessToken, iTwinId, createimodelName, false);
+    await utils.deleteIModelByName(accessToken, iTwinId, updatedimodelName, false);
+    await utils.deleteIModelByName(accessToken, iTwinId, imodelNameWithSpecialChars, false);
   });
 
   it("should get list of IModels (#iModelBank)", async () => {
@@ -320,7 +317,7 @@ describe("iModelHub iModelsHandler", () => {
       mockGetIModelByName(iTwinId, name);
       const iModel: HubIModel = (await imodelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(name)))[0];
       chai.expect(iModel.name).to.be.equal(name);
-      mockDeleteiModel(iTwinId, iModel.id!);
+      mockDeleteIModel(iTwinId, iModel.id!);
       await imodelClient.iModels.delete(accessToken, iTwinId, iModel.id!);
     }
   });
@@ -357,8 +354,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.name).to.be.equal("InstanceNotFound");
   });
 
-  // SWB
-  it("should fail getting an iModel without projectId (#iModelBank)", async () => {
+  it("should fail getting an iModel without iTwinId (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
       await imodelClient.iModels.get(accessToken, "", new IModelQuery().byId(imodelId));
@@ -393,7 +389,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should create iModel and upload SeedFile", async () => {
     const filePath = `${assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateiModel(iTwinId, Guid.createValue(), createimodelName, description, filePath, 2);
+    mockCreateIModel(iTwinId, Guid.createValue(), createimodelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
 
     const iModel: HubIModel = await imodelClient.iModels.create(accessToken, iTwinId, createimodelName,
@@ -530,7 +526,7 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should create iModel from another iModel", async () => {
-    mockPostiModel(iTwinId, imodelId, createimodelName, "", `${imodelId}:`);
+    mockPostIModel(iTwinId, imodelId, createimodelName, "", `${imodelId}:`);
     mockGetSeedFile(imodelId);
 
     const imodel: HubIModel = await iModelClient.iModels.create(accessToken, iTwinId, createimodelName,
@@ -544,7 +540,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should create iModel from another iModel and ChangeSet (#unit)", async () => {
     const briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
     const changeSet = utils.getMockChangeSets(briefcase)[0];
-    mockPostiModel(iTwinId, imodelId, createimodelName, "", `${imodelId}:${changeSet.id}`);
+    mockPostIModel(iTwinId, imodelId, createimodelName, "", `${imodelId}:${changeSet.id}`);
     mockGetSeedFile(imodelId);
 
     const imodel = await iModelClient.iModels.create(accessToken, iTwinId, createimodelName, { template: { imodelId, changeSetId: changeSet.id } });
@@ -564,7 +560,7 @@ describe("iModelHub iModelsHandler", () => {
     await utils.deleteIModelByName(accessToken, iTwinId, updatedimodelName);
     imodel.name = updatedimodelName;
     imodel.description = newDescription;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     let updatediModel = await iModelClient.iModels.update(accessToken, iTwinId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
@@ -581,7 +577,7 @@ describe("iModelHub iModelsHandler", () => {
 
     imodel.name = oldName;
     imodel.description = oldDescription;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     await iModelClient.iModels.update(accessToken, iTwinId, imodel);
   });
 
@@ -591,13 +587,13 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(imodel.iModelType).to.be.equal(IModelType.Undefined);
 
     imodel.iModelType = IModelType.Library;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     const updatediModel = await iModelClient.iModels.update(accessToken, iTwinId, imodel);
     chai.expect(updatediModel.iModelType).to.be.equal(IModelType.Library);
 
     updatediModel.description = "New description for test iModel created by imodeljs-clients tests";
     updatediModel.iModelType = undefined;
-    mockUpdateiModel(iTwinId, updatediModel);
+    mockUpdateIModel(iTwinId, updatediModel);
     await iModelClient.iModels.update(accessToken, iTwinId, updatediModel);
 
     mockGetIModelByName(iTwinId, imodelName, updatediModel.description, updatediModel.id, true, IModelType.Library);
@@ -635,14 +631,14 @@ describe("iModelHub iModelsHandler", () => {
     // Used only for maintenance
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(iTwinId, "22_LargePlant.166.i", imodelId, 1);
-    mockDeleteiModel(iTwinId, imodelId);
+    mockDeleteIModel(iTwinId, imodelId);
     await imodelClient.iModel.delete(accessToken, iTwinId);
   });
 
   it("delete iModel should throw if iModel does not exist (#unit)", async () => {
     // Used only for maintenance
     mockGetIModel(iTwinId, "22_LargePlant.166.i", Guid.createValue(), 0);
-    mockDeleteiModel(iTwinId, imodelId);
+    mockDeleteIModel(iTwinId, imodelId);
 
     let error: IModelHubError | undefined;
     try {
@@ -670,7 +666,7 @@ describe("iModelHub iModelsHandler", () => {
     const description = "Test iModel created by imodeljs-clients tests";
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(iTwinId, createimodelName, imodelId, 0);
-    mockCreateiModel(iTwinId, imodelId, createimodelName, description, filePath, 2);
+    mockCreateIModel(iTwinId, imodelId, createimodelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
     const iModel = await imodelClient.iModel.create(accessToken, iTwinId, createimodelName, { path: filePath, description, progressCallback: progressTracker.track() });
 
@@ -683,7 +679,7 @@ describe("iModelHub iModelsHandler", () => {
     const filePath = `${assetsPath}LargerSeedFile.bim`;
     const description = "Test iModel created by imodeljs-clients tests";
     mockGetIModel(iTwinId, createimodelName, Guid.createValue(), 1);
-    mockCreateiModel(iTwinId, Guid.createValue(), createimodelName, description, filePath, 2);
+    mockCreateIModel(iTwinId, Guid.createValue(), createimodelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
 
     let error: IModelHubError | undefined;
@@ -699,7 +695,7 @@ describe("iModelHub iModelsHandler", () => {
 
   it("should create iModel from empty seed file (#iModelBank)", async () => {
     const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateEmptyiModel(iTwinId, Guid.createValue(), createimodelName, description);
+    mockCreateEmptyIModel(iTwinId, Guid.createValue(), createimodelName, description);
     const progressTracker = new utils.ProgressTracker();
     const imodel = await imodelClient.iModels.create(accessToken, iTwinId, createimodelName, { description, progressCallback: progressTracker.track() });
 
@@ -717,7 +713,7 @@ describe("iModelHub iModelsHandler", () => {
     const description = "Test iModel created by imodeljs-clients tests";
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(iTwinId, createimodelName, imodelId, 0);
-    mockCreateEmptyiModel(iTwinId, Guid.createValue(), createimodelName, description);
+    mockCreateEmptyIModel(iTwinId, Guid.createValue(), createimodelName, description);
     const progressTracker = new utils.ProgressTracker();
     const imodel = await imodelClient.iModel.create(accessToken, iTwinId, createimodelName, { description, progressCallback: progressTracker.track() });
 
@@ -740,7 +736,7 @@ describe("iModelHub iModelsHandler", () => {
     imodel.name = newName;
     imodel.description = newDescription;
     imodel.extent = newExtent;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     let updatediModel = await iModelClient.iModels.update(accessToken, iTwinId, imodel);
 
     chai.expect(updatediModel.wsgId).to.be.equal(imodel.wsgId);
@@ -758,7 +754,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(updatediModel.extent).to.be.eql(newExtent);
 
     imodel.name = oldimodelName;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     await iModelClient.iModels.update(accessToken, iTwinId, imodel);
   });
 
@@ -775,26 +771,10 @@ describe("iModelHub iModelsHandler", () => {
     fs.existsSync(downloadToPathname).should.be.true;
   });
 
-  it("should create an iModel in the Asset (#iModelBank)", async () => {
-    const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateEmptyiModel(assetId, Guid.createValue(), createimodelName, description);
-    const progressTracker = new utils.ProgressTracker();
-    const imodel = await imodelClient.iModels.create(accessToken, assetId, createimodelName, { description, progressCallback: progressTracker.track() });
-
-    chai.expect(imodel.name).to.be.equal(createimodelName);
-    chai.expect(imodel.initialized).to.be.equal(true);
-    progressTracker.check(false);
-
-    mockGetIModelByName(assetId, createimodelName, description, imodel.id);
-    const getiModel = (await iModelClient.iModels.get(accessToken, assetId, new IModelQuery().byName(createimodelName)))[0];
-    chai.assert(!!getiModel);
-    chai.expect(getiModel.wsgId).to.be.equal(imodel.id!);
-  });
-
   it("should create iModel with an extent from empty seed file (#iModelBank)", async () => {
     const description = "Test iModel created by imodeljs-clients tests";
     const extent = [1.1, 2.2, -3.3, -4.4];
-    mockCreateEmptyiModel(iTwinId, Guid.createValue(), createimodelName, description, undefined, extent);
+    mockCreateEmptyIModel(iTwinId, Guid.createValue(), createimodelName, description, undefined, extent);
     const progressTracker = new utils.ProgressTracker();
     const imodel = await imodelClient.iModels.create(accessToken, iTwinId, createimodelName, { description, progressCallback: progressTracker.track(), extent });
 
@@ -814,7 +794,7 @@ describe("iModelHub iModelsHandler", () => {
     let imodel: HubIModel = (await iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(imodelName)))[0];
 
     imodel.iModelType = IModelType.Undefined;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     imodel = await iModelClient.iModels.update(accessToken, iTwinId, imodel);
     chai.expect(imodel.iModelType).to.be.equal(IModelType.Undefined);
 
@@ -827,7 +807,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModelsWithLibraryType.some((x) => x.id === imodelId)).to.be.false;
 
     imodel.iModelType = IModelType.Library;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     imodel = await iModelClient.iModels.update(accessToken, iTwinId, imodel);
     chai.expect(imodel.iModelType).to.be.equal(IModelType.Library);
 
@@ -843,7 +823,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModelsWithEmptyTemplate.some((x) => x.id === imodelId)).to.be.true;
 
     const customTemplate = `${imodelId}:`;
-    mockPostiModel(iTwinId, imodelId, createimodelName, "", customTemplate);
+    mockPostIModel(iTwinId, imodelId, createimodelName, "", customTemplate);
     mockGetSeedFile(imodelId);
     const clonediModel: HubIModel = await iModelClient.iModels.create(accessToken, iTwinId, createimodelName,
       { template: { imodelId }, timeOutInMilliseconds: TestConfig.initializeiModelTimeout });
@@ -859,7 +839,7 @@ describe("iModelHub iModelsHandler", () => {
     const oldimodelName = imodel.name;
 
     imodel.name = imodelNameWithSpecialChars;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     imodel = await iModelClient.iModels.update(accessToken, iTwinId, imodel);
 
     mockGetIModelByName(iTwinId, imodelNameWithSpecialChars);
@@ -867,7 +847,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModels.length).to.be.equal(1);
 
     imodel.name = oldimodelName;
-    mockUpdateiModel(iTwinId, imodel);
+    mockUpdateIModel(iTwinId, imodel);
     await iModelClient.iModels.update(accessToken, iTwinId, imodel);
   });
 

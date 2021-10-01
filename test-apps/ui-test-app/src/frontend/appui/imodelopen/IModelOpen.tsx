@@ -199,7 +199,6 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <div className="backstage-icon">
               <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
             </div>
-            {/* SWB Rename all of these components */}
             <div className="itwin-picker-content">
               <span className="itwins-label">ITwins</span>
               <div className="itwin-picker">

@@ -835,7 +835,6 @@ export class RealityModelTileClient {
   constructor(url: string, iTwinId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (iTwinId && this.rdsProps)
-      // SWB
       this.rdsProps.iTwinId = iTwinId;
   }
 
