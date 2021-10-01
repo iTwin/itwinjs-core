@@ -22,8 +22,8 @@ describe("HyperModeling (#integration)", () => {
 
   before(async () => {
     await IModelApp.shutdown();
-    await TestUtility.initialize(TestUsers.regular);
     await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
