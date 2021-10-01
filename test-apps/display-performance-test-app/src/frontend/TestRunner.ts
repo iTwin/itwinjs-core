@@ -253,7 +253,7 @@ export class TestRunner {
 
     const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
       // Collect CPU timings.
-      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, undefined));
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, this.curConfig.useDisjointTimer, undefined));
       for (let i = 0; i < this.curConfig.numRendersToTime; ++i) {
         vp.readPixels(viewRect, pixSelect, () => { });
         timings.cpu[i] = (vp.target as Target).performanceMetrics!.frameTimings;
@@ -263,7 +263,7 @@ export class TestRunner {
       // Collect GPU timings.
       timings.gpuFramesCollected = 0;
       timings.callbackEnabled = true;
-      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, timings.callback));
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, this.curConfig.useDisjointTimer, timings.callback));
       await this.renderAsync(vp, this.curConfig.numRendersToTime, timings);
       timings.callbackEnabled = false;
 
@@ -283,7 +283,7 @@ export class TestRunner {
 
   private async recordRender(test: TestCase): Promise<void> {
     const timings = new Timings(this.curConfig.numRendersToTime);
-    setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, timings.callback));
+    setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, this.curConfig.useDisjointTimer, timings.callback));
     await this.renderAsync(test.viewport, this.curConfig.numRendersToTime, timings);
 
     const row = this.getRowData(timings, test);

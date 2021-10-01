@@ -151,6 +151,8 @@ export interface TestConfigProps {
   viewString?: ViewStateSpecProps;
   /** Specifies hypermodeling settings applied to the view. */
   hyperModeling?: HyperModelingProps;
+  /** Specifies if EXT_disjoint_timer_query extension is used to collect GPU data */
+  useDisjointTimer?: boolean;
 }
 
 export const defaultHilite = new Hilite.Settings();
@@ -177,6 +179,7 @@ export class TestConfig {
   public readonly renderOptions: RenderSystem.Options;
   public readonly savedViewType: SavedViewType;
   public readonly iModelLocation: string;
+  public readonly useDisjointTimer: boolean;
 
   public readonly extViewName?: string;
   public readonly displayStyle?: string;
@@ -214,6 +217,7 @@ export class TestConfig {
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
+    this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
