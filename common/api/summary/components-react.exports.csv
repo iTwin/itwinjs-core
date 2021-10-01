@@ -103,7 +103,6 @@ public;EnumPropertyButtonGroupEditor
 public;EnumPropertyEditor 
 public;EnumTypeConverter 
 public;ErrorObserver
-beta;ExtendedTreeNodeRendererProps 
 public;FavoritePropertiesRenderer
 alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
 alpha;FavoritePropertyListProps
@@ -301,7 +300,7 @@ public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
 public;ReactDataGridColumn 
-alpha;RenderedItemsRange
+beta;RenderedItemsRange
 public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
 public;ResultSelector 
 public;ResultSelectorProps 
@@ -422,19 +421,18 @@ public;TreeModelNodePlaceholder
 public;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode
 public;TreeModelRootNode
 public;TreeModelSource
-beta;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
-beta;TreeNodeEditorProps
-beta;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode
+public;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
+public;TreeNodeEditorProps
+public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode
 public;TreeNodeEventArgs
 public;TreeNodeItem
 public;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
 public;TreeNodeLoader
 public;TreeNodeLoadResult
-beta;TreeNodeRenderer: React.MemoExoticComponent
+public;TreeNodeRenderer: React.MemoExoticComponent
 public;TreeNodeRendererProps 
-beta;TreeRenderer 
+public;TreeRenderer 
 public;TreeRendererAttributes
-beta;TreeRendererContext
 public;TreeRendererProps
 public;TreeSelectionChange
 public;TreeSelectionModificationEventArgs
@@ -447,7 +445,7 @@ public;Unsubscribable
 public;UrlPropertyValueRenderer 
 public;useAsyncValue: 
 alpha;useDebouncedAsyncValue
-beta;usePagedTreeNodeLoader
+public;usePagedTreeNodeLoader
 public;usePropertyData(props:
 beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
