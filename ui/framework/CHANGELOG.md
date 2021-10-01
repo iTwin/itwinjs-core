@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Oct 2021 13:07:03 GMT and should not be manually modified.
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+### Updates
+
+- Force Tool Settings to render when the active tool is reloaded.
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT
