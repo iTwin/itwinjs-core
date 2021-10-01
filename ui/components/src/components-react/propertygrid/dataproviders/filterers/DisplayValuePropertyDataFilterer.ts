@@ -12,7 +12,7 @@ import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase 
 
 /**
  * Property data filterer which matches on Primitive Property Record display value text.
- * @beta
+ * @public
  */
 export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
   private _filterText: string = "";

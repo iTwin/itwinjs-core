@@ -15,8 +15,8 @@ import { IPropertyGridModel } from "./PropertyGridModel";
 import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGridModelSource";
 
 /**
- * Custom hook that gets propertyData from data provider and subscribes to further data changes.
- * @beta
+ * Custom hook that gets [[PropertyData]] from given [[IPropertyDataProvider]] and subscribes to further data changes.
+ * @public
  */
 export function usePropertyData(props: { dataProvider: IPropertyDataProvider }) {
   const { dataProvider } = props;
@@ -28,13 +28,13 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider }) 
     });
   }, [dataProvider]);
 
-  // ForcedUpdate is added to dependency list to re-memo getData promise when onDataChanged emits an event.
+  // forcedUpdate is added to dependency list to re-memo getData promise when onDataChanged emits an event.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useDebouncedAsyncValue(useCallback(async () => dataProvider.getData(), [dataProvider, forcedUpdate]));
 }
 
 /**
- * Custom hook that creates a PropertyGridModelSource and subscribes it to data updates from the data provider.
+ * Custom hook that creates a [[PropertyGridModelSource]] and subscribes it to data updates from the data provider.
  * @beta
  */
 export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider }) {
@@ -54,7 +54,7 @@ export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataP
 }
 
 /**
- * Custom hook that creates memoized version of PropertyGridEventHandler that modifies given modelSource
+ * Custom hook that creates memoized version of [[PropertyGridEventHandler]] that modifies given modelSource
  * @beta
  */
 export function usePropertyGridEventHandler(props: { modelSource: IPropertyGridModelSource }) {

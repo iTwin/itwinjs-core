@@ -6,8 +6,8 @@
  * @module PropertyGrid
  */
 
-import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@itwin/appui-abstract";
+import { BeEvent } from "@itwin/core-bentley";
 
 /**
  * Contains metadata about a group of Properties.
@@ -17,11 +17,7 @@ export interface PropertyCategory {
   name: string;
   label: string;
   expand: boolean;
-
-  /** @beta */
   childCategories?: PropertyCategory[];
-
-  /** @beta */
   renderer?: {
     name: string;
   };

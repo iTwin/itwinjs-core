@@ -5,7 +5,7 @@
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcInvocation, RpcManager, RpcRegistry, TileContentSource,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
@@ -14,6 +14,7 @@ import { IModelDb } from "../../IModelDb";
 import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { RpcTrace } from "../../RpcBackend";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -117,14 +118,13 @@ describe("TileUpload (#integration)", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    RpcInvocation.currentActivity = {
+    const tile = await RpcTrace.run({
       accessToken,
       activityId: "",
       applicationId: "",
       applicationVersion: "",
       sessionId: "",
-    };
-    const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    }, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     assert.equal(tile, TileContentSource.ExternalCache);
 

@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Guid } from "@itwin/core-bentley";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
-import { IModelTileRpcInterface, RpcActivity, RpcInvocation, RpcManager, RpcRegistry } from "@itwin/core-common";
+import { IModelTileRpcInterface, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -16,6 +16,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";
 
 import sinon = require("sinon");
+import { RpcTrace } from "../../RpcBackend";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
@@ -37,8 +38,7 @@ describe("TileCache open v1", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    RpcInvocation.currentActivity = fakeRpc;
-    await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     assert.isTrue(IModelJsFs.existsSync(tilesCache));
@@ -112,8 +112,7 @@ describe("TileCache, open v2", async () => {
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
-    RpcInvocation.currentActivity = fakeRpc;
-    await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
     const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);

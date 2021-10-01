@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@itwin/core-common";
 import { MobileRpcManager } from "@itwin/mobile-manager/lib/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
@@ -59,14 +60,5 @@ before(async () => {
       return initializeCloud("http");
     case "electron":
       return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
-    case "direct": {
-      // (global as any).window = undefined;
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { commonSetup } = require("../backend/CommonBackendSetup");
-      await commonSetup();
-      const config = RpcConfiguration.obtain(RpcDefaultConfiguration);
-      config.interfaces = () => rpcInterfaces as any;
-      return RpcConfiguration.initializeInterfaces(config);
-    }
   }
 });

@@ -16,13 +16,13 @@ import {
   SpatialClassifiers, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { request, RequestOptions } from "@bentley/itwin-client";
-import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
+import { DefaultSupportedTypes, RealityData } from "../RealityDataAccessProps";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -750,14 +750,15 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     // If a type is specified, display it
     if (type !== undefined) {
+      // Case insensitive
       switch (type.toUpperCase()) {
-        case "REALITYMESH3DTILES":
+        case DefaultSupportedTypes.RealityMesh3dTiles.toUpperCase():
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
           break;
-        case "TERRAIN3DTILES":
+        case DefaultSupportedTypes.Terrain3dTiles.toUpperCase():
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
           break;
-        case "CESIUM3DTILES":
+        case DefaultSupportedTypes.Cesium3dTiles.toUpperCase():
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
           break;
       }
@@ -821,8 +822,13 @@ export class RealityModelTileClient {
   public readonly rdsProps?: RDSClientProps; // For reality data stored on PW Context Share only. If undefined then Reality Data is not on Context Share.
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
-  private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
   private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
+
+  private getInitializedRealityData(): RealityData {
+    if (!this._realityData)
+      new Error("No reality data found. Must call the initialize method first.");
+    return this._realityData!;
+  }
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
@@ -848,12 +854,15 @@ export class RealityModelTileClient {
 
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
+        if (undefined === IModelApp.realityDataAccess)
+          throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
-        this._realityData = await RealityModelTileClient._client.getRealityData(accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
+        this._realityData = await IModelApp.realityDataAccess.getRealityData(accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
 
         // A reality data that has not root document set should not be considered.
-        const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
+        const rootDocument: string = this._realityData.rootDocument ?? "";
         this.setBaseUrl(rootDocument);
       }
     }
@@ -861,7 +870,6 @@ export class RealityModelTileClient {
 
   // ###TODO temporary means of extracting the tileId and projectId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
-  // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
   // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
   private parseUrl(url: string): RDSClientProps | undefined {
     // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
@@ -906,7 +914,7 @@ export class RealityModelTileClient {
     const token = await this.getAccessToken();
     if (this.rdsProps && token) {
       await this.initializeRDSRealityData(token);
-      return this._realityData!.getBlobUrl(token, false);
+      return this._realityData!.getBlobUrl(token);
     }
 
     return undefined;
@@ -919,7 +927,12 @@ export class RealityModelTileClient {
     const token = await this.getAccessToken();
     if (this.rdsProps && token) {
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
-      return this._realityData!.getRootDocumentJson(token);
+      const realityData: RealityData = this.getInitializedRealityData();
+
+      if (!realityData.rootDocument)
+        throw new Error(`Root document not defined for reality data: ${realityData.id}`);
+
+      return realityData.getTileJson(token, realityData.rootDocument);
     }
 
     // The following is only if the reality data is not stored on PW Context Share.
@@ -950,7 +963,7 @@ export class RealityModelTileClient {
 
     const tileUrl = this._baseUrl + url;
     if (useRds)
-      return this._realityData!.getTileContent(token, tileUrl);
+      return this.getInitializedRealityData().getTileContent(token, tileUrl);
 
     return this._doRequest(tileUrl, "arraybuffer");
   }
@@ -968,7 +981,7 @@ export class RealityModelTileClient {
     const tileUrl = this._baseUrl + url;
 
     if (undefined !== this.rdsProps && undefined !== token)
-      return this._realityData!.getTileJson(token, tileUrl);
+      return this.getInitializedRealityData().getTileJson(token, tileUrl);
 
     return this._doRequest(tileUrl, "json");
   }
@@ -981,7 +994,7 @@ export class RealityModelTileClient {
     if (this.rdsProps && token) {
 
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data
-      return this._realityData!.type;
+      return this.getInitializedRealityData().type;
     }
 
     // The reality data type is not available if not stored on PW Context Share.

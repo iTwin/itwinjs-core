@@ -37,7 +37,6 @@ import { ByteStream } from '@itwin/core-bentley';
 import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
-import { CartographicRange } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
@@ -4293,6 +4292,8 @@ export class IModelApp {
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
+    // @beta
+    static get realityDataAccess(): RealityDataAccess | undefined;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal
@@ -4339,6 +4340,8 @@ export interface IModelAppOptions {
     notifications?: NotificationManager;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
+    // @beta (undocumented)
+    realityDataAccess?: RealityDataAccess;
     // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
     // (undocumented)
@@ -7299,9 +7302,6 @@ export interface QuantityTypeDefinition {
 // @beta
 export type QuantityTypeKey = string;
 
-// @public
-export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
-
 // @beta
 export interface QueryScreenFeaturesOptions {
     includeNonLocatable?: boolean;
@@ -7335,13 +7335,6 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
-
-// @public
-export interface RealityDataQueryCriteria {
-    filterIModel?: IModelConnection;
-    iTwinId: GuidString;
-    range?: CartographicRange;
-}
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
