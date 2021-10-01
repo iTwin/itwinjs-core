@@ -10,7 +10,7 @@ import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
 import { loggerCategory } from "../common/TestAppConfiguration";
-import { AndroidHost, IOSHost } from "@itwin/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/MobileBackend";
 import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
