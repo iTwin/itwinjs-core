@@ -467,14 +467,6 @@ export namespace Base64EncodedString {
 }
 
 // @beta
-export interface BaseConfig {
-    priority?: number;
-    quota?: Quota;
-    restartToken?: string;
-    usePrimaryConn?: boolean;
-}
-
-// @beta
 export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
 
 // @beta
@@ -1685,17 +1677,6 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
-
-// @public (undocumented)
-export class ConcurrentQueryError extends BentleyError {
-    constructor(response: any, request?: any, rc?: DbResult);
-    // (undocumented)
-    readonly request?: any;
-    // (undocumented)
-    readonly response: any;
-    // (undocumented)
-    static throwIfError(response: any, request?: any): void;
-}
 
 // @alpha
 export enum ContentFlags {
@@ -4837,22 +4818,6 @@ export abstract class IpcWebSocketTransport {
     abstract send(message: IpcWebSocketMessage): void;
 }
 
-// @beta (undocumented)
-export interface IRowProxy {
-    // (undocumented)
-    [propertyName: string]: PropertyValueType;
-    // (undocumented)
-    [propertyIndex: number]: PropertyValueType;
-    // (undocumented)
-    asArray(): PropertyValueType[];
-    // (undocumented)
-    getPropertyDefs(): PropertyList;
-    // (undocumented)
-    toJsRow(): any;
-    // (undocumented)
-    toRow(): any;
-}
-
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -4932,12 +4897,6 @@ export interface LightSettingsProps {
     };
     solar?: SolarLightProps;
     specularIntensity?: number;
-}
-
-// @beta
-export interface Limit {
-    count?: number;
-    offset?: number;
 }
 
 // @public
@@ -6176,39 +6135,6 @@ export interface ProjectionProps {
 // @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-// @beta (undocumented)
-export interface PropertyInfo {
-    // (undocumented)
-    className: string;
-    // (undocumented)
-    generated: boolean;
-    // (undocumented)
-    index: number;
-    // (undocumented)
-    jsonName: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    system: boolean;
-    // (undocumented)
-    typeName: string;
-}
-
-// @beta (undocumented)
-export class PropertyList implements Iterable<PropertyInfo> {
-    // (undocumented)
-    [Symbol.iterator](): Iterator<PropertyInfo, any, undefined>;
-    constructor(_properties: PropertyInfo[]);
-    // (undocumented)
-    findByJsonName(name: string): PropertyInfo | undefined;
-    // (undocumented)
-    findByName(name: string): PropertyInfo | undefined;
-    // (undocumented)
-    findByNoCase(name: string): PropertyInfo | undefined;
-    // (undocumented)
-    get length(): number;
-    }
-
 // @beta
 export class PropertyMetaData implements PropertyMetaDataProps {
     constructor(jsonObj: PropertyMetaDataProps);
@@ -6308,9 +6234,6 @@ export interface PropertyMetaDataProps {
     // (undocumented)
     structName?: string;
 }
-
-// @beta (undocumented)
-export type PropertyValueType = any;
 
 // @public
 export class QParams2d {
@@ -7005,26 +6928,6 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 
 export { RepositoryStatus }
 
-// @internal (undocumented)
-export interface Request extends BaseConfig {
-    // (undocumented)
-    kind: RequestKind;
-}
-
-// @internal (undocumented)
-export interface RequestExecutor<TRequest extends Request, TResponse extends Response> {
-    // (undocumented)
-    execute(request: TRequest): Promise<TResponse>;
-}
-
-// @internal (undocumented)
-export enum RequestKind {
-    // (undocumented)
-    BlobIO = 0,
-    // (undocumented)
-    ECSql = 1
-}
-
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
@@ -7032,28 +6935,6 @@ export interface RequestNewBriefcaseProps {
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
-}
-
-// @internal (undocumented)
-export interface Response {
-    // (undocumented)
-    error?: string;
-    // (undocumented)
-    kind: ResponseKind;
-    // (undocumented)
-    stats: Stats;
-    // (undocumented)
-    status: ResponseStatus;
-}
-
-// @internal (undocumented)
-export enum ResponseKind {
-    // (undocumented)
-    BlobIO = 0,
-    // (undocumented)
-    ECSql = 1,
-    // (undocumented)
-    NoResult = 2
 }
 
 // @public (undocumented)
@@ -7091,22 +6972,6 @@ export class ResponseLike implements Response {
     get type(): ResponseType;
     // (undocumented)
     get url(): string;
-}
-
-// @internal (undocumented)
-export enum ResponseStatus {
-    // (undocumented)
-    Cancel = 2,
-    // (undocumented)
-    Done = 1,
-    // (undocumented)
-    Error = 0,
-    // (undocumented)
-    Partial = 3,
-    // (undocumented)
-    QueueFull = 5,
-    // (undocumented)
-    TimeOut = 4
 }
 
 // @public
@@ -8206,20 +8071,6 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 // @public
 export type StandaloneOpenOptions = OpenDbKey;
-
-// @beta (undocumented)
-export interface Stats {
-    // (undocumented)
-    cpuTime: number;
-    // (undocumented)
-    memLimit: number;
-    // (undocumented)
-    memUsed: number;
-    // (undocumented)
-    timeLimit: number;
-    // (undocumented)
-    totalTime: number;
-}
 
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
