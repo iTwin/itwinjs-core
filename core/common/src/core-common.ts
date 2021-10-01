@@ -172,10 +172,6 @@ export * from "./WhiteOnWhiteReversalSettings";
  * Types for describing how the contents of Views should be rendered.
  */
 /**
- * @docs-group-description Localization
- * Classes for internationalization and localization of your app.
- */
-/**
  * @docs-group-description Rendering
  * Types describing geometry, views, and symbology for consumption by a display system.
  */
