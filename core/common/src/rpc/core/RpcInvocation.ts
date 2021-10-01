@@ -133,26 +133,15 @@ export class RpcInvocation {
     return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 
-  /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
-   * @internal
-   */
-  public static logRpcException(activity: RpcActivity, error: unknown) {
-    const props = {
-      error: BentleyError.getErrorProps(error),
-      activity: {
-        activityId: activity.activityId,
-        sessionId: activity.sessionId,
-        app: activity.applicationId,
-        version: activity.applicationVersion,
-      },
-    };
-
-    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Error in RPC operation [${activity.rpcMethod}]`, () => props);
+  public static sanitizeForLog(activity?: RpcActivity) {
+    return activity ? {
+      activityId: activity.activityId, sessionId: activity.sessionId, applicationId: activity.applicationId, applicationVersion: activity.applicationVersion, rpcMethod: activity.rpcMethod,
+    } : undefined;
   }
 
   private async resolve(): Promise<any> {
     const request = this.request;
-    const activity = {
+    const activity: RpcActivity = {
       activityId: request.id,
       applicationId: request.applicationId,
       applicationVersion: request.applicationVersion,
@@ -172,15 +161,14 @@ export class RpcInvocation {
 
       return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters));
     } catch (error: unknown) {
-      RpcInvocation.logRpcException(activity, error);
+      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error), ...RpcInvocation.sanitizeForLog(activity) });
       return this.reject(error);
     }
   }
 
   private applyPolicies(parameters: any) {
-    if (!parameters || !Array.isArray(parameters)) {
+    if (!parameters || !Array.isArray(parameters))
       return;
-    }
 
     for (let i = 0; i !== parameters.length; ++i) {
       const parameter = parameters[i];

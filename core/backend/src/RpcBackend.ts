@@ -47,17 +47,8 @@ export function initializeRpcBackend() {
 
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
 
-  // set up static logger metadata to include current RpcActivity information for messages during rpc processing
-  Logger.staticMetaData.set("rpc", () => {
-    const activity = RpcTrace.currentActivity;
-    return undefined === activity ? undefined : {
-      activityId: activity.activityId,
-      sessionId: activity.sessionId,
-      applicationId: activity.applicationId,
-      applicationVersion: activity.applicationVersion,
-      rpcMethod: activity.rpcMethod,
-    };
-  });
+  // set up static logger metadata to include current RpcActivity information for logs during rpc processing
+  Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
 
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
     const form = new FormData();
