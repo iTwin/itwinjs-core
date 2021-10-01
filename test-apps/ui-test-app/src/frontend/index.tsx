@@ -10,7 +10,7 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
@@ -26,7 +26,7 @@ import {
 import { I18NNamespace } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { MapLayersUI } from "@itwin/map-layers";
-import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/MobileFrontend";
+import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/MobileFrontend";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { getClassName } from "@itwin/appui-abstract";
 import { BeDragDropContext } from "@itwin/components-react";

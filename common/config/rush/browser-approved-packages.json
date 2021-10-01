@@ -163,7 +163,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/electron-manager",
+      "name": "@itwin/core-electron",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -203,7 +203,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/mobile-manager",
+      "name": "@itwin/core-mobile",
       "allowedCategories": [ "internal" ]
     },
     {

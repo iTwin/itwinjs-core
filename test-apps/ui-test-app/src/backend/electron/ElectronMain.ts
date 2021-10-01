@@ -5,7 +5,7 @@
 
 import { join } from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
 
