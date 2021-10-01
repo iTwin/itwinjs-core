@@ -461,7 +461,7 @@ In `3.0` changes have been made that changed the way this attribute is calculate
 
 ## `KeySetJSON` in `@itwin/presentation-common`
 
-The format of `KeySetJSON` has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See `CompressedId64Set` for more details about compressing IDs.
+The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
 
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
