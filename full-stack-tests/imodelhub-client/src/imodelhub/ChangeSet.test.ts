@@ -184,7 +184,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const mockedChangesets: ChangeSet[] = utils.getMockChangeSets(briefcase).slice(0, 1);
     utils.mockGetChangeSet(imodelId, false, `?$top=1`, ...mockedChangesets);
 
-    let changesets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().top(1));
+    let changesets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().top(1));
     chai.expect(changesets.length).to.be.equal(1);
 
     utils.mockGetChangeSetById(imodelId, changesets[0], false, `?$select=FileSize`);
@@ -193,7 +193,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
     utils.mockFileResponse(1);
     const progressTracker: utils.ProgressTracker = new utils.ProgressTracker();
-    changesets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery().byId(changesets[0].id!),
+    changesets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery().byId(changesets[0].id!),
       downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
