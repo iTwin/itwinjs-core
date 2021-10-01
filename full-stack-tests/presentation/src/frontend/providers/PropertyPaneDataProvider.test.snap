@@ -1619,7 +1619,7 @@ Object {
   "categories": Array [
     Object {
       "expand": true,
-      "label": "Fàvórîtë",
+      "label": "Favorite",
       "name": "Favorite",
     },
     Object {
@@ -3362,7 +3362,7 @@ Object {
         },
       ],
       "expand": true,
-      "label": "Fàvórîtë",
+      "label": "Favorite",
       "name": "Favorite",
     },
     Object {
