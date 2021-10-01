@@ -17,7 +17,7 @@ import { IModelInfo } from "../ExternalIModel";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
-import { ProjectDropdown } from "./ProjectDropdown";
+import { ITwinDropdown } from "./ITwinDropdown";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -50,7 +50,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingIModels: false,
       isLoadingIModel: false,
       isNavigationExpanded: false,
-      prompt: "Fetching project information...",
+      prompt: "Fetching iTwin information...",
     };
   }
 
@@ -200,10 +200,10 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
               <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
             </div>
             {/* SWB Rename all of these components */}
-            <div className="project-picker-content">
-              <span className="projects-label">ITwins</span>
-              <div className="project-picker">
-                <ProjectDropdown currentProject={this.state.currentITwin} recentProjects={this.state.recentITwins} onProjectClicked={this._selectITwin.bind(this)} />
+            <div className="itwin-picker-content">
+              <span className="itwins-label">ITwins</span>
+              <div className="itwin-picker">
+                <ITwinDropdown currentITwin={this.state.currentITwin} recentITwins={this.state.recentITwins} onITwinClicked={this._selectITwin.bind(this)} />
               </div>
             </div>
             <Button styleType="cta" style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>

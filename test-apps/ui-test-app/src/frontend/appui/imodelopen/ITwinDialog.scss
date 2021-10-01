@@ -31,7 +31,7 @@
 }
 
 /* dialog box */
-.projects {
+.itwins {
   background-color: #fefefe;
   width: 850px;
   height: 500px;
@@ -44,7 +44,7 @@
 }
 
 /* header */
-.projects .header {
+.itwins .header {
   flex: initial;
   padding: 1em;
   display: flex;
@@ -54,13 +54,13 @@
 }
 
 /* title */
-.projects .header h3 {
+.itwins .header h3 {
   margin: 0;
   color: $uicore-text-color;
 }
 
 /* close button */
-.projects .header .icon {
+.itwins .header .icon {
   margin-left: auto;
   font-size: 1em;
   color: $uicore-icons-dark;
@@ -70,12 +70,12 @@
 }
 
 /* close button hover */
-.projects .header .icon:hover {
+.itwins .header .icon:hover {
   color: #000;
 }
 
 /* content */
-.projects .projects-content {
+.itwins .itwins-content {
   height: 100%;
   color: $uicore-gray;
   padding: .5em 1.5em 1.5em 1.5em;
@@ -84,21 +84,21 @@
 }
 
 /* container for tabs */
-.projects-content .tabs-container {
+.itwins-content .tabs-container {
   display: flex;
   align-items: center;
 }
 
 /* container for table */
-.projects-content .table-container {
+.itwins-content .table-container {
   height: 100%;
   overflow: auto;
   margin-top: 1em;
   position: relative;
 }
 
-/* projects list (table) */
-.projects .projects-content table {
+/* itwins list (table) */
+.itwins .itwins-content table {
   width: 100%;
   font-family: arial, sans-serif;
   border-collapse: collapse;
@@ -131,19 +131,19 @@
 }
 
 /* search box */
-.projects .projects-content .tabs-searchbox {
+.itwins .itwins-content .tabs-searchbox {
   margin-left: 3em;
   -webkit-transition: opacity 0.3s;
   -o-transition: opacity 0.3;
   transition: opacity 0.3s;
 }
 
-.projects .projects-content .tabs-searchbox.hidden {
+.itwins .itwins-content .tabs-searchbox.hidden {
   opacity: 0;
 }
 
 /* loader */
-.projects-loading {
+.itwins-loading {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -153,8 +153,8 @@
   justify-content: center;
 }
 
-/* no projects prompt */
-.projects-none {
+/* no itwins prompt */
+.itwins-none {
   position: absolute;
   white-space: nowrap;
   top: 50%;
