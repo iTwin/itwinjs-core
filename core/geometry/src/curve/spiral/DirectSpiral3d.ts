@@ -507,7 +507,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   /** Return length of the spiral.
    * * True length is stored at back of uvParams . . .
    */
-  public override curveLength() { return this.quickLength(); }
+  //   use the generic integrator ... public override curveLength() { return this.quickLength(); }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
   public isSameGeometryClass(other: any): boolean { return other instanceof DirectSpiral3d; }
   /** Add strokes from this spiral to `dest`.

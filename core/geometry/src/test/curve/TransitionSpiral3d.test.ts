@@ -905,7 +905,7 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "spiralStroking");
   });
 
-  it("test TransitionSpiral3d clonePartialCurve", () => {
+  it.only("test TransitionSpiral3d clonePartialCurve", () => {
     const ck = new Checker();
     const nominalL1 = 100;
     const nominalR1 = 400;
@@ -932,7 +932,8 @@ describe("TransitionSpiral3d", () => {
     ck.testTrue(cloneD.isAlmostEqual(integratedSpiralReversed));
 
     // For each input spiral, clone partial and validate points/tangents and lengths are the same
-    for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed] ) {
+    for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed]) {
+      // console.log(spiral.spiralType);
       const partial = spiral.clonePartialCurve(0.2, 0.8)!;
       ck.testType(partial, TransitionSpiral3d);
       ck.testLT(partial.curveLength(), spiral.curveLength());
