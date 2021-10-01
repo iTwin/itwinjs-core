@@ -970,7 +970,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     optimizeBRepProcessing?: boolean;
 
-    /** ###TODO describe
+    /** Specifies that metadata about each [[IModelTile]] loaded during the session should be cached until the corresponding [[IModelConnection]] is closed; and
+     * that the graphics for cached tiles should never be reloaded when the tile is re-requested after having been discarded. This fulfills a niche scenario in
+     * which the application does not care about displaying the graphics, only about ensuring the tile content is generated and uploaded to blob storage.
      * @internal
      */
     cacheTileMetadata?: boolean;
