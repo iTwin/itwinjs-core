@@ -615,12 +615,12 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
         scope: baseOidcScopes.join(" "),
         responseType: "code",
       });
-      IModelApp.authorizationClient = auth;
       try {
         await auth.signInSilent();
       } catch (err) { }
 
       authorized = auth.isAuthorized;
+      IModelApp.authorizationClient = auth;
     }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
