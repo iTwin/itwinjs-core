@@ -616,8 +616,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
       } catch (err) { }
 
       authorized = auth.isAuthorized;
-      if (authorized)
-        IModelApp.authorizationClient = auth;
+      IModelApp.authorizationClient = auth;
     }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
