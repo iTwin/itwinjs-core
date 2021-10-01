@@ -121,7 +121,7 @@ const [
   TreeRendererContextProvider,
 
   /** Context of [[TreeRenderer]] consumer. */
-  TreeRendererContextConsumer,
+  _TreeRendererContextConsumer,
 
   /** Custom hook to use [[TreeRenderer]] context. */
   useTreeRendererContext,
