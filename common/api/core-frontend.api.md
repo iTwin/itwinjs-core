@@ -223,8 +223,8 @@ import { QPoint2d } from '@itwin/core-common';
 import { QPoint3d } from '@itwin/core-common';
 import { QPoint3dList } from '@itwin/core-common';
 import { QuantityParseResult } from '@itwin/core-quantity';
-import { QueryConfig } from '@itwin/core-common';
-import { QueryParams } from '@itwin/core-common';
+import { QueryBinder } from '@itwin/core-common';
+import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
@@ -4370,7 +4370,7 @@ export abstract class IModelConnection extends IModel {
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
     // @beta
-    createQueryReader(ecsql: string, params?: QueryParams, config?: QueryConfig): ECSqlReader;
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
     readonly displayedExtents: AxisAlignedBox3d;
@@ -4414,13 +4414,13 @@ export abstract class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     get projectCenterAltitude(): number | undefined;
-    query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
-    queryRowCount(ecsql: string, params?: QueryParams): Promise<number>;
+    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any | any[]>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any | any[]>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;

@@ -151,8 +151,8 @@ import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
-import { QueryConfig } from '@itwin/core-common';
-import { QueryParams } from '@itwin/core-common';
+import { QueryBinder } from '@itwin/core-common';
+import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
@@ -1050,7 +1050,7 @@ export class ECDb implements IDisposable {
     closeDb(): void;
     createDb(pathName: string): void;
     // @beta
-    createQueryReader(ecsql: string, params?: QueryParams, config?: QueryConfig): ECSqlReader;
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
@@ -1062,11 +1062,11 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>;
-    queryRowCount(ecsql: string, params?: QueryParams): Promise<number>;
+    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
+    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
-    restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changeSetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2137,7 +2137,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
     // @beta
-    createQueryReader(ecsql: string, params?: QueryParams, config?: QueryConfig): ECSqlReader;
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): void;
@@ -2209,12 +2209,12 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
-    queryRowCount(ecsql: string, params?: QueryParams): Promise<number>;
+    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
@@ -2225,7 +2225,7 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, params?: QueryParams, rowFormat?: QueryRowFormat, config?: QueryConfig): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal (undocumented)
