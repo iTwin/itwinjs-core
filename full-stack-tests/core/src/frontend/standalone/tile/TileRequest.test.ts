@@ -11,20 +11,8 @@ import {
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
 
-describe("CloudStorageCacheChannel", () => {
-  let imodel: SnapshotConnection;
-
-  beforeEach(async () => {
-    await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("test.bim");
-  });
-
-  afterEach(async () => {
-    await imodel.close();
-    await IModelApp.shutdown();
-  });
-
-  function getChannel(): TileRequestChannel {
+describe("IModelTileRequestChannels", () => {
+  function getCloudStorageChannel(): TileRequestChannel {
     const channels = IModelApp.tileAdmin.channels;
     if (!channels.iModelChannels.cloudStorage) {
       channels.enableCloudStorageCache();
@@ -34,7 +22,7 @@ describe("CloudStorageCacheChannel", () => {
     return channels.iModelChannels.cloudStorage!;
   }
 
-  async function getTile(): Promise<IModelTile> {
+  async function getTileForIModel(imodel: SnapshotConnection): Promise<IModelTile> {
     await imodel.models.load("0x1c");
     const model = imodel.models.getLoaded("0x1c")!.asGeometricModel!;
     const view = fakeViewState(imodel);
@@ -64,70 +52,184 @@ describe("CloudStorageCacheChannel", () => {
     return waitUntil(() => tile.loadStatus !== TileLoadStatus.Queued && tile.loadStatus !== TileLoadStatus.Loading);
   }
 
-  it("is not configured by default", async () => {
-    expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).to.be.undefined;
-    const tile = await getTile();
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+  describe("CloudStorageCacheChannel", () => {
+    let imodel: SnapshotConnection;
+
+    beforeEach(async () => {
+      await IModelApp.startup();
+      imodel = await SnapshotConnection.openFile("test.bim");
+    });
+
+    afterEach(async () => {
+      await imodel.close();
+      await IModelApp.shutdown();
+    });
+
+    function getTile() {
+      return getTileForIModel(imodel);
+    }
+
+    it("is not configured by default", async () => {
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).to.be.undefined;
+      const tile = await getTile();
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    });
+
+    it("uses http concurrency", async () => {
+      const channel = getCloudStorageChannel();
+      expect(channel.concurrency).to.equal(IModelApp.tileAdmin.channels.httpConcurrency);
+    });
+
+    it("is used first if configured", async () => {
+      IModelApp.tileAdmin.channels.enableCloudStorageCache();
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).not.to.be.undefined;
+      const tile = await getTile();
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
+    });
+
+    it("falls back to RPC if content is not found", async () => {
+      IModelApp.tileAdmin.channels.enableCloudStorageCache();
+      const tile = await getTile();
+      const channel = getCloudStorageChannel();
+      expect(tile.channel).to.equal(channel);
+
+      channel.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+    });
+
+    it("is not used again after cache miss", async () => {
+      IModelApp.tileAdmin.channels.enableCloudStorageCache();
+      const tile = await getTile();
+      const channel = getCloudStorageChannel();
+
+      channel.requestContent = async () => { throw new ServerTimeoutError("..."); };
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(channel);
+      expect(tile.requestChannel).to.be.undefined;
+
+      channel.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+      expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+
+      tile.disposeContents();
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    });
   });
 
-  it("uses http concurrency", async () => {
-    const channel = getChannel();
-    expect(channel.concurrency).to.equal(IModelApp.tileAdmin.channels.httpConcurrency);
-  });
+  describe("Metadata cache channel", () => {
+    let imodel: SnapshotConnection;
 
-  it("is used first if configured", async () => {
-    IModelApp.tileAdmin.channels.enableCloudStorageCache();
-    expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).not.to.be.undefined;
-    const tile = await getTile();
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
+    beforeEach(async () => {
+      await IModelApp.startup({ tileAdmin: { cacheTileMetadata: true } });
+      imodel = await SnapshotConnection.openFile("test.bim");
+    });
 
-    tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
-    await loadContent(tile);
-    expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
-  });
+    afterEach(async () => {
+      await imodel.close();
+      await IModelApp.shutdown();
+    });
 
-  it("falls back to RPC if content is not found", async () => {
-    IModelApp.tileAdmin.channels.enableCloudStorageCache();
-    const tile = await getTile();
-    const channel = getChannel();
-    expect(tile.channel).to.equal(channel);
+    function getTile() {
+      return getTileForIModel(imodel);
+    }
 
-    channel.requestContent = async () => Promise.resolve(undefined);
-    await loadContent(tile);
-    expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    function getChannel(): TileRequestChannel {
+      let channel: TileRequestChannel | undefined;
+      for (const ch of IModelApp.tileAdmin.channels) {
+        if (ch.name === "itwinjs-imodel-metadata-cache") {
+          channel = ch;
+          break;
+        }
+      }
 
-    tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
-    await loadContent(tile);
-    expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
-  });
+      expect(channel).not.to.be.undefined;
+      return channel!;
+    }
 
-  it("is not used again after cache miss", async () => {
-    IModelApp.tileAdmin.channels.enableCloudStorageCache();
-    const tile = await getTile();
-    const channel = getChannel();
+    it("is configured if specified at startup", () => {
+      expect(getChannel()).not.to.be.undefined;
+    });
 
-    channel.requestContent = async () => { throw new ServerTimeoutError("..."); };
-    await loadContent(tile);
-    expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.channel).to.equal(channel);
-    expect(tile.requestChannel).to.be.undefined;
+    it("is highly concurrent", () => {
+      expect(getChannel().concurrency).to.equal(100);
+    });
 
-    channel.requestContent = async () => Promise.resolve(undefined);
-    await loadContent(tile);
-    expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
-    expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    it("is used first", async () => {
+      const tile = await getTile();
+      expect(tile.channel).to.equal(getChannel());
+      expect(tile.requestChannel).to.be.undefined;
 
-    tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
-    await loadContent(tile);
-    expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+      expect(tile.channel).to.equal(getChannel());
+      expect(tile.requestChannel).to.be.undefined;
+    });
 
-    tile.disposeContents();
-    expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    it("falls back to RPC if content is not found and cloud storage is not configured", async () => {
+      expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).to.be.undefined;
+      const tile = await getTile();
+      const channel = getChannel();
+      expect(tile.channel).to.equal(channel);
+
+      channel.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+    });
+
+    it("falls back to cloud storage, then to RPC, if content is not found and cloud storage is configured", async () => {
+      IModelApp.tileAdmin.channels.enableCloudStorageCache();
+      const cloud = IModelApp.tileAdmin.channels.iModelChannels.cloudStorage!;
+      expect(cloud).not.to.be.undefined;
+
+      const tile = await getTile();
+      const channel = getChannel();
+      expect(tile.channel).to.equal(channel);
+
+      channel.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(cloud);
+
+      cloud.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    });
+
+    it("caches metadata from RPC", async () => {
+    });
+
+    it("obtains metadata and empty graphic from cache if present", async () => {
+    });
+
+    it("is not used again after cache miss", async () => {
+    });
   });
 });
 
