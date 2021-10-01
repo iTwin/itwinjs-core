@@ -128,8 +128,8 @@ const [
 ] = createContextWithMandatoryProvider<TreeRendererContext>("TreeRendererContext");
 
 /**
- * Default component for rendering tree.
- * @beta
+ * Default tree rendering component.
+ * @public
  */
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
   private _ref = React.createRef<TreeRendererAttributes>();
