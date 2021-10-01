@@ -23,6 +23,7 @@
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
