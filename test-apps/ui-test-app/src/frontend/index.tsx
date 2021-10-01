@@ -8,6 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
+import { I18N } from "@itwin/core-i18n";
 import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
@@ -177,6 +178,12 @@ export class SampleAppIModelApp {
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
+
+    const iModelAppOpts = {
+      ...opts.iModelApp,
+      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+    }
+
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
@@ -198,7 +205,7 @@ export class SampleAppIModelApp {
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
-      await IModelApp.startup(opts.iModelApp);
+      await IModelApp.startup(iModelAppOpts);
     }
 
     window.onerror = function (error) {
