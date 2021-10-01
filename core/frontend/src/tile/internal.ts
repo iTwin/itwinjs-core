@@ -39,6 +39,8 @@ export * from "./TiledGraphicsProvider";
 export * from "./TileAdmin";
 export * from "./TileRequest";
 export * from "./TileRequestChannel";
+export * from "./IModelTileRequestChannels";
+export * from "./TileRequestChannels";
 export * from "./TileUsageMarker";
 export * from "./GltfReader";
 export * from "./I3dmReader";
