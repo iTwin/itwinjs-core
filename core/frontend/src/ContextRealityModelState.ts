@@ -47,18 +47,23 @@ export class ContextRealityModelState extends ContextRealityModel {
   /** The iModel with which the reality model is associated. */
   public readonly iModel: IModelConnection;
   /** The reality data source key with which the reality model is associated. */
-  public readonly rdSourceKey: RealityDataSourceKey;
+  public override readonly rdSourceKey: RealityDataSourceKey;
 
   /** @internal */
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     super(props);
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-    const provider = (undefined === props.orbitGtBlob) ? RealityDataProvider.ContextShare : RealityDataProvider.ContextShareOrbitGt;
-    // TODO: &&Bed: use provider from key to select proper realityTileTree
-    this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl,provider);
-    const useOrbitGtTileTreeReference = provider === RealityDataProvider.ContextShareOrbitGt;
-
+    if (undefined === props.orbitGtBlob) {
+      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl);
+    } else {
+      const provider = RealityDataProvider.ContextShareOrbitGt;
+      if (props.orbitGtBlob.rdsUrl)
+        this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl,provider);
+      else
+        this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.blobFileName,provider);
+    }
+    const useOrbitGtTileTreeReference = this.rdSourceKey.provider === RealityDataProvider.ContextShareOrbitGt;
     this._treeRef = (!useOrbitGtTileTreeReference) ?
       createRealityTileTreeReference({
         iModel,

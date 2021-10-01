@@ -24,11 +24,13 @@ export class RealityDataSource {
     this._rdSourceKey = props.sourceKey;
     this.isUrlResolved=false;
   }
-
   public static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider): RealityDataSourceKey {
-    // TODO: Check for OSMBuilding
-    // if (tilesetUrl.includes("$CesiumIonAsset="))
-    //   return getOSMBuildingsKey();
+    if (tilesetUrl.includes("$CesiumIonAsset=")) {
+      const provider = inputProvider ? inputProvider : RealityDataProvider.CesiumIonAsset;
+      const cesiumIonAssetKey: RealityDataSourceURLKey = { provider, tilesetUrl };
+      return cesiumIonAssetKey;
+    }
+
     // Try to extract realityDataId from URL and if not possible, use the url as the key
     let attUrl: URL;
     try {
@@ -49,14 +51,14 @@ export class RealityDataSource {
       }
       return false;
     });
-    const isOPC1 = attUrl.pathname.match(".opc*") !== null;
-    const isRDSUrl1 = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
+    const isOPC = attUrl.pathname.match(".opc*") !== null;
+    const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
     // Make sure the url to compare are REALITYMESH3DTILES url, otherwise, compare the url directly
-    if (isRDSUrl1 || isOPC1) {
+    if (isRDSUrl || isOPC) {
       // Make sure the reality data id are the same
       const guid1 = urlParts1.find(Guid.isGuid);
       if (guid1 !== undefined) {
-        const provider = inputProvider ? inputProvider : isOPC1 ? RealityDataProvider.ContextShareOrbitGt : RealityDataProvider.ContextShare;
+        const provider = inputProvider ? inputProvider : isOPC ? RealityDataProvider.ContextShareOrbitGt : RealityDataProvider.ContextShare;
         const contextShareKey: RealityDataSourceContextShareKey = { provider, realityDataId: guid1 };
         return contextShareKey;
       }
@@ -65,6 +67,23 @@ export class RealityDataSource {
     const provider2 = inputProvider ? inputProvider : RealityDataProvider.TilesetUrl;
     const urlKey: RealityDataSourceURLKey = { provider: provider2, tilesetUrl };
     return urlKey;
+  }
+  public static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider): RealityDataSourceKey {
+    const url = new URL(blobUrl);
+
+    // If we cannot interpret that url pass in parameter we just fallback to old implementation
+    if(!url.pathname)
+      return { provider: RealityDataProvider.TilesetUrl, tilesetUrl: blobUrl };
+
+    // const accountName   = url.hostname.split(".")[0];
+    const pathSplit     = url.pathname.split("/");
+    const containerName = pathSplit[1];
+    // const blobFileName  = `/${pathSplit[2]}`;
+    // const sasToken      = url.search.substr(1);
+    const isOPC = url.pathname.match(".opc*") !== null;
+    const provider = inputProvider ? inputProvider : isOPC ? RealityDataProvider.ContextShareOrbitGt : RealityDataProvider.ContextShare;
+    const contextShareKey: RealityDataSourceContextShareKey = { provider, realityDataId: containerName };
+    return contextShareKey;
   }
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
@@ -125,7 +144,7 @@ export class RealityDataSource {
         const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.realityDataId} and iTwinId=${iTwinId}`;
         Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
       }
-    } else if (this._rdSourceKey.provider === RealityDataProvider.TilesetUrl) {
+    } else if (this._rdSourceKey.provider === RealityDataProvider.TilesetUrl || this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset) {
       const rdSourceKey = this._rdSourceKey as RealityDataSourceURLKey;
       this.tilesetUrl = rdSourceKey.tilesetUrl;
     }

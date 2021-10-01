@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
+import { BeTimePoint, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature,
@@ -19,7 +19,6 @@ import {
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
-import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
@@ -34,7 +33,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityModelTileClient, RealityModelTileTree, Tile, TileContent,
+  RealityModelTileTree, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
@@ -44,7 +43,6 @@ const scratchWorldFrustum = new Frustum();
 
 interface OrbitGtTreeId {
   rdSourceKey: RealityDataSourceKey;
-  orbitGtProps: OrbitGtBlobProps;
   modelId: Id64String;
 }
 
@@ -54,7 +52,7 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: OrbitGtTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, treeId.rdSourceKey, iModel, treeId.modelId);
+    return OrbitGtTileTree.createOrbitGtTileTree(treeId.rdSourceKey, iModel, treeId.modelId);
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
@@ -68,18 +66,10 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
     } else if (lhsSourceURLKey && rhsSourceURLKey) {
       cmp = compareStringsOrUndefined(lhsSourceURLKey.tilesetUrl, rhsSourceURLKey.tilesetUrl);
     }
-    if (0 === cmp)
-      cmp = compareStrings(lhs.orbitGtProps.accountName, rhs.orbitGtProps.accountName);
+
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
-    if (0 === cmp) {
-      cmp = compareStrings(lhs.orbitGtProps.blobFileName, rhs.orbitGtProps.blobFileName);
-      if (0 === cmp) {
-        cmp = compareStrings(lhs.orbitGtProps.containerName, rhs.orbitGtProps.containerName);
-        if (0 === cmp)
-          cmp = compareStrings(lhs.orbitGtProps.sasToken, rhs.orbitGtProps.sasToken);
-      }
-    }
+
     return cmp;
   }
 }
@@ -132,9 +122,9 @@ class OrbitGtTileTreeParams implements TileTreeParams {
   public iModel: IModelConnection;
   public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
 
-  public constructor(blobProps: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String, public location: Transform) {
-    const { accountName, containerName, blobFileName } = blobProps;
-    this.id = `${accountName}:${containerName}:${blobFileName}`;
+  public constructor(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, public location: Transform) {
+    const key = rdSourceKey as RealityDataSourceContextShareKey;
+    this.id = `${key.provider}:${key.realityDataId}`;
     this.modelId = modelId;
     this.iModel = iModel;
   }
@@ -358,7 +348,7 @@ export class OrbitGtTileTree extends TileTree {
 // eslint-disable-next-line no-redeclare
 export namespace OrbitGtTileTree {
   export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
-    orbitGtBlob: OrbitGtBlobProps;
+    orbitGtBlob?: OrbitGtBlobProps;
     modelId?: Id64String;
   }
 
@@ -374,121 +364,31 @@ export namespace OrbitGtTileTree {
     }
   }
 
-  function isValidSASToken(downloadUrl: string): boolean {
-
-    // Create fake URL for and parameter parsing and SAS token URI parsing
-    if(!downloadUrl.startsWith("http"))
-      downloadUrl = `http://x.com/x?${downloadUrl}`;
-
-    const sasUrl = new URL(downloadUrl);
-
-    const se = sasUrl.searchParams.get("se");
-    if (se) {
-      const expiryUTC = new Date(se);
-      const now = new Date();
-      const currentUTC = new Date(now?.toUTCString());
-
-      return expiryUTC >= currentUTC;
-    }
-
-    return false;
-  }
-
-  function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
-
-    // Check main OrbitGtBlobProps fields are defined
-    if(!props.rdsUrl ||!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
-      return false;
-
-    // Check SAS token is valid
-    return isValidSASToken(props.sasToken);
-  }
-
-  function parseOrbitGtBlobUrl(blobUrl: string, props: OrbitGtBlobProps) {
-
-    const url = new URL(blobUrl);
-
-    if(!url.hostname || !url.pathname || !url.search)
-      return false;
-
-    props.accountName   = url.hostname.split(".")[0];
-    const pathSplit     = url.pathname.split("/");
-    props.containerName = pathSplit[1];
-    props.blobFileName  = `/${pathSplit[2]}`;
-    props.sasToken      = url.search.substr(1);
-
-    return true;
-  }
-
-  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, containerId: string | undefined): Promise<boolean> {
-
-    if(!rdsUrl || !containerId)
-      return false;
-
-    const tileClient = new RealityModelTileClient(rdsUrl, containerId);
-
-    const blobUrl = await tileClient.getBlobAccessData();
-    if (!blobUrl)
-      return false;
-
-    props.accountName   = blobUrl.hostname.split(".")[0];     // take first word up to first .
-    props.containerName = blobUrl.pathname.substring(1);      // strip off leading slash
-    props.sasToken      = blobUrl.search.substring(1);        // strip off leading ?
-
-    return isValidOrbitGtBlobProps(props);
-  }
-
-  async function initializeOrbitGtBlobProps(props: OrbitGtBlobProps, rdConnection: RealityDataConnection | undefined, iModel: IModelConnection): Promise<boolean> {
-
-    // If blobFileName is full http(s), parse it to orbitGtBlobProps
-    if(props.blobFileName) {
-      if(props.blobFileName.toLowerCase().startsWith("http"))
-        if(parseOrbitGtBlobUrl(props.blobFileName, props) === false)
-          return false;
-    }
-
-    if (rdConnection === undefined) {
-      const accessToken: AccessToken | undefined = await getAccessTokenRDS();
-      if (!accessToken)
-        return false;
-
-      // If there's no rdsUrl, request one from RealityDataClient
-      if (!props.rdsUrl) {
-        const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
-        authRequestContext.enter();
-
-        const rdClient: RealityDataClient = new RealityDataClient();
-        props.rdsUrl = await rdClient.getRealityDataUrl(authRequestContext, iModel.contextId, props.containerName);
-      }
-    } else {
-      props.rdsUrl = await rdConnection.getServiceUrl(iModel.contextId);
-    }
-
-    // If props are now valid, return OK
-    if(isValidOrbitGtBlobProps(props))
-      return true;
-
-    // Otherwise, refresh using RDS URL
-    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.contextId);
-  }
-
-  export async function createOrbitGtTileTree(props: OrbitGtBlobProps, rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+  export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
     const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey, iModel.contextId);
 
-    if (await initializeOrbitGtBlobProps(props, rdConnection, iModel) === false)
+    if (rdConnection === undefined || rdConnection.realityData=== undefined )
       return undefined;
 
-    const { accountName, containerName, blobFileName, sasToken } = props;
+    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
+    if (!accessToken)
+      return undefined;
+
+    const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
+    authRequestContext.enter();
+
+    const docRootName = rdConnection.realityData.rootDocument;
+    if (!docRootName)
+      return undefined;
+    const blobStringUrl = await rdConnection.realityData.getBlobStringUrl(authRequestContext, docRootName );
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
     // wrap a caching layer (16 MB) around the blob file
     const urlFS: UrlFS = new UrlFS();
-    let blobFileURL: string = blobFileName;
-    if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
-    const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
+    const blobFileSize: ALong = await urlFS.getFileLength(blobStringUrl);
     const cacheKilobytes = 128;
-    const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /* pageSize*/, 128/* maxPageCount*/);
-    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true/* lazyLoading*/);
+    const cachedBlobFile = new PageCachedFile(urlFS, blobStringUrl, blobFileSize, cacheKilobytes * 1024 /* pageSize*/, 128/* maxPageCount*/);
+    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobStringUrl, true/* lazyLoading*/);
     let pointCloudCRS = pointCloudReader.getFileCRS();
     if (pointCloudCRS == null)
       pointCloudCRS = "";
@@ -534,7 +434,7 @@ export namespace OrbitGtTileTree {
 
       pointCloudCenterToDb = ecefToDb.multiplyTransformTransform(pointCloudCenterToEcef);
     }
-    const params = new OrbitGtTileTreeParams(props, iModel, modelId, pointCloudCenterToDb);
+    const params = new OrbitGtTileTreeParams(rdSourceKey, iModel, modelId, pointCloudCenterToDb);
 
     // We use a RTC transform to avoid jitter from large cloud coordinates.
     const centerOffset = Vector3d.create(-pointCloudCenter.x, -pointCloudCenter.y, -pointCloudCenter.z);
@@ -554,12 +454,21 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
-    if (props.orbitGtBlob.rdsUrl)
-      this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl, RealityDataProvider.ContextShareOrbitGt);
-    else
-      this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.blobFileName, RealityDataProvider.ContextShareOrbitGt);
+    // Create rdSourceKey if not provided
+    if (props.rdSourceKey) {
+      this._rdSourceKey = props.rdSourceKey;
+    } else if (props.orbitGtBlob && props.orbitGtBlob.rdsUrl) {
+      this._rdSourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl, RealityDataProvider.ContextShareOrbitGt);
+    } else if (props.orbitGtBlob && props.orbitGtBlob.containerName && Guid.isGuid(props.orbitGtBlob.containerName)) {
+      this._rdSourceKey = {provider: RealityDataProvider.ContextShareOrbitGt, realityDataId: props.orbitGtBlob.containerName };
+    } else if (props.orbitGtBlob) {
+      this._rdSourceKey = RealityDataSource.createFromBlobUrl(props.orbitGtBlob.blobFileName, RealityDataProvider.ContextShareOrbitGt);
+    } else {
+      // TODO: Maybe we should throw an exception
+      this._rdSourceKey = RealityDataSource.createFromBlobUrl("", RealityDataProvider.ContextShareOrbitGt);
+    }
 
-    const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
+    const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
   }
 

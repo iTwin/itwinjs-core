@@ -6,14 +6,15 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataProvider, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
+import { RealityDataSource } from "./RealityDataConnection";
 import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
 
@@ -114,13 +115,35 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   public createTileTreeReference(view: ViewState): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
 
+    const spatialModel = this.asSpatialModel;
+    const rdSourceKey = this.jsonProperties.rdSourceKey;
+
+    if (rdSourceKey) {
+      const useOrbitGtTileTreeReference = rdSourceKey.provider === RealityDataProvider.ContextShareOrbitGt;
+      const treeRef = (!useOrbitGtTileTreeReference) ?
+        createRealityTileTreeReference({
+          rdSourceKey,
+          iModel: this.iModel,
+          source: view,
+          modelId: this.id,
+          // url: tilesetUrl, // If rdSourceKey is defined, url is not used
+          classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        }) :
+        createOrbitGtTileTreeReference({
+          rdSourceKey,
+          iModel: this.iModel,
+          source: view,
+          modelId: this.id,
+          // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
+          classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        });
+      return treeRef;
+    }
+
     const orbitGtBlob = this.jsonProperties.orbitGtBlob;
 
     // If this is an OrbitGt reality model, create it's reference
     if(orbitGtBlob) {
-
-      const spatialModel = this.asSpatialModel;
-
       let orbitGtName = "";
       if (orbitGtBlob.blobFileName !== "") {
         if (orbitGtBlob.blobFileName[0] === "/")
@@ -128,8 +151,18 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         else
           orbitGtName = orbitGtBlob.blobFileName;
       }
+      // Create rdSourceKey if not provided
+      let rdSourceKeyOGT: RealityDataSourceKey;
+      if (orbitGtBlob.rdsUrl) {
+        rdSourceKeyOGT = RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShareOrbitGt);
+      } else if (orbitGtBlob.containerName && Guid.isGuid(orbitGtBlob.containerName)) {
+        rdSourceKeyOGT = {provider: RealityDataProvider.ContextShareOrbitGt, realityDataId: orbitGtBlob.containerName };
+      } else {
+        rdSourceKeyOGT = RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShareOrbitGt);
+      }
 
       return createOrbitGtTileTreeReference({
+        rdSourceKey: rdSourceKeyOGT,
         iModel: this.iModel,
         source: view,
         modelId: this.id,
@@ -143,10 +176,9 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const tilesetUrl = this.jsonProperties.tilesetUrl;
 
     if(tilesetUrl) {
-
-      const spatialModel = this.asSpatialModel;
-
+      const rdSourceKeyCS = RealityDataSource.createRealityDataSourceKeyFromUrl(tilesetUrl);
       return createRealityTileTreeReference({
+        rdSourceKey: rdSourceKeyCS,
         url : tilesetUrl,
         iModel: this.iModel,
         source: view,

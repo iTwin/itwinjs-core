@@ -43,6 +43,10 @@ export enum RealityDataProvider {
    * This is the mode that support PointCloud OPC storage format (RealityDataType.OPC)
   */
   ContextShareOrbitGt = "ContextShare:OPC",
+  /**
+   * Will provide Open Street Map Building (OCM) from Cesium Ion
+  */
+  CesiumIonAsset = "CesiumIonAsset:OCM"
 }
 
 // Key used by ContextShare RealityDataProvider
@@ -80,7 +84,10 @@ export interface RealityDataConnectionProps {
  * @public
  */
 export interface ContextRealityModelProps {
-  /** The source that supplies the 3d tiles for displaying the reality model.*/
+  /**
+   * The reality data source key identify the reality data provider and storage format.
+   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+   */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   tilesetUrl: string;
@@ -149,6 +156,10 @@ export namespace ContextRealityModelProps {
  */
 export class ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
+  /**
+   * The reality data source key identify the reality data provider and storage format.
+   */
+  public readonly  rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -173,6 +184,7 @@ export class ContextRealityModel {
    */
   public constructor(props: ContextRealityModelProps) {
     this._props = props;
+    this.rdSourceKey = props.rdSourceKey;
     this.name = props.name ?? "";
     this.url = props.tilesetUrl ?? "";
     this.orbitGtBlob = props.orbitGtBlob;
