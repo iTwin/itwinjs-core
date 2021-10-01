@@ -43,6 +43,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/itwin-registry-client",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+    },
+    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -103,6 +107,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/core-electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -117,6 +125,10 @@
     {
       "name": "@itwin/core-markup",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-mobile",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/core-orbitgt",
@@ -163,10 +175,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/core-electron",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/eslint-plugin",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -200,10 +208,6 @@
     },
     {
       "name": "@itwin/map-layers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@itwin/core-mobile",
       "allowedCategories": [ "internal" ]
     },
     {

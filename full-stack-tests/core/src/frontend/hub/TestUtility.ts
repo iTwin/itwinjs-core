@@ -90,7 +90,7 @@ export class TestUtility {
     if (accessToken === "")
       throw new Error("no access token");
 
-    const iTwin: ITwin = await this.iTwinPlatformEnv.contextMgr.getITwinByName(accessToken, iTwinName);
+    const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }

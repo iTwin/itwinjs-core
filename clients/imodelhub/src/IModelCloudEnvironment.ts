@@ -14,7 +14,7 @@ import { IModelClient } from "./IModelClient";
 /** How to discover iTwins
  * @internal
  */
-export interface ContextManagerClient {
+export interface ITwinManagerClient {
   getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
 }
 

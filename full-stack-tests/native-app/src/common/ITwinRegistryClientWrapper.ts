@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { ITwinManagerClient } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin */
 export class ITwinRegistryClientWrapper implements ITwinManagerClient {
-  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await client.getAll(requestContext, {
+    const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,

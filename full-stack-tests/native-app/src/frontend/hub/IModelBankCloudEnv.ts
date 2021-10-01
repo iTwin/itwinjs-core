@@ -6,7 +6,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { IModelBankClient, IModelBankFileSystemITwinClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { ITwin } from "@itwin/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import { AccessToken } from "@itwin/core-bentley";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {

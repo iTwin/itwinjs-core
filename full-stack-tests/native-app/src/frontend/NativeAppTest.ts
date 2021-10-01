@@ -31,7 +31,7 @@ export class NativeAppTest {
     }
 
     const accessToken = await IModelApp.getAccessToken();
-    const iTwin = await this.imodelCloudEnv.contextMgr.getITwinByName(accessToken, props.iTwinName);
+    const iTwin = await this.imodelCloudEnv.iTwinMgr.getITwinByName(accessToken, props.iTwinName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }

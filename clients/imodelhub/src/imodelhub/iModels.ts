@@ -395,7 +395,7 @@ export class IModelsHandler {
     * @param iModelId Id of the iModel. See [[HubIModel]].
     */
   private getRelativeUrl(iTwinId: string, iModelId?: GuidString) {
-    return `/Repositories/Context--${this._handler.formatContextIdForUrl(iTwinId)}/ContextScope/iModel/${iModelId || ""}`;
+    return `/Repositories/Context--${this._handler.formatITwinIdForUrl(iTwinId)}/ContextScope/iModel/${iModelId || ""}`;
   }
 
   /** Get iModels that belong to the specified iTwin.

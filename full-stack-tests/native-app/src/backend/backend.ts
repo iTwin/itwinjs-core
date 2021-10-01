@@ -56,7 +56,7 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getTestITwinProps(user: TestUserCredentials): Promise<TestITwinProps> {
+  public async getTestITwinProps(_user: TestUserCredentials): Promise<TestITwinProps> {
     // TODO: Update config to match iTwin naming
     const iTwinName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 

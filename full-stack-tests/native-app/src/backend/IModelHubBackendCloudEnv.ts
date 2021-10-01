@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { IModelCloudEnvironment, IModelHubClient } from "@bentley/imodelhub-client";
-import { ITwinRegistryClientWrapper } from "../common/ContextRegistryClientWrapper";
+import { ITwinRegistryClientWrapper } from "../common/ITwinRegistryClientWrapper";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 
 export class IModelHubBackendCloudEnv implements IModelCloudEnvironment {

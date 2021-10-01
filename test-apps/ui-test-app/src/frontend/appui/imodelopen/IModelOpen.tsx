@@ -7,7 +7,7 @@ import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { AccessToken, BeDuration } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/itwin-registry-client";
 import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";

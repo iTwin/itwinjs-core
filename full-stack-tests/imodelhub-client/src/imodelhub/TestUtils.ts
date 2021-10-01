@@ -10,7 +10,7 @@ import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemITwinClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
@@ -203,7 +203,8 @@ export async function bootstrapBankITwin(accessToken: AccessToken, name: string)
   if (getCloudEnv().isIModelHub || bankITwins.includes(name))
     return;
 
-  const bankContext = getCloudEnv().iTwinMgr ;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
   let iTwin: ITwin | undefined;
   try {
     iTwin = await bankContext.getITwinByName(accessToken, name);
