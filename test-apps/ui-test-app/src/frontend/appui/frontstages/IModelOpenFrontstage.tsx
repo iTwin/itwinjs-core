@@ -25,11 +25,8 @@ class IModelOpenControl extends ContentControl {
     await SampleAppIModelApp.showIModelIndex(arg.iTwinId, arg.id);
   };
 
-  private _getAccessToken = async (): Promise<AccessToken | undefined> => {
-    if (IModelApp.authorizationClient)
-      return IModelApp.authorizationClient.getAccessToken();
-
-    return undefined;
+  private _getAccessToken = async (): Promise<AccessToken> => {
+    return IModelApp.getAccessToken();
   };
 }
 

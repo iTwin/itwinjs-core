@@ -48,7 +48,7 @@ class SyncManager {
     if (this.briefcaseConnection) {
       const iModelId = this.briefcaseConnection.iModelId;
       try {
-        const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+        const accessToken = await IModelApp.getAccessToken();
         // Bootstrap the process by finding out if there are newer changesets on the server already.
         this.state.parentChangesetId = this.briefcaseConnection.changeset.id;
 

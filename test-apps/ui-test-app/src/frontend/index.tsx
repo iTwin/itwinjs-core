@@ -462,7 +462,7 @@ export class SampleAppIModelApp {
       const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
-      const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+      const accessToken = await IModelApp.getAccessToken();
       const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
         search: {
           searchString: projectName,

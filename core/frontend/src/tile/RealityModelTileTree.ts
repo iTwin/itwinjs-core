@@ -838,18 +838,6 @@ export class RealityModelTileClient {
       this.rdsProps.projectId = iTwinId;
   }
 
-  private async getAccessToken(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient)
-      return undefined;
-    let accessToken: AccessToken | undefined;
-    try {
-      accessToken = await IModelApp.authorizationClient.getAccessToken();
-    } catch (error) {
-      return undefined;
-    }
-    return accessToken;
-  }
-
   private async initializeRDSRealityData(accessToken: AccessToken): Promise<void> {
 
     if (undefined !== this.rdsProps) {
@@ -911,7 +899,7 @@ export class RealityModelTileClient {
 
   // Get blob URL information from RDS
   public async getBlobAccessData(): Promise<URL | undefined> {
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     if (this.rdsProps && token) {
       await this.initializeRDSRealityData(token);
       return this._realityData!.getBlobUrl(token);
@@ -924,7 +912,7 @@ export class RealityModelTileClient {
   // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at
   // the construction of the instance.
   public async getRootDocument(url: string): Promise<any> {
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     if (this.rdsProps && token) {
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
       const realityData: RealityData = this.getInitializedRealityData();
@@ -955,7 +943,7 @@ export class RealityModelTileClient {
    */
   public async getTileContent(url: string): Promise<any> {
     assert(url !== undefined);
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     const useRds = this.rdsProps !== undefined && token !== undefined;
     if (useRds) {
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
@@ -973,7 +961,7 @@ export class RealityModelTileClient {
    */
   public async getTileJson(url: string): Promise<any> {
     assert(url !== undefined);
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
 
     if (this.rdsProps && token)
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
@@ -990,7 +978,7 @@ export class RealityModelTileClient {
    * Returns Reality Data type if available
    */
   public async getRealityDataType(): Promise<string | undefined> {
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     if (this.rdsProps && token) {
 
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data
