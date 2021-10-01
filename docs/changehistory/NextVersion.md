@@ -714,16 +714,17 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                                                    | Replacement                                                                                                                   |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                          |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                             |
 | `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                |
 | `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
 | `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
-| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                             |
+| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                                |
 | `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
 | `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                           |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                              |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `ExtendedTreeNodeRendererProps`                            | `TreeNodeRendererProps`                                                                                                       |
 | `SignIn`                                                   | _eliminated_                                                                                                                  |
 | All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |
