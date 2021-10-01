@@ -4,9 +4,11 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
+import { Client } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
-import { WsgClient } from '@bentley/itwin-client';
+import { RequestQueryOptions } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 
 // @beta
 export interface ITwin {
@@ -20,13 +22,13 @@ export interface ITwin {
 
 // @beta
 export interface ITwinAccess {
-    getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
+    getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]>;
 }
 
 // @beta
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     constructor();
-    getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
+    getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]>;
     // @internal (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)

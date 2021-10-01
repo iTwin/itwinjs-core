@@ -666,8 +666,6 @@ export enum IModelHubStatus {
     // (undocumented)
     ConflictsAggregate = 102441,
     // (undocumented)
-    ContextDoesNotExist = 102447,
-    // (undocumented)
     DatabaseOperationFailed = 102443,
     // (undocumented)
     DatabaseTemporarilyLocked = 102419,
@@ -682,13 +680,13 @@ export enum IModelHubStatus {
     // (undocumented)
     FailedToGetAssetPermissions = 102445,
     // (undocumented)
+    FailedToGetITwinById = 102442,
+    // (undocumented)
+    FailedToGetITwinMembers = 102437,
+    // (undocumented)
+    FailedToGetITwinPermissions = 102436,
+    // (undocumented)
     FailedToGetProductSettings = 102448,
-    // (undocumented)
-    FailedToGetProjectById = 102442,
-    // (undocumented)
-    FailedToGetProjectMembers = 102437,
-    // (undocumented)
-    FailedToGetProjectPermissions = 102436,
     // (undocumented)
     FileAlreadyExists = 102426,
     // (undocumented)
@@ -720,6 +718,10 @@ export enum IModelHubStatus {
     // (undocumented)
     InvalidPropertiesValues = 102403,
     // (undocumented)
+    ITwinDoesNotExist = 102447,
+    // (undocumented)
+    ITwinIdIsNotSpecified = 102435,
+    // (undocumented)
     JobSchedulingFailed = 102440,
     // (undocumented)
     LockChunkDoesNotExist = 102449,
@@ -741,8 +743,6 @@ export enum IModelHubStatus {
     NotSupportedInBrowser = 102660,
     // (undocumented)
     OperationFailed = 102415,
-    // (undocumented)
-    ProjectIdIsNotSpecified = 102435,
     // (undocumented)
     PullIsRequired = 102416,
     // (undocumented)

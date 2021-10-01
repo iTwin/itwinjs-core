@@ -143,7 +143,7 @@ describe("ContextRegistryClient (#integration)", () => {
         searchString: TestConfig.iTwinName,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     // At least one iTwin

@@ -1946,7 +1946,7 @@ export interface DisplayStyleOverridesOptions {
     includeBackgroundMap?: true;
     includeDrawingAids?: true;
     includeIModelSpecific?: true;
-    includeProjectSpecific?: true;
+    includeITwinSpecific?: true;
 }
 
 // @public
@@ -4240,6 +4240,7 @@ export abstract class IModel implements IModelProps {
     get openMode(): OpenMode;
     // (undocumented)
     protected _openMode: OpenMode;
+    // (undocumented)
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
