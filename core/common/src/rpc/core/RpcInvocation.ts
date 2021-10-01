@@ -136,7 +136,7 @@ export class RpcInvocation {
   /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
    * @internal
    */
-  public static logRpcException(activity: RpcActivity, operationName: string, error: unknown) {
+  public static logRpcException(activity: RpcActivity, error: unknown) {
     const props = {
       error: BentleyError.getErrorProps(error),
       activity: {
@@ -147,7 +147,7 @@ export class RpcInvocation {
       },
     };
 
-    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Error in RPC operation [${operationName}]`, () => props);
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Error in RPC operation [${activity.rpcMethod}]`, () => props);
   }
 
   private async resolve(): Promise<any> {
@@ -172,7 +172,7 @@ export class RpcInvocation {
 
       return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters));
     } catch (error: unknown) {
-      RpcInvocation.logRpcException(activity, request.operation.operationName, error);
+      RpcInvocation.logRpcException(activity, error);
       return this.reject(error);
     }
   }
