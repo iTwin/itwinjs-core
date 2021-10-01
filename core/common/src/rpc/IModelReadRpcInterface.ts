@@ -53,7 +53,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.3.1";
+  public static interfaceVersion = "3.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -82,7 +82,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
   public async queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> { return this.forward(arguments); }
-
   public async loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined> {
     return this.forward(arguments);
   }
