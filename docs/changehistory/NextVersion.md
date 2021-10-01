@@ -59,8 +59,8 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/imodeljs-quantity             | @itwin/core-quantity                 |
 | @bentley/imodeljs-i18n                 | @itwin/core-i18n                     |
 | @bentley/hypermodeling-frontend        | @itwin/hypermodeling-frontend        |
-| @bentley/electron-manager              | @itwin/electron-manager              |
-| @bentley/mobile-manager                | @itwin/mobile-manager                |
+| @bentley/electron-manager              | @itwin/core-electron              |
+| @bentley/mobile-manager                | @itwin/core-mobile                |
 | @bentley/express-server                | @itwin/express-server                |
 | @bentley/ecschema-rpcinterface-common  | @itwin/ecschema-rpcinterface-common  |
 | @bentley/ecschema-rpcinterface-impl    | @itwin/ecschema-rpcinterface-impl    |

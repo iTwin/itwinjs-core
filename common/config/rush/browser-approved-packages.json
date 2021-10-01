@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/telemetry-client",
@@ -104,7 +104,7 @@
     },
     {
       "name": "@itwin/core-frontend",
-      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-geometry",
@@ -163,7 +163,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/electron-manager",
+      "name": "@itwin/core-electron",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -203,7 +203,7 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/mobile-manager",
+      "name": "@itwin/core-mobile",
       "allowedCategories": [ "internal" ]
     },
     {

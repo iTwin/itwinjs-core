@@ -45,8 +45,8 @@
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/electron-manager": "workspace:*",
-    "@itwin/mobile-manager": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
+    "@itwin/core-mobile": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
@@ -63,6 +63,7 @@
     "@itwin/editor-common": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
