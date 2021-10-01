@@ -162,7 +162,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     await utils.createIModel(accessToken, imodelName, iTwinId);
 
     // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${iTwinId}","ITwinId":"${iTwinId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${iTwinId}","iTwinId":"${iTwinId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const event = await imodelHubClient.globalEvents.getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
@@ -352,7 +352,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     await utils.createIModel(accessToken, imodelName, assetId);
 
     // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${assetId}","ITwinId":"${assetId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${assetId}","iTwinId":"${assetId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const event = await imodelHubClient.globalEvents.getEvent(globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
