@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.73",
   "description": "iTwin.js frontend components",
   "main": "lib/core-frontend.js",
   "typings": "lib/core-frontend",
@@ -36,19 +36,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.72",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.72",
-    "@itwin/core-common": "workspace:^3.0.0-dev.72",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.72",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.72",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.72",
-    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.72",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.72",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.72",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.72",
-    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.72"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.73",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.73",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.73",
+    "@itwin/core-common": "workspace:^3.0.0-dev.73",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.73",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.73",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.73",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.73",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.73",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.73",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.73",
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.73"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -95,7 +95,6 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/reality-data-client": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",

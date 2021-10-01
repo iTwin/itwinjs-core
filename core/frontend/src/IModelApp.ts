@@ -31,6 +31,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { RealityDataAccess } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -117,6 +118,8 @@ export interface IModelAppOptions {
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
+  /** @beta */
+  realityDataAccess?: RealityDataAccess;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -183,6 +186,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess: FrontendHubAccess;
+  private static _realityDataAccess?: RealityDataAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -237,6 +241,10 @@ export class IModelApp {
    * @internal
    */
   public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
+  /** Provides access to the RealityData service implementation for this IModelApp
+   * @beta
+   */
+  public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
@@ -364,6 +372,7 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    this._realityDataAccess = opts.realityDataAccess;
 
     [
       this.renderSystem,

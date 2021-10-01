@@ -58,8 +58,8 @@ public;CommonPropertyGridProps
 public;CompletionObserver
 public;CompositeFilterDescriptor 
 public;CompositeFilterDescriptorCollection
-beta;CompositeFilterType
-beta;CompositePropertyDataFilterer 
+public;CompositeFilterType
+public;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 public;computeVisibleNodes(model: TreeModel): VisibleTreeNodes
 public;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
@@ -89,7 +89,7 @@ public;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
 public;Direction
 internal;DirectionHelpers
-beta;DisplayValuePropertyDataFilterer 
+public;DisplayValuePropertyDataFilterer 
 public;DistinctValueCollection
 public;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
@@ -114,12 +114,12 @@ public;FilterCompositionLogicalOperator
 public;FilterDescriptor
 public;FilterDescriptorCollection 
 public;class FilterDescriptorCollectionBase
-beta;FilteredPropertyData 
-beta;FilteredType
+public;FilteredPropertyData 
+public;FilteredType
 public;FilteringInput 
 public;FilteringInputProps 
 public;FilteringInputStatus
-beta;FilteringPropertyDataProvider 
+public;FilteringPropertyDataProvider 
 public;FilterOperator
 public;FilterRenderer
 beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
@@ -166,7 +166,7 @@ internal;InputSwitchComponent
 internal;InputSwitchProps
 alpha;IntlFormatter 
 public;IntTypeConverter 
-beta;IPropertyDataFilterer
+public;IPropertyDataFilterer
 public;IPropertyDataProvider
 beta;IPropertyGridEventHandler
 beta;IPropertyGridModel
@@ -187,7 +187,7 @@ public;ITreeDataProvider
 public;ITreeImageLoader 
 public;ITreeNodeLoader
 public;ITreeNodeLoaderWithProvider
-beta;LabelPropertyDataFilterer 
+public;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
 alpha;LinksRenderer(props: LinksRendererProps): JSX.Element
 alpha;LinksRendererProps
@@ -255,8 +255,8 @@ public;PrimitiveRendererProps
 public;PropertyCategory
 public;PropertyCategoryBlock 
 public;PropertyCategoryBlockProps 
-beta;class PropertyCategoryDataFiltererBase 
-beta;PropertyCategoryLabelFilterer 
+public;class PropertyCategoryDataFiltererBase 
+public;PropertyCategoryLabelFilterer 
 beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
 beta;PropertyCategoryRendererManager
 beta;PropertyCategoryRendererProps
@@ -264,15 +264,15 @@ public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
 public;PropertyDataChangesListener = () => void
-beta;class PropertyDataFiltererBase 
-beta;PropertyDataFilterResult
+public;class PropertyDataFiltererBase 
+public;PropertyDataFilterResult
 public;PropertyDialogState
 public;PropertyEditingArgs
 public;class PropertyEditorBase 
 public;PropertyEditorManager
 public;PropertyEditorProps 
-beta;PropertyFilterChangeEvent 
-beta;PropertyFilterChangesListener = () => void
+public;PropertyFilterChangeEvent 
+public;PropertyFilterChangesListener = () => void
 public;PropertyGrid 
 public;PropertyGridCategory
 deprecated;PropertyGridCategory
@@ -292,7 +292,7 @@ public;PropertyLabelRendererProps
 public;PropertyList 
 public;PropertyListProps 
 public;PropertyPopupState
-beta;class PropertyRecordDataFiltererBase 
+public;class PropertyRecordDataFiltererBase 
 public;PropertyRenderer 
 public;PropertyRendererProps 
 public;PropertyUpdatedArgs
@@ -448,7 +448,7 @@ public;UrlPropertyValueRenderer
 public;useAsyncValue: 
 alpha;useDebouncedAsyncValue
 beta;usePagedTreeNodeLoader
-beta;usePropertyData(props:
+public;usePropertyData(props:
 beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
