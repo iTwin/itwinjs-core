@@ -8,20 +8,23 @@
  */
 
 import { URL } from "url";
-import { AccessToken, Guid } from "@itwin/core-bentley";
+import { Angle } from "@itwin/core-geometry";
+import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import { getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
-/** Currenlty supported  ProjectWise ContextShare reality data types
+/** Currently supported ProjectWise ContextShare reality data types
  * @internal
  */
-export enum RealityDataType {
-  REALITYMESH3DTILES = "RealityMesh3DTiles", // Web Ready Scalable Mesh
-  OPC = "OPC", // Orbit Point Cloud
-  TERRAIN3DTILE = "Terrain3DTiles", // Terrain3DTiles
-  OMR = "OMR", // Mapping Resource,
-  CESIUM_3DTILE = "Cesium3DTiles" // Cesium 3dTiles
+export enum DefaultSupportedTypes {
+  RealityMesh3dTiles = "RealityMesh3DTiles", // Web Ready 3D Scalable Mesh
+  OPC = "OPC", // Web Ready Orbit Point Cloud
+  Terrain3dTiles = "Terrain3DTiles", // Web Ready Terrain Scalable Mesh
+  OMR = "OMR", // Orbit Mapping Resource
+  Cesium3dTiles = "Cesium3DTiles" // Cesium 3D Tiles
 }
 
 /** RealityData
@@ -163,7 +166,7 @@ export class RealityData extends WsgInstance {
   private _blobRooDocumentPath: undefined | string; // Path relative to blob root of root document. It is slash terminated if not empty
 
   // Link to client to fetch the blob url
-  public client: undefined | RealityDataClient;
+  public client: undefined | RealityDataAccessClient;
 
   // project id used when using the client. If defined must contain the GUID of the iTwin
   // project or "Server" to indicate access is performed out of context (for accessing PUBLIC or ENTERPRISE data).
@@ -201,7 +204,7 @@ export class RealityData extends WsgInstance {
     // Normally the client is set when the reality data is extracted for the client but it could be undefined
     // if the reality data instance is created manually.
     if (!this.client)
-      this.client = new RealityDataClient();
+      this.client = new RealityDataAccessClient();
 
     if (!this.projectId)
       this.projectId = "Server";
@@ -332,6 +335,19 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
   action?: string;
 }
 
+/** Criteria used to query for reality data associated with an iTwin context.
+ * @see [[queryRealityData]].
+ * @public
+ */
+export interface RealityDataQueryCriteria {
+  /** The Id of the iTwin context. */
+  iTwinId: GuidString;
+  /** If supplied, only reality data overlapping this range will be included. */
+  range?: CartographicRange;
+  /** If supplied, reality data already referenced by a [[GeometricModelState]] within this iModel will be excluded. */
+  filterIModel?: IModelConnection;
+}
+
 /** DataLocation
  * This class is used to represent a data location
  * @internal
@@ -357,7 +373,7 @@ export class DataLocation extends WsgInstance {
  * This class also implements extraction of the Azure blob address.
  * @internal
  */
-export class RealityDataClient extends WsgClient {
+export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Creates an instance of RealityDataServicesClient.
@@ -412,19 +428,16 @@ export class RealityDataClient extends WsgClient {
   */
   private getRealityDataTypesFilter(type?: string): string {
     let filter: string = "";
+
     if (!type) {
-      // ref: https://www.petermorlion.com/iterating-a-typescript-enum/
-      function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
-        return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
-      }
       // If type not specified, add all supported known types
       let isFirst = true;
-      for (const rdType of enumKeys(RealityDataType)) {
+      for (const supportedType of Object.values(DefaultSupportedTypes)) {
         if (isFirst)
           isFirst = false;
         else
           filter += `+or+`;
-        filter += `Type+eq+'${RealityDataType[rdType]}'`;
+        filter += `Type+eq+'${supportedType}'`;
       }
     } else {
       filter = `Type+eq+'${type}'`;
@@ -465,6 +478,86 @@ export class RealityDataClient extends WsgClient {
     newQueryOptions.$filter = this.getRealityDataTypesFilter(type);
 
     return this.getRealityDatas(accessToken, projectId, newQueryOptions);
+  }
+
+  /** Query for reality data associated with an iTwin context.
+   * @param criteria Criteria by which to query.
+   * @returns Properties of reality data associated with the context, filtered according to the criteria.
+   * @public
+   */
+  public async queryRealityData(accessToken: AccessToken, criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
+    const iTwinId = criteria.iTwinId;
+    const availableRealityModels: ContextRealityModelProps[] = [];
+
+    if (!accessToken)
+      return availableRealityModels;
+
+    const client = new RealityDataAccessClient();
+
+    let realityData: RealityData[];
+    if (criteria.range) {
+      const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
+      realityData = await client.getRealityDataInProjectOverlapping(accessToken, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
+        Angle.radiansToDegrees(iModelRange.high.x),
+        Angle.radiansToDegrees(iModelRange.low.y),
+        Angle.radiansToDegrees(iModelRange.high.y));
+    } else {
+      realityData = await client.getRealityDataInProject(accessToken, iTwinId);
+    }
+
+    // Get set of URLs that are directly attached to the model.
+    const modelRealityDataIds = new Set<string>();
+    if (criteria.filterIModel) {
+      const query = { from: SpatialModelState.classFullName, wantPrivate: false };
+      const props = await criteria.filterIModel.models.queryProps(query);
+      for (const prop of props)
+        if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
+          const realityDataId = client.getRealityDataIdFromUrl(prop.jsonProperties.tilesetUrl);
+          if (realityDataId)
+            modelRealityDataIds.add(realityDataId);
+        }
+    }
+
+    // We obtain the reality data name, and RDS URL for each RD returned.
+    for (const currentRealityData of realityData) {
+      let realityDataName: string = "";
+      let validRd: boolean = true;
+      if (currentRealityData.name && currentRealityData.name !== "") {
+        realityDataName = currentRealityData.name;
+      } else if (currentRealityData.rootDocument) {
+        // In case root document contains a relative path we only keep the filename
+        const rootDocParts = (currentRealityData.rootDocument).split("/");
+        realityDataName = rootDocParts[rootDocParts.length - 1];
+      } else {
+        // This case would not occur normally but if it does the RD is considered invalid
+        validRd = false;
+      }
+
+      // If the RealityData is valid then we add it to the list.
+      if (currentRealityData.id && validRd === true) {
+        const url = await client.getRealityDataUrl(iTwinId, currentRealityData.id);
+        let opcConfig: OrbitGtBlobProps | undefined;
+
+        if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
+          const rootDocUrl: string = await currentRealityData.getBlobStringUrl(accessToken, currentRealityData.rootDocument);
+          opcConfig = {
+            rdsUrl: "",
+            containerName: "",
+            blobFileName: rootDocUrl,
+            accountName: "",
+            sasToken: "",
+          };
+        }
+
+        if (!modelRealityDataIds.has(currentRealityData.id))
+          availableRealityModels.push({
+            tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),
+            realityDataId: currentRealityData.id, orbitGtBlob: opcConfig,
+          });
+      }
+    }
+
+    return availableRealityModels;
   }
 
   /**

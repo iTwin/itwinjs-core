@@ -83,6 +83,7 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-frontend": "workspace:*",

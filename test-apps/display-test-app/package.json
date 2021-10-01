@@ -63,6 +63,7 @@
     "@itwin/editor-common": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
