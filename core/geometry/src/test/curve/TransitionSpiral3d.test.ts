@@ -905,7 +905,7 @@ describe("TransitionSpiral3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "spiralStroking");
   });
 
-  it.only("test TransitionSpiral3d clonePartialCurve", () => {
+  it("test TransitionSpiral3d clonePartialCurve", () => {
     const ck = new Checker();
     const nominalL1 = 100;
     const nominalR1 = 400;
@@ -935,8 +935,19 @@ describe("TransitionSpiral3d", () => {
     for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed]) {
       // console.log(spiral.spiralType);
       const partial = spiral.clonePartialCurve(0.2, 0.8)!;
+      ck.testTrue(spiral.spiralType === partial.spiralType);
       ck.testType(partial, TransitionSpiral3d);
       ck.testLT(partial.curveLength(), spiral.curveLength());
+
+      if (spiral instanceof IntegratedSpiral3d) {
+        // Length is proportional to total length
+        ck.testTightNumber(partial.curveLength(), 0.6 * spiral.curveLength());
+        ck.testTrue((partial as IntegratedSpiral3d).bearing01.isAlmostEqual(spiral.bearing01));
+        ck.testTrue((partial as IntegratedSpiral3d).radius01.isAlmostEqual(spiral.radius01));
+      } else {
+        ck.testExactNumber((partial as DirectSpiral3d).nominalL1, spiral.nominalL1);
+        ck.testExactNumber((partial as DirectSpiral3d).nominalR1, spiral.nominalR1);
+      }
 
       for (const fraction of [0.0, 0.2, 0.4, 0.5, 0.7, 1.0]) {
         const fSpiral = partial.activeFractionInterval.fractionToPoint(fraction);
