@@ -34,7 +34,6 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*"
@@ -46,10 +45,8 @@
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"

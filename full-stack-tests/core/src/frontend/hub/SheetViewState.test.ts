@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, IModelApp, IModelHubFrontend, SheetViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, SheetViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";
@@ -14,9 +14,8 @@ describe("Sheet views (#integration)", () => {
   const attachmentCategoryId = "0x93";
 
   before(async () => {
-    await IModelApp.startup();
-    IModelApp.authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
-    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
+    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);

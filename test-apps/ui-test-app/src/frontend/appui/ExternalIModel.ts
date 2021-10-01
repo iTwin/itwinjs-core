@@ -5,11 +5,18 @@
 
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { IModelQuery } from "@bentley/imodelhub-client";
-import { CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
-import { SampleAppIModelApp } from "..";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { SampleAppIModelApp } from "../";
 
 /* eslint-disable deprecation/deprecation */
+
+export interface IModelInfo {
+  id: string;
+  iTwinId: string;
+  name: string;
+  createdDate: Date;
+}
 
 /** Opens External IModel */
 export class ExternalIModel {
@@ -36,7 +43,7 @@ export class ExternalIModel {
   /** Finds project and imodel ids using their names */
   private async getIModelInfo(): Promise<{ projectId: string, imodelId: string }> {
     const projectName = this.projectName;
-    const imodelName = this.imodelName;
+    const iModelName = this.imodelName;
 
     const accessToken = await IModelApp.getAccessToken();
 
@@ -54,13 +61,16 @@ export class ExternalIModel {
     else if (iTwinList.length > 1)
       throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
 
-    const imodelQuery = new IModelQuery();
-    imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(accessToken, iTwinList[0].id, imodelQuery);
-    if (imodels.length === 0) {
-      throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
+    const hubClient = new IModelHubFrontend();
+    const iModelId = await hubClient.queryIModelByName({
+      iModelName,
+      iTwinId: iTwinList[0].id,
+      accessToken,
+    });
+    if (undefined === iModelId) {
+      throw new Error(`iModel with name "${iModelName}" does not exist in project "${projectName}"`);
     }
-    return { projectId: iTwinList[0].id, imodelId: imodels[0].wsgId };
+    return { projectId: iTwinList[0].id, imodelId: iModelId };
   }
 
   /** Handle iModel open event */

@@ -39,6 +39,7 @@ import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
+import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
@@ -133,7 +134,6 @@ import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageSource } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelRpcProps } from '@itwin/core-common';
@@ -1811,9 +1811,6 @@ export class ChangeFlags {
     get viewState(): boolean;
 }
 
-// @internal (undocumented)
-export type ChangeSetId = string;
-
 // @public
 export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
@@ -3166,18 +3163,18 @@ export class FrameStatsCollector {
     endTime(entry: keyof FrameStats): void;
     }
 
-// @internal (undocumented)
+// @public (undocumented)
 export interface FrontendHubAccess {
     // (undocumented)
-    getChangesetIdFromNamedVersion: (arg: IModelIdArg & {
+    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
-    }) => Promise<ChangeSetId>;
+    }): Promise<ChangesetId>;
     // (undocumented)
-    getChangesetIdFromVersion: (arg: IModelIdArg & {
+    getChangesetIdFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }) => Promise<ChangeSetId>;
+    }): Promise<ChangesetId>;
     // (undocumented)
-    getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangeSetId>;
+    getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
 }
 
 // @public
@@ -4260,7 +4257,7 @@ export class IModelApp {
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     // @internal
-    static get hubAccess(): FrontendHubAccess;
+    static get hubAccess(): FrontendHubAccess | undefined;
     // @internal (undocumented)
     static get initialized(): boolean;
     static get localization(): Localization;
@@ -4332,7 +4329,7 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
-    imodelClient?: IModelClient;
+    hubAccess?: FrontendHubAccess;
     localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
@@ -4504,25 +4501,7 @@ export class IModelFrameLifecycle {
     static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
 }
 
-// @internal (undocumented)
-export class IModelHubFrontend {
-    // (undocumented)
-    static getChangesetIdFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangeSetId>;
-    // (undocumented)
-    static getChangesetIdFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangeSetId>;
-    // (undocumented)
-    static getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId>;
-    // (undocumented)
-    static get iModelClient(): IModelClient;
-    // (undocumented)
-    static setIModelClient(client?: IModelClient): void;
-}
-
-// @internal (undocumented)
+// @public (undocumented)
 export interface IModelIdArg {
     // (undocumented)
     accessToken: AccessToken;

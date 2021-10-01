@@ -76,17 +76,17 @@ class TestIModelWriter {
 
 describe("PushChangesTest (#integration)", () => {
   let iTwinId: GuidString;
-  let user: AccessToken;
+  let accessToken: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("PushChangesTest");
 
-    user = await IModelTestUtils.getAccessToken(TestUserType.Manager);
-    iTwinId = await HubUtility.getTestITwinId(user);
+    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    iTwinId = await HubUtility.getTestITwinId(accessToken);
 
     IModelHost.authorizationClient = {
-      getAccessToken: async () => user,
+      getAccessToken: async () => accessToken,
     };
   });
 
@@ -96,9 +96,9 @@ describe("PushChangesTest (#integration)", () => {
 
   it.skip("Push changes while refreshing token", async () => {
     const iModelName = HubUtility.generateUniqueName("PushChangesTest");
-    const iModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName, noLocks: true });
+    const iModelId = await HubUtility.recreateIModel({ accessToken, iTwinId, iModelName, noLocks: true });
 
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;
     try {
       iModel = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
@@ -130,7 +130,7 @@ describe("PushChangesTest (#integration)", () => {
     } finally {
       if (iModel !== undefined)
         iModel.close();
-      await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, user);
+      await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, accessToken);
     }
   });
 

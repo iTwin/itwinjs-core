@@ -601,7 +601,7 @@ export interface ControlledTreeProps extends CommonProps {
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
-    // @alpha
+    // @beta
     onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
@@ -982,14 +982,6 @@ export interface ErrorObserver<T> {
     error: (err: any) => void;
     // (undocumented)
     next?: (value: T) => void;
-}
-
-// @beta
-export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
-    checkboxRenderer?: NodeCheckboxRenderer;
-    descriptionEnabled?: boolean;
-    imageLoader?: ITreeImageLoader;
-    nodeEditorRenderer?: TreeNodeEditorRenderer;
 }
 
 // @public
@@ -2763,7 +2755,7 @@ export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     icon?: boolean;
 }
 
-// @alpha
+// @beta
 export interface RenderedItemsRange {
     // (undocumented)
     overscanStartIndex: number;
@@ -3979,10 +3971,10 @@ export class TreeModelSource {
     onModelChanged: BeUiEvent<[TreeModel, TreeModelChanges]>;
 }
 
-// @beta
+// @public
 export function TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element;
 
-// @beta
+// @public
 export interface TreeNodeEditorProps {
     // @internal (undocumented)
     ignoreEditorBlur?: boolean;
@@ -3992,7 +3984,7 @@ export interface TreeNodeEditorProps {
     style?: React.CSSProperties;
 }
 
-// @beta
+// @public
 export type TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode;
 
 // @public
@@ -4045,21 +4037,23 @@ export interface TreeNodeLoadResult {
     loadedNodes: TreeNodeItem[];
 }
 
-// @beta
-export const TreeNodeRenderer: React.MemoExoticComponent<(props: ExtendedTreeNodeRendererProps) => JSX.Element>;
+// @public
+export const TreeNodeRenderer: React.MemoExoticComponent<(props: TreeNodeRendererProps) => JSX.Element>;
 
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
-    // (undocumented)
+    checkboxRenderer?: NodeCheckboxRenderer;
+    descriptionEnabled?: boolean;
+    imageLoader?: ITreeImageLoader;
     node: TreeModelNode;
+    nodeEditorRenderer?: TreeNodeEditorRenderer;
     nodeHighlightProps?: HighlightableTreeNodeProps;
     // @internal
     onLabelRendered?: (node: TreeModelNode) => void;
-    // (undocumented)
     treeActions: TreeActions;
 }
 
-// @beta
+// @public
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
     // (undocumented)
     render(): JSX.Element;
@@ -4072,39 +4066,6 @@ export interface TreeRendererAttributes {
     scrollToNode(nodeId: string, alignment?: Alignment): void;
 }
 
-// @beta
-export interface TreeRendererContext {
-    highlightingEngine?: HighlightingEngine;
-    // (undocumented)
-    nodeLoader: ITreeNodeLoader;
-    nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
-    // @internal
-    onLabelRendered?: (node: TreeModelNode) => void;
-    // @internal
-    onNodeEditorClosed?: () => void;
-    // @internal
-    onNodeWidthMeasured?: (width: number) => void;
-    // (undocumented)
-    treeActions: TreeActions;
-    visibleNodes: VisibleTreeNodes;
-}
-
-// @beta
-export const
-/**
- * Context of [[TreeRenderer]] provider.
- * @beta
- */
-TreeRendererContextConsumer: React.ExoticComponent<React.ConsumerProps<TreeRendererContext>>;
-
-// @beta
-export const
-/**
- * Context of [[TreeRenderer]] provider.
- * @beta
- */
-TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<TreeRendererContext>>;
-
 // @public
 export interface TreeRendererProps {
     height: number;
@@ -4113,7 +4074,7 @@ export interface TreeRendererProps {
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
     nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
-    // @alpha
+    // @beta
     onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
     // @internal
     onNodeEditorClosed?: () => void;
@@ -4220,7 +4181,7 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
     inProgress: boolean;
 };
 
-// @beta
+// @public
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
 // @public
@@ -4272,14 +4233,6 @@ export function useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSou
 
 // @public
 export function useTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;
-
-// @beta
-export const
-/**
- * Context of [[TreeRenderer]] provider.
- * @beta
- */
-useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
 
 // @beta
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {

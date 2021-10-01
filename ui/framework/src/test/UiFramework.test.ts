@@ -15,9 +15,8 @@ import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
-import { DefaultIModelServices } from "../appui-react/clientservices/DefaultIModelServices";
-import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
 import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
+import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
@@ -124,19 +123,8 @@ describe("UiFramework localStorage Wrapper", () => {
       await MockRender.App.shutdown();
     });
 
-    it("iModelServices should throw Error without initialize", () => {
-      expect(() => UiFramework.iModelServices).to.throw(Error);
-    });
-
-    it("iModelServices should return default", async () => {
-      await TestUtils.initializeUiFramework(true);
-      expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
-      expect(UiFramework.frameworkStateKey).to.equal("testDifferentFrameworkKey");
-    });
-
     it("test default frameworkState key", async () => {
       await TestUtils.initializeUiFramework();
-      expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
       expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
       TestUtils.terminateUiFramework();
     });

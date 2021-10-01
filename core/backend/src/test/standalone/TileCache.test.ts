@@ -106,7 +106,7 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointProps = { user: "dummy", iTwinId, iModelId, changeset };
+    const checkpointProps = { accessToken: "dummy", iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
