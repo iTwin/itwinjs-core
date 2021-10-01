@@ -14,7 +14,7 @@ import {
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
-import { RealityDataSource } from "./RealityDataConnection";
+import { RealityDataSource } from "./RealityDataSource";
 import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
 

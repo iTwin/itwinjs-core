@@ -19,7 +19,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialModelState } from "./ModelState";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { RealityDataSource } from "./RealityDataConnection";
+import { RealityDataSource } from "./RealityDataSource";
 import {
   createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
 } from "./tile/internal";

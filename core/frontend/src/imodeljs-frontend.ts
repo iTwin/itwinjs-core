@@ -127,6 +127,7 @@ export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
+export * from "./RealityDataSource";
 export * from "./RealityDataConnection";
 
 /** @docs-package-description

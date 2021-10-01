@@ -14,7 +14,7 @@ import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings, RealityDataProvider, RealityDataSourceContextShareKey, RealityDataSourceKey, RealityDataSourceURLKey, SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
-import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
+import { RealityData } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
@@ -22,7 +22,8 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { RealityDataConnection, RealityDataSource } from "../RealityDataConnection";
+import { IRealityDataConnection, RealityDataConnectionManager } from "../RealityDataConnection";
+import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -625,13 +626,13 @@ export namespace RealityModelTileTree {
   }
 
   export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey, iModel.contextId);
+    const rdConnection = await RealityDataConnectionManager.instance.getFromSourceKey(rdSourceKey, iModel.contextId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdConnection) {
       const url = await rdConnection.getServiceUrl(iModel.contextId);
       if (url === undefined)
         return undefined;
-      const props = await getTileTreeProps(url, tilesetToDb, iModel);
+      const props = await getTileTreeProps(rdConnection, tilesetToDb, iModel);
       const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
       const params = new RealityModelTileTreeParams(url, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
@@ -640,10 +641,11 @@ export namespace RealityModelTileTree {
     return undefined;
   }
 
-  async function getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
+  async function getTileTreeProps(rdConnection: IRealityDataConnection, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
+    const url = await rdConnection.getServiceUrl(iModel.contextId);
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
-    const tileClient = new RealityModelTileClient(url, iModel.contextId);
+    const tileClient = new RealityModelTileClient(rdConnection, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
@@ -842,13 +844,16 @@ export class RealityModelTileClient {
   public readonly rdsProps?: RDSClientProps; // For reality data stored on PW Context Share only. If undefined then Reality Data is not on Context Share.
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
-  private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
   private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
-
+  private _rdConnection: IRealityDataConnection;
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(url: string, contextId?: string) {
-    this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
+  constructor(rdConnection: IRealityDataConnection, contextId?: string) {
+    this._rdConnection = rdConnection;
+    this._rdConnection.getSource().isContextShare;
+    const rdSource = this._rdConnection.getSource();
+    if (rdSource.isContextShare)
+      this.rdsProps = this.getRDSClientPropsFromSource(rdSource); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
       this.rdsProps.projectId = contextId;
   }
@@ -865,15 +870,12 @@ export class RealityModelTileClient {
     return accessToken;
   }
 
-  private async initializeRDSRealityData(requestContext: AuthorizedFrontendRequestContext): Promise<void> {
-    requestContext.enter();
-
+  private initializeRDSRealityData(): void {
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
-        // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
-        // though this base URL is only the part relative to the root of the blob containing the data.
-        this._realityData = await RealityModelTileClient._client.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
-        requestContext.enter();
+        this._realityData = this._rdConnection.getRealityData();
+        if (!this._realityData)
+          throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
@@ -894,6 +896,21 @@ export class RealityModelTileClient {
     let props: RDSClientProps | undefined;
     if (undefined !== tilesId) {
       const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+
+      props = { projectId, tilesId };
+    }
+    return props;
+  }
+  // ###TODO temporary means of extracting the tileId and projectId from the given url
+  // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
+  // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
+  // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
+  private getRDSClientPropsFromSource(rdSource: RealityDataSource, contextId?: string): RDSClientProps | undefined {
+    // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
+    const tilesId = rdSource.realityDataId;
+    let props: RDSClientProps | undefined;
+    if (undefined !== tilesId) {
+      const projectId = contextId ? contextId : "server";
 
       props = { projectId, tilesId };
     }
@@ -931,9 +948,7 @@ export class RealityModelTileClient {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);
       authRequestContext.enter();
 
-      await this.initializeRDSRealityData(authRequestContext);
-      authRequestContext.enter();
-
+      this.initializeRDSRealityData();
       return this._realityData!.getBlobUrl(authRequestContext, false);
     }
 
@@ -949,8 +964,7 @@ export class RealityModelTileClient {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);
       authRequestContext.enter();
 
-      await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      authRequestContext.enter();
+      this.initializeRDSRealityData(); // Only needed for PW Context Share data ... return immediately otherwise.
 
       return this._realityData!.getRootDocumentJson(authRequestContext);
     }
@@ -980,8 +994,7 @@ export class RealityModelTileClient {
     // Use an empty activityId to keep tile content as simple request
     const requestContext = useRds && token !== undefined ? new AuthorizedFrontendRequestContext(token, "") : new FrontendRequestContext("");
     if (useRds) {
-      await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      requestContext.enter();
+      this.initializeRDSRealityData(); // Only needed for PW Context Share data ... return immediately otherwise.
     }
 
     const tileUrl = this._baseUrl + url;
@@ -1003,8 +1016,7 @@ export class RealityModelTileClient {
     requestContext.enter();
 
     if (this.rdsProps && token) {
-      await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      requestContext.enter();
+      this.initializeRDSRealityData(); // Only needed for PW Context Share data ... return immediately otherwise.
     }
 
     const tileUrl = this._baseUrl + url;
@@ -1019,11 +1031,8 @@ export class RealityModelTileClient {
    * Returns Reality Data type if available
    */
   public async getRealityDataType(): Promise<string | undefined> {
-    const token = await this.getAccessToken();
-    if (this.rdsProps && token) {
-      const authRequestContext = new AuthorizedFrontendRequestContext(token);
-
-      await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data
+    if (this.rdsProps) {
+      this.initializeRDSRealityData(); // Only needed for PW Context Share data
       return this._realityData!.type;
     }
 

@@ -24,7 +24,8 @@ import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityDataConnection, RealityDataSource } from "../RealityDataConnection";
+import { RealityDataSource } from "../RealityDataSource";
+import { RealityDataConnectionManager } from "../RealityDataConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -365,9 +366,10 @@ export namespace OrbitGtTileTree {
   }
 
   export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey, iModel.contextId);
+    const rdConnection = await RealityDataConnectionManager.instance.getFromSourceKey(rdSourceKey, iModel.contextId);
 
-    if (rdConnection === undefined || rdConnection.realityData=== undefined )
+    const realityData = rdConnection ? rdConnection.getRealityData() : undefined;
+    if (rdConnection === undefined || realityData === undefined )
       return undefined;
 
     const accessToken: AccessToken | undefined = await getAccessTokenRDS();
@@ -377,10 +379,10 @@ export namespace OrbitGtTileTree {
     const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
     authRequestContext.enter();
 
-    const docRootName = rdConnection.realityData.rootDocument;
+    const docRootName = realityData.rootDocument;
     if (!docRootName)
       return undefined;
-    const blobStringUrl = await rdConnection.realityData.getBlobStringUrl(authRequestContext, docRootName );
+    const blobStringUrl = await realityData.getBlobStringUrl(authRequestContext, docRootName );
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
     // wrap a caching layer (16 MB) around the blob file
