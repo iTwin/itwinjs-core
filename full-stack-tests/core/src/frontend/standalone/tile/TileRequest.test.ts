@@ -26,12 +26,12 @@ describe("CloudStorageCacheChannel", () => {
 
   function getChannel(): TileRequestChannel {
     const channels = IModelApp.tileAdmin.channels;
-    if (!channels.cloudStorageCache) {
+    if (!channels.iModelChannels.cloudStorage) {
       channels.enableCloudStorageCache();
-      expect(channels.cloudStorageCache).not.to.be.undefined;
+      expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
     }
 
-    return channels.cloudStorageCache!;
+    return channels.iModelChannels.cloudStorage!;
   }
 
   async function getTile(): Promise<IModelTile> {
@@ -65,9 +65,9 @@ describe("CloudStorageCacheChannel", () => {
   }
 
   it("is not configured by default", async () => {
-    expect(IModelApp.tileAdmin.channels.cloudStorageCache).to.be.undefined;
+    expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).to.be.undefined;
     const tile = await getTile();
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelTileRpc);
+    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
   });
 
   it("uses http concurrency", async () => {
@@ -77,14 +77,14 @@ describe("CloudStorageCacheChannel", () => {
 
   it("is used first if configured", async () => {
     IModelApp.tileAdmin.channels.enableCloudStorageCache();
-    expect(IModelApp.tileAdmin.channels.cloudStorageCache).not.to.be.undefined;
+    expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).not.to.be.undefined;
     const tile = await getTile();
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.cloudStorageCache);
+    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
 
     tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.cloudStorageCache);
+    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
   });
 
   it("falls back to RPC if content is not found", async () => {
@@ -96,7 +96,7 @@ describe("CloudStorageCacheChannel", () => {
     channel.requestContent = async () => Promise.resolve(undefined);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelTileRpc);
+    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
     tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
     await loadContent(tile);
@@ -112,13 +112,13 @@ describe("CloudStorageCacheChannel", () => {
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
     expect(tile.channel).to.equal(channel);
-    expect(tile.cacheMiss).to.be.false;
+    expect(tile.requestChannel).to.be.undefined;
 
     channel.requestContent = async () => Promise.resolve(undefined);
     await loadContent(tile);
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelTileRpc);
-    expect(tile.cacheMiss).to.be.true;
+    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
 
     tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
     await loadContent(tile);
@@ -126,8 +126,8 @@ describe("CloudStorageCacheChannel", () => {
 
     tile.disposeContents();
     expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
-    expect(tile.cacheMiss).to.be.true;
-    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelTileRpc);
+    expect(tile.requestChannel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+    expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
   });
 });
 
@@ -142,7 +142,7 @@ describe("RPC channels", () => {
     else
       expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
 
-    for (const channel of [channels.iModelTileRpc, channels.elementGraphicsRpc])
+    for (const channel of [channels.iModelChannels.rpc, channels.elementGraphicsRpc])
       expect(channel.concurrency).to.equal(IpcApp.isValid ? channels.rpcConcurrency : channels.httpConcurrency);
   });
 });
