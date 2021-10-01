@@ -725,6 +725,24 @@ describe("SelectionManager", () => {
           expect(selection.size).to.eq(0);
         });
 
+        it("uses custom selection source name when tool selection changes", async () => {
+          selectionManager = new SelectionManager({
+            scopes: scopesMock.object,
+            toolSelectionSourceNameCalculator: () => "custom",
+          });
+          selectionManager.setSyncWithIModelToolSelection(imodelMock.object, true);
+
+          (ss as any)._add(createRandomId(), false);
+          selectionManager.addToSelection("", imodelMock.object, [scopedKey, transientElementKey]);
+
+          const spy = sinon.spy(selectionManager, "clearSelection");
+
+          ss.emptyAll();
+          await waitForPendingAsyncs(syncer);
+
+          expect(spy).to.be.calledOnceWith("custom", imodelMock.object, 0);
+        });
+
       });
 
     });

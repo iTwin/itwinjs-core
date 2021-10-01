@@ -48,6 +48,7 @@ import { Ruleset } from '@itwin/presentation-common';
 import { RulesetVariable } from '@itwin/presentation-common';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
+import { SelectionSetEvent } from '@itwin/core-frontend';
 import { SetRulesetVariableParams } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
 import { UnsetRulesetVariableParams } from '@itwin/presentation-common';
@@ -493,11 +494,13 @@ export class SelectionManager implements ISelectionProvider {
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
     suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable;
-}
+    }
 
 // @public
 export interface SelectionManagerProps {
     scopes: SelectionScopesManager;
+    // @beta
+    toolSelectionSourceNameCalculator?: (evt: SelectionSetEvent) => string;
 }
 
 // @public
@@ -527,7 +530,7 @@ export class StateTracker {
 
 // @internal (undocumented)
 export class ToolSelectionSyncHandler implements IDisposable {
-    constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
+    constructor(imodel: IModelConnection, logicalSelection: SelectionManager, selectionSourceNameCalculator?: (evt: SelectionSetEvent) => string);
     // (undocumented)
     dispose(): void;
     // (undocumented)

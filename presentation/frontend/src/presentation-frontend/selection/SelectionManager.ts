@@ -21,6 +21,13 @@ import { getScopeId, SelectionScopesManager } from "./SelectionScopesManager";
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/presentation/Unified-Selection/index#selection-scopes) */
   scopes: SelectionScopesManager;
+
+  /**
+   * A method to calculate a custom selection source name when tool selection
+   * change happens. If not provided, the default `Tool` selection source name is used.
+   * @beta
+   */
+  toolSelectionSourceNameCalculator?: (evt: SelectionSetEvent) => string;
 }
 
 /**
@@ -28,6 +35,7 @@ export interface SelectionManagerProps {
  * @public
  */
 export class SelectionManager implements ISelectionProvider {
+  private _toolSelectionSourceNameCalculator?: (evt: SelectionSetEvent) => string;
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
   private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number, handler: ToolSelectionSyncHandler }>();
   private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
@@ -42,6 +50,7 @@ export class SelectionManager implements ISelectionProvider {
    * Creates an instance of SelectionManager.
    */
   constructor(props: SelectionManagerProps) {
+    this._toolSelectionSourceNameCalculator = props.toolSelectionSourceNameCalculator;
     this.selectionChange = new SelectionChangeEvent();
     this.scopes = props.scopes;
     IModelConnection.onClose.addListener((imodel: IModelConnection) => {
@@ -71,7 +80,7 @@ export class SelectionManager implements ISelectionProvider {
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
     if (sync) {
       if (!registration || registration.requestorsCount === 0) {
-        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, this) });
+        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, this, this._toolSelectionSourceNameCalculator) });
       } else {
         this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount: registration.requestorsCount + 1 });
       }
@@ -323,17 +332,17 @@ export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 /** @internal */
 export class ToolSelectionSyncHandler implements IDisposable {
-
-  private _selectionSourceName = "Tool";
+  private _selectionSourceNameCalculator?: (evt: SelectionSetEvent) => string;
   private _logicalSelection: SelectionManager;
   private _imodel: IModelConnection;
   private _imodelToolSelectionListenerDisposeFunc: () => void;
   private _asyncsTracker = new AsyncTasksTracker();
   public isSuspended?: boolean;
 
-  public constructor(imodel: IModelConnection, logicalSelection: SelectionManager) {
+  public constructor(imodel: IModelConnection, logicalSelection: SelectionManager, selectionSourceNameCalculator?: (evt: SelectionSetEvent) => string) {
     this._imodel = imodel;
     this._logicalSelection = logicalSelection;
+    this._selectionSourceNameCalculator = selectionSourceNameCalculator;
     this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
   }
 
@@ -354,6 +363,9 @@ export class ToolSelectionSyncHandler implements IDisposable {
     const imodel = ev.set.iModel;
     if (imodel !== this._imodel)
       return;
+
+    // calculate the selection source name
+    const selectionSourceName = this._selectionSourceNameCalculator ? this._selectionSourceNameCalculator(ev) : "Tool";
 
     // determine the level of selection changes
     // wip: may want to allow selecting at different levels?
@@ -378,7 +390,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // makes sure we're adding to selection keys with concrete classes and not "BisCore:Element", which
     // we can't because otherwise our keys compare fails (presentation components load data with
     // concrete classes)
-    const changer = new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scopeId);
+    const changer = new ScopedSelectionChanger(selectionSourceName, this._imodel, this._logicalSelection, scopeId);
 
     // we know what to do immediately on `clear` events
     if (SelectionSetEventType.Clear === ev.type) {
