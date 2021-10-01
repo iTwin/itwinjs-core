@@ -253,6 +253,23 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       this.activeFractionInterval.clone(), this.localToWorld.clone(), this._arcLength01,
       this._designProperties?.clone());
   }
+
+  /** Return (if possible) a spiral which is a portion of this curve. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): IntegratedSpiral3d | undefined {
+    if (fractionB < fractionA) {
+      const spiralA = this.clonePartialCurve(fractionB, fractionA);
+      if (spiralA)
+        spiralA.reverseInPlace();
+      return spiralA;
+    }
+    const spiralB = this.clone();
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB  = this._activeFractionInterval.fractionToPoint(fractionB);
+    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
+    spiralB.refreshComputedProperties();
+    return spiralB;
+  }
+
   /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transformA: Transform): boolean {
 

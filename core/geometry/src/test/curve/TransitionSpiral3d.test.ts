@@ -904,6 +904,57 @@ describe("TransitionSpiral3d", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "spiralStroking");
   });
+
+  it("test TransitionSpiral3d clonePartialCurve", () => {
+    const ck = new Checker();
+    const nominalL1 = 100;
+    const nominalR1 = 400;
+
+    const simpleCubic = DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
+    ck.testType(simpleCubic, DirectSpiral3d);
+    const simpleCubicReversed = simpleCubic.clone();
+    simpleCubicReversed.reverseInPlace();
+
+    const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 8), Segment1d.create(0, 1), Transform.createIdentity())!;
+    ck.testType(integratedSpiral, IntegratedSpiral3d);
+    const integratedSpiralReversed = integratedSpiral.clone();
+    integratedSpiralReversed.reverseInPlace();
+
+    // Full clone
+    const cloneA = simpleCubic.clonePartialCurve(0.0, 1.0)!;
+    const cloneB = simpleCubic.clonePartialCurve(1.0, 0.0)!;
+    ck.testTrue(cloneA.isAlmostEqual(simpleCubic));
+    ck.testTrue(cloneB.isAlmostEqual(simpleCubicReversed));
+
+    const cloneC = integratedSpiral.clonePartialCurve(0.0, 1.0)!;
+    const cloneD = integratedSpiral.clonePartialCurve(1.0, 0.0)!;
+    ck.testTrue(cloneC.isAlmostEqual(integratedSpiral));
+    ck.testTrue(cloneD.isAlmostEqual(integratedSpiralReversed));
+
+    // For each input spiral, clone partial and validate points/tangents and lengths are the same
+    for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed] ) {
+      const partial = spiral.clonePartialCurve(0.2, 0.8)!;
+      ck.testType(partial, TransitionSpiral3d);
+      ck.testLT(partial.curveLength(), spiral.curveLength());
+
+      for (const fraction of [0.0, 0.2, 0.4, 0.5, 0.7, 1.0]) {
+        const fSpiral = partial.activeFractionInterval.fractionToPoint(fraction);
+        const fPartial = spiral.activeFractionInterval.fractionToPoint(fraction);
+
+        const raySpiral = spiral.fractionToPointAndUnitTangent(fSpiral);
+        const rayPartial = partial.fractionToPointAndUnitTangent(fPartial);
+        ck.testVector3d(raySpiral.getDirectionRef(), rayPartial.getDirectionRef());
+        ck.testPoint3d(raySpiral.getOriginRef(), rayPartial.getOriginRef());
+
+        const lengthSpiral = spiral.curveLengthBetweenFractions(fSpiral, 0.8);
+        const lengthPartial = partial.curveLengthBetweenFractions(fPartial, 1.0);
+        ck.testTightNumber(lengthSpiral, lengthPartial);
+      }
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 function xyString(name: string, x: number, y: number): string {
   return (`  (${name}  ${x} + ${y})`);
