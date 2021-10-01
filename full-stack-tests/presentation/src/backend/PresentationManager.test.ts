@@ -36,7 +36,7 @@ describe("PresentationManager", () => {
         specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
       }],
     };
-    const keys = KeySet.fromJSON({ instanceKeys: [["Generic:PhysicalObject", ["0x74"]]], nodeKeys: [] });
+    const keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
     it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
       expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
