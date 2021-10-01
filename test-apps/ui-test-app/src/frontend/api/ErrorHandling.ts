@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, ToolAdmin } from "@bentley/imodeljs-frontend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, ToolAdmin } from "@itwin/core-frontend";
 import { ResponseError } from "@bentley/itwin-client";
 
 export class ErrorHandling {

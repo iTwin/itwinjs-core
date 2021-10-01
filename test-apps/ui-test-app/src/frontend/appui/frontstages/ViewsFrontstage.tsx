@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
-import { NodeKey } from "@bentley/presentation-common";
+} from "@itwin/core-frontend";
+import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
+import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
-} from "@bentley/ui-abstract";
-import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
-import { Point, ScrollView } from "@bentley/ui-core";
+} from "@itwin/appui-abstract";
+import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@itwin/components-react";
+import { Point, ScrollView } from "@itwin/core-react";
 import {
   BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
@@ -24,11 +24,11 @@ import {
   HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
   ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@bentley/ui-core";
+// import { SvgPath } from "@itwin/core-react";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";

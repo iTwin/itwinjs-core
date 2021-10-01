@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@itwin/appui-react";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";

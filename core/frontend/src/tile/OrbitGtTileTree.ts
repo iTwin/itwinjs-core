@@ -6,18 +6,17 @@
  * @module TileTreeSupplier
  */
 
-import { AccessToken, BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
-} from "@bentley/orbitgt-core";
-import { RealityDataClient } from "@bentley/reality-data-client";
+} from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -343,17 +342,6 @@ export namespace OrbitGtTileTree {
     modelId?: Id64String;
   }
 
-  async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient)
-      return undefined;
-
-    try {
-      return await IModelApp.authorizationClient.getAccessToken();
-    } catch (_) {
-      return undefined;
-    }
-  }
-
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
@@ -427,14 +415,11 @@ export namespace OrbitGtTileTree {
           return false;
     }
 
-    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
-    if (!accessToken)
-      return false;
-
-    // If there's no rdsUrl, request one from RealityDataClient
+    // If there's no rdsUrl, request one from RealityDataAccessClient
     if (!props.rdsUrl) {
-      const rdClient: RealityDataClient = new RealityDataClient();
-      props.rdsUrl = await rdClient.getRealityDataUrl(iModel.iTwinId, props.containerName);
+      if (undefined === IModelApp.realityDataAccess)
+        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access orbit tiles. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+      props.rdsUrl = await IModelApp.realityDataAccess.getRealityDataUrl(iModel.iTwinId, props.containerName);
     }
 
     // If props are now valid, return OK

@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
@@ -15,7 +15,7 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IntrospectionResponse as IntrospectionResponse_2 } from 'openid-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
-import { RpcActivity } from '@bentley/imodeljs-common';
+import { RpcActivity } from '@itwin/core-common';
 import { TelemetryClient } from '@bentley/telemetry-client';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { Transform } from 'stream';

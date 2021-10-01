@@ -8,10 +8,10 @@ import {
   BeButtonEvent, CoordinateLockOverrides, EventHandled, HitDetail, IModelApp,
   LocateFilterStatus, LocateResponse, PrimitiveTool,
   SelectionMethod, SelectionMode,
-} from "@bentley/imodeljs-frontend";
-import { Point3d } from "@bentley/geometry-core";
-import { UiFramework } from "@bentley/ui-framework";
-import { ToolbarItemUtilities } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { UiFramework } from "@itwin/appui-react";
+import { ToolbarItemUtilities } from "@itwin/appui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";
 
 export class GenericTool extends PrimitiveTool {

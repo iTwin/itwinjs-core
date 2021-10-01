@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

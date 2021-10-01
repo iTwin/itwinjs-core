@@ -9,7 +9,7 @@ import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
 import { Marker } from "../Marker";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {

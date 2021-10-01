@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {

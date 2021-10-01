@@ -6,10 +6,10 @@
  * @module ECDb
  */
 
-import { DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";

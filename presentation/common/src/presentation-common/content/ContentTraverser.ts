@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { assert, IDisposable, using } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, using } from "@itwin/core-bentley";
 import { CategoryDescription } from "./Category";
 import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";

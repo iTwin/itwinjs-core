@@ -8,14 +8,14 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { EmptyLocalization, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@bentley/imodeljs-common";
+import { EmptyLocalization, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
+import { UiAdmin } from "@itwin/appui-abstract";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
@@ -30,6 +30,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { RealityDataAccess } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -116,6 +117,8 @@ export interface IModelAppOptions {
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
+  /** @beta */
+  realityDataAccess?: RealityDataAccess;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -153,7 +156,7 @@ interface IModelAppForDebugger {
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Before any interactive operations may be performed by the `@bentley/imodeljs-frontend package`, [[IModelApp.startup]] must be called.
+ * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called.
  * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
  *
  * @public
@@ -182,6 +185,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess: FrontendHubAccess;
+  private static _realityDataAccess?: RealityDataAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -236,6 +240,10 @@ export class IModelApp {
    * @internal
    */
   public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
+  /** Provides access to the RealityData service implementation for this IModelApp
+   * @beta
+   */
+  public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
@@ -369,6 +377,7 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    this._realityDataAccess = opts.realityDataAccess;
 
     [
       this.renderSystem,
@@ -485,6 +494,18 @@ export class IModelApp {
     }
   }
 
+  /** Get the user's access token for this IModelApp, or a blank string if none is available.
+   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * returned by this method may change over time throughout the course of a session.
+   */
+  public static async getAccessToken(): Promise<AccessToken> {
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
+  }
+
   /** @internal */
   public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
 
@@ -495,20 +516,12 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
-      let authorization: AccessToken | undefined;
-      if (IModelApp.authorizationClient) {
-        try {
-          authorization = await IModelApp.authorizationClient.getAccessToken();
-        } catch (err) {
-          // The application may go offline
-        }
-      }
       const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization: authorization ?? "",
+        authorization: await this.getAccessToken(),
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;

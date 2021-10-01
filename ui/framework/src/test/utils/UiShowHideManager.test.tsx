@@ -10,11 +10,11 @@ import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
   UiShowHideSettingsProvider,
-} from "../../ui-framework";
+} from "../../appui-react";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
-import { LocalSettingsStorage } from "@bentley/ui-core";
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+import { LocalSettingsStorage } from "@itwin/core-react";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("UiShowHideManager localStorage Wrapper", () => {
 

@@ -6,7 +6,7 @@
  * @module Diagnostic
  */
 
-import { Localization } from "@bentley/imodeljs-common";
+import { Localization } from "@itwin/core-common";
 import { AnyDiagnostic } from "./Diagnostic";
 
 import assert = require("assert");

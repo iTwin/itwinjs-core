@@ -4,15 +4,15 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
+import { BentleyError } from '@itwin/core-bentley';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
-import { HttpStatus } from '@bentley/bentleyjs-core';
+import { HttpStatus } from '@itwin/core-bentley';
 
 // @beta
 export interface AuthorizationClient {
-    getAccessToken(): Promise<AccessToken | undefined>;
+    getAccessToken(): Promise<AccessToken>;
 }
 
 // @beta

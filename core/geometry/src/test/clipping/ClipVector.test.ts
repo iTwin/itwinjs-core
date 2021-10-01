@@ -15,7 +15,7 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Checker } from "../Checker";
 // External test functions
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
-import { Angle, GeometryQuery, GrowableXYZArray, LineString3d, Loop, PolygonOps, Sample } from "../../geometry-core";
+import { Angle, GeometryQuery, GrowableXYZArray, LineString3d, Loop, PolygonOps, Sample } from "../../core-geometry";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */

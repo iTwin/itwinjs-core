@@ -2,27 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { BeEvent, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { BeEvent, using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
 import {
   applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
   createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "@bentley/ui-components";
+} from "@itwin/presentation-common/lib/test/_helpers/Content";
+import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyCategory } from "@itwin/components-react";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";

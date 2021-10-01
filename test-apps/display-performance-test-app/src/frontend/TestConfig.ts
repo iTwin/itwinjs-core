@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
-} from "@bentley/imodeljs-common";
-import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { RenderSystem, TileAdmin } from "@itwin/core-frontend";
 
 /** Dimensions of the Viewport for a TestConfig. */
 export interface ViewSize {

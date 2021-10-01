@@ -3,20 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { FrontendDevTools } from "@itwin/frontend-devtools";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+} from "@itwin/core-common";
+import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
   ToolAdmin,
-} from "@bentley/imodeljs-frontend";
-import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+} from "@itwin/core-frontend";
+import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/MobileFrontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -194,6 +195,7 @@ export class DisplayTestApp {
         tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
+        realityDataAccess: new RealityDataAccessClient(),
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,

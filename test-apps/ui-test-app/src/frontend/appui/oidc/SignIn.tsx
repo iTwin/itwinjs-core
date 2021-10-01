@@ -7,12 +7,12 @@
  */
 
 import * as React from "react";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { SignInBase } from "./SignInBase";
-import { CommonProps } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { CommonProps } from "@itwin/core-react";
+import { UiFramework } from "@itwin/appui-react";
 
 /** Properties for the [[SignIn]] component
  * @public
@@ -51,7 +51,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
     // istanbul ignore if
     if (this._oidcClient)
-      this._oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+      this._oidcClient.onAccessTokenChanged.addListener(this._onUserStateChanged);
   }
 
   // istanbul ignore next
@@ -64,7 +64,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   public override componentWillUnmount() {
     // istanbul ignore next
     if (this._oidcClient)
-      this._oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+      this._oidcClient.onAccessTokenChanged.removeListener(this._onUserStateChanged);
   }
 
   private _onStartSignin = async () => {

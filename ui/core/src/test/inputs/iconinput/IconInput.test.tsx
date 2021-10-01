@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { IconInput, WebFontIcon } from "../../../ui-core";
+import { IconInput, WebFontIcon } from "../../../core-react";
 
 describe("IconInput", () => {
   it("should render", () => {

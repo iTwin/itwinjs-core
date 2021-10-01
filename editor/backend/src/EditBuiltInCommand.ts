@@ -6,21 +6,21 @@
  * @module Editing
  */
 
-import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { GeometricElement, IModelDb } from "@bentley/imodeljs-backend";
+} from "@itwin/core-geometry";
+import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import {
   BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry,
   ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps,
   GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps,
   FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, OffsetFacesProps, SolidModelingCommandIpc,
   SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps,
-} from "@bentley/imodeljs-editor-common";
+} from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */

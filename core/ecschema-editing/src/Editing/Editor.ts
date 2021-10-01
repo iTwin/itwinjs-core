@@ -8,9 +8,9 @@
 
 import * as Rules from "../Validation/ECRules";
 
-import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
 import { CustomAttributes } from "./CustomAttributes";
 import { Entities } from "./Entities";

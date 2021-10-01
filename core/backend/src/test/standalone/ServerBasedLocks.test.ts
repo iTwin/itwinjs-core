@@ -5,8 +5,8 @@
 
 import { assert, expect } from "chai";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@bentley/imodeljs-common";
+import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { PhysicalObject } from "../../domains/GenericElements";

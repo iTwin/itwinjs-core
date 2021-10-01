@@ -6,8 +6,8 @@
  * @module ChangedElementsDb
  */
 
-import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Localization } from "@bentley/imodeljs-common";
+import { Localization } from "@itwin/core-common";
 import {
   BadgeType,
   CommonToolbarItem,
@@ -13,9 +13,9 @@ import {
   ToolbarOrientation,
   ToolbarUsage,
   UiItemsProvider,
-} from "@bentley/ui-abstract";
-import { SyncUiEventDispatcher } from "@bentley/ui-framework";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+} from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher } from "@itwin/appui-react";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";

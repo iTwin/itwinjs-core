@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update colorpicker to support RGB input",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

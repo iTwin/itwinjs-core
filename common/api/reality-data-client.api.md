@@ -4,8 +4,12 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
+import { CartographicRange } from '@itwin/core-common';
 import { Client } from '@bentley/itwin-client';
+import { ContextRealityModelProps } from '@itwin/core-common';
+import { GuidString } from '@itwin/core-bentley';
+import { IModelConnection } from '@itwin/core-frontend';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
@@ -19,6 +23,20 @@ export class DataLocation extends WsgInstance {
     location?: string;
     // (undocumented)
     provider?: string;
+}
+
+// @internal
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
 }
 
 // @internal
@@ -42,7 +60,7 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     classification?: string;
     // (undocumented)
-    client: undefined | RealityDataClient;
+    client: undefined | RealityDataAccessClient;
     containerName?: string;
     // (undocumented)
     copyright?: string;
@@ -124,7 +142,7 @@ export class RealityData extends WsgInstance {
 }
 
 // @internal
-export class RealityDataClient extends WsgClient {
+export class RealityDataAccessClient extends WsgClient {
     constructor();
     createRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
     createRealityDataRelationship(accessToken: AccessToken, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
@@ -139,7 +157,16 @@ export class RealityDataClient extends WsgClient {
     getRealityDataRelationships(accessToken: AccessToken, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
     getRealityDatas(accessToken: AccessToken, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
     getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string>;
+    // @public
+    queryRealityData(accessToken: AccessToken, criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
     updateRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+}
+
+// @public
+export interface RealityDataQueryCriteria {
+    filterIModel?: IModelConnection;
+    iTwinId: GuidString;
+    range?: CartographicRange;
 }
 
 // @internal
@@ -161,20 +188,6 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     action?: string;
     polygon?: string;
     project?: string;
-}
-
-// @internal
-export enum RealityDataType {
-    // (undocumented)
-    CESIUM_3DTILE = "Cesium3DTiles",
-    // (undocumented)
-    OMR = "OMR",
-    // (undocumented)
-    OPC = "OPC",
-    // (undocumented)
-    REALITYMESH3DTILES = "RealityMesh3DTiles",
-    // (undocumented)
-    TERRAIN3DTILE = "Terrain3DTiles"
 }
 
 

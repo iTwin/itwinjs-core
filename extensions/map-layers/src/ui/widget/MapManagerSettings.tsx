@@ -5,9 +5,9 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { NumberInput, Toggle } from "@bentley/ui-core";
-import { ViewState3d } from "@bentley/imodeljs-frontend";
-import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
+import { NumberInput, Toggle } from "@itwin/core-react";
+import { ViewState3d } from "@itwin/core-frontend";
+import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@itwin/core-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";

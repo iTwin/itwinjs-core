@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
-} from "@bentley/imodeljs-frontend";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
 
 export class Tool2 extends PrimitiveTool {
   public static override toolId = "Tool2";

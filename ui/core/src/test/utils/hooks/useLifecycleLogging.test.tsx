@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { useLifecycleLogging } from "../../../ui-core/utils/hooks/useLifecycleLogging";
+import { useLifecycleLogging } from "../../../core-react/utils/hooks/useLifecycleLogging";
 
 describe("useLifecycleLogging", () => {
   interface HookProps {

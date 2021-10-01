@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { HTMLAttributes, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { MessageManager, ValidationTextbox } from "../../ui-framework";
+import { MessageManager, ValidationTextbox } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ValidationTextbox", () => {

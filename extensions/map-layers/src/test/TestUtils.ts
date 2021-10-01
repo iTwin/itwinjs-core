@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { MapLayersUI } from "../map-layers";
 
 // cSpell:ignore buttongroup

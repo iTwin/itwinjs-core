@@ -7,15 +7,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { I18N } from "@itwin/core-i18n";
+import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
   createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation } from "@bentley/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
+} from "@itwin/presentation-common/lib/test/_helpers/Content";
+import { createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
+import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { Presentation } from "@itwin/presentation-frontend";
+import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {

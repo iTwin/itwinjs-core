@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@bentley/imodeljs-common";
+import { MapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import { MapLayerImageryProvider } from "../../internal";

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodelhub-client-tests",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodelhub-client-tests",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Localization } from "@bentley/imodeljs-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
-import { UiItemsManager } from "@bentley/ui-abstract";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { UiItemsManager } from "@itwin/appui-abstract";
+import { ConfigurableUiManager } from "@itwin/appui-react";
 
 /**
  * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
  * '''ts
- *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with ui-framework's ConfigurableUiManager
+ *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with appui-react's ConfigurableUiManager
  *  // so it can be explicitly added to a stage via a FrontstageDef.
  *  await MapLayersUI.initialize (registerItemsProvider);
  * '''

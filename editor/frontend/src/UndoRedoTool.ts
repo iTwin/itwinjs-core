@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, IpcApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IpcApp, Tool } from "@itwin/core-frontend";
 
 /** @alpha Undo all element changes */
 export class UndoAllTool extends Tool {

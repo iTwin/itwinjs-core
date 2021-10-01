@@ -8,7 +8,7 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@bentley/bentleyjs-core";
+import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import { ScreenViewport } from "@itwin/core-frontend";
+import { ContextMenu, ContextMenuItem } from "@itwin/core-react";
 import { Slider } from "@itwin/itwinui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapLayerManager.scss";

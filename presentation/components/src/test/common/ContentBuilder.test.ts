@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@bentley/presentation-common";
+import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
   createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
+} from "@itwin/presentation-common/lib/test/_helpers/Content";
+import { createTestECInstanceKey, createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
+import { ArrayValue, PropertyRecord, StructValue } from "@itwin/appui-abstract";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
 class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {

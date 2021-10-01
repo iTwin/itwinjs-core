@@ -6,10 +6,10 @@
  * @module Tools
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError, Localization } from "@bentley/imodeljs-common";
-import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { assert } from "@itwin/core-bentley";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
+import { GeometryStreamProps, IModelError, Localization } from "@itwin/core-common";
+import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";

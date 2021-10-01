@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
-import { Dialog } from "@bentley/ui-core";
-import { DialogButtonType } from "@bentley/ui-abstract";
+import { Dialog } from "@itwin/core-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 /**
  *  This is an example of how to create a React-based modal dialog that can be opened via a toolbutton or a key-in.

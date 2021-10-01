@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { NativeApp } from "@bentley/imodeljs-frontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { NativeApp } from "@itwin/core-frontend";
 import { NativeAppTest } from "../NativeAppTest";
 import { usingOfflineScope } from "../HttpRequestHook";
 

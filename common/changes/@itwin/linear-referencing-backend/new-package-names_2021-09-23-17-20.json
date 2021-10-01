@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-backend",
+      "comment": "rename to @itwin/linear-referencing-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-backend"
+}

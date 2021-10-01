@@ -6,12 +6,12 @@
  * @module HyperModeling
  */
 
-import { Localization, SectionType } from "@bentley/imodeljs-common";
+import { Localization, SectionType } from "@itwin/core-common";
 import {
   IModelApp,
   ScreenViewport,
   Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
 import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";

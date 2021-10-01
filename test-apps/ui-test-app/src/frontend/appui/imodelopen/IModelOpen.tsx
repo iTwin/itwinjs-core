@@ -6,14 +6,14 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActivityMessagePopup, IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { ActivityMessagePopup, IModelInfo, UiFramework } from "@itwin/appui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason,  IModelApp } from "@bentley/imodeljs-frontend";
-import { AccessToken, BeDuration } from "@bentley/bentleyjs-core";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
+import { AccessToken, BeDuration } from "@itwin/core-bentley";
 import { Button } from "@itwin/itwinui-react";
 import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 
@@ -59,9 +59,9 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingiModels: false,
         isLoadingiModel: false,
         currentITwin: {
-          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @bentley/react-set-state-usage
+          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @itwin/react-set-state-usage
         },
-        iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line @itwin/react-set-state-usage
       });
     }
 

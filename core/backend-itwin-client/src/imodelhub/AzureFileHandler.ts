@@ -11,7 +11,7 @@ import * as https from "https";
 import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
-import { AccessToken, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, Logger } from "@itwin/core-bentley";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
   CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,

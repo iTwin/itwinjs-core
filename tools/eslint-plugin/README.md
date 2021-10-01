@@ -1,24 +1,24 @@
-# @bentley/eslint-plugin
+# @itwin/eslint-plugin
 
 ESLint plugin with default configuration and custom rules for iModel.js projects. For best results, use with Typescript 4.1+
 
 ## Installation
 
-You'll first need to install [ESLint](http://eslint.org) and `@bentley/eslint-plugin`:
+You'll first need to install [ESLint](http://eslint.org) and `@itwin/eslint-plugin`:
 
 ```json
 npm i eslint --save-dev
-npm i @bentley/eslint-plugin --save-dev
+npm i @itwin/eslint-plugin --save-dev
 ```
 
 ## Usage
 
-Add `@bentley` to the plugins section of your eslint configuration and (optionally) extend one of the provided configs. You can omit the `/eslint-plugin` suffix:
+Add `@itwin` to the plugins section of your eslint configuration and (optionally) extend one of the provided configs. You can omit the `/eslint-plugin` suffix:
 
 ```json
 {
-  "plugins": ["@bentley"],
-  "extends": "plugin:@bentley/imodeljs-recommended"
+  "plugins": ["@itwin"],
+  "extends": "plugin:@itwin/itwinjs-recommended"
 }
 ```
 
@@ -27,7 +27,7 @@ Then configure the rules you want to override under the rules section.
 ```json
 {
   "rules": {
-    "@bentley/rule-name": "off"
+    "@itwin/rule-name": "off"
   }
 }
 ```
@@ -38,7 +38,7 @@ VSCode has an ESLint plugin, but it has some issues with plugin resolution. In o
 
 ```json
 "eslint.options": {
-  "resolvePluginsRelativeTo": "./node_modules/@bentley/eslint-plugin",
+  "resolvePluginsRelativeTo": "./node_modules/@itwin/eslint-plugin",
   ...
 },
 ```
@@ -54,7 +54,7 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 
 ```json
 // custom config
-"@bentley/no-internal": [
+"@itwin/no-internal": [
 "error",
   {
     "tag": ["internal", "alpha", "beta"]
@@ -64,7 +64,7 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 
 ```json
 // default config
-"@bentley/no-internal": "error"
+"@itwin/no-internal": "error"
 // tag is set to ["internal", "alpha"] by default
 ```
 
@@ -73,7 +73,7 @@ Allowed tags: `internal`, `alpha`, `beta`, `public`.
 
 ## Helper commands
 
-### `no-internal-report` - Runs eslint with the `@bentley/no-internal` rule turned on ("error") using a custom formatter that summarizes the output
+### `no-internal-report` - Runs eslint with the `@itwin/no-internal` rule turned on ("error") using a custom formatter that summarizes the output
 
 This can be run using `npx` or from the scripts section of `package.json`:
 
@@ -88,7 +88,7 @@ This command forwards all arguments to eslint, so it can be further customized a
 
 ```json
   "scripts": {
-    "no-internal-report": "no-internal-report -rule '@bentley/no-internal: ['error', { 'tag': [ 'internal', 'alpha', 'beta' ]}]' src/**/*.ts*"
+    "no-internal-report": "no-internal-report -rule '@itwin/no-internal: ['error', { 'tag': [ 'internal', 'alpha', 'beta' ]}]' src/**/*.ts*"
   },
 
 ```

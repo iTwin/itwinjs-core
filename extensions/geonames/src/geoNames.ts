@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic, Localization } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic, Localization } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 
 /*-----------------------------------------------------------------------

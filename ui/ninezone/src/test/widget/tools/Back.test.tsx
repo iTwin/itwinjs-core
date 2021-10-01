@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { BackButton } from "../../../ui-ninezone";
+import { BackButton } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<BackButton  />", () => {

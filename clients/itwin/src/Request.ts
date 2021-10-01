@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;
@@ -263,7 +263,6 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
 // module that will rid us of NodeJs dependency.
 
 /** Wrapper around HTTP request utility
- * @param requestContext The client request context
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server

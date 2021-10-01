@@ -4,10 +4,10 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { IDisposable } from '@bentley/bentleyjs-core';
+import { BeEvent } from '@itwin/core-bentley';
+import { IDisposable } from '@itwin/core-bentley';
 import { Logger } from 'oidc-client';
 import { User } from 'oidc-client';
 import { UserManager } from 'oidc-client';
@@ -43,7 +43,7 @@ export interface BrowserAuthorizationCallbackHandlerConfiguration {
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
-    protected _accessToken?: AccessToken;
+    protected _accessToken: AccessToken;
     checkSessionStatus(): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
@@ -63,13 +63,13 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     get isAuthorized(): boolean;
     protected loadUser(): Promise<User | undefined>;
     protected nonInteractiveSignIn(args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
+    // (undocumented)
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     protected _onAccessTokenExpired: () => void;
     protected _onAccessTokenExpiring: () => Promise<void>;
     protected _onSilentRenewError: () => void;
     protected _onUserLoaded: (user: User) => void;
     protected _onUserSignedOut: () => void;
-    // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;
@@ -126,7 +126,7 @@ export class BrowserAuthorizationLogger implements Logger {
 // @beta (undocumented)
 export interface FrontendAuthorizationClient extends AuthorizationClient {
     readonly hasSignedIn: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
 }

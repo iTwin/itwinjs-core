@@ -5,10 +5,10 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
   ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
@@ -16,7 +16,7 @@ import {
 import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
-import { AcquireNewBriefcaseIdArg, UserArg } from "../imodeljs-backend";
+import { AcquireNewBriefcaseIdArg, UserArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -161,7 +161,7 @@ export class HubMock {
   }
 
   private static async getAccessToken(arg: UserArg) {
-    return arg.user ?? await IModelHost.getAccessToken() ?? "";
+    return arg.user ?? await IModelHost.getAccessToken();
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {

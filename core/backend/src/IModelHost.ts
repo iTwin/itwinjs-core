@@ -10,9 +10,9 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@bentley/bentleyjs-core";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, SessionProps } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
@@ -71,7 +71,7 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
-/** Configuration of imodeljs-backend.
+/** Configuration of core-backend.
  * @public
  */
 export class IModelHostConfiguration {
@@ -218,11 +218,19 @@ export class IModelHost {
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
-  /** Get the active authorization/access token for use with various services
-   * @throws if authorizationClient has not been set up
+  /** Get the current access token for this IModelHost, or a blank string if none is available.
+   * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
+   * For all IpcHosts, where this backend is servicing a single frontend, this will be the user's token. For ElectronHost, the backend
+   * obtains the token and forwards it to the frontend.
+   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * returned by this method may change over time throughout the course of a session.
    */
-  public static async getAccessToken(): Promise<AccessToken | undefined> {
-    return this.authorizationClient!.getAccessToken();
+  public static async getAccessToken(): Promise<AccessToken> {
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
   }
 
   /** @internal */
@@ -256,7 +264,7 @@ export class IModelHost {
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
+    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
@@ -515,7 +523,7 @@ export class KnownLocations {
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): string { return IModelHost.platform.DgnDb.getAssetsDir(); }
 
-  /** The directory where the imodeljs-backend assets are stored. */
+  /** The directory where the core-backend assets are stored. */
   public static get packageAssetsDir(): string {
     return path.join(__dirname, "assets");
   }

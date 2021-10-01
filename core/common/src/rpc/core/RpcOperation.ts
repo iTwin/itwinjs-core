@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
@@ -18,7 +18,7 @@ import {
 } from "./RpcRequest";
 
 /** The policy for an RPC operation.
- * @public
+ * @internal
  */
 export class RpcOperationPolicy {
   /** Supplies the IModelRpcProps for an operation request. */
@@ -50,7 +50,7 @@ export class RpcOperationPolicy {
 }
 
 /** An RPC operation descriptor.
- * @public
+ * @internal
  */
 export class RpcOperation {
   /** A fallback token to use for RPC requests that do not semantically depend on an iModel. */
@@ -108,10 +108,10 @@ export class RpcOperation {
   }
 }
 
-/** @public */
+/** @internal */
 export type RpcOperationPolicyProps = Partial<RpcOperationPolicy>;
 
-/** @public */
+/** @internal */
 export namespace RpcOperation { // eslint-disable-line no-redeclare
   function obtainInstance(obj: RpcOperationPolicy | RpcOperationPolicyProps) {
     if (obj instanceof RpcOperationPolicy) {

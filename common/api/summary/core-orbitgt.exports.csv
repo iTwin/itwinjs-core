@@ -1,0 +1,28 @@
+sep=;
+Release Tag;API Item
+internal;ALong
+internal;CRSManager
+internal;Downloader
+internal;DownloaderXhr 
+internal;OnlineEngine 
+internal;OPCReader 
+internal;OrbitGtAList
+internal;OrbitGtBlockIndex
+internal;OrbitGtBounds
+internal;OrbitGtComparator
+internal;OrbitGtCoordinate
+internal;OrbitGtDataManager
+internal;OrbitGtFrameData
+internal;OrbitGtIProjectToViewForSort
+internal;class OrbitGtIViewRequest
+internal;OrbitGtLevel
+internal;OrbitGtLine
+internal;OrbitGtPointData
+internal;OrbitGtTileIndex
+internal;OrbitGtTileLoadSorter 
+internal;OrbitGtTransform
+internal;OrbitGtViewTree
+internal;PageCachedFile 
+internal;PointCloudReader
+internal;PointDataRaw 
+internal;UrlFS 

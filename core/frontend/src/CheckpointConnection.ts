@@ -6,11 +6,11 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, getErrorMessage, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -43,9 +43,7 @@ export class CheckpointConnection extends IModelConnection {
    */
   public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new Error();
+    const accessToken = await IModelApp.getAccessToken();
 
     const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ accessToken, iModelId, version }) };
 
@@ -128,7 +126,7 @@ export class CheckpointConnection extends IModelConnection {
       this.changeset = openResponse.changeset!;
 
     } catch (error) {
-      reject(getErrorMessage(error));
+      reject(BentleyError.getErrorMessage(error));
     } finally {
     }
 

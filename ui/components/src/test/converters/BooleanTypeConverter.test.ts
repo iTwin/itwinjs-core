@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BooleanTypeConverter } from "../../ui-components";
+import { BooleanTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 describe("BooleanTypeConverter", () => {

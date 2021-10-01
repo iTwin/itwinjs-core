@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSource } from "../internal";
-import { IModelApp } from "../../IModelApp";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
+import { AccessToken, BeEvent, GuidString } from "@itwin/core-bentley";
+import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { AccessToken, AuthStatus, BeEvent, BentleyError, GuidString } from "@bentley/bentleyjs-core";
+import { MapLayerSource } from "../internal";
 
 /** @internal */
 export interface MapLayerSetting {
@@ -39,9 +39,7 @@ export class MapLayerSettingsService {
    * @param storeOnIModel if true store the settings object on the model, if false store it on the project
    */
   public static async storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
+    const accessToken = await IModelApp.getAccessToken();
     const sourceJSON = source.toJSON();
     const mapLayerSetting: MapLayerSetting = {
       url: sourceJSON.url,
@@ -63,9 +61,7 @@ export class MapLayerSettingsService {
   }
 
   public static async replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
+    const accessToken = await IModelApp.getAccessToken();
 
     let storeOnIModel = false;
     let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
@@ -98,9 +94,7 @@ export class MapLayerSettingsService {
 
   public static async deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
     let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
+    const accessToken = await IModelApp.getAccessToken();
 
     result = await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, iModelId);
 
@@ -175,9 +169,7 @@ export class MapLayerSettingsService {
    * @throws error if any of the calls to grab settings fail.
    */
   public static async getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined === accessToken)
-      throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
+    const accessToken = await IModelApp.getAccessToken();
     const userResultByProjectPromise = IModelApp.settings.getUserSettingsByNamespace(
       accessToken,
       MapLayerSettingsService.SourceNamespace,

@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 
 /**
  * Function to remove any prefix from an access token string.

@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { ExplosionEffect } from "./effects/Explosion";

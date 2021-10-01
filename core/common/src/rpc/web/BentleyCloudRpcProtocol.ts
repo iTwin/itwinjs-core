@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
@@ -23,7 +23,7 @@ enum AppMode {
 }
 
 /** An http protocol for Bentley cloud RPC interface deployments.
- * @public
+ * @internal
  */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override checkToken = true;

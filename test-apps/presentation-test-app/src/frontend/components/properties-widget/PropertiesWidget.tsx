@@ -6,21 +6,21 @@
 import "./PropertiesWidget.css";
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
   usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
   FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
   PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
-} from "@bentley/ui-components";
-import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@bentley/ui-core";
+} from "@itwin/components-react";
+import { HighlightInfo } from "@itwin/components-react/lib/components-react/common/HighlightingComponentProps";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 

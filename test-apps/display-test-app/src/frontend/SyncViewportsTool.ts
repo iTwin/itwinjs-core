@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@itwin/core-frontend";
 
 /** Connect or disconnect two viewports using TwoWayViewportSync. */
 export class SyncViewportsTool extends Tool {

@@ -8,7 +8,7 @@
 
 import "./Settings.scss";
 import * as React from "react";
-import { FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
+import { FrameworkAccuDraw, UiFramework } from "@itwin/appui-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active settings. */

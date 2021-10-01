@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   RelationshipClass, RelationshipClassProps, RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Relationship tests from an existing schema", () => {

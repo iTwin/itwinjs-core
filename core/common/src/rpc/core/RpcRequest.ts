@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus, Guid } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, Guid } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -23,7 +23,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 
 const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
-/** @public */
+/** @internal */
 export class ResponseLike implements Response {
   private _data: Promise<any>;
   public get body() { return null; }
@@ -49,27 +49,27 @@ export class ResponseLike implements Response {
 }
 
 /** Supplies an IModelRpcProps for an RPC request.
- * @public
+ * @internal
  */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
- * @public
+ * @internal
  */
 export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number;
 
 /** Notification callback for an RPC request.
- * @public
+ * @internal
  */
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 /** Determines if caching is permitted for a RPC response.
- * @public
+ * @internal
  */
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
 
 /** Runtime information related to the operation load of one or more RPC interfaces.
- * @public
+ * @internal
  */
 export interface RpcOperationsProfile {
   readonly lastRequest: number;
@@ -77,12 +77,12 @@ export interface RpcOperationsProfile {
 }
 
 /** Handles RPC request events.
- * @public
+ * @internal
  */
 export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void;
 
 /** Resolves "not found" responses for RPC requests.
- * @public
+ * @internal
  */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
@@ -100,7 +100,7 @@ class Cancellable<T> {
 }
 
 /** A RPC operation request.
- * @public
+ * @internal
  */
 export abstract class RpcRequest<TResponse = any> {
   private static _activeRequests: Map<string, RpcRequest> = new Map();

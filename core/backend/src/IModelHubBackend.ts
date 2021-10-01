@@ -8,14 +8,14 @@
 
 import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
   IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import {
   BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
   AcquireNewBriefcaseIdArg, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg,
@@ -51,7 +51,7 @@ export class IModelHubBackend {
   }
 
   private static async getAccessToken(arg: UserArg) {
-    return arg.user ?? await IModelHost.getAccessToken() ?? "";
+    return arg.user ?? await IModelHost.getAccessToken();
   }
   public static async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps> {
     const user = await this.getAccessToken(arg);

@@ -1,6 +1,6 @@
 # UIDataProvider
 
-The [UiDataProvider]($ui-abstract:Dialog) sets up data synchronization for apps that wish to develop their UI directly in React.
+The [UiDataProvider]($appui-abstract:Dialog) sets up data synchronization for apps that wish to develop their UI directly in React.
 
 As an abstract class, the app must extend it with a class in their own app:
 
@@ -8,7 +8,7 @@ As an abstract class, the app must extend it with a class in their own app:
 export class MyUiProvider extends UiDataProvider {}
 ```
 
-UiDataProvider relies on the app to provide an array of [DialogPropertyItem]($ui-abstract:Dialog) to communicate with the UI. To set this up, the app defines supplyAvailableProperties() to return the array of DialogPropertyItem interfaces:
+UiDataProvider relies on the app to provide an array of [DialogPropertyItem]($appui-abstract:Dialog) to communicate with the UI. To set this up, the app defines supplyAvailableProperties() to return the array of DialogPropertyItem interfaces:
 
 ```ts
 public supplyAvailableProperties(): DialogPropertyItem[] {
@@ -66,4 +66,4 @@ public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResul
 
 ## API Reference
 
-- [UiDataProvider]($ui-abstract:Dialog)
+- [UiDataProvider]($appui-abstract:Dialog)

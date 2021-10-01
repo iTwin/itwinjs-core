@@ -6,13 +6,13 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { AccuDrawInputField } from "../../ui-framework/accudraw/AccuDrawInputField";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { AccuDrawInputField } from "../../appui-react/accudraw/AccuDrawInputField";
+import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 import { TestUtils } from "../TestUtils";
-import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 
 // cspell:ignore uiadmin
 

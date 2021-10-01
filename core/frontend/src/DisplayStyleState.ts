@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
   BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -142,8 +142,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
-  /** @internal */
-  public get backgroundMapBase(): BaseLayerSettings | undefined { return this.settings.mapImagery.backgroundBase; }
+  /** @beta */
+  public get backgroundMapBase(): BaseLayerSettings {
+    return this.settings.mapImagery.backgroundBase;
+  }
+  public set backgroundMapBase(base: BaseLayerSettings) {
+    this.settings.mapImagery.backgroundBase = base;
+    this._synchBackgroundMapImagery();
+  }
 
   /** @internal */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
@@ -408,24 +414,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
-  /** @internal */
-  public changeBaseMapProps(props: MapLayerProps | ColorDef) {
-    if (props instanceof ColorDef) {
-      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
-    } else {
-      if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
-        this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
-      else {
-        const backgroundLayerSettings = BaseMapLayerSettings.fromJSON(props);
-        if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
-      }
-    }
-
-    this._synchBackgroundMapImagery();
-  }
-
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
@@ -437,14 +425,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
-      this._synchBackgroundMapImagery();
     } else {
-      this.changeBaseMapProps({ transparency });
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
     }
+    this._synchBackgroundMapImagery();
   }
 
   /** @internal */
-  public changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean) {
+  public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
@@ -460,7 +448,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  public changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
+  public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return;

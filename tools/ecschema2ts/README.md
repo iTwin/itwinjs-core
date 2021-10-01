@@ -5,7 +5,7 @@ ecschema2ts is a command-line tool that takes an EC3.1/EC3.2 BIS ECSchema xml fi
 ## Quick Overview
 
 ```sh
-$ npm install -g @bentley/ecschema2ts
+$ npm install -g @itwin/ecschema2ts
 
 $ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path\
 ```
@@ -17,7 +17,7 @@ $ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path
 Install globally:
 
 ```sh
-$ npm install -g @bentley/ecschema2ts
+$ npm install -g @itwin/ecschema2ts
 ```
 
 ### Creating a Typescript module
@@ -33,7 +33,7 @@ $ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path
 Since the package is installed globally, updating has a different syntax than normal. To update the package globally, run:
 
 ```sh
-$ npm update -g @bentley/ecschema2ts
+$ npm update -g @itwin/ecschema2ts
 ```
 
 ## Known Issues

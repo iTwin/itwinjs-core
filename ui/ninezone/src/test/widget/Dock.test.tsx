@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { Dock, NineZoneDispatch, NineZoneDispatchContext } from "../../ui-ninezone";
+import { Dock, NineZoneDispatch, NineZoneDispatchContext } from "../../appui-layout-react";
 
 describe("Dock", () => {
   it("should render", () => {

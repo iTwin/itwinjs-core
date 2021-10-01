@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolAssistanceSeparator } from "../../../ui-ninezone";
+import { ToolAssistanceSeparator } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<ToolAssistanceSeparator />", () => {

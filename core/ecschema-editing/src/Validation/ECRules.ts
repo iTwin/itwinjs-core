@@ -10,7 +10,7 @@ import { AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, 
   ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,

@@ -12,20 +12,20 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType, SelectionTool, SnapMode,
-} from "@bentley/imodeljs-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { Presentation } from "@itwin/presentation-frontend";
 import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
   MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
-import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+} from "@itwin/appui-abstract";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
   FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
-} from "@bentley/ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { FooterSeparator } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
@@ -35,7 +35,7 @@ import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
 
 // cSpell:ignore appui appuiprovider

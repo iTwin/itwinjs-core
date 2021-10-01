@@ -1,11 +1,11 @@
 # SplitButton
 
-The [SplitButton]($ui-core) React component displays a button with two parts:
+The [SplitButton]($core-react) React component displays a button with two parts:
 an action button on the left and an arrow button on the right that opens a context menu.
 
 ## Properties
 
-The SplitButton properties are defined in the [SplitButtonProps]($ui-core) interface.
+The SplitButton properties are defined in the [SplitButtonProps]($core-react) interface.
 The `label` prop specifies a label to display in the action area.
 The `icon` prop specifies an icon for the action area,
 and the `drawBorder` prop indicates whether to draw a border around the button.
@@ -44,4 +44,4 @@ and the `drawBorder` prop indicates whether to draw a border around the button.
 
 ## API Reference
 
-- [SplitButton]($ui-core:SplitButton)
+- [SplitButton]($core-react:SplitButton)

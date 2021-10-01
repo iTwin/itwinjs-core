@@ -6,9 +6,9 @@
  * @module Telemetry
  */
 
-import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { ClientTelemetryEvent, TelemetryClient, TelemetryEvent } from "@bentley/telemetry-client";
-import { RpcActivity } from "@bentley/imodeljs-common";
+import { RpcActivity } from "@itwin/core-common";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIntrospectionManager";
 
@@ -67,7 +67,7 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
         ? await this._clientAuthManager.getClientAuthDetails(requestContext)
         : undefined;
     } catch (err) {
-      Logger.logWarning(BackendITwinClientLoggerCategory.Telemetry, `Unable to obtain client auth details from request context`, () => getErrorProps(err));
+      Logger.logWarning(BackendITwinClientLoggerCategory.Telemetry, `Unable to obtain client auth details from request context`, BentleyError.getErrorProps(err));
     }
 
     const backendTelemetryEvent = new BackendTelemetryEvent(telemetryEvent, requestContext, this._backendMachineName, this._backendApplicationId, this._backendApplicationVersion, clientAuth);

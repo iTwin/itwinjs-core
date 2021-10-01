@@ -8,9 +8,9 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
@@ -18,14 +18,13 @@ import {
   FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
   SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { buildElementProperties } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
@@ -298,10 +297,8 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
-  private _isOneFrontendPerBackend: boolean;
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
-  private _disposeIpcHandler?: () => void;
   private _updatesTracker?: UpdatesTracker;
 
   /** Get / set active locale used for localizing presentation data */
@@ -349,16 +346,11 @@ export class PresentationManager {
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
-    this._isOneFrontendPerBackend = IpcHost.isValid;
-
-    if (IpcHost.isValid) {
-      if (isChangeTrackingEnabled) {
-        this._updatesTracker = UpdatesTracker.create({
-          nativePlatformGetter: this.getNativePlatform,
-          pollInterval: props.updatesPollInterval!,
-        });
-      }
-      this._disposeIpcHandler = PresentationIpcHandler.register();
+    if (IpcHost.isValid && isChangeTrackingEnabled) {
+      this._updatesTracker = UpdatesTracker.create({
+        nativePlatformGetter: this.getNativePlatform,
+        pollInterval: props.updatesPollInterval!,
+      });
     }
   }
 
@@ -378,9 +370,6 @@ export class PresentationManager {
       this._updatesTracker.dispose();
       this._updatesTracker = undefined;
     }
-
-    if (this._disposeIpcHandler)
-      this._disposeIpcHandler();
 
     this._isDisposed = true;
   }

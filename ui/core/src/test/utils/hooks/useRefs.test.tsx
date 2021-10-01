@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { mergeRefs, useRefs } from "../../../ui-core/utils/hooks/useRefs";
+import { mergeRefs, useRefs } from "../../../core-react/utils/hooks/useRefs";
 
 describe("useRefs", () => {
   it("should set ref objects and invoke ref callbacks", () => {

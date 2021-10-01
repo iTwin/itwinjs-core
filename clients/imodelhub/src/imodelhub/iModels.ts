@@ -7,7 +7,7 @@
  */
 
 import * as deepAssign from "deep-assign";
-import { AccessToken, getErrorMessage, GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyError, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
@@ -469,7 +469,7 @@ export class IModelsHandler {
       Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId }));
     } catch (err) {
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
-        Logger.logWarning(loggerCategory, `Can not create iModel: ${getErrorMessage(err)}`, () => ({ contextId }));
+        Logger.logWarning(loggerCategory, `Can not create iModel: ${BentleyError.getErrorMessage(err)}`, () => ({ contextId }));
 
         throw err;
       }

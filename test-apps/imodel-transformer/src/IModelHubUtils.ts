@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
-import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { ElectronAuthorizationBackend } from "@itwin/electron-manager/lib/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@bentley/imodeljs-common";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 
 export namespace IModelHubUtils {
 
@@ -24,8 +24,8 @@ export namespace IModelHubUtils {
       scope: "openid email profile organization itwinjs",
     });
     return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addListener((token) => {
-        if (token !== undefined) {
+      NativeHost.onAccessTokenChanged.addListener((token) => {
+        if (token !== "") {
           resolve(token);
         } else {
           reject(new Error("Failed to sign in"));

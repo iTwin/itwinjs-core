@@ -6,8 +6,8 @@
  * @module HyperModeling
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { AbstractToolbarProps } from "@itwin/appui-abstract";
 import { SectionMarker } from "./SectionMarkers";
 import { SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";

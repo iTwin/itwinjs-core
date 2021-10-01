@@ -5,14 +5,14 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@bentley/ui-core";
+import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
+} from "../../appui-layout-react";
+import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTitleBar", () => {

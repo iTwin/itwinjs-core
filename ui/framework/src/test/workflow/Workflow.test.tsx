@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../ui-framework";
+import { Logger } from "@itwin/core-bentley";
+import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
