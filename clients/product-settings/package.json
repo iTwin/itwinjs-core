@@ -19,11 +19,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/product-settings-client/file.json --tsIndexFile=product-settings-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
-    "test:integration": "npm run -s webpackTests && npm run -s test:integration:chrome",
-    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
-    "test:integration:electron": "certa -r electron --grep \"#integration\"",
-    "copy:config": "internal-tools copy-config",
-    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
+    "test:integration": ""
   },
   "keywords": [
     "Bentley",
@@ -45,7 +41,6 @@
     "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",

@@ -105,7 +105,6 @@ alpha;CardSelectedEvent
 alpha;CardSelectedEventArgs
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
-internal;ChangeSetInfo
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
@@ -292,10 +291,6 @@ beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 public;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
-internal;IModelInfo
-internal;IModelScope
-internal;IModelServices
-internal;IModelUserInfo
 public;IModelViewportControl 
 public;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
@@ -694,7 +689,6 @@ alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: bo
 internal;useWidgetDef(): WidgetDef | undefined
 alpha;useWidgetDirection(): "horizontal" | "vertical"
 alpha;ValidationTextbox 
-internal;VersionInfo
 beta;ViewAttributesStatusField 
 public;ViewLayout
 public;ViewOverlayProps

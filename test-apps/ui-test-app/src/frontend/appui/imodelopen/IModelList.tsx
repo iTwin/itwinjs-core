@@ -6,10 +6,16 @@ import "./IModelList.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SearchBox } from "@itwin/core-react";
-import { IModelInfo } from "@itwin/appui-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
 import { ProjectDialog } from "./ProjectDialog";
+
+export interface IModelInfo {
+  id: string;
+  iTwinId: string;
+  name: string;
+  createdDate: Date;
+}
 
 /** Properties for the [[IModelList]] component */
 export interface IModelListProps {
@@ -84,9 +90,8 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
   private renderIModel(iModelInfo: IModelInfo) {
     const size = `${Math.floor(Math.random() * 100).toString()} MB`;
-    // const checked = Math.random() > .5;
     return (
-      <tr key={iModelInfo.wsgId}>
+      <tr key={iModelInfo.id}>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-placeholder" />{iModelInfo.name}</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{size}</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
@@ -102,10 +107,10 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     return (
       <div className="cards">
         {iModels.map((iModelInfo: IModelInfo) => (
-          <IModelCard key={iModelInfo.wsgId}
+          <IModelCard key={iModelInfo.id}
             iModel={iModelInfo}
             showDescription={this.state.showDescriptions}
-            onSelectIModel={this.props.onIModelSelected} />
+          />
         ))}
       </div>
     );

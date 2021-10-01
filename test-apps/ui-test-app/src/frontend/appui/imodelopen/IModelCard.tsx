@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelCard.scss";
 import * as React from "react";
-import { IModelInfo, UiFramework } from "@itwin/appui-react";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
+import { IModelApp } from "@itwin/core-frontend";
 import { ProgressRadial } from "@itwin/itwinui-react";
-
-// import { IModelViewPicker } from "./IModelViewPicker";
 
 /** Properties for the [[IModelCard]] component */
 export interface IModelCardProps {
   showDescription?: boolean;
-  iModel: IModelInfo;
-  onSelectIModel?: (iModelInfo: IModelInfo) => void;
+  iModel: { iTwinId: string, id: string, name: string, thumbnail?: string, description?: string };
+  onSelectIModel?: (iModelInfo: { iTwinId: string, id: string, name: string }) => void;
 }
 
 interface IModelCardState {
@@ -43,9 +42,10 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  private async startRetrieveThumbnail(thisIModel: IModelInfo) {
+  private async startRetrieveThumbnail(arg: { iTwinId: string, id: string }) {
     this.setState({ waitingForThumbnail: true });
-    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.iTwinId, thisIModel.wsgId);
+    const hubFrontend = new IModelHubFrontend();
+    this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.authorizationClient?.getAccessToken())!, arg.id, { contextId: arg.iTwinId, size: "Small" });
     this.setState({ waitingForThumbnail: false });
   }
 

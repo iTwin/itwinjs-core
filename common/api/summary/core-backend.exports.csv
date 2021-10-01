@@ -315,13 +315,13 @@ public;Texture
 internal;TextureCreateProps 
 public;TitleText 
 public;ToChangesetArgs 
+public;TokenArg
 public;TxnChangedEntities
 public;TxnIdString = string
 public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
-public;UserArg
 internal;V1CheckpointManager
 beta;V2CheckpointAccessProps
 internal;V2CheckpointManager

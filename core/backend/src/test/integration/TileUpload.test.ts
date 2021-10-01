@@ -60,7 +60,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
 }
 
 describe("TileUpload (#integration)", () => {
-  let user: AccessToken;
+  let accessToken: AccessToken;
   let testIModelId: GuidString;
   let testContextId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
@@ -87,9 +87,9 @@ describe("TileUpload (#integration)", () => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    user = await TestUtility.getAccessToken(TestUsers.regular);
-    testContextId = await HubUtility.getTestITwinId(user);
-    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    testContextId = await HubUtility.getTestITwinId(accessToken);
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
     const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
@@ -100,9 +100,9 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 
   after(async () => {
@@ -112,14 +112,14 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
     const tile = await RpcTrace.run({
-      accessToken: user,
+      accessToken,
       activityId: "",
       applicationId: "",
       applicationVersion: "",
@@ -149,7 +149,7 @@ describe("TileUpload (#integration)", () => {
     assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
 
     await blob.delete();
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 });
 

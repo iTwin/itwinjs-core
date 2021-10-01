@@ -16,7 +16,7 @@ import {
 } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
@@ -34,7 +34,7 @@ import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@itwin/appui-react";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
@@ -63,6 +63,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import { ExternalIModel } from "./appui/ExternalIModel";
 import { ProgressInfo } from "@bentley/itwin-client";
 
 // Initialize my application gateway configuration for the frontend
@@ -333,7 +334,9 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
+      const iModel = new ExternalIModel(projectId, iModelId);
+      await iModel.openIModel();
+      iModelConnection = iModel.iModelConnection!;
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -420,7 +423,9 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
+        const iModel = new ExternalIModel(iTwinId, iModelId);
+        await iModel.openIModel();
+        iModelConnection = iModel.iModelConnection!;
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -432,7 +437,7 @@ export class SampleAppIModelApp {
     await SampleAppIModelApp.showFrontstage("IModelIndex");
   }
 
-  public static async showIModelOpen(_iModels: IModelInfo[] | undefined) {
+  public static async showIModelOpen() {
     await SampleAppIModelApp.showFrontstage("IModelOpen");
   }
 
@@ -488,7 +493,7 @@ export class SampleAppIModelApp {
       await LocalFileOpenFrontstage.open();
     } else {
       // open to the IModelOpen frontstage
-      await SampleAppIModelApp.showIModelOpen(undefined);
+      await SampleAppIModelApp.showIModelOpen();
     }
   }
 
@@ -616,8 +621,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
       } catch (err) { }
 
       authorized = auth.isAuthorized;
-      if (authorized)
-        IModelApp.authorizationClient = auth;
+      IModelApp.authorizationClient = auth;
     }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
@@ -729,6 +733,7 @@ async function main() {
       realityDataAccess: new RealityDataAccessClient(),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
+      hubAccess: new IModelHubFrontend(),
       mapLayerOptions: mapLayerOpts,
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },

@@ -20,8 +20,8 @@ describe("ApplyChangesets (#integration)", () => {
     IModelJsFs.purgeDirSync(iModelDir);
   };
 
-  const testOpen = async (user: AccessToken, projectId: string, iModelId: string) => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: projectId, iModelId });
+  const testOpen = async (accessToken: AccessToken, projectId: string, iModelId: string) => {
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: projectId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   };
