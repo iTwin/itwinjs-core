@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -295,7 +295,7 @@ export class ClipVector {
 
   /**
    * Determines whether a 3D range lies inside or outside this set of ClipShapes. If any set is defined by masking planes,
-   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the _clipplanes member.
+   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the clip planes member.
    */
   public classifyRangeContainment(range: Range3d, ignoreMasks: boolean): ClipPlaneContainment {
     const corners: Point3d[] = range.corners();

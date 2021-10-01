@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@bentley/geometry-core";
+import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, RenderTexture, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
@@ -555,12 +555,14 @@ class OrthographicAttachment {
 
     this._props = props;
     this._sheetModelId = sheetView.baseModelId;
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
 
     const applyClip = true; // set to false for debugging
-    this._viewFlagOverrides.setShowClipVolume(applyClip);
-    this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowShadows(false);
+    this._viewFlagOverrides = {
+      ...view.viewFlags,
+      clipVolume: applyClip,
+      lighting: false,
+      shadows: false,
+    };
 
     const placement = Placement2d.fromJSON(props.placement);
     const range = placement.calculateRange();

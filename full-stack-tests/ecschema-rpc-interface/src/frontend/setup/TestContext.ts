@@ -4,22 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -54,7 +53,7 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     // Setup environment
-    Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
@@ -69,8 +68,8 @@ export class TestContext {
 
     const iModelData = this.settings.iModel;
 
-    this.contextId = iModelData.projectId;
-    this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, iModelData);
+    this.iTwinId = this.iModelWithChangesets.iTwinId;
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 

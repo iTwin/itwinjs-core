@@ -5,17 +5,17 @@
 import "./ProjectDropdown.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup } from "@bentley/ui-core";
-import { ProjectInfo } from "@bentley/ui-framework";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { Popup } from "@itwin/core-react";
+import { ITwin } from "@bentley/context-registry-client";
 import { ProjectDialog } from "./ProjectDialog";
 
 /** Properties for the [[ProjectDropdown]] component */
 export interface ProjectDropdownProps {
   numVisibleProjects?: number;
-  recentProjects?: ProjectInfo[];
-  currentProject?: ProjectInfo;
-  onProjectClicked: (project: ProjectInfo) => any;
+  recentProjects?: ITwin[];
+  currentProject?: ITwin;
+  onProjectClicked: (project: ITwin) => any;
 }
 
 interface ProjectDropdownState {
@@ -49,14 +49,14 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
     this.closeDialog();
   };
 
-  private _onItemClick(project: ProjectInfo) {
+  private _onItemClick(iTwin: ITwin) {
     this.closeDropdown();
-    this.props.onProjectClicked(project);
+    this.props.onProjectClicked(iTwin);
   }
 
-  private _onProjectSelected = (project: ProjectInfo) => {
+  private _onProjectSelected = (iTwin: ITwin) => {
     this.closeDialog();
-    this.props.onProjectClicked(project);
+    this.props.onProjectClicked(iTwin);
   };
 
   private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
@@ -75,7 +75,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
     this.setState({ showProjectsDialog: false });
   }
 
-  private getProjects(): ProjectInfo[] {
+  private getProjects(): ITwin[] {
     if (this.props.recentProjects) {
       return this.props.recentProjects;
     }
@@ -83,7 +83,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
   }
 
   private renderProjects() {
-    const projects: ProjectInfo[] = this.getProjects();
+    const projects: ITwin[] = this.getProjects();
     const ulStyle: React.CSSProperties = {
       height: `${this.props.numVisibleProjects! * this._itemHeight}em`,
     };
@@ -98,11 +98,11 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
     } else {
       return (
         <ul style={ulStyle}>
-          {projects && projects.map((project: ProjectInfo, i: number) => (
+          {projects && projects.map((project: ITwin, i: number) => (
             <li style={liStyle} key={i} onClick={() => this._onItemClick(project)}>
               <span className="pp-icon icon icon-placeholder" />
               <div className="pp-details">
-                <span>{project.projectNumber}</span>
+                <span>{project.code}</span>
                 <span>{project.name}</span>
               </div>
             </li>
@@ -136,7 +136,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
       <div className="pp">
         <div className="pp-content" onClick={this._splitterClicked} ref={(element) => { this._target = element; }}>
           <div>
-            <span className="number">{this.props.currentProject ? this.props.currentProject.projectNumber : ""}</span>
+            <span className="number">{this.props.currentProject ? this.props.currentProject.code : ""}</span>
             <span className="name">{this.props.currentProject ? this.props.currentProject.name : ""}</span>
           </div>
           <span className={splitterClassName} />

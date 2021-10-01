@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
+import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
+import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
@@ -127,7 +127,7 @@ export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iM
 class PrimaryTreeReference extends TileTreeReference {
   public readonly view: ViewState;
   public readonly model: GeometricModelState;
-  protected readonly _viewFlagOverrides: ViewFlagOverrides;
+  protected _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
   private readonly _sectionClip?: StringifiedClipVector;
@@ -140,10 +140,10 @@ class PrimaryTreeReference extends TileTreeReference {
     this.model = model;
 
     this._sectionClip = sectionClip;
-    this._viewFlagOverrides = ViewFlagOverrides.fromJSON(model.jsonProperties.viewFlagOverrides);
+    this._viewFlagOverrides = { ...model.jsonProperties.viewFlagOverrides };
     if (sectionClip) {
       // Clipping will be applied on backend; don't clip out cut geometry.
-      this._viewFlagOverrides.setShowClipVolume(false);
+      this._viewFlagOverrides.clipVolume = false;
       this._sectionCutAppearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
         const cutApp = this.view.displayStyle.settings.clipStyle.cutStyle.appearance;
         return cutApp ? app.extendAppearance(cutApp) : app;
@@ -237,19 +237,22 @@ class PrimaryTreeReference extends TileTreeReference {
     if (this._sectionClip) {
       // We do this each time in case the ClipStyle's overrides are modified.
       // ###TODO: can we avoid that? Event listeners maybe?
-      this.view.displayStyle.settings.clipStyle.cutStyle.viewflags.clone(this._viewFlagOverrides);
-
-      // Do not clip out the cut geometry intersecting the clip planes.
-      this._viewFlagOverrides.setShowClipVolume(false);
-
-      // The cut geometry is planar - it should win a z-fight.
-      // Also we need to preserve this flag if this is a plan projection tile tree reference.
-      this._viewFlagOverrides.setForceSurfaceDiscard(true);
+      this._viewFlagOverrides = {
+        ...this.view.displayStyle.settings.clipStyle.cutStyle.viewflags,
+        // Do not clip out the cut geometry intersecting the clip planes.
+        clipVolume: false,
+        // The cut geometry is planar - it should win a z-fight.
+        // Also we need to preserve this flag if this is a plan projection tile tree reference.
+        forceSurfaceDiscard: true,
+      };
     }
 
     const script = view.displayStyle.scheduleState;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-    const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
+
+    const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
+    const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
+    const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode;
     const sectionCut = this._sectionClip?.clipString;
     return { type: BatchType.Primary, edgesRequired, animationId, animationTransformNodeId, sectionCut };
   }
@@ -288,7 +291,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   public constructor(view: ViewState3d, model: GeometricModelState, sectionCut?: StringifiedClipVector) {
     super(view, model, true, undefined, sectionCut);
-    this._viewFlagOverrides.setForceSurfaceDiscard(true);
+    this._viewFlagOverrides.forceSurfaceDiscard = true;
   }
 
   public override get castsShadows() {
@@ -475,8 +478,8 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
 
     // If the clip isn't supposed to apply to this model, don't produce cut geometry.
     const vfJson = clip ? ref.model.jsonProperties.viewFlagOverrides : undefined;
-    const vfOvrs = vfJson ? ViewFlagOverrides.fromJSON(vfJson) : undefined;
-    if (vfOvrs && !vfOvrs.clipVolumeOverride)
+    const vfOvrs = vfJson ? { ...vfJson } : undefined;
+    if (vfOvrs && !vfOvrs.clipVolume)
       clip = undefined;
 
     this._sectionCutRef = clip ? createTreeRef(ref.view, ref.model, clip) : undefined;

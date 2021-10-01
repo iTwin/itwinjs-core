@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
 import { app as electron } from "electron";
+import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-// __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
-import { RequestPriority } from "@bentley/presentation-common";
-import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
-import rpcs from "../common/Rpcs";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { RpcInterfaceDefinition } from "@itwin/core-common";
+// __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization.Imports
+import { Presentation, PresentationProps } from "@itwin/presentation-backend";
 // __PUBLISH_EXTRACT_END__
-import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
+// eslint-disable-next-line no-duplicate-imports
+import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory, PresentationManagerMode } from "@itwin/presentation-backend";
+import rpcs from "../common/Rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   loadEnv(path.join(__dirname, "..", "..", ".env"));
@@ -26,25 +25,6 @@ import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCateg
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
   Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
 
-  // initialize imodeljs-backend
-  await IModelHost.startup();
-
-  // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization2
-  // initialize presentation-backend
-  Presentation.initialize({
-    rulesetDirectories: [path.join("assets", "presentation_rules")],
-    localeDirectories: [path.join("assets", "locales")],
-    mode: PresentationManagerMode.ReadWrite,
-    taskAllocationsMap: {
-      [RequestPriority.Max]: 1,
-    },
-    useMmap: true,
-    updatesPollInterval: 20,
-  });
-  // __PUBLISH_EXTRACT_END__
-
-  // invoke platform-specific initialization
-  RpcConfiguration.developmentMode = true;
   // get platform-specific initialization function
   let init: (_rpcs: RpcInterfaceDefinition[]) => void;
   if (electron) {
@@ -55,5 +35,39 @@ import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCateg
   // do initialize
   init(rpcs);
 
+  // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization.Props
+  // set up props for the presentation backend
+  const presentationBackendProps: PresentationProps = {
+    rulesetDirectories: [path.join("assets", "presentation_rules")],
+    localeDirectories: [path.join("assets", "locales")],
+  };
+  // __PUBLISH_EXTRACT_END__
+
+  // props that we don't want to show in documentation set up example
+  presentationBackendProps.mode = PresentationManagerMode.ReadWrite;
+  presentationBackendProps.workerThreadsCount = 1;
+  presentationBackendProps.useMmap = true;
+  presentationBackendProps.updatesPollInterval = 20;
+
+  // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
+  // initialize presentation backend
+  Presentation.initialize(presentationBackendProps);
+  // __PUBLISH_EXTRACT_END__
+
   console.log(`Process ID: ${process.pid}`); // eslint-disable-line no-console
 })();
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}

@@ -18,12 +18,19 @@ export const createTestECClassInfo = (props?: Partial<ec.ClassInfo>) => ({
 });
 
 export const createTestRelatedClassInfo = (props?: Partial<ec.RelatedClassInfo>) => ({
-  sourceClassInfo: createTestECClassInfo({ name: "source:class", label: "Source" }),
-  targetClassInfo: createTestECClassInfo({ name: "target:class", label: "Target" }),
+  sourceClassInfo: createTestECClassInfo({ id: "0x1", name: "source:class", label: "Source" }),
+  targetClassInfo: createTestECClassInfo({ id: "0x2", name: "target:class", label: "Target" }),
   isPolymorphicTargetClass: false,
-  relationshipInfo: createTestECClassInfo({ name: "relationship:class", label: "Relationship" }),
+  relationshipInfo: createTestECClassInfo({ id: "0x3", name: "relationship:class", label: "Relationship" }),
   isForwardRelationship: false,
   isPolymorphicRelationship: false,
+  ...props,
+});
+
+export const createTestRelatedClassInfoWithOptionalRelationship = (props?: Partial<ec.RelatedClassInfoWithOptionalRelationship>) => ({
+  sourceClassInfo: createTestECClassInfo({ id: "0x1", name: "source:class", label: "Source" }),
+  targetClassInfo: createTestECClassInfo({ id: "0x2", name: "target:class", label: "Target" }),
+  isPolymorphicTargetClass: false,
   ...props,
 });
 

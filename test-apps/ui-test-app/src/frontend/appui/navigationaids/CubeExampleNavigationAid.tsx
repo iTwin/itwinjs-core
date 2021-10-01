@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, NavigationAidControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, NavigationAidControl } from "@itwin/appui-react";
 
 // -----------------------------------------------------------------------------
 // Example Cube Navigation Aid Control

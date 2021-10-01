@@ -8,7 +8,7 @@
 
 import {
   AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Vector3d, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public
@@ -87,7 +87,7 @@ export class Frustum {
   /** Multiply all the points of this Frustum by a Transform, in place. */
   public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
   /** Offset all of the points of this Frustum by a vector. */
-  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset); }
+  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset, pt); }
   /** Transform all the points of this Frustum and return the result in another Frustum. */
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
   /** Calculate a bounding range from the 8 points in this Frustum. */
@@ -97,7 +97,9 @@ export class Frustum {
    */
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); result.setFrom(this); return result; }
   /** Set the points of this Frustum to be copies of the points in another Frustum. */
-  public setFrom(other: Frustum) { for (let i = 0; i < 8; ++i) { this.points[i].setFrom(other.points[i]); } }
+  public setFrom(other: Frustum) { this.setFromCorners(other.points); }
+  /** Set the points of this frustum from array of corner points in NPC order. */
+  public setFromCorners(corners: Point3d[]) { for (let i = 0; i < 8; ++i) this.points[i].setFrom(corners[i]); }
   /** Scale this Frustum, in place, about its center by a scale factor. */
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
@@ -111,10 +113,10 @@ export class Frustum {
     orig.points[Npc._100].interpolate(f, orig.points[Npc._011], this.points[Npc._011]);
     orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
-  /** Get the front center point */
+  /** The point at the center of the front face of this frustum */
   public get frontCenter() { return this.getCorner(Npc.LeftBottomFront).interpolate(.5, this.getCorner(Npc.RightTopFront)); }
 
-  /** Get the front center point */
+  /** The point at the center of the rear face of this frustum */
   public get rearCenter() { return this.getCorner(Npc.LeftBottomRear).interpolate(.5, this.getCorner(Npc.RightTopRear)); }
 
   /** Scale this frustum's XY (viewing) plane about its center */

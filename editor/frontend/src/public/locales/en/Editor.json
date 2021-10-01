@@ -50,6 +50,18 @@
         "MidPoint": "Define arc midpoint"
       }
     },
+    "CreateBCurve": {
+      "keyin": "editor create bcurve",
+      "flyover": "Create B-spline Curve",
+      "Label": {
+        "Method": "Method",
+        "Order": "Order"
+      },
+      "Method": {
+        "ControlPoints": "Control Points",
+        "ThroughPoints": "Through Points"
+      }
+    },
     "CreateCircle": {
       "keyin": "editor create circle",
       "flyover": "Create Circle",
@@ -85,6 +97,10 @@
       "Label": {
         "CornerRadius": "Corner Radius"
       }
+    },
+    "OffsetFaces": {
+      "keyin": "editor offset faces",
+      "flyover": "Offset faces of surfaces and solids"
     },
     "UndoAll": {
       "keyin": "editor undo all",
@@ -146,6 +162,7 @@
         "NotAllowed": "A valid geographic coordinate reference system already exists",
         "NotGeolocated": "Not geolocated",
         "NoChanges": "No changes to project extents or geolocation to save",
+        "Readonly": "iModel is read-only",
         "ProjectExtents": "Project Extents",
         "LargeProjectExtents": "Project Extents Too Large",
         "ModifyProjectExtents": "Modify Project Extents",

@@ -7,7 +7,9 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { Toggle, ToggleButtonType } from "../../ui-core";
+import { Toggle, ToggleButtonType } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<Toggle />", () => {
   it("should render", () => {
@@ -115,6 +117,7 @@ describe("<Toggle />", () => {
     };
 
     const wrapper = mount(
+      // eslint-disable-next-line deprecation/deprecation
       <Toggle isOn={false} onChange={handleChange} disabled={false} buttonType={ToggleButtonType.Primary} showCheckmark={true} rounded={false} />,
     );
 

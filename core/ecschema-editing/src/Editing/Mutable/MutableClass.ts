@@ -5,7 +5,7 @@
 import {
   CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
   PrimitiveProperty, PrimitiveType, Property, StructArrayProperty, StructClass, StructProperty,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 /**
  * @internal
@@ -43,4 +43,7 @@ export abstract class MutableClass extends ECClass {
 
   public abstract override createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract override createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
+
+  public abstract override deleteProperty(name: string): Promise<void>;
+  public abstract override deletePropertySync(name: string): void;
 }

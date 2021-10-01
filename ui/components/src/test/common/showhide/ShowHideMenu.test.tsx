@@ -5,16 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { ShowHideMenu } from "../../../ui-components";
+import { fireEvent, render } from "@testing-library/react";
+import { ShowHideMenu } from "../../../components-react";
 import TestUtils from "../../TestUtils";
 
 describe("ShowHideMenu", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
-
-  afterEach(cleanup);
 
   describe("<ShowHideMenu />", () => {
     const items = [{ id: "0", label: "" }, { id: "1", label: "Item 1" }, { id: "2", label: "Item 2" }, { id: "3", label: "Item 3" }];

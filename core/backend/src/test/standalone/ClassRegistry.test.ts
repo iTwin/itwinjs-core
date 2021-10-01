@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Code, EntityMetaData } from "@bentley/imodeljs-common";
+import { Code, EntityMetaData } from "@itwin/core-common";
 import {
-  BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
-} from "../../imodeljs-backend";
+  DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
-  const requestContext = new BackendRequestContext();
 
   before(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
@@ -71,7 +70,7 @@ describe("Class Registry", () => {
 
   it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await imodel.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
     const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
 

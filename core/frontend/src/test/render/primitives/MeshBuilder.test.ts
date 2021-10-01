@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
+import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
@@ -16,7 +16,8 @@ import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primit
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { MeshBuilder, MeshEdgeCreationOptions, MeshParams } from "../../../render-primitives";
+import { MeshParams } from "../../../render/primitives/VertexTable";
+import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
 
 class FakeDisplayParams extends DisplayParams {

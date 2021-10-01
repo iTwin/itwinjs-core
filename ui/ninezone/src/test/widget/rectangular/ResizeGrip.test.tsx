@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../ui-ninezone";
-import { createBoundingClientRect, createPointerEvent, mount } from "../../Utils";
+import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../appui-layout-react";
+import { createRect, mount } from "../../Utils";
 
 describe("<ResizeGrip />", () => {
   it("should render", () => {
@@ -24,12 +24,12 @@ describe("<ResizeGrip />", () => {
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
     const gripElement = pointerCaptor.find("div").at(2).getDOMNode();
-    sinon.stub(gripElement, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 25, 200));
+    sinon.stub(gripElement, "getBoundingClientRect").returns(createRect(20, 0, 25, 200));
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerMove = createPointerEvent({
+    const pointerMove = new PointerEvent("pointermove", {
       clientX: 20,
       clientY: 35,
     });
@@ -57,7 +57,7 @@ describe("<ResizeGrip />", () => {
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerMove = createPointerEvent();
+    const pointerMove = new PointerEvent("pointermove");
     pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
@@ -70,13 +70,13 @@ describe("<ResizeGrip />", () => {
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     pointerCaptor.prop("onPointerUp")!(pointerUp);
 
-    const pointerMove = createPointerEvent();
+    const pointerMove = new PointerEvent("pointermove");
     pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
@@ -89,7 +89,7 @@ describe("<ResizeGrip />", () => {
       onResizeStart={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     sinon.stub(pointerDown, "clientX").get(() => 20);
     sinon.stub(pointerDown, "clientY").get(() => 35);
     pointerCaptor.prop("onPointerDown")!(pointerDown);
@@ -122,7 +122,7 @@ describe("<ResizeGrip />", () => {
       onResizeStart={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     spy.notCalled.should.true;
@@ -140,12 +140,12 @@ describe("<ResizeGrip />", () => {
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     sinon.stub(ref, "current").get(() => null).set(() => { });
 
-    const pointerMove = createPointerEvent();
+    const pointerMove = new PointerEvent("pointermove");
     pointerCaptor.prop("onPointerMove")!(pointerMove);
 
     spy.notCalled.should.true;
@@ -158,10 +158,10 @@ describe("<ResizeGrip />", () => {
       onResizeEnd={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     sinon.stub(pointerUp, "clientX").get(() => 20);
     sinon.stub(pointerUp, "clientY").get(() => 35);
     pointerCaptor.prop("onPointerUp")!(pointerUp);
@@ -188,7 +188,7 @@ describe("<ResizeGrip />", () => {
       onResizeEnd={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
@@ -206,12 +206,12 @@ describe("<ResizeGrip />", () => {
       onResizeEnd={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     sinon.stub(ref, "current").get(() => null).set(() => { });
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
@@ -236,11 +236,10 @@ describe("<ResizeGrip />", () => {
     const pointerCaptor = sut.find(PointerCaptor);
     const grip = sut.find(".nz-grip");
 
-    const pointerDownEvent = createPointerEvent();
+    const pointerDownEvent = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDownEvent);
 
-    const pointerUpEvent = createPointerEvent();
-    sinon.stub(pointerUpEvent, "clientX").get(() => 1);
+    const pointerUpEvent = new PointerEvent("pointerup", { clientX: 1 });
     pointerCaptor.prop("onPointerUp")!(pointerUpEvent);
 
     grip.simulate("click");

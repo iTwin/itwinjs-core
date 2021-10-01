@@ -5,7 +5,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
-const plugins = require("@bentley/webpack-tools-core");
+const plugins = require("@itwin/core-webpack-tools");
 module.exports = (env) => {
   return getConfig(env);
 };

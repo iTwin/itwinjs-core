@@ -4,22 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { IModelError } from "@bentley/imodeljs-common";
-import { BackendRequestContext, SnapshotDb } from "../../imodeljs-backend";
+import { IModelError } from "@itwin/core-common";
+import { SnapshotDb } from "../../core-backend";
 import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelSchemaLoader", () => {
   let imodel: SnapshotDb;
-  const requestContext = new BackendRequestContext();
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {

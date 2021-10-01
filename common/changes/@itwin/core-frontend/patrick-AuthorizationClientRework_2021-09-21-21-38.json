@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removed WebAppViewer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

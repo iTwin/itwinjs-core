@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { CheckBoxState } from "@bentley/ui-core";
-import { SparseArray, SparseTree } from "../../../ui-components/tree/controlled/internal/SparseTree";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { CheckBoxState } from "@itwin/core-react";
+import { SparseArray, SparseTree } from "../../../components-react/tree/controlled/internal/SparseTree";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModelNode, TreeModelNodeInput,
-  TreeModelNodePlaceholder, TreeModelRootNode,
-} from "../../../ui-components/tree/controlled/TreeModel";
+  computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel,
+  TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode,
+} from "../../../components-react/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {
@@ -483,130 +483,6 @@ describe("MutableTreeModel", () => {
     });
   });
 
-  describe("computeVisibleNodes", () => {
-    describe("visible nodes callbacks", () => {
-      beforeEach(() => {
-        treeMock.reset();
-        treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode);
-        treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray);
-        rootNode = { ...rootNode, isExpanded: false };
-      });
-
-      it("getNumNodes", () => {
-        const visibleNodes = treeModel.computeVisibleNodes();
-        expect(visibleNodes.getNumNodes()).to.be.eq(1);
-      });
-
-      it("getAtIndex with number index", () => {
-        const visibleNodes = treeModel.computeVisibleNodes();
-        expect(visibleNodes.getAtIndex(0)).to.deep.eq(rootNode);
-      });
-
-      it("getAtIndex with string index", () => {
-        const visibleNodes = treeModel.computeVisibleNodes();
-        expect(visibleNodes.getAtIndex(rootNode.id as any)).to.deep.eq(rootNode);
-      });
-
-      it("getModel", () => {
-        const visibleNodes = treeModel.computeVisibleNodes();
-        expect(visibleNodes.getModel()).to.deep.eq(treeModel);
-      });
-
-      it("getNumRootNodes", () => {
-        treeModel.setNumChildren(undefined, 5);
-        const visibleNodes = treeModel.computeVisibleNodes();
-        expect(visibleNodes.getNumRootNodes()).to.eq(5);
-      });
-
-      it("getIndexOfNode", () => {
-        const visibleNodes = treeModel.computeVisibleNodes();
-        expect(visibleNodes.getIndexOfNode(rootNode.id)).to.eq(0);
-      });
-
-      it("iterator", () => {
-        const visibleNodes = treeModel.computeVisibleNodes();
-        for (const node of visibleNodes)
-          expect(node).to.deep.eq(rootNode);
-      });
-    });
-
-    it("returns visible collapsed root node", () => {
-      rootNode = { ...rootNode, isExpanded: false };
-      treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
-
-      const result = treeModel.computeVisibleNodes();
-      treeMock.verifyAll();
-
-      expect(result.getNumNodes()).to.be.eq(1);
-      const visibleNode = result.getAtIndex(0);
-      expect((visibleNode as TreeModelNode).id).to.be.eq(rootNode.id);
-      expect(result.getModel()).to.be.eq(treeModel);
-    });
-
-    it("returns visible expanded root node without children", () => {
-      rootNode = { ...rootNode, isExpanded: true };
-      treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getChildren(rootNode.id)).returns(() => new SparseArray<string>()).verifiable(moq.Times.once());
-
-      const result = treeModel.computeVisibleNodes();
-      treeMock.verifyAll();
-      expect(result.getNumNodes()).to.be.eq(1);
-    });
-
-    it("returns visible expanded root node and child node", () => {
-      rootNode = { ...rootNode, isExpanded: true, numChildren: 1 };
-      childNode = { ...childNode, isExpanded: false };
-      treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getChildren(rootNode.id)).returns(() => childNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(childNode.id)).returns(() => childNode).verifiable(moq.Times.once());
-
-      const result = treeModel.computeVisibleNodes();
-      treeMock.verifyAll();
-      expect(result.getNumNodes()).to.be.eq(2);
-    });
-
-    it("returns visible expanded root node and placeholder child node if child node was disposed", () => {
-      rootNode = { ...rootNode, isExpanded: true, numChildren: 1 };
-      childNode = { ...childNode, isExpanded: false };
-      treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getChildren(rootNode.id)).returns(() => childNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(childNode.id)).returns(() => undefined).verifiable(moq.Times.once());
-
-      const result = treeModel.computeVisibleNodes();
-      treeMock.verifyAll();
-      expect(result.getNumNodes()).to.be.eq(2);
-      expect(isTreeModelNode(result.getAtIndex(0))).to.be.true;
-      expect(isTreeModelNodePlaceholder(result.getAtIndex(1))).to.be.true;
-    });
-
-    it("returns visible placeholder node", () => {
-      const placeholderNodesArray = new SparseArray<string>();
-      placeholderNodesArray.setLength(1);
-      treeMock.setup((x) => x.getChildren(undefined)).returns(() => placeholderNodesArray).verifiable(moq.Times.once());
-
-      const result = treeModel.computeVisibleNodes();
-      treeMock.verifyAll();
-      expect(result.getNumNodes()).to.be.eq(1);
-      expect(isTreeModelNodePlaceholder(result.getAtIndex(0))).to.be.true;
-    });
-
-    it("returns only root node if children does not exist", () => {
-      rootNode = { ...rootNode, isExpanded: true, numChildren: 1 };
-      treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
-      treeMock.setup((x) => x.getChildren(rootNode.id)).returns(() => undefined!).verifiable(moq.Times.once());
-
-      const result = treeModel.computeVisibleNodes();
-      treeMock.verifyAll();
-      expect(result.getNumNodes()).to.be.eq(1);
-      expect(result.getAtIndex(0)).to.be.deep.eq(rootNode);
-    });
-  });
-
   describe("iterateTreeModelNodes", () => {
     it("iterates nodes", () => {
       treeMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
@@ -633,6 +509,144 @@ describe("MutableTreeModel", () => {
       }
       expect(index).to.be.eq(0);
     });
+  });
+});
+
+describe("computeVisibleNodes", () => {
+
+  const treeModelMock = moq.Mock.ofType<TreeModel>();
+  let rootNode: MutableTreeModelNode;
+  let rootNodesArray: SparseArray<string>;
+  let childNode: MutableTreeModelNode;
+  let childNodesArray: SparseArray<string>;
+
+  beforeEach(() => {
+    treeModelMock.reset();
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ id: undefined, depth: -1, numChildren: rootNodesArray.getLength() }));
+
+    rootNode = createRandomMutableTreeModelNode();
+    rootNodesArray = new SparseArray<string>();
+    rootNodesArray.set(0, rootNode.id);
+
+    childNode = createRandomMutableTreeModelNode(rootNode.id);
+    childNodesArray = new SparseArray<string>();
+    childNodesArray.set(0, childNode.id);
+  });
+
+  describe("visible nodes callbacks", () => {
+    beforeEach(() => {
+      treeModelMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode);
+      treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray);
+      rootNode = { ...rootNode, isExpanded: false };
+    });
+
+    it("getNumNodes", () => {
+      const visibleNodes = computeVisibleNodes(treeModelMock.object);
+      expect(visibleNodes.getNumNodes()).to.be.eq(1);
+    });
+
+    it("getAtIndex with number index", () => {
+      const visibleNodes = computeVisibleNodes(treeModelMock.object);
+      expect(visibleNodes.getAtIndex(0)).to.deep.eq(rootNode);
+    });
+
+    it("getModel", () => {
+      const visibleNodes = computeVisibleNodes(treeModelMock.object);
+      expect(visibleNodes.getModel()).to.deep.eq(treeModelMock.object);
+    });
+
+    it("getNumRootNodes", () => {
+      rootNodesArray.setLength(5);
+      const visibleNodes = computeVisibleNodes(treeModelMock.object);
+      expect(visibleNodes.getNumRootNodes()).to.eq(5);
+    });
+
+    it("getIndexOfNode", () => {
+      const visibleNodes = computeVisibleNodes(treeModelMock.object);
+      expect(visibleNodes.getIndexOfNode(rootNode.id)).to.eq(0);
+    });
+
+    it("iterator", () => {
+      const visibleNodes = computeVisibleNodes(treeModelMock.object);
+      for (const node of visibleNodes)
+        expect(node).to.deep.eq(rootNode);
+    });
+  });
+
+  it("returns visible collapsed root node", () => {
+    rootNode = { ...rootNode, isExpanded: false };
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+
+    const result = computeVisibleNodes(treeModelMock.object);
+    treeModelMock.verifyAll();
+
+    expect(result.getNumNodes()).to.be.eq(1);
+    const visibleNode = result.getAtIndex(0);
+    expect((visibleNode as TreeModelNode).id).to.be.eq(rootNode.id);
+    expect(result.getModel()).to.be.eq(treeModelMock.object);
+  });
+
+  it("returns visible expanded root node without children", () => {
+    rootNode = { ...rootNode, isExpanded: true };
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getChildren(rootNode.id)).returns(() => new SparseArray<string>()).verifiable(moq.Times.once());
+
+    const result = computeVisibleNodes(treeModelMock.object);
+    treeModelMock.verifyAll();
+    expect(result.getNumNodes()).to.be.eq(1);
+  });
+
+  it("returns visible expanded root node and child node", () => {
+    rootNode = { ...rootNode, isExpanded: true, numChildren: 1 };
+    childNode = { ...childNode, isExpanded: false };
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getChildren(rootNode.id)).returns(() => childNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(childNode.id)).returns(() => childNode).verifiable(moq.Times.once());
+
+    const result = computeVisibleNodes(treeModelMock.object);
+    treeModelMock.verifyAll();
+    expect(result.getNumNodes()).to.be.eq(2);
+  });
+
+  it("returns visible expanded root node and placeholder child node if child node was disposed", () => {
+    rootNode = { ...rootNode, isExpanded: true, numChildren: 1 };
+    childNode = { ...childNode, isExpanded: false };
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getChildren(rootNode.id)).returns(() => childNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(childNode.id)).returns(() => undefined).verifiable(moq.Times.once());
+
+    const result = computeVisibleNodes(treeModelMock.object);
+    treeModelMock.verifyAll();
+    expect(result.getNumNodes()).to.be.eq(2);
+    expect(isTreeModelNode(result.getAtIndex(0))).to.be.true;
+    expect(isTreeModelNodePlaceholder(result.getAtIndex(1))).to.be.true;
+  });
+
+  it("returns visible placeholder node", () => {
+    const placeholderNodesArray = new SparseArray<string>();
+    placeholderNodesArray.setLength(1);
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => placeholderNodesArray).verifiable(moq.Times.once());
+
+    const result = computeVisibleNodes(treeModelMock.object);
+    treeModelMock.verifyAll();
+    expect(result.getNumNodes()).to.be.eq(1);
+    expect(isTreeModelNodePlaceholder(result.getAtIndex(0))).to.be.true;
+  });
+
+  it("returns only root node if children does not exist", () => {
+    rootNode = { ...rootNode, isExpanded: true, numChildren: 1 };
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => rootNodesArray).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getNode(rootNode.id)).returns(() => rootNode).verifiable(moq.Times.once());
+    treeModelMock.setup((x) => x.getChildren(rootNode.id)).returns(() => undefined!).verifiable(moq.Times.once());
+
+    const result = computeVisibleNodes(treeModelMock.object);
+    treeModelMock.verifyAll();
+    expect(result.getNumNodes()).to.be.eq(1);
+    expect(result.getAtIndex(0)).to.be.deep.eq(rootNode);
   });
 });
 

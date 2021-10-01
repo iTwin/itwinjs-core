@@ -8,15 +8,18 @@
  */
 
 import { Logger as IOidcClientLogger, Log as OidcClientLog } from "oidc-client";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**
  * Utility to forward oidc-client logs to the Bentley logger
  * Because the logger used by the oidc-client library is static, we can't tie specific UserManager instances to different logging categories.
  * Thus, the best we can do is tie all logs originating from the library to a single logging category (derived from the name of this class).
+ * @beta
  */
 export class BrowserAuthorizationLogger implements IOidcClientLogger {
+  private static initialized: boolean = false;
+
   private constructor() {
   }
 
@@ -57,13 +60,14 @@ export class BrowserAuthorizationLogger implements IOidcClientLogger {
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
     const logLevel = BrowserAuthorizationLogger.getLogLevel(FrontendAuthorizationClientLoggerCategory.Authorization);
-    if (!OidcClientLog.logger) {
+    if (!BrowserAuthorizationLogger.initialized) {
       OidcClientLog.logger = new BrowserAuthorizationLogger();
     }
 
     if (OidcClientLog.level < logLevel) {
       OidcClientLog.level = logLevel;
     }
+    BrowserAuthorizationLogger.initialized = true;
   }
 
   /** Resets (or clears) forwarding of OidcClient logs to the Bentley Logger */

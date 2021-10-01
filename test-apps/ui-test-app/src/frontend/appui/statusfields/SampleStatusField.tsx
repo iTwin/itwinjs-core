@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Button, ButtonType, FillCentered } from "@bentley/ui-core";
-import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
-import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
-import { ColorPickerPopup } from "@bentley/ui-components";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { FillCentered } from "@itwin/core-react";
+import { Indicator, StatusBarFieldId, StatusFieldProps } from "@itwin/appui-react";
+import { Dialog, FooterPopup, TitleBar } from "@itwin/appui-layout-react";
+import { ColorPickerPopup } from "@itwin/imodel-components-react";
+import { ColorDef } from "@itwin/core-common";
+import { Button } from "@itwin/itwinui-react";
 
 interface SampleStatusFieldState {
   target: HTMLElement | null;
@@ -20,7 +21,7 @@ interface SampleStatusFieldState {
 
 export class SampleStatusField extends React.Component<StatusFieldProps, SampleStatusFieldState> {
   private _className: string;
-  private _title = IModelApp.i18n.translate("SampleApp:statusFields.sampleField");
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:statusFields.sampleField");
 
   constructor(props: any) {
     super(props);
@@ -65,7 +66,7 @@ export class SampleStatusField extends React.Component<StatusFieldProps, SampleS
         <FillCentered>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <ColorPickerPopup initialColor={colorDef} />
-            <Button buttonType={ButtonType.Blue}>{IModelApp.i18n.translate("SampleApp:statusFields.sampleButton")}</Button>
+            <Button styleType="high-visibility" size="small">{IModelApp.localization.getLocalizedString("SampleApp:statusFields.sampleButton")}</Button>
           </div>
         </FillCentered>
       </div>

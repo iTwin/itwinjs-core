@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point, Rectangle } from "@bentley/ui-core";
-import { ResizeGrip, SafeAreaInsets, StagePanel, StagePanelType, StagePanelTypeHelpers } from "../../ui-ninezone";
+import { Point, Rectangle } from "@itwin/core-react";
+import { ResizeGrip, SafeAreaInsets, StagePanel, StagePanelType, StagePanelTypeHelpers } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<StagePanel />", () => {

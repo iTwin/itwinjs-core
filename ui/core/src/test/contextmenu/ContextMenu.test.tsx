@@ -6,15 +6,13 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
-import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
-import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
-import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
+import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
+import { render } from "@testing-library/react";
+import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../core-react";
+import { TildeFinder } from "../../core-react/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {
-
-  afterEach(cleanup);
 
   const createBubbledEvent = (type: string, props = {}) => {
     return TestUtils.createBubbledEvent(type, props);
@@ -59,8 +57,7 @@ describe("ContextMenu", () => {
           <ContextMenuItem> Test </ContextMenuItem>
         </ContextMenu>);
 
-      const mouseUp = document.createEvent("HTMLEvents");
-      mouseUp.initEvent("mouseup");
+      const mouseUp = new MouseEvent("mouseup");
       sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseUp);
 
@@ -73,8 +70,7 @@ describe("ContextMenu", () => {
           <ContextMenuItem> Test </ContextMenuItem>
         </ContextMenu>);
 
-      const mouseUp = document.createEvent("HTMLEvents");
-      mouseUp.initEvent("mouseup");
+      const mouseUp = new MouseEvent("mouseup");
       sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseUp);
 
@@ -628,6 +624,17 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
     });
+    it("onFocus handled correctly", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" >
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.focus();
+      expect(document.activeElement).to.eq(item);
+    });
     it("should support changing direction", () => {
       const wrapper = mount<ContextSubMenu>(
         <ContextSubMenu label="test" autoflip={true}>
@@ -657,51 +664,51 @@ describe("ContextMenu", () => {
 
   describe("ContextMenu.autoFlip", () => {
     it("should handle rect overflowing right side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, { left: 51, top: 25, right: 101, bottom: 75, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRect.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Right, { left: 51, top: 25, right: 101, bottom: 75, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Right, DOMRect.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Left);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, { left: 51, top: 25, right: 101, bottom: 75, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRect.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomLeft);
     });
     it("should handle rect overflowing left side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, { left: -1, top: 25, right: 49, bottom: 75, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRect.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopRight);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Left, { left: -1, top: 25, right: 49, bottom: 75, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Left, DOMRect.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Right);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, { left: -1, top: 25, right: 49, bottom: 75, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRect.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomRight);
     });
     it("should handle rect overflowing bottom side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, { left: 25, top: 51, right: 75, bottom: 101, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRect.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Bottom, { left: 25, top: 51, right: 75, bottom: 101, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Bottom, DOMRect.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Top);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, { left: 25, top: 51, right: 75, bottom: 101, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRect.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopRight);
     });
     it("should handle rect overflowing top side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, { left: 25, top: -1, right: 75, bottom: 49, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRect.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomLeft);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Top, { left: 25, top: -1, right: 75, bottom: 49, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Top, DOMRect.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Bottom);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, { left: 25, top: -1, right: 75, bottom: 49, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRect.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomRight);
     });
     it("should handle rect overflowing top left side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, { left: -1, top: -1, right: 49, bottom: 49, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRect.fromRect({ x: -1, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomRight);
     });
     it("should handle rect overflowing top right side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, { left: 51, top: -1, right: 101, bottom: 49, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRect.fromRect({ x: 51, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomLeft);
     });
     it("should handle rect overflowing bottom left side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, { left: -1, top: 51, right: 49, bottom: 101, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRect.fromRect({ x: -1, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopRight);
     });
     it("should handle rect overflowing bottom right side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, { left: 51, top: 51, right: 101, bottom: 101, height: 50, width: 50 }, 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRect.fromRect({ x: 51, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
     });
   });

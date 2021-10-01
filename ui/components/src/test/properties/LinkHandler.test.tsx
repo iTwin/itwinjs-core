@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
+import { LinkElementsInfo } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
-import { hasLinks, LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
+import { LinksRenderer, renderLinks, withLinks } from "../../components-react/properties/LinkHandler";
 import TestUtils from "../TestUtils";
 
 describe("LinkHandler", () => {
@@ -22,25 +22,6 @@ describe("LinkHandler", () => {
     links = {
       onClick: onClickSpy,
     };
-  });
-
-  describe("hasLinks", () => {
-    let record: PropertyRecord;
-
-    beforeEach(() => {
-      record = TestUtils.createPrimitiveStringProperty("label", "Test record");
-    });
-
-    it("returns true when property record has anchor properties", () => {
-      record.links = links;
-      // eslint-disable-next-line deprecation/deprecation
-      expect(hasLinks(record)).to.be.true;
-    });
-
-    it("returns false when property record does not have anchor properties", () => {
-      // eslint-disable-next-line deprecation/deprecation
-      expect(hasLinks(record)).to.be.false;
-    });
   });
 
   describe("renderLinks", () => {

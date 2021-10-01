@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextSelectFormatPropEditorSpec, UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { Logger } from "@itwin/core-bentley";
+import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextSelectFormatPropEditorSpec } from "@itwin/core-frontend";
 import {
-  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
-} from "@bentley/imodeljs-quantity";
+  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey,
+} from "@itwin/core-quantity";
 
 interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {
@@ -186,7 +186,7 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
   public get label(): string {
     if (!this._label) {
       if (this._labelKey)
-        this._label = IModelApp.i18n.translate(this._labelKey);
+        this._label = IModelApp.localization.getLocalizedString(this._labelKey);
       else
         this._label = this._type;
     }
@@ -196,7 +196,7 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
   public get description(): string {
     if (!this._description) {
       if (this._descriptionKey)
-        this._description = IModelApp.i18n.translate(this._descriptionKey);
+        this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
       else
         this._description = this.label;
     }
@@ -231,10 +231,10 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
       {
         editorType: "select",
         selectOptions: [
-          { value: "clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
-          { value: "counter-clockwise", label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") },
+          { value: "clockwise", label: IModelApp.localization.getLocalizedString("SampleApp:BearingQuantityType.bearingAngleDirection.clockwise") },
+          { value: "counter-clockwise", label: IModelApp.localization.getLocalizedString("SampleApp:BearingQuantityType.bearingAngleDirection.counter-clockwise") },
         ],
-        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
+        label: IModelApp.localization.getLocalizedString("SampleApp:BearingQuantityType.bearingAngleDirection.label"),
         getString: BearingQuantityType.bearingAngleDirectionGetter,
         setString: BearingQuantityType.bearingAngleDirectionSetter,
       } as TextSelectFormatPropEditorSpec,
@@ -245,7 +245,7 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
     return [
       {
         editorType: "checkbox",
-        label: IModelApp.i18n.translate("SampleApp:BearingQuantityType.bearingGap.label"),
+        label: IModelApp.localization.getLocalizedString("SampleApp:BearingQuantityType.bearingGap.label"),
         getBool: BearingQuantityType.bearingGapPropGetter,
         setBool: BearingQuantityType.bearingGapPropSetter,
       } as CheckboxFormatPropEditorSpec,

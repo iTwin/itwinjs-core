@@ -6,13 +6,18 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames } from "@bentley/ui-abstract";
-import { Button, Point } from "@bentley/ui-core";
-import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework";
-import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
-import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
+import {
+  AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem,
+  DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult,
+  PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
+} from "@itwin/appui-abstract";
+import { Point } from "@itwin/core-react";
+import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../appui-react";
+import { ClearKeyinPaletteHistoryTool } from "../../appui-react/tools/KeyinPaletteTools";
+import * as keyinExports from "../../appui-react/popup/KeyinPalettePanel";
 import TestUtils from "../TestUtils";
-import { MockRender, Tool } from "@bentley/imodeljs-frontend";
+import { MockRender, Tool } from "@itwin/core-frontend";
+import { Button } from "@itwin/itwinui-react";
 
 class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   public currentPageIndex = 0;
@@ -140,7 +145,7 @@ describe("FrameworkUiAdmin", () => {
 
     uiAdmin = new FrameworkUiAdmin();
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ i18n: TestUtils.i18n });
+    await MockRender.App.startup({ localization: TestUtils.localization });
   });
 
   after(async () => {
@@ -357,7 +362,7 @@ describe("FrameworkUiAdmin", () => {
   it("should ClearKeyinPaletteHistoryTool", async () => {
     const stub = sinon.stub(keyinExports, "clearKeyinPaletteHistory").returns();
     const tool = new ClearKeyinPaletteHistoryTool();
-    tool.parseAndRun();
+    await tool.parseAndRun();
     expect(stub).to.be.calledOnce;
   });
 

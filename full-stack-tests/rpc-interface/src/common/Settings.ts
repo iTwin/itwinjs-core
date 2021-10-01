@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { LogLevel } from "@itwin/core-bentley";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 
 /* eslint-disable @typescript-eslint/indent */
 
@@ -38,8 +38,6 @@ export function getRpcInterfaces(settings: Settings) {
     rpcInterfaces.push(PresentationRpcInterface);
   if (settings.runiModelReadRpcTests)
     rpcInterfaces.push(IModelReadRpcInterface);
-  if (settings.runiModelWriteRpcTests)
-    rpcInterfaces.push(IModelWriteRpcInterface); // eslint-disable-line deprecation/deprecation
   if (settings.runiModelTileRpcTests)
     rpcInterfaces.push(IModelTileRpcInterface);
 
@@ -192,7 +190,6 @@ export class Settings {
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
 
-    // Get client configuration
     if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
       this.clientConfiguration = {
         clientId: process.env.CLIENT_WITH_ACCESS_ID,

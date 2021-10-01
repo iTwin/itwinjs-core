@@ -12,9 +12,9 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
+import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
@@ -91,8 +91,15 @@ export class ViewCreator3d {
     const categories: Id64Array = await this._getAllCategories();
 
     // model extents
+    const modelExtents = new Range3d();
     const modelProps = await this._imodel.models.queryModelRanges(models);
-    const modelExtents = Range3d.fromJSON(modelProps[0]);
+
+    for (const props of modelProps)
+      modelExtents.union(Range3d.fromJSON(props), modelExtents);
+
+    if (modelExtents.isNull)
+      modelExtents.setFrom(this._imodel.projectExtents);
+
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     const originZ = modelExtents.low.z;

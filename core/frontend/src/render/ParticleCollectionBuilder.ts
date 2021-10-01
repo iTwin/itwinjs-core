@@ -6,15 +6,15 @@
  * @module Rendering
  */
 
-import { Id64String, partitionArray } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Id64String, partitionArray } from "@itwin/core-bentley";
+import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { MeshParams} from "./primitives/VertexTable";
+import { MeshParams } from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "./primitives/DisplayParams";
 
@@ -325,7 +325,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
   const halfHeight = size.y / 2;
   const corners = [
     new Point3d(-halfWidth, -halfHeight, 0), new Point3d(halfWidth, -halfHeight, 0),
-    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth,halfHeight, 0),
+    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth, halfHeight, 0),
   ];
 
   const quadArgs = new MeshArgs();
@@ -337,7 +337,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
     quadArgs.points.add(corner);
 
   quadArgs.vertIndices = [0, 1, 2, 2, 1, 3];
-  quadArgs.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+  quadArgs.textureUv = [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)];
   quadArgs.texture = texture;
   quadArgs.colors.initUniform(ColorDef.white.withTransparency(transparency));
   quadArgs.isPlanar = true;
@@ -355,7 +355,7 @@ function clampTransparency(transparency: number): number {
 }
 
 class ArraySlice<T> {
-  private readonly _array:  T[];
+  private readonly _array: T[];
   private readonly _startIndex: number;
   private readonly _endIndex: number;
 
@@ -370,7 +370,7 @@ class ArraySlice<T> {
   }
 
   public [Symbol.iterator](): Iterator<T> {
-    function * iterator(array: T[], start: number, end: number) {
+    function* iterator(array: T[], start: number, end: number) {
       for (let i = start; i < end; i++)
         yield array[i];
     }

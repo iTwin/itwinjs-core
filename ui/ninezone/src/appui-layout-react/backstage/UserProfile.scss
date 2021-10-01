@@ -1,0 +1,51 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../prefix";
+@import "../safearea";
+@import "variables";
+
+.nz-backstage-userProfile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding-bottom: $nz-backstage-user-profile-spacing;
+  padding-top: $nz-backstage-user-profile-spacing;
+
+  > span:first-child {
+    flex: initial;
+    font-size: 1em;
+    width: $nz-backstage-user-profile-size;
+    height: $nz-backstage-user-profile-size;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    margin-left: $nz-backstage-icon-spacing-left;
+    border: 2px solid rgba(0,0,0,0.1);
+    @include nz-border-radius(50%);
+  }
+
+  > span:last-child {
+    flex: 1;
+    margin-left: $nz-backstage-user-profile-label-spacing-left;
+    margin-right: $nz-backstage-user-profile-label-spacing-right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  &.nz-safe-area-left {
+    @include nz-safe-area-left;
+  }
+
+  &:hover {
+    background: $nz-backstage-item-hover-background;
+    color: $nz-backstage-item-color;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { DragHandle, DragHandleProps, PointerCaptor } from "../../ui-ninezone";
-import { createPointerEvent, mount } from "../Utils";
+import { DragHandle, DragHandleProps, PointerCaptor } from "../../appui-layout-react";
+import { mount } from "../Utils";
 
 describe("<DragHandle />", () => {
   it("should render", () => {
@@ -32,10 +32,10 @@ describe("<DragHandle />", () => {
     const sut = mount<DragHandle>(<DragHandle onClick={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerMove = createPointerEvent({
+    const pointerMove = new PointerEvent("pointermove", {
       clientX: 30,
     });
     pointerCaptor.prop("onPointerMove")!(pointerMove);
@@ -53,9 +53,8 @@ describe("<DragHandle />", () => {
     const target = document.createElement("div");
     target.releasePointerCapture = () => spy; // eslint-disable-line @typescript-eslint/unbound-method
 
-    const pointerDown = createPointerEvent({
-      target,
-    });
+    const pointerDown = new PointerEvent("pointerdown");
+    sinon.stub(pointerDown, "target").get(() => target);
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
     spy.calledOnce.should.false;

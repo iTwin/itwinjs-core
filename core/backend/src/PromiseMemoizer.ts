@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** Wrapper around a promise that allows synchronous queries of it's state
@@ -29,7 +29,9 @@ export class QueryablePromise<T> {
   }
 }
 
+/** @internal */
 export type MemoizeFnType<T> = (...args: any[]) => Promise<T>;
+/** @internal */
 export type GenerateKeyFnType = (...args: any[]) => string;
 
 /** Utility to cache and retrieve results of long running asynchronous functions.

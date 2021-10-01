@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs as fs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
+import { IModelJsFs as fs } from "@itwin/core-backend/lib/IModelJsFs";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 // __PUBLISH_EXTRACT_START__ WireFormat_DumpIModel.code
@@ -22,7 +22,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 class DumpIModel {
   public static dump(iModel: IModelDb, baseDir: string): void {
     // Use the GUID of the iModel to create a new directory
-    const outputDir = path.join(baseDir, iModel.getGuid().toString());
+    const outputDir = path.join(baseDir, iModel.iModelId);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
     }

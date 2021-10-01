@@ -11,6 +11,7 @@ import { Geometry } from "../Geometry";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
@@ -19,26 +20,30 @@ import { XYZProps } from "../geometry3d/XYZProps";
 
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]
- * * This is a "json compatible" version of the serializer-friendly [[InterpolationCurve3dOptions]]
+ * * This is a "json compatible" version of [[InterpolationCurve3dOptions]]
  * @public
  */
- export interface InterpolationCurve3dProps {
-  /** Order of the computed bspline.   (one more than degree) */
- order?: number;
- /** true if the bspline construction should be periodic */
- closed?: boolean;
- isChordLenKnots?: number;
- isColinearTangents?: number;
- isChordLenTangent?: number;
- isNaturalTangents?: number;
- /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
- startTangent?: XYZProps;
- /** optional end tangent.  Use of the tangent magnitude may be indicated by other flags. */
- endTangent?: XYZProps;
- /** Points that the curve must pass through */
- fitPoints: XYZProps[];
- /** knots for curve fitting */
- knots?: number[];
+export interface InterpolationCurve3dProps {
+  /** order of the computed bspline (one more than degree) */
+  order?: number;
+  /** true if the B-spline construction should be periodic */
+  closed?: boolean;
+  /** if closed and no knots, compute chord length knots (1) or uniform knots (0). Chord length knots give best fit. */
+  isChordLenKnots?: number;
+  /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear (1) or leave them be (0). */
+  isColinearTangents?: number;
+  /** if !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (1) or to the magnitude of the Bessel tangent (0). Bessel gives best fit. */
+  isChordLenTangents?: number;
+  /** if !closed and start/endTangent is absent, compute it using the natural end condition (1) or Bessel (0). Bessel gives best fit. */
+  isNaturalTangents?: number;
+  /** optional start tangent, pointing into curve. Magnitude is ignored. */
+  startTangent?: XYZProps;
+  /** optional end tangent, pointing into curve. Magnitude is ignored. */
+  endTangent?: XYZProps;
+  /** points that the curve must pass through */
+  fitPoints: XYZProps[];
+  /** parameters for curve fitting, one per fit point */
+  knots?: number[];
 }
 
 /**
@@ -49,51 +54,56 @@ import { XYZProps } from "../geometry3d/XYZProps";
  */
 export class InterpolationCurve3dOptions {
   /**
-   *
+   * Constructor.
    * @param fitPoints points to CAPTURE
    * @param knots array to CAPTURE
    */
   public constructor(fitPoints?: Point3d[], knots?: number[]) {
-    this._fitPoints = fitPoints  ? fitPoints : [];
+    this._fitPoints = fitPoints ? fitPoints : [];
     this._knots = knots;
   }
 
-  /** Order of the computed bspline.   (one more than degree) */
-private _order?: number;
- /** true if the bspline construction should be periodic */
- private _closed?: boolean;
- private _isChordLenKnots?: number;
- private _isColinearTangents?: number;
- private _isChordLenTangent?: number;
- private _isNaturalTangents?: number;
- /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
- private _startTangent?: Vector3d;
- /** optional end tangent.  Use of the tangent magnitude may be indicated by other flags. */
- private _endTangent?: Vector3d;
- /** Points that the curve must pass through */
- private _fitPoints: Point3d[];
- /** knots for curve fitting */
- private _knots?: number[];
-/** `order` as property with default 4 (cubic) */
-  public get order(): number { return Geometry.resolveNumber (this._order, 4);}
-/** `closed` as property with default false */
-public get closed(): boolean { return Geometry.resolveValue (this._closed, false);}
-/** `isChordLenKnots` as property with default 0 */
-public get isChordLenKnots(): number { return Geometry.resolveNumber (this._isChordLenKnots, 0);}
-/** `isColinearTangents` as property with default 0 */
-public get isColinearTangents(): number { return Geometry.resolveNumber (this._isColinearTangents, 0);}
-/** `isChordLenTangent` as property with default 0 */
-public get isChordLenTangent(): number { return Geometry.resolveNumber (this._isChordLenTangent, 0);}
-/** `isNaturalTangents` as property with default 0 */
-public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 0); }
-/** access POINTER TO fitPoints */
-public get fitPoints(): Point3d[] { return this._fitPoints; }
-/** access POSSIBLY UNDEFINED knots array. */
-public get knots(): number[] | undefined { return this._knots; }
-/** access POSSIBLY UNDEFINED start tangent. */
-public get startTangent(): Vector3d | undefined { return this._startTangent; }
-/** access POSSIBLY UNDEFINED end tangent. */
+  private _order?: number;
+  private _closed?: boolean;
+  private _isChordLenKnots?: number;
+  private _isColinearTangents?: number;
+  private _isChordLenTangents?: number;
+  private _isNaturalTangents?: number;
+  private _startTangent?: Vector3d;
+  private _endTangent?: Vector3d;
+  private _fitPoints: Point3d[];
+  private _knots?: number[];
+
+  /** `order` as property */
+  public get order(): number { return Geometry.resolveNumber(this._order, 4); }
+  public set order(val: number) { this._order = val; }
+  /** `closed` as property */
+  public get closed(): boolean { return Geometry.resolveValue(this._closed, false); }
+  public set closed(val: boolean) { this._closed = val; }
+  /** `isChordLenKnots` as property */
+  public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 0); }
+  public set isChordLenKnots(val: number) { this._isChordLenKnots = val; }
+  /** `isColinearTangents` as property */
+  public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
+  public set isColinearTangents(val: number) { this._isColinearTangents = val; }
+  /** `isChordLenTangents` as property */
+  public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
+  public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
+  /** `isNaturalTangents` as property */
+  public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 0); }
+  public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
+  /** access POSSIBLY UNDEFINED start tangent. Setter CAPTURES. */
+  public get startTangent(): Vector3d | undefined { return this._startTangent; }
+  public set startTangent(val: Vector3d | undefined) { this._startTangent = val; }
+  /** access POSSIBLY UNDEFINED end tangent. Setter CAPTURES. */
   public get endTangent(): Vector3d | undefined { return this._endTangent; }
+  public set endTangent(val: Vector3d | undefined) { this._endTangent = val; }
+  /** access POINTER TO fit points. Setter CAPTURES. */
+  public get fitPoints(): Point3d[] { return this._fitPoints; }
+  public set fitPoints(val: Point3d[]) { this._fitPoints = val; }
+  /** access POSSIBLY UNDEFINED knots array. Setter CAPTURES. */
+  public get knots(): number[] | undefined { return this._knots; }
+  public set knots(val: number[] | undefined) { this._knots = val; }
 
   /** One step setup of properties not named in constructor.
    * * CAPTURE pointers to tangents.
@@ -111,15 +121,15 @@ public get startTangent(): Vector3d | undefined { return this._startTangent; }
   ) {
     this._order = Geometry.resolveToUndefined(order, 0);
     this._closed = Geometry.resolveToUndefined(closed, false);
-    this._isChordLenKnots = Geometry.resolveToUndefined (isChordLenKnots, 0);
+    this._isChordLenKnots = Geometry.resolveToUndefined(isChordLenKnots, 0);
     this._isColinearTangents = Geometry.resolveToUndefined(isColinearTangents, 0);
-    this._isChordLenTangent = Geometry.resolveToUndefined(isChordLenTangent, 0);
+    this._isChordLenTangents = Geometry.resolveToUndefined(isChordLenTangent, 0);
     this._isNaturalTangents = Geometry.resolveToUndefined(isNaturalTangents, 0);
     this._startTangent = startTangent;
     this._endTangent = endTangent;
 
   }
-/** Clone with strongly typed members reduced to simple json, with "undefined" members omitted */
+  /** Clone with strongly typed members reduced to simple json, with "undefined" members omitted */
   public cloneAsInterpolationCurve3dProps(): InterpolationCurve3dProps {
     const props: InterpolationCurve3dProps = {
       fitPoints: Point3dArray.cloneDeepJSONNumberArrays(this.fitPoints),
@@ -127,63 +137,81 @@ public get startTangent(): Vector3d | undefined { return this._startTangent; }
     };
     if (this._order !== undefined)
       props.order = this._order;
-      if (this._closed !== undefined)
+    if (this._closed !== undefined)
       props.closed = this._closed;
     if (this._isChordLenKnots !== undefined)
       props.isChordLenKnots = this._isChordLenKnots;
-    if (this._isColinearTangents)
+    if (this._isColinearTangents !== undefined)
       props.isColinearTangents = this._isColinearTangents;
-    if (this._isChordLenTangent !== undefined)
-      props.isChordLenTangent = this._isChordLenTangent;
-    if (this._isNaturalTangents)
+    if (this._isChordLenTangents !== undefined)
+      props.isChordLenTangents = this._isChordLenTangents;
+    if (this._isNaturalTangents !== undefined)
       props.isNaturalTangents = this._isNaturalTangents;
-    if (this._startTangent)
+    if (this._startTangent !== undefined)
       props.startTangent = this._startTangent?.toArray();
     if (this._endTangent !== undefined)
       props.endTangent = this._endTangent?.toArray();
     return props;
   }
-/** Clone with strongly typed members reduced to simple json. */
+  /** Clone with strongly typed members reduced to simple json. */
   public clone(): InterpolationCurve3dOptions {
     const clone = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(this.fitPoints), this.knots?.slice());
     clone._order = this.order;
     clone._closed = this.closed;
     clone._isChordLenKnots = this.isChordLenKnots;
     clone._isColinearTangents = this.isColinearTangents;
-    clone._isChordLenTangent = this.isChordLenTangent;
+    clone._isChordLenTangents = this.isChordLenTangents;
     clone._isNaturalTangents = this.isNaturalTangents;
     clone._startTangent = this._startTangent?.clone();
     clone._endTangent = this._endTangent?.clone();
     return clone;
   }
 
-/** Clone with strongly typed members reduced to simple json. */
-public static create(source: InterpolationCurve3dProps): InterpolationCurve3dOptions {
-  const result = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(source.fitPoints), source.knots?.slice());
-  result._order = source.order;
-  result._closed = source.closed;
-  result._isChordLenKnots = source.isChordLenKnots;
-  result._isColinearTangents = source.isColinearTangents;
-  result._isChordLenTangent = source.isChordLenTangent;
-  result._isNaturalTangents = source.isNaturalTangents;
-  result._startTangent = source.startTangent ? Vector3d.fromJSON(source.startTangent) : undefined;
-  result._endTangent = source.endTangent? Vector3d.fromJSON(source.endTangent) : undefined;
-  return result;
-}
-
+  /** Clone with strongly typed members reduced to simple json. */
+  public static create(source: InterpolationCurve3dProps): InterpolationCurve3dOptions {
+    const result = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(source.fitPoints), source.knots?.slice());
+    result._order = source.order;
+    result._closed = source.closed;
+    result._isChordLenKnots = source.isChordLenKnots;
+    result._isColinearTangents = source.isColinearTangents;
+    result._isChordLenTangents = source.isChordLenTangents;
+    result._isNaturalTangents = source.isNaturalTangents;
+    result._startTangent = source.startTangent ? Vector3d.fromJSON(source.startTangent) : undefined;
+    result._endTangent = source.endTangent ? Vector3d.fromJSON(source.endTangent) : undefined;
+    return result;
+  }
+  // ugh.
+  // vector equality test with awkward rule that 000 matches undefined.
+  private static areAlmostEqualAllow000AsUndefined(a: Vector3d | undefined, b: Vector3d | undefined): boolean {
+    if (a !== undefined && a.maxAbs() === 0)
+      a = undefined;
+    if (b !== undefined && b.maxAbs() === 0)
+      b = undefined;
+    if (a !== undefined && b !== undefined)
+      return a.isAlmostEqual(b);
+    return a === undefined && b === undefined;
+  }
   public static areAlmostEqual(dataA: InterpolationCurve3dOptions | undefined, dataB: InterpolationCurve3dOptions | undefined): boolean {
     if (dataA === undefined && dataB === undefined)
       return true;
     if (dataA !== undefined && dataB !== undefined) {
-      return Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
+      if (Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
         && Geometry.areEqualAllowUndefined(dataA.closed, dataB.closed)
         && Geometry.areEqualAllowUndefined(dataA.isChordLenKnots, dataB.isChordLenKnots)
         && Geometry.areEqualAllowUndefined(dataA.isColinearTangents, dataB.isColinearTangents)
         && Geometry.areEqualAllowUndefined(dataA.isNaturalTangents, dataB.isNaturalTangents)
-        && Geometry.areEqualAllowUndefined(dataA.startTangent, dataB.startTangent)
-        && Geometry.areEqualAllowUndefined(dataA.endTangent, dataB.endTangent)
-        && Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))
-        && Geometry.almostEqualNumberArrays(dataA.knots, dataB.knots, (a: number, b: number) => a === b);
+        && this.areAlmostEqualAllow000AsUndefined(dataA.startTangent, dataB.startTangent)
+        && this.areAlmostEqualAllow000AsUndefined(dataA.endTangent, dataB.endTangent)
+        && Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))) {
+        if (Geometry.almostEqualNumberArrays(dataA.knots, dataB.knots, (a: number, b: number) => a === b))
+          return true;
+        if (dataA.knots === undefined && dataB.knots === undefined)
+          return true;
+        /* alas .. need to allow tricky mismatch of end replication */
+        const knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataA.knots, dataA.fitPoints.length, false);
+        const knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataB.knots, dataB.fitPoints.length, false);
+        return Geometry.almostEqualNumberArrays(knotsA, knotsB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
+      }
     }
     return false;
   }
@@ -207,24 +235,24 @@ public static create(source: InterpolationCurve3dProps): InterpolationCurve3dOpt
  * *
  * @public
  */
-export class InterpolationCurve3d extends ProxyCurve  {
+export class InterpolationCurve3d extends ProxyCurve {
   public readonly curvePrimitiveType = "interpolationCurve";
   private _options: InterpolationCurve3dOptions;
   /**
    * CAPTURE properties and proxy curve.
    */
-private constructor(properties: InterpolationCurve3dOptions, proxyCurve: CurvePrimitive) {
+  private constructor(properties: InterpolationCurve3dOptions, proxyCurve: CurvePrimitive) {
     super(proxyCurve);
-  this._options = properties;
+    this._options = properties;
   }
   public override dispatchToGeometryHandler(handler: GeometryHandler) {
     return handler.handleInterpolationCurve3d(this);
   }
-/**
- * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]] or [[InterpolationCurve3dOptions]].
- * * This saves a COPY OF the options or props.
- * * Use createCapture () if the options or props can be used without copy
- */
+  /**
+   * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]] or [[InterpolationCurve3dOptions]].
+   * * This saves a COPY OF the options or props.
+   * * Use createCapture () if the options or props can be used without copy
+   */
   public static create(options: InterpolationCurve3dOptions | InterpolationCurve3dProps): InterpolationCurve3d | undefined {
     let optionsCopy;
     if (options instanceof InterpolationCurve3dOptions) {
@@ -234,10 +262,10 @@ private constructor(properties: InterpolationCurve3dOptions, proxyCurve: CurvePr
     }
     return InterpolationCurve3d.createCapture(optionsCopy);
   }
-/** Create an [[InterpolationCurve3d]]
- * * The options object is captured into the new curve object (not copied)
- */
-public static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined{
+  /** Create an [[InterpolationCurve3d]]
+   * * The options object is captured into the new curve object (not copied)
+   */
+  public static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined {
     const proxyCurve = BSplineCurve3d.createFromInterpolationCurve3dOptions(options);
     if (proxyCurve)
       return new InterpolationCurve3d(options, proxyCurve);
@@ -277,7 +305,8 @@ public static createCapture(options: InterpolationCurve3dOptions): Interpolation
   public tryTransformInPlace(transform: Transform): boolean {
     const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
     if (proxyOk) {
-      transform.multiplyPoint3dArray(this._options.fitPoints);
+      transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
+      // START HERE: transform start/endTangent
     }
     return proxyOk;
   }
@@ -296,17 +325,17 @@ public static createCapture(options: InterpolationCurve3dOptions): Interpolation
   public clone(): GeometryQuery | undefined {
     const proxyClone = this._proxyCurve.clone();
     if (proxyClone) {
-      return new InterpolationCurve3d(this._options.clone (), proxyClone as CurvePrimitive);
+      return new InterpolationCurve3d(this._options.clone(), proxyClone as CurvePrimitive);
     }
     return undefined;
   }
-  public override isAlmostEqual(other: GeometryQuery): boolean{
+  public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof InterpolationCurve3d) {
       return InterpolationCurve3dOptions.areAlmostEqual(this._options, other._options);
     }
     return false;
   }
-/** Test if `other` is also an [[InterpolationCurve3d]] */
+  /** Test if `other` is also an [[InterpolationCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof InterpolationCurve3d; }
 
 }

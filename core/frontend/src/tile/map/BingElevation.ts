@@ -6,13 +6,12 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@bentley/imodeljs-common";
+import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@itwin/core-geometry";
+import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { Mesh, MeshArgs } from "../../render-primitives";
+import { Mesh, MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
 import { Triangle } from "../../render/primitives/Primitives";
 import { VertexKey } from "../../render/primitives/VertexKey";
@@ -37,7 +36,6 @@ export class BingElevationProvider {
   private _heightRangeRequestTemplate: string;
   private _seaLevelOffsetRequestTemplate: string;
   private _heightListRequestTemplate: string;
-  protected _requestContext = new ClientRequestContext("");
 
   /** @public */
   constructor() {
@@ -60,7 +58,7 @@ export class BingElevationProvider {
     const requestUrl = this._heightListRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
-      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      const tileResponse: Response = await request(requestUrl, requestOptions);
       return tileResponse.body.resourceSets[0].resources[0].elevations[0];
     } catch (error) {
       return 0.0;
@@ -72,7 +70,7 @@ export class BingElevationProvider {
     const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
-      const tileResponse: Response = await request(this._requestContext, requestUrl, tileRequestOptions);
+      const tileResponse: Response = await request(requestUrl, tileRequestOptions);
       return tileResponse.body.resourceSets[0].resources[0].elevations;
     } catch (error) {
       return undefined;
@@ -86,7 +84,7 @@ export class BingElevationProvider {
     const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
-      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      const tileResponse: Response = await request(requestUrl, requestOptions);
       return tileResponse.body.resourceSets[0].resources[0].offsets[0];
     } catch (error) {
       return 0.0;

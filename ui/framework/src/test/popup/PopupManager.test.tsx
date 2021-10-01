@@ -5,20 +5,21 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@itwin/core-frontend";
 import {
   AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem,
   DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
-} from "@bentley/ui-abstract";
-import { Button, Point } from "@bentley/ui-core";
-import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
-import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
-import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
+} from "@itwin/appui-abstract";
+import { Point } from "@itwin/core-react";
+import { AccuDrawPopupManager } from "../../appui-react/accudraw/AccuDrawPopupManager";
+import { PopupManager, PopupRenderer } from "../../appui-react/popup/PopupManager";
+import { MenuItemProps } from "../../appui-react/shared/MenuItem";
 import TestUtils, { storageMock } from "../TestUtils";
-import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { FrameworkUiAdmin, KeyinEntry } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
+import { Button } from "@itwin/itwinui-react";
 const myLocalStorage = storageMock();
 function requestNextAnimation() { }
 
@@ -312,7 +313,7 @@ describe("PopupManager", () => {
 
       PopupManager.showCard(content.documentElement, "Title", toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("div.components-toolbar-overflow-sizer").length).to.eq(1);
 
       const buttonNodes = wrapper.container.querySelectorAll("button");
@@ -326,18 +327,18 @@ describe("PopupManager", () => {
       const record = TestUtils.createPrimitiveStringProperty("record", "Title");
       PopupManager.showCard(content.documentElement, record, toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(1);
       PopupManager.hideCard();
 
       PopupManager.showCard(content.documentElement, undefined, undefined, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(0);
       PopupManager.hideCard();
 
       const reactContent = { reactNode: <Button>Label</Button> };
       PopupManager.showCard(reactContent, undefined, undefined, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(0);
       PopupManager.hideCard();
     });
 

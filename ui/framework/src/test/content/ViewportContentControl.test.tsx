@@ -6,14 +6,15 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
-import { ViewportComponentEvents } from "@bentley/ui-components";
+import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { ViewportComponentEvents } from "@itwin/imodel-components-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount, storageMock } from "../TestUtils";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 const mySessionStorage = storageMock();
 
@@ -58,21 +59,20 @@ describe("ViewportContentControl", () => {
 
   }
   class Frontstage1 extends FrontstageProvider {
-
-    public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
+    public static stageId = "Test1";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       const myContentGroup: ContentGroup = new ContentGroup(
         {
+          id: "test-group",
+          layout: StandardContentLayouts.singleView,
           contents: [
             {
+              id: "test",
               classId: TestViewportContentControl,
               applicationData: { label: "Content 1a", bgColor: "black" },
             },
@@ -82,9 +82,8 @@ describe("ViewportContentControl", () => {
 
       return (
         <Frontstage
-          id="Test1"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={this.contentLayoutDef}
           contentGroup={myContentGroup}
 
           topRight={
@@ -110,10 +109,11 @@ describe("ViewportContentControl", () => {
   it("Frontstage should support ViewportContentControl", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+    if (frontstageDef) {
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;
@@ -132,10 +132,11 @@ describe("ViewportContentControl", () => {
   it("ViewportContentControl should return proper navigation aid for class name", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+    if (frontstageDef) {
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;
@@ -165,10 +166,11 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+    if (frontstageDef) {
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;
@@ -196,7 +198,8 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     await TestUtils.flushAsyncOperations();
     expect(spyMethod.called).to.be.true;

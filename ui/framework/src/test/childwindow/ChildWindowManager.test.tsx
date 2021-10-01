@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ChildWindowManager } from "../../ui-framework";
-import { copyStyles } from "../../ui-framework/childwindow/CopyStyles";
+import { ChildWindowManager } from "../../appui-react";
+import { copyStyles } from "../../appui-react/childwindow/CopyStyles";
 
 describe("ChildWindowManager", () => {
   afterEach(() => {
@@ -105,7 +105,9 @@ describe("ChildWindowManager", () => {
   it("no styles to styles", () => {
     const childDoc = new DOMParser().parseFromString(childHtml, "text/html");
     copyStyles(childDoc);
-    expect(document.styleSheets.length).to.eql(childDoc.styleSheets.length);
+    const childStyleSheetCount = childDoc.head.querySelectorAll("style").length;
+    const documentStyleSheetCount = document.head.querySelectorAll("style").length;
+    expect(documentStyleSheetCount).to.eql(childStyleSheetCount);
   });
 
   it("will copy styles", () => {

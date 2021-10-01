@@ -7,10 +7,10 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { EditorContainer } from "../../ui-components/editors/EditorContainer";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { SpecialKey, StandardEditorNames } from "@itwin/appui-abstract";
+import { fireEvent, render } from "@testing-library/react";
 
 describe("<EditorContainer />", () => {
   before(async () => {
@@ -20,8 +20,6 @@ describe("<EditorContainer />", () => {
   beforeEach(() => {
     sinon.restore();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();

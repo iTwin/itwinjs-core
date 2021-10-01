@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import { Server as HttpServer } from "http";
-import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
 
 /**
  * Options for configuring IModelJsExpressServer.

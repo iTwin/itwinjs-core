@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { InputStatus, Radio } from "../../ui-core";
+import { InputStatus, Radio } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<Radio />", () => {
   it("should render", () => {

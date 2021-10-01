@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -41,13 +41,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @return true if this tool was installed (though it may have exited too)
    * @note If you override this method you **must** call `super.run` and return false if it returns false.
    */
-  public override run(..._args: any[]): boolean {
+  public override async run(..._args: any[]): Promise<boolean> {
     const { toolAdmin, viewManager } = IModelApp;
-    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
+    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !await toolAdmin.onInstallTool(this))
       return false;
 
-    toolAdmin.startPrimitiveTool(this);
-    toolAdmin.onPostInstallTool(this);
+    await toolAdmin.startPrimitiveTool(this);
+    await toolAdmin.onPostInstallTool(this);
     return true;
   }
 
@@ -155,9 +155,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /**
    * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
    */
-  public override onReinitialize(): void { this.onRestartTool(); }
+  public override async onReinitialize(): Promise<void> { return this.onRestartTool(); }
 
-  public exitTool(): void { IModelApp.toolAdmin.startDefaultTool(); }
+  public async exitTool() { return IModelApp.toolAdmin.startDefaultTool(); }
 
   /**
    * Called to reverse to a previous tool state (ex. undo last data button).

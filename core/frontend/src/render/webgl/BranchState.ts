@@ -6,17 +6,16 @@
  * @module WebGL
  */
 
-import { Transform } from "@bentley/geometry-core";
+import { Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
-import { normalizeViewFlags } from "./normalizeViewFlags";
 import { EdgeSettings } from "./EdgeSettings";
 
 /** Options used to construct a BranchState.
@@ -52,6 +51,7 @@ export class BranchState {
 
   public get transform() { return this._opts.transform; }
   public get viewFlags() { return this._opts.viewFlags; }
+  public set viewFlags(vf: ViewFlags) { this._opts.viewFlags = vf.normalize(); }
   public get clipVolume() { return this._opts.clipVolume; }
   public get planarClassifier() { return this._opts.planarClassifier; }
   public get textureDrape() { return this._opts.textureDrape; }
@@ -69,8 +69,7 @@ export class BranchState {
   }
 
   public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
-    viewFlags.clone(this.viewFlags);
-    normalizeViewFlags(this.viewFlags);
+    this.viewFlags = viewFlags;
     this._opts.is3d = is3d;
     this.edgeSettings.init(hline);
   }
@@ -102,10 +101,7 @@ export class BranchState {
   }
 
   public static createForDecorations(): BranchState {
-    const vf = new ViewFlags();
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.lighting = false;
-    vf.whiteOnWhiteReversal = false;
+    const vf = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: false, whiteOnWhiteReversal: false });
 
     return new BranchState({ viewFlags: vf, transform: Transform.createIdentity(), symbologyOverrides: new FeatureSymbology.Overrides(), edgeSettings: EdgeSettings.create(undefined), is3d: true });
   }
@@ -115,6 +111,6 @@ export class BranchState {
       opts.frustumScale = { x: 1, y: 1 };
 
     this._opts = opts;
-    normalizeViewFlags(this.viewFlags);
+    this._opts.viewFlags = this._opts.viewFlags.normalize();
   }
 }

@@ -6,16 +6,17 @@
  * @module iModelHub
  */
 
-import got from "got";
+import { HttpsAgent } from "agentkeepalive";
+import * as crypto from "crypto";
 import * as fs from "fs";
+import got from "got";
+import * as path from "path";
+import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
-import * as crypto from "crypto";
-import * as path from "path";
-import { HttpsAgent } from "agentkeepalive";
+import { AsyncMutex, BeEvent, BentleyError, BriefcaseStatus } from "@itwin/core-bentley";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
-import { checkSync, lockSync } from "proper-lockfile";
-import { AsyncMutex, BeEvent, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+
 /** Configure download task
  * @internal
  */
@@ -25,7 +26,7 @@ export interface ConfigData {
   checkMD5AfterDownload?: boolean;
   simultaneousDownloads?: number;
   downloadRateWindowSize?: number; /* specify time in seconds for window size for download rate*/
-  progressReportAfter?: number; /* specify time in millsecond when to report progress */
+  progressReportAfter?: number; /* specify time in millisecond when to report progress */
   enableResumableDownload?: boolean;
 }
 enum BlockState {
@@ -391,7 +392,7 @@ export class BlobDownloader {
     } catch (err) {
       session.bytesDownloaded -= localDataBytes;
       this.markFailed(session, blockId);
-      session.lastError = err;
+      session.lastError = err instanceof Error ? err : new Error(BentleyError.getErrorMessage(err));
       session.failedBocks++;
       if (session.failedBocks > 10) {
         throw new Error("failed to download");
@@ -462,7 +463,7 @@ export class BlobDownloader {
         session.progress.raiseEvent(this.getProgress(session));
         session.lastReportedBytes = session.bytesDownloaded;
       }
-    }, session.config.progressReportAfter!);
+    }, session.config.progressReportAfter);
   }
   private static stopProgress(session: SessionData) {
     if (session.progressTimer) {
@@ -473,7 +474,7 @@ export class BlobDownloader {
   }
   private static checkDownloadCancelled(session: SessionData) {
     if (session.cancelled)
-      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download");
   }
   private static async checkAnotherProcessIsDownloadingSameFile(session: SessionData): Promise<boolean> {
     // some other process is downloading

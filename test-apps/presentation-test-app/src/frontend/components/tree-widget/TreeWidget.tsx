@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { DiagnosticsProps } from "@bentley/presentation-components";
-import { FilteringInput } from "@bentley/ui-components";
+import { useResizeDetector } from "react-resize-detector";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { DiagnosticsProps } from "@itwin/presentation-components";
+import { FilteringInput, FilteringInputStatus } from "@itwin/components-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 import { Tree } from "./Tree";
 
@@ -15,25 +16,30 @@ interface Props {
 }
 
 export function TreeWidget(props: Props) {
+  const { rulesetId, imodel } = props;
   const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
-
   const [filter, setFilter] = React.useState("");
-  const [isFiltering, setIsFiltering] = React.useState(false);
+  const [filteringStatus, setFilteringStatus] = React.useState(FilteringInputStatus.ReadyToFilter);
   const [matchesCount, setMatchesCount] = React.useState<number>();
   const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
 
-  const onFilteringStateChange = React.useCallback((newIsFiltering: boolean, newMatchesCount: number | undefined) => {
-    setIsFiltering(newIsFiltering);
+  const onFilteringStateChange = React.useCallback((isFiltering: boolean, newMatchesCount: number | undefined) => {
+    setFilteringStatus(isFiltering
+      ? FilteringInputStatus.FilteringInProgress : (undefined !== newMatchesCount)
+        ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter,
+    );
     setMatchesCount(newMatchesCount);
   }, []);
+
+  const { width, height, ref } = useResizeDetector();
 
   return (
     <div className="treewidget">
       <div className="treewidget-header">
-        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
+        <h3>{IModelApp.localization.getLocalizedString("Sample:controls.tree")}</h3>
         <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
-        {props.rulesetId ? <FilteringInput
-          filteringInProgress={isFiltering}
+        {rulesetId ? <FilteringInput
+          status={filteringStatus}
           onFilterCancel={() => { setFilter(""); }}
           onFilterClear={() => { setFilter(""); }}
           onFilterStart={(newFilter) => { setFilter(newFilter); }}
@@ -42,15 +48,17 @@ export function TreeWidget(props: Props) {
             resultCount: matchesCount || 0,
           }} /> : null}
       </div>
-      <div className="filteredTree">
-        {props.rulesetId ? <>
+      <div ref={ref} className="filteredTree">
+        {rulesetId && width && height ? <>
           <Tree
-            imodel={props.imodel}
-            rulesetId={props.rulesetId}
+            imodel={imodel}
+            rulesetId={rulesetId}
             diagnostics={diagnosticsOptions}
             filtering={{ filter, activeMatchIndex, onFilteringStateChange }}
+            width={width}
+            height={height}
           />
-          {isFiltering ? <div className="filteredTreeOverlay" /> : null}
+          {(filteringStatus === FilteringInputStatus.FilteringInProgress) ? <div className="filteredTreeOverlay" /> : null}
         </> : null}
       </div>
     </div>

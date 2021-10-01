@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { MapLayersUI } from "../map-layers";
 
 // cSpell:ignore buttongroup
@@ -15,7 +15,7 @@ export class TestUtils {
 
   public static get i18n(): I18N {
     if (!TestUtils._i18n) {
-      TestUtils._i18n = new I18N();
+      TestUtils._i18n = new I18N("iModelJs");
     }
     return TestUtils._i18n;
   }
@@ -41,4 +41,5 @@ export class TestUtils {
   }
 
 }
+
 export default TestUtils;   // eslint-disable-line: no-default-export

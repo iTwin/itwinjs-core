@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@bentley/geometry-core";
-import { Cartographic, ColorDef } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelConnection, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { Range3d } from "@itwin/core-geometry";
+import { Cartographic, ColorDef } from "@itwin/core-common";
+import { BlankConnection, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 
 export class BlankConnectionExample {
 
@@ -16,7 +16,7 @@ export class BlankConnectionExample {
       // call this connection "Exton PA"
       name: "Exton PA",
       // put the center of the connection near Exton, Pennsylvania (Bentley's HQ)
-      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
+      location: Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}),
       // create the area-of-interest to be 2000 x 2000 x 200 meters, centered around 0,0.0
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
     });
@@ -36,9 +36,7 @@ export class BlankConnectionExample {
 
     // turn on the background map
     const style = blankView.displayStyle;
-    const viewFlags = style.viewFlags;
-    viewFlags.backgroundMap = true;
-    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
+    style.viewFlags = style.viewFlags.with("backgroundMap", true);
 
     style.backgroundColor = ColorDef.white;
 

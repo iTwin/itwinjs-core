@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { DepthType, RenderType } from "@bentley/webgl-compatibility";
+  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+} from "@itwin/core-common";
+import { DepthType, RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";
 import { ViewRect } from "../../ViewRect";
@@ -1066,10 +1066,14 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
-    this.target.decorationsState.viewFlags.transparency = false;
+    const decState = this.target.decorationsState;
+    const vf = decState.viewFlags;
+    if (vf.transparency)
+      decState.viewFlags = vf.copy({ transparency: false });
+
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.endPerfMetricRecord();
-    this.target.decorationsState.viewFlags.transparency = true;
+    decState.viewFlags = vf;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -1232,22 +1236,20 @@ abstract class Compositor extends SceneCompositor {
     // The BranchState needs to be created every time in case the symbology overrides changes.
     // It is based off of the current state, but turns off unnecessary and unwanted options, lighting being the most important.
     const top = this.target.uniforms.branch.top;
-    const vf = ViewFlags.createFrom(top.viewFlags);
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.lighting = false;
-    vf.solarLight = false;
-    vf.sourceLights = false;
-    vf.cameraLights = false;
-    vf.forceSurfaceDiscard = false;
-    vf.hiddenEdges = false;
-    vf.materials = false;
-    vf.noGeometryMap = true;
-    vf.textures = false;
-    vf.transparency = false;
-    vf.visibleEdges = false;
+    const viewFlags = top.viewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      lighting: false,
+      forceSurfaceDiscard: false,
+      hiddenEdges: false,
+      visibleEdges: false,
+      materials: false,
+      textures: false,
+      transparency: false,
+    });
+
     this._vcBranchState = new BranchState({
       symbologyOverrides: top.symbologyOverrides,
-      viewFlags: vf,
+      viewFlags,
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
       planarClassifier: top.planarClassifier,

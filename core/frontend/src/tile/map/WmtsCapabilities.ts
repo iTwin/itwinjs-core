@@ -2,12 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Point2d, Range2d } from "@bentley/geometry-core";
+import { Point2d, Range2d } from "@itwin/core-geometry";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { xml2json } from "xml-js";
-import { MapCartoRectangle } from "../internal";
-import { WmsUtilities } from "./WmsUtilities"; // needed for getBaseUrl
+import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
 
 /** @packageDocumentation
  * @module Views
@@ -18,7 +16,7 @@ import { WmsUtilities } from "./WmsUtilities"; // needed for getBaseUrl
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(requestContext: ClientRequestContext, url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "text",
@@ -26,7 +24,7 @@ async function getXml(requestContext: ClientRequestContext, url: string, credent
     retries: 2,
     auth: credentials,
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.text;
 }
 
@@ -502,7 +500,7 @@ export class WmtsCapabilities {
         return cached;
     }
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
+    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMTS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition,
-} from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 import {
   ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
-} from "@bentley/orbitgt-core";
-import { DownloaderNode } from "@bentley/orbitgt-core/lib/system/runtime/DownloaderNode";
+} from "@itwin/core-orbitgt";
+import { DownloaderNode } from "@itwin/core-orbitgt/lib/system/runtime/DownloaderNode";
 
 interface OrbitGtPointCloudProps {
   rdsUrl?: string;
@@ -91,10 +91,7 @@ export class OrbitGtContextIModelCreator {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
-    const vf = new ViewFlags();
-    vf.backgroundMap = geoLocated;
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.cameraLights = true;
+    const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
     const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
     return SpatialViewDefinition.insertWithCamera(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
   }

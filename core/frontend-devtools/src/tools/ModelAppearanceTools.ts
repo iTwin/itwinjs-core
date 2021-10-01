@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@bentley/imodeljs-common";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-common";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 
 function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: FeatureAppearanceProps, name: string): boolean {
@@ -25,6 +25,10 @@ function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: Fea
   return changed;
 }
 
+function modelChangedString(name: string) {
+  return name === undefined ? `All Models` : `Model: ${name}`;
+}
+
 /** Set model appearance override for transparency in display style.
  * @beta
  */
@@ -33,16 +37,16 @@ export class SetModelTransparencyTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  public override run(transparency: number, name: string): boolean {
+  public override async run(transparency: number, name: string): Promise<boolean> {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { transparency }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to transparency: ${transparency}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to transparency: ${transparency}`));
 
     return changed;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(parseFloat(args[0]), args[1]);
   }
 }
@@ -55,16 +59,16 @@ export class SetModelLineWeightTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  public override run(weight: number, name: string): boolean {
+  public override async run(weight: number, name: string): Promise<boolean> {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { weight }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to line weight: ${weight}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line weight: ${weight}`));
 
     return changed;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(parseFloat(args[0]), args[1]);
   }
 }
@@ -78,19 +82,19 @@ export class SetModelLineCodeTool extends Tool {
   public static override get maxArgs() { return 2; }
   public static linePixels = [LinePixels.Code0, LinePixels.Code1, LinePixels.Code2, LinePixels.Code3, LinePixels.Code4, LinePixels.Code5, LinePixels.Code6, LinePixels.Code7];
 
-  public override run(lineCode: number, name: string): boolean {
+  public override async run(lineCode: number, name: string): Promise<boolean> {
     if (lineCode < 0 || lineCode >= SetModelLineCodeTool.linePixels.length)
       return false;
 
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { linePixels: SetModelLineCodeTool.linePixels[lineCode] }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to line code: ${lineCode}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to line code: ${lineCode}`));
 
     return changed;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(parseFloat(args[0]), args[1]);
   }
 }
@@ -103,17 +107,17 @@ export class SetModelLocateTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  public override run(locate: boolean, name: string): boolean {
+  public override async run(locate: boolean, name: string): Promise<boolean> {
     const nonLocatable = locate ? undefined : true;
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { nonLocatable }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to locate: ${locate}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to locate: ${locate}`));
 
     return changed;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const locate = parseBoolean(args[0]);
     return locate === undefined ? false : this.run(locate, args[1]);
   }
@@ -127,7 +131,7 @@ export class SetModelEmphasizedTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  public override run(emphasized: true | undefined, name: string): boolean {
+  public override async run(emphasized: true | undefined, name: string): Promise<boolean> {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { emphasized }, name);
 
     if (changed)
@@ -136,7 +140,7 @@ export class SetModelEmphasizedTool extends Tool {
     return changed;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const emphasized = parseBoolean(args[0]);
     return emphasized === undefined ? false : this.run(emphasized ? true : undefined, args[1]);
   }
@@ -150,7 +154,7 @@ export class SetModelIgnoresMaterialsTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  public override run(ignoresMaterial: true | undefined, name: string): boolean {
+  public override async run(ignoresMaterial: true | undefined, name: string): Promise<boolean> {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { ignoresMaterial }, name);
 
     if (changed)
@@ -159,7 +163,7 @@ export class SetModelIgnoresMaterialsTool extends Tool {
     return changed;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const ignoresMaterial = parseBoolean(args[0]);
     return ignoresMaterial === undefined ? false : this.run(ignoresMaterial ? true : undefined, args[1]);
   }
@@ -173,16 +177,16 @@ export class SetModelColorTool extends Tool {
   public static override get minArgs() { return 3; }
   public static override get maxArgs() { return 4; }
 
-  public override run(rgb: RgbColorProps, name: string): boolean {
+  public override async run(rgb: RgbColorProps, name: string): Promise<boolean> {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { rgb }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to color: ${rgb}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${modelChangedString(name)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run({ r: parseFloat(args[0]), g: parseFloat(args[1]), b: parseFloat(args[2]) }, args[3]);
   }
 }
@@ -195,7 +199,7 @@ export class ClearModelAppearanceOverrides extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(name?: string): boolean {
+  public override async run(name?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp !== undefined && vp.view instanceof SpatialViewState) {
       vp.view.forEachModel((model) => {
@@ -207,7 +211,7 @@ export class ClearModelAppearanceOverrides extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }

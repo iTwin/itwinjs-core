@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { ProgressSpinner, SpinnerSize } from "../../ui-core";
+import { ProgressSpinner, SpinnerSize } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<ProgressSpinner />", () => {
   it("should render", () => {

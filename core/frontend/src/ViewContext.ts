@@ -6,19 +6,19 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
-} from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
@@ -42,7 +42,7 @@ export class RenderContext {
 
   constructor(vp: Viewport, frustum?: Frustum) {
     this._viewport = vp;
-    this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+    this.viewFlags = vp.viewFlags;
     this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
@@ -61,7 +61,7 @@ export class RenderContext {
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+  protected _createGraphicBuilder(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this.target.createGraphicBuilder({ ...options, viewport: this.viewport });
   }
 
@@ -118,7 +118,7 @@ export class DynamicsContext extends RenderContext {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 }
@@ -130,11 +130,6 @@ export class DecorateContext extends RenderContext {
   private readonly _decorations: Decorations;
   private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
-
-  /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
-   * @deprecated use [[DecorateContext.viewport]].
-   */
-  public get screenViewport(): ScreenViewport { return this.viewport; }
 
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public override get viewport(): ScreenViewport {
@@ -164,7 +159,7 @@ export class DecorateContext extends RenderContext {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 
@@ -286,11 +281,8 @@ export class DecorateContext extends RenderContext {
     // an element decoration being added might already be on the decorationDiv, just marked for removal
     if (decoration[ELEMENT_MARKED_FOR_REMOVAL]) {
       decoration[ELEMENT_MARKED_FOR_REMOVAL] = false;
-      // SEE: decorationDiv doc comment
-      // eslint-disable-next-line deprecation/deprecation
-    } else if (decoration.parentElement !== this.screenViewport.decorationDiv) {
-      // eslint-disable-next-line deprecation/deprecation
-      this.screenViewport.decorationDiv.appendChild(decoration);
+    } else if (decoration.parentElement !== this.viewport.decorationDiv) {
+      this.viewport.decorationDiv.appendChild(decoration);
     }
   }
 

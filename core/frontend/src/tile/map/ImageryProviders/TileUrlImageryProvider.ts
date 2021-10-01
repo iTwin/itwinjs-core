@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { MapLayerSettings } from "@bentley/imodeljs-common";
+import { MapLayerSettings } from "@itwin/core-common";
 import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
 
 const levelToken = "{level}";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { SquareButton } from "../../ui-framework/accudraw/SquareButton";
+import { SquareButton } from "../../appui-react/accudraw/SquareButton";
 import { mount } from "../TestUtils";
 
 describe("SquareButton", () => {

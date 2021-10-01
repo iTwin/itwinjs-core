@@ -10,17 +10,8 @@ import { Client } from "./Client";
 
 /** @beta */
 export class ImsAuthorizationClient extends Client {
-  public static readonly searchKey: string = "IMSOpenID";
-
   public constructor() {
     super();
-  }
-
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return ImsAuthorizationClient.searchKey;
+    this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
   }
 }

@@ -102,7 +102,7 @@ export class PrettyLoggingPlugin {
       if (this.isInteractive)
         this.printHeading("Compiled with warnings", "yellow", elapsed);
       console.log(warnings.join("\n\n"));
-      console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about tslint warnings.`);
+      console.log(`\nSearch for the ${chalk.underline(chalk.yellow("keywords"))} to learn more about eslint warnings.`);
       console.log(`To ignore an eslint warning, add ${chalk.cyan("// eslint-disable-next-line")} to the line before.\n`);
       if (!this.isInteractive)
         this.printHeading("Compiled with warnings", "yellow", elapsed);
@@ -140,7 +140,7 @@ export class PrettyLoggingPlugin {
       let isSuccessful;
       try {
         isSuccessful = this.handleWarningsAndErrors(elapsed, jsonStats);
-      } catch (err) {
+      } catch (err: any) {
         if (!this.isInteractive)
           this.printHeading("Failed to compile", "red", elapsed);
         isSuccessful = false;

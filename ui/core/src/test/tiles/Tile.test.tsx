@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Tile } from "../../ui-core";
+import { Tile } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<Tile />", () => {
   const icon = <i className="icon icon-placeholder" />;

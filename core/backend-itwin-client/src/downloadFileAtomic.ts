@@ -5,16 +5,15 @@
 import got from "got";
 import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
-import { BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus } from "@itwin/core-bentley";
 import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
-
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { BufferedStream } from "./imodelhub/AzureFileHandler";
 
+import WriteStreamAtomic = require("fs-write-stream-atomic");
 const pipeline = promisify(pipeline_callback);
 
 /** @internal */
-export async function downloadFileAtomic(requestContext: ClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest, bufferThreshold?: number): Promise<void> {
+export async function downloadFileAtomic(downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest, bufferThreshold?: number): Promise<void> {
   let retryCount = 0;
   let closePromise: Promise<void>;
 
@@ -48,10 +47,9 @@ export async function downloadFileAtomic(requestContext: ClientRequestContext, d
         bufferedStream,
         fileStream,
       );
-    } catch (error) {
-      requestContext.enter();
+    } catch (error: any) {
       if (error instanceof got.CancelError)
-        throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+        throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download");
 
       if (error instanceof got.HTTPError)
         throw new DownloadFailed(error.response.statusCode, error.response.statusMessage ?? "Download failed");

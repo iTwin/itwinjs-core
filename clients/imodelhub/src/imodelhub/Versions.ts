@@ -6,19 +6,19 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { InstanceIdQuery } from "./HubQuery";
+import { addSelectApplicationData, InstanceIdQuery } from "./HubQuery";
 import { ThumbnailSize } from "./Thumbnails";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
  * Named Version is a specific [[ChangeSet]] given a name to differentiate it from others. It can be used to represent some significant milestone for the iModel (e.g. a review version).
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
@@ -62,11 +62,19 @@ export class Version extends WsgInstance {
    */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
   public largeThumbnailId?: GuidString;
+
+  /** Id of the application that created this named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Id")
+  public applicationId?: string;
+
+  /** Name of the application that created this named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Name")
+  public applicationName?: string;
 }
 
 /**
  * Query object for getting [[Version]]s. You can use this to modify the [[VersionHandler.get]] results.
- * @public
+ * @internal
  */
 export class VersionQuery extends InstanceIdQuery {
   /**
@@ -112,6 +120,15 @@ export class VersionQuery extends InstanceIdQuery {
   }
 
   /**
+   * Query will additionally select data about application that created this [[Version]].
+   * @returns This query.
+   */
+  public selectApplicationData() {
+    addSelectApplicationData(this._query);
+    return this;
+  }
+
+  /**
    * Query only not hidden versions.
    * @returns This query.
    */
@@ -123,7 +140,7 @@ export class VersionQuery extends InstanceIdQuery {
 
 /**
  * Handler for managing [[Version]]s. Use [[IModelClient.Versions]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class VersionHandler {
   private _handler: IModelBaseHandler;
@@ -152,14 +169,11 @@ export class VersionHandler {
    * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
-    requestContext.enter();
+  public async get(accessToken: AccessToken, iModelId: GuidString, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
     Logger.logInfo(loggerCategory, "Querying named versions for iModel", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const versions = await this._handler.getInstances<Version>(requestContext, Version, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
-    requestContext.enter();
+    const versions = await this._handler.getInstances<Version>(accessToken, Version, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     Logger.logTrace(loggerCategory, "Queried named versions for iModel", () => ({ iModelId }));
     return versions;
   }
@@ -177,10 +191,8 @@ export class VersionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetAlreadyHasVersion]($bentley) if the [[ChangeSet]] with specified changeSetId already has a named [[Version]] associated with it.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version> {
-    requestContext.enter();
+  public async create(accessToken: AccessToken, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version> {
     Logger.logInfo(loggerCategory, "Creating named version for iModel", () => ({ iModelId, changeSetId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId, true);
     ArgumentCheck.defined("name", name);
@@ -190,8 +202,7 @@ export class VersionHandler {
     version.name = name;
     version.description = description;
 
-    version = await this._handler.postInstance<Version>(requestContext, Version, this.getRelativeUrl(iModelId), version);
-    requestContext.enter();
+    version = await this._handler.postInstance<Version>(accessToken, Version, this.getRelativeUrl(iModelId), version);
     Logger.logTrace(loggerCategory, "Created named version for iModel", () => ({ iModelId, changeSetId }));
     return version;
   }
@@ -205,15 +216,12 @@ export class VersionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, version: Version): Promise<Version> {
-    requestContext.enter();
+  public async update(accessToken: AccessToken, iModelId: GuidString, version: Version): Promise<Version> {
     Logger.logInfo(loggerCategory, "Updating named version for iModel", () => ({ iModelId, changeSetId: version.changeSetId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validGuid("version.wsgId", version.wsgId);
 
-    const updatedVersion = await this._handler.postInstance<Version>(requestContext, Version, this.getRelativeUrl(iModelId, version.id), version);
-    requestContext.enter();
+    const updatedVersion = await this._handler.postInstance<Version>(accessToken, Version, this.getRelativeUrl(iModelId, version.id), version);
     Logger.logTrace(loggerCategory, "Updated named version for iModel", () => ({ iModelId, changeSetId: version.changeSetId }));
     return updatedVersion;
   }

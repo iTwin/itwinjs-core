@@ -6,9 +6,24 @@
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
-require("@bentley/config-loader").loadEnv(path.join(__dirname, ".env"));
+const fs = require("fs");
 
-const { IModeljsLibraryExportsPlugin } = require('@bentley/webpack-tools-core');
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
+
+loadEnv(path.join(__dirname, ".env"));
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -57,9 +72,6 @@ function createConfig(shouldInstrument) {
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       new webpack.DefinePlugin({
         "process.env": Object.keys(process.env)
-          .filter((key) => {
-            return key.match(/^imjs_/i);
-          })
           .reduce((env, key) => {
             env[key] = JSON.stringify(process.env[key]);
             return env;
@@ -67,7 +79,6 @@ function createConfig(shouldInstrument) {
             IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
           }),
       }),
-      new IModeljsLibraryExportsPlugin(),
     ]
   };
 

@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { render } from "@testing-library/react";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BadgeType, WidgetState } from "@bentley/ui-abstract";
-import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@bentley/ui-ninezone";
+import { BadgeType, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
+import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@itwin/appui-layout-react";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
   FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabGroupProps,
   WidgetStackTabs, Zone, ZoneState,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 
 const defaultWidgetTabs = {
   [1]: [],
@@ -29,14 +31,17 @@ const defaultWidgetTabs = {
 
 describe("WidgetStack", () => {
   before(async () => {
+    await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
+    FrontstageManager.clearFrontstageDefs();
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   class TestWidget1 extends WidgetControl {
@@ -64,23 +69,22 @@ describe("WidgetStack", () => {
   }
 
   class Frontstage1 extends FrontstageProvider {
+    public static stageId = "WidgetStack-Frontstage";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
       const myContentGroup: ContentGroup = new ContentGroup({
-        contents: [{ classId: "TestContentControl2" }],
-      });
-
-      const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-        id: "SingleContent",
-        descriptionKey: "UiFramework:tests.singleContent",
-        priority: 100,
+        id: "test-group",
+        layout: StandardContentLayouts.singleView,
+        contents: [{ id: "main", classId: "TestContentControl2" }],
       });
 
       return (
         <Frontstage
-          id="WidgetStack-Frontstage"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={myContentLayout}
           contentGroup={myContentGroup}
           centerRight={
             <Zone defaultState={ZoneState.Open}
@@ -121,17 +125,18 @@ describe("WidgetStack", () => {
 
   it("should produce a WidgetStack with 2 widgets", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = render(<FrontstageComposer />);
 
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("WidgetStack-Frontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    wrapper.update();
+    await TestUtils.flushAsyncOperations();
+    // wrapper.debug();
 
-    const stackedWidget = wrapper.find("div.nz-widget-stacked");
+    const stackedWidget = wrapper.container.querySelectorAll("div.nz-widget-stacked");
     expect(stackedWidget.length).to.eq(1);
 
-    const tabs = wrapper.find("div.nz-draggable");
+    const tabs = wrapper.container.querySelectorAll("div.nz-draggable");
     expect(tabs.length).to.eq(2);
   });
 

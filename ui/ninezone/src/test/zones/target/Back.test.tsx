@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { BackTarget } from "../../../ui-ninezone";
+import { BackTarget } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<BackTarget />", () => {

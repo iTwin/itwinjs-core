@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { DialogButtonStyle, DialogButtonType, MessageSeverity } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { DialogButtonStyle, DialogButtonType, MessageBox, MessageSeverity } from "../../ui-core";
-import { MessageContainer } from "../../ui-core/messagebox/MessageBox";
+import { MessageBox } from "../../core-react";
+import { MessageContainer } from "../../core-react/messagebox/MessageBox";
 import TestUtils from "../TestUtils";
 
 describe("MessageBox", () => {

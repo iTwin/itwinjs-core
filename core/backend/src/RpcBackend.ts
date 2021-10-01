@@ -6,18 +6,49 @@
  * @module RpcInterface
  */
 
+// cspell:ignore calltrace
+
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@bentley/imodeljs-common";
+import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import { AsyncLocalStorage } from "async_hooks";
+import { Logger } from "@itwin/core-bentley";
 
-let initialized = false;
+/**
+ * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
+ * class can be used to correlate the current calltrace with the originating RpcActivity. This is used for automatic appending
+ * of RpcActivity to log messages emitted during Rpc processing. It may also be used to retrieve the user accessToken
+ * from the RpcActivity.
+ * @public
+ */
+export class RpcTrace {
+  private static _storage = new AsyncLocalStorage();
 
-export function initializeRpcBackend() {
-  if (initialized) {
-    return;
+  /** Get the [RpcActivity]($common) for the currently executing async, or `undefined` if there is no
+   * RpcActivity in the current call stack.
+   * */
+  public static get currentActivity(): RpcActivity | undefined {
+    return RpcTrace._storage.getStore() as RpcActivity | undefined;
   }
 
+  /** Start the processing of an RpcActivity. */
+  public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
+    return RpcTrace._storage.run(activity, fn);
+  }
+}
+
+let initialized = false;
+/** @internal */
+export function initializeRpcBackend() {
+  if (initialized)
+    return;
+
   initialized = true;
+
+  RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
+
+  // set up static logger metadata to include current RpcActivity information for logs during rpc processing
+  Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
 
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
     const form = new FormData();

@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { TimeField, TimeSpec } from "../../ui-components/datepicker/TimeField";
+import { fireEvent, render } from "@testing-library/react";
+import { TimeField, TimeSpec } from "../../components-react/datepicker/TimeField";
 import TestUtils from "../TestUtils";
-import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
+import { SpecialKey, TimeDisplay } from "@itwin/appui-abstract";
 
 describe("<TimeField />", () => {
   let renderSpy: sinon.SinonSpy;
@@ -40,8 +40,6 @@ describe("<TimeField />", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();

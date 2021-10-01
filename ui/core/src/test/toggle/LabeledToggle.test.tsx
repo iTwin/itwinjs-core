@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LabeledToggle } from "../../ui-core";
+import { LabeledToggle } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<LabeledToggle />", () => {
   it("should render", () => {

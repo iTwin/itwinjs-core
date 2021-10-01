@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { mount, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { ThemedSelect } from "../../ui-core";
+import { fireEvent, render } from "@testing-library/react";
+import { ThemedSelect } from "../../core-react";
 
 describe("<ThemedSelect />", () => {
   enum ColorOptions {
@@ -89,7 +90,7 @@ describe("<ThemedSelect />", () => {
 });
 
 describe("<ThemedSelect - React Testing Library />", () => {
-  afterEach(cleanup);
+
   const cityChoices = [
     { label: "London", value: "London" },
     { label: "Paris", value: "Paris" },

@@ -5,12 +5,13 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupManager, ContentGroupProps, ContentProps,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentProps,
   NavigationAidControl,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("ContentGroup", () => {
 
@@ -38,16 +39,11 @@ describe("ContentGroup", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("ContentGroupManager.loadGroup should throw Error if ContentGroupProps does not have an id", () => {
-    const groupProps: ContentGroupProps = {
-      contents: [{ id: "myContent", classId: TestContentControl }],
-    };
-    expect(() => ContentGroupManager.loadGroup(groupProps)).to.throw(Error);
-  });
-
   it("ContentGroup.getContentControl should throw Error if content type is not Content or Viewport", () => {
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {
+      id: "testGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -63,6 +59,8 @@ describe("ContentGroup", () => {
 
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {
+      id: "testGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -75,6 +73,8 @@ describe("ContentGroup", () => {
   it("ContentGroup.toJSON should throw Error if class not registered", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
+      id: "testGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -88,6 +88,8 @@ describe("ContentGroup", () => {
 
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
+      id: "testGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -104,6 +106,8 @@ describe("ContentGroup", () => {
 
     const contentProps: ContentProps = { id: "myContent", classId };
     const groupProps: ContentGroupProps = {
+      id: "testGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -119,6 +123,8 @@ describe("ContentGroup", () => {
 
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
+      id: "testGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);

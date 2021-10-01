@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { XYZProps } from "@bentley/geometry-core";
+import { XYZProps } from "@itwin/core-geometry";
 import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelReadRpcInterface, PointWithStatus,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** Response to a request to obtain imodel coordinates from cache.
@@ -105,7 +105,7 @@ class GCtoIMCResultCache {
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
         const remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
-        const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest)).then((remainingResponse) => {
+        const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), remainingRequest).then((remainingResponse) => {
           // put the responses into the cache, and fill in the output response for each
           for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
             const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
@@ -157,11 +157,11 @@ class IMCtoGCResultCache {
     let remainingRequest: GeoCoordinatesRequestProps | undefined;
     const originalPositions: number[] = [];
 
-    for (let iPoint: number = 0; iPoint < request.iModelCoords.length; ++iPoint) {
-      const thisIModelCoord: XYZProps = request.iModelCoords[iPoint];
+    for (let iPoint = 0; iPoint < request.iModelCoords.length; ++iPoint) {
+      const thisIModelCoord = request.iModelCoords[iPoint];
 
       // we use the JSON string as the key into our cache of previously returned results.
-      const thisCacheKey: string = JSON.stringify(thisIModelCoord);
+      const thisCacheKey = JSON.stringify(thisIModelCoord);
 
       // put something in each output that corresponds to the input.
       if (this._cache[thisCacheKey]) {
@@ -189,9 +189,9 @@ class IMCtoGCResultCache {
     } else {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.iModelCoords.length - originalPositions.length;
-      const remainingResponse = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest));
+      const remainingResponse = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), remainingRequest!);
       // put the responses into the cache, and fill in the output response for each
-      for (let iResponse: number = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
+      for (let iResponse = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
         const thisPoint: PointWithStatus = remainingResponse.geoCoords[iResponse];
 
         // transfer the answer stored in remainingResponse to the correct position in the overall response.
@@ -199,8 +199,8 @@ class IMCtoGCResultCache {
         response.geoCoords[responseIndex] = thisPoint;
 
         // put the answer in the cache.
-        const thisIModelCoord: XYZProps = remainingRequest!.iModelCoords[iResponse];
-        const thisCacheKey: string = JSON.stringify(thisIModelCoord);
+        const thisIModelCoord = remainingRequest!.iModelCoords[iResponse];
+        const thisCacheKey = JSON.stringify(thisIModelCoord);
         this._cache[thisCacheKey] = thisPoint;
       }
       return response;

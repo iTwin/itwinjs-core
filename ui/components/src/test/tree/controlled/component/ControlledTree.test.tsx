@@ -7,27 +7,27 @@ import * as React from "react";
 import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { CheckBoxState } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
-import { ControlledTree, ControlledTreeProps } from "../../../../ui-components/tree/controlled/component/ControlledTree";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents";
-import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { SelectionMode } from "../../../../components-react/common/selection/SelectionModes";
+import { ControlledTree, ControlledTreeProps } from "../../../../components-react/tree/controlled/component/ControlledTree";
+import { from } from "../../../../components-react/tree/controlled/Observable";
+import { TreeEvents } from "../../../../components-react/tree/controlled/TreeEvents";
+import { MutableTreeModelNode, TreeModel } from "../../../../components-react/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
+import { SparseArray } from "../../../../components-react/tree/controlled/internal/SparseTree";
 
 describe("ControlledTree", () => {
-  const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
   const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
   const treeEventsMock = moq.Mock.ofType<TreeEvents>();
   const treeModelMock = moq.Mock.ofType<TreeModel>();
   const defaultProps: ControlledTreeProps = {
-    visibleNodes: visibleNodesMock.object,
+    model: treeModelMock.object,
     nodeLoader: nodeLoaderMock.object,
-    treeEvents: treeEventsMock.object,
+    eventsHandler: treeEventsMock.object,
     selectionMode: SelectionMode.Single,
     width: 200,
     height: 200,
@@ -43,7 +43,7 @@ describe("ControlledTree", () => {
   });
 
   beforeEach(() => {
-    visibleNodesMock.reset();
+    treeModelMock.reset();
     nodeLoaderMock.reset();
 
     node = {
@@ -64,9 +64,6 @@ describe("ControlledTree", () => {
       },
     };
 
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 0);
-    visibleNodesMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
-    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ depth: -1, id: undefined, numChildren: undefined }));
     nodeLoaderMock.setup((x) => x.loadNode(moq.It.isAny(), moq.It.isAny())).returns(() => from([]));
   });
 
@@ -75,15 +72,21 @@ describe("ControlledTree", () => {
   });
 
   const mockVisibleNode = () => {
-    visibleNodesMock.reset();
-    visibleNodesMock.setup((x) => x.getNumRootNodes()).returns(() => 1);
-    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
-    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
-    visibleNodesMock.setup((x) => x[Symbol.iterator]()).returns([node][Symbol.iterator]);
+    treeModelMock.reset();
+
+    const nodes = new SparseArray<string>();
+    nodes.setLength(1);
+    nodes.set(0, node.id);
+
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ id: undefined, depth: -1, numChildren: 1 }));
+    treeModelMock.setup((x) => x.getChildren(undefined)).returns(() => nodes);
+    treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
+    treeModelMock.setup((x) => x.getChildOffset(undefined, node.id)).returns(() => 0);
+    treeModelMock.setup((x) => x.iterateTreeModelNodes(undefined)).returns([node][Symbol.iterator]);
   };
 
   it("renders loading spinner if root nodes are not loaded", () => {
-    visibleNodesMock.setup((x) => x.getNumRootNodes()).returns(() => undefined);
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ id: undefined, depth: -1, numChildren: undefined }));
 
     const { container } = render(<ControlledTree {...defaultProps} />);
 
@@ -92,7 +95,7 @@ describe("ControlledTree", () => {
   });
 
   it("renders no data message if there are no nodes", () => {
-    visibleNodesMock.setup((x) => x.getNumRootNodes()).returns(() => 0);
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ id: undefined, depth: -1, numChildren: 0 }));
 
     const { container } = render(<ControlledTree {...defaultProps} />);
 
@@ -164,7 +167,8 @@ describe("ControlledTree", () => {
   });
 
   it("uses provided spinner renderer", () => {
-    visibleNodesMock.setup((x) => x.getNumRootNodes()).returns(() => undefined);
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ id: undefined, depth: -1, numChildren: undefined }));
+
     const spinnerRenderer = () => <div />;
     const spy = sinon.spy(spinnerRenderer);
 
@@ -174,7 +178,8 @@ describe("ControlledTree", () => {
   });
 
   it("uses provided no data renderer", () => {
-    visibleNodesMock.setup((x) => x.getNumRootNodes()).returns(() => 0);
+    treeModelMock.setup((x) => x.getRootNode()).returns(() => ({ id: undefined, depth: -1, numChildren: 0 }));
+
     const noDataRenderer = () => <div />;
     const spy = sinon.spy(noDataRenderer);
 

@@ -9,7 +9,7 @@
 import {
   ECObjectsError, ECObjectsStatus, Format, InvertedUnit, KindOfQuantityProps, OverrideFormat,
   SchemaItemKey, SchemaItemType, SchemaKey, Unit,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
 

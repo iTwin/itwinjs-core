@@ -5,11 +5,11 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { PopupButton } from "../../ui-components/editors/PopupButton";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { PopupButton } from "../../components-react/editors/PopupButton";
 import { TestUtils } from "../TestUtils";
 
 describe("<PopupButton />", () => {
@@ -65,8 +65,6 @@ describe("<PopupButton />", () => {
 
     const popupDiv = component.getByTestId("popup-test-div");
     expect(popupDiv).to.exist;
-
-    cleanup();
   });
 
   it("shows the popup on down arrow", async () => {
@@ -83,8 +81,6 @@ describe("<PopupButton />", () => {
 
     const popupDiv = component.getByTestId("popup-test-div");
     expect(popupDiv).to.exist;
-
-    cleanup();
   });
 
   it("shows the popup on space bar", async () => {
@@ -101,8 +97,6 @@ describe("<PopupButton />", () => {
 
     const popupDiv = component.getByTestId("popup-test-div");
     expect(popupDiv).to.exist;
-
-    cleanup();
   });
 
   it("shows the popup on Enter", async () => {
@@ -119,8 +113,6 @@ describe("<PopupButton />", () => {
 
     const popupDiv = component.getByTestId("popup-test-div");
     expect(popupDiv).to.exist;
-
-    cleanup();
   });
 
   it("calls onClose", async () => {

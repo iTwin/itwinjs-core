@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import { UiComponents } from "../ui-components";
+import { Logger } from "@itwin/core-bentley";
+import { UiComponents } from "../components-react";
 import TestUtils from "./TestUtils";
 
 describe("UiComponents", () => {
@@ -16,15 +15,15 @@ describe("UiComponents", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiComponents.i18n).to.throw(Error);
+    expect(() => UiComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return UiComponents", () => {
-    expect(UiComponents.i18nNamespace).to.eq("UiComponents");
+    expect(UiComponents.localizationNamespace).to.eq("UiComponents");
   });
 
-  it("packageName should return ui-components", () => {
-    expect(UiComponents.packageName).to.eq("ui-components");
+  it("packageName should return components-react", () => {
+    expect(UiComponents.packageName).to.eq("components-react");
   });
 
   it("translate should return the key (in test environment)", async () => {
@@ -48,15 +47,6 @@ describe("UiComponents", () => {
     await UiComponents.initialize(TestUtils.i18n);
     spyLogger.calledOnce.should.true;
     (Logger.logInfo as any).restore();
-  });
-
-  it("calling initialize without I18N will use IModelApp.i18n", async () => {
-    await MockRender.App.startup();
-
-    await UiComponents.initialize();
-    expect(UiComponents.i18n).to.eq(IModelApp.i18n);
-
-    await MockRender.App.shutdown();
   });
 
   it("calling loggerCategory without an obj should return packageName", () => {

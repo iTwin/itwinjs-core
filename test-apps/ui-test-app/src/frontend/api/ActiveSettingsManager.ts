@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "@bentley/ui-framework";
+import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
+import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
+import { UiFramework } from "@itwin/appui-react";
 import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();
@@ -115,7 +115,7 @@ export class ActiveSettingsManager {
     else if (view instanceof SpatialViewState)
       models = Array.from(view.modelSelector.models);
     else {
-      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported", Logger.logError, "simple-editor-app", () => view);
+      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported");
     }
 
     if (models.length === 0) {

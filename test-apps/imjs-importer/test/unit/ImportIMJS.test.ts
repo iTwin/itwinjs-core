@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "mocha";
 import { expect } from "chai";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { ImportIMJS } from "../../src/ImportIMJS";
 
 describe("ImportIMJS", () => {

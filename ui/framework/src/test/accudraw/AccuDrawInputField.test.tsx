@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { AccuDrawField, SpecialKey } from "@bentley/ui-abstract";
-import { AccuDrawInputField } from "../../ui-framework/accudraw/AccuDrawInputField";
-import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { AccuDrawInputField } from "../../appui-react/accudraw/AccuDrawInputField";
+import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 import { TestUtils } from "../TestUtils";
-import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
+import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 
 // cspell:ignore uiadmin
 
@@ -47,19 +47,19 @@ describe("AccuDrawInputField", () => {
 
   afterEach(() => {
     sandbox.restore();
-    afterEach(cleanup);
+
   });
 
   it("should render with lock", () => {
     const spyChanged = sinon.spy();
-    const wrapper = render(<AccuDrawInputField isLocked={true} field={AccuDrawField.X} id="x" onValueChanged={spyChanged} />);
+    const wrapper = render(<AccuDrawInputField isLocked={true} field={ItemField.X_Item} id="x" onValueChanged={spyChanged} />);
     const icon = wrapper.container.querySelector(".icon-lock");
     expect(icon).not.to.be.null;
   });
 
   it("should call onValueChanged on change", () => {
     const spyMethod = sinon.spy();
-    const wrapper = render(<AccuDrawInputField isLocked={false} field={AccuDrawField.X} id="x" onValueChanged={spyMethod} />);
+    const wrapper = render(<AccuDrawInputField isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyMethod} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
@@ -75,7 +75,7 @@ describe("AccuDrawInputField", () => {
   it("should call onValueChanged on change after delay", async () => {
     const fakeTimers = sinon.useFakeTimers();
     const spyMethod = sinon.spy();
-    const wrapper = render(<AccuDrawInputField isLocked={false} field={AccuDrawField.X} id="x" onValueChanged={spyMethod} valueChangedDelay={10} />);
+    const wrapper = render(<AccuDrawInputField isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyMethod} valueChangedDelay={10} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     fireEvent.change(input!, { target: { value: "22.3" } });
@@ -91,7 +91,7 @@ describe("AccuDrawInputField", () => {
   it("should call onEscPressed on ESC", () => {
     const spyEsc = sinon.spy();
     const spyChanged = sinon.spy();
-    const wrapper = render(<AccuDrawInputField onEscPressed={spyEsc} isLocked={false} field={AccuDrawField.X} id="x" onValueChanged={spyChanged} />);
+    const wrapper = render(<AccuDrawInputField onEscPressed={spyEsc} isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyChanged} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     fireEvent.keyDown(input!, { key: SpecialKey.Escape });
@@ -101,7 +101,7 @@ describe("AccuDrawInputField", () => {
   it("should call onEnterPressed on Enter", () => {
     const spyEnter = sinon.spy();
     const spyChanged = sinon.spy();
-    const wrapper = render(<AccuDrawInputField onEnterPressed={spyEnter} isLocked={false} field={AccuDrawField.X} id="x" onValueChanged={spyChanged} />);
+    const wrapper = render(<AccuDrawInputField onEnterPressed={spyEnter} isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyChanged} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     fireEvent.keyDown(input!, { key: SpecialKey.Enter });
@@ -111,7 +111,7 @@ describe("AccuDrawInputField", () => {
   it("should call KeyboardShortcutManager.processKey on a letter", () => {
     const spyMethod = sinon.spy(KeyboardShortcutManager, "processKey");
     const spyChanged = sinon.spy();
-    const wrapper = render(<AccuDrawInputField isLocked={false} field={AccuDrawField.X} id="x" onValueChanged={spyChanged} />);
+    const wrapper = render(<AccuDrawInputField isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyChanged} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     fireEvent.keyDown(input!, { key: "a" });
@@ -124,7 +124,7 @@ describe("AccuDrawInputField", () => {
   it("should update value when calling onFieldValueChange", () => {
     const fakeTimers = sandbox.useFakeTimers();
     const spyMethod = sinon.spy();
-    const wrapper = render(<AccuDrawInputField isLocked={false} field={AccuDrawField.X} id="x" onValueChanged={spyMethod} />);
+    const wrapper = render(<AccuDrawInputField isLocked={false} field={ItemField.X_Item} id="x" onValueChanged={spyMethod} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
     IModelApp.accuDraw.setFocusItem(ItemField.X_Item);

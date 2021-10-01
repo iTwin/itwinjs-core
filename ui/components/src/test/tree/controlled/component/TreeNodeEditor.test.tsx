@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
-import { act, fireEvent, render, wait } from "@testing-library/react";
-import { TreeNodeEditor } from "../../../../ui-components/tree/controlled/component/TreeNodeEditor";
-import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
+import { TreeNodeEditor } from "../../../../components-react/tree/controlled/component/TreeNodeEditor";
+import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeNodeEditor", () => {
@@ -41,7 +41,7 @@ describe("TreeNodeEditor", () => {
 
     const editorContainer = getByTestId("editor-container");
     act(() => { fireEvent.keyDown(editorContainer, { key: "Enter", code: 13 }); });
-    await wait(() => { expect(spy).to.be.calledOnce; });
+    await waitFor(() => { expect(spy).to.be.calledOnce; });
   });
 
   it("calls onCancel callback when editing is canceled", async () => {
@@ -56,7 +56,7 @@ describe("TreeNodeEditor", () => {
 
     const editorContainer = getByTestId("editor-container");
     act(() => { fireEvent.keyDown(editorContainer, { key: "Escape", code: 27 }); });
-    await wait(() => { expect(spy).to.be.calledOnce; });
+    await waitFor(() => { expect(spy).to.be.calledOnce; });
   });
 
   it("renders editor with label PropertyRecord", () => {

@@ -3,31 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 
 import { TestUtility } from "./TestUtility";
-import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {
   let contextId: GuidString;
   let iModelId: GuidString;
-  let requestContext: AuthorizedClientRequestContext;
+  let requestContext: AccessToken;
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
-    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-
-    new TestFrontendAuthorizationClient(requestContext.accessToken);
-    const options: IModelAppOptions = {
-      authorizationClient,
-    };
     await IModelApp.shutdown();
-    await IModelApp.startup(options);
+    await IModelApp.startup();
+    await TestUtility.initialize(TestUsers.regular);
+    requestContext = await TestUtility.getAccessToken(TestUsers.regular);
     contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     chai.assert.isDefined(contextId);
     iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.readOnly);

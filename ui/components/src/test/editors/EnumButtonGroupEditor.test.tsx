@@ -6,19 +6,16 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { EnumButtonGroupEditor } from "../../components-react/editors/EnumButtonGroupEditor";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 // cSpell:ignore enumbuttongroup
 
 describe("<EnumButtonGroupEditor />", () => {
-  afterEach(cleanup);
-
   it("should render", () => {
     const renderedComponent = render(<EnumButtonGroupEditor setFocus={true} />);
     expect(renderedComponent).not.to.be.undefined;
@@ -49,7 +46,7 @@ describe("<EnumButtonGroupEditor />", () => {
     }
 
     const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} onCommit={handleCommit} />);
-    expect(await waitForElement(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
+    expect(await waitFor(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
 
     const greenButton = renderedComponent.getByTestId("Green");
     expect(greenButton.tagName).to.be.equal("BUTTON");
@@ -76,7 +73,7 @@ describe("<EnumButtonGroupEditor />", () => {
     }
 
     const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} onCommit={handleCommit} />);
-    expect(await waitForElement(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
+    expect(await waitFor(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
     const greenButton = renderedComponent.getByTestId("Green");
     expect(greenButton.tagName).to.be.equal("BUTTON");
     expect(greenButton.classList.contains("nz-is-active")).to.be.false;
@@ -92,13 +89,13 @@ describe("<EnumButtonGroupEditor />", () => {
     TestUtils.addEnumButtonGroupEditorSpecification(record);
 
     const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} />);
-    expect(await waitForElement(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
+    expect(await waitFor(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
     const blueButton = renderedComponent.getByTestId("Blue");
     expect(blueButton.tagName).to.be.equal("BUTTON");
     expect(blueButton.classList.contains("nz-is-disabled")).to.be.equal(!TestUtils.blueEnumValueIsEnabled);
     TestUtils.toggleBlueEnumValueEnabled();
     renderedComponent.rerender(<EnumButtonGroupEditor propertyRecord={record} />);
-    await waitForElement(() => renderedComponent.getByTestId("Blue"));
+    await waitFor(() => renderedComponent.getByTestId("Blue"));
     expect(blueButton.classList.contains("nz-is-disabled")).to.be.equal(!TestUtils.blueEnumValueIsEnabled);
   });
 
@@ -106,15 +103,9 @@ describe("<EnumButtonGroupEditor />", () => {
     const propertyRecord = TestUtils.createEnumProperty("Test", 1);
     TestUtils.addEnumButtonGroupEditorSpecification(propertyRecord);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
-    expect(await waitForElement(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
+    expect(await waitFor(() => renderedComponent.getByTestId("Blue"))).not.to.be.null;
     expect(renderedComponent.container.querySelector(".components-enumbuttongroup-editor")).to.not.be.null;
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);
@@ -126,7 +117,7 @@ describe("<EnumButtonGroupEditor />", () => {
     const renderedComponent = render(<EditorContainer propertyRecord={record} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
     expect(renderedComponent).not.to.be.undefined;
 
-    expect(await waitForElement(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
+    expect(await waitFor(() => renderedComponent.getByTestId("Green"))).not.to.be.null;
     const greenButton = renderedComponent.getByTestId("Green");
 
     fireEvent.keyDown(greenButton, { key: SpecialKey.Enter });

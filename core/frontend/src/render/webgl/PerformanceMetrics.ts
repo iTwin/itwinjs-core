@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { BeTimePoint, StopWatch } from "@bentley/bentleyjs-core";
+import { BeTimePoint, StopWatch } from "@itwin/core-bentley";
 import { GLTimerResultCallback } from "../RenderSystem";
 import { FrameBuffer } from "./FrameBuffer";
 import { System } from "./System";

@@ -6,8 +6,8 @@
  * @module Introspection
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, BentleyError, Logger } from "@itwin/core-bentley";
+import { ImsAuthorizationClient, removeAccessTokenPrefix, RequestGlobalOptions } from "@bentley/itwin-client";
 import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
@@ -31,7 +31,7 @@ export class IntrospectionClient {
   ) {
   }
 
-  private async getClient(requestContext: AuthorizedClientRequestContext): Promise<OpenIdClient> {
+  private async getClient(): Promise<OpenIdClient> {
     if (this._client) {
       return this._client;
     }
@@ -39,10 +39,12 @@ export class IntrospectionClient {
     custom.setHttpOptionsDefaults({
       timeout: RequestGlobalOptions.timeout.response,
       retry: RequestGlobalOptions.maxRetries,
-      agent: RequestGlobalOptions.httpsProxy,
+      agent: {
+        https: RequestGlobalOptions.httpsProxy,
+      },
     });
 
-    const issuerUrl = await this.getIssuerUrl(requestContext);
+    const issuerUrl = await this.getIssuerUrl();
     const issuer = await Issuer.discover(issuerUrl);
 
     const clientMetadata: ClientMetadata = {
@@ -53,18 +55,18 @@ export class IntrospectionClient {
     return this._client;
   }
 
-  protected async getIssuerUrl(requestContext: AuthorizedClientRequestContext): Promise<string> {
+  protected async getIssuerUrl(): Promise<string> {
     if (this._issuerUrl) {
       return this._issuerUrl;
     }
 
     const imsAuthorizationClient = new ImsAuthorizationClient();
-    this._issuerUrl = await imsAuthorizationClient.getUrl(requestContext);
+    this._issuerUrl = await imsAuthorizationClient.getUrl();
     return this._issuerUrl;
   }
 
-  public async introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse> {
-    const accessTokenStr = requestContext.accessToken.toTokenString(IncludePrefix.No);
+  public async introspect(accessToken: AccessToken): Promise<IntrospectionResponse> {
+    const accessTokenStr = removeAccessTokenPrefix(accessToken) ?? "";
 
     try {
       const cachedResponse = await this._cache.get(accessTokenStr);
@@ -72,14 +74,14 @@ export class IntrospectionClient {
         return cachedResponse;
       }
     } catch (err) {
-      Logger.logInfo(BackendITwinClientLoggerCategory.Introspection, `introspection response not found in cache: ${accessTokenStr}`, () => err);
+      Logger.logInfo(BackendITwinClientLoggerCategory.Introspection, `introspection response not found in cache: ${accessTokenStr}`, () => BentleyError.getErrorProps(err));
     }
 
     let client: OpenIdClient;
     try {
-      client = await this.getClient(requestContext);
+      client = await this.getClient();
     } catch (err) {
-      Logger.logError(BackendITwinClientLoggerCategory.Introspection, `Unable to create oauth client`, () => err);
+      Logger.logError(BackendITwinClientLoggerCategory.Introspection, `Unable to create oauth client`, () => BentleyError.getErrorProps(err));
       throw err;
     }
 
@@ -87,7 +89,7 @@ export class IntrospectionClient {
     try {
       introspectionResponse = await client.introspect(accessTokenStr) as IntrospectionResponse;
     } catch (err) {
-      Logger.logError(BackendITwinClientLoggerCategory.Introspection, `Unable to introspect client token`, () => err);
+      Logger.logError(BackendITwinClientLoggerCategory.Introspection, `Unable to introspect client token`, () => BentleyError.getErrorProps(err));
       throw err;
     }
 

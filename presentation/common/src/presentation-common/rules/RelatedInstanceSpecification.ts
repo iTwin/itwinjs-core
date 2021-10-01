@@ -6,8 +6,6 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "./ClassSpecifications";
-import { RelationshipDirection } from "./RelationshipDirection";
 import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
 
 /**
@@ -63,51 +61,10 @@ import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
  * - The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.
  * - The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.
  *
- * @see [More details]($docs/learning/presentation/RelatedInstanceSpecification.md)
+ * @see [More details]($docs/presentation/Common-Rules/RelatedInstanceSpecification.md)
  * @public
  */
-export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew; // eslint-disable-line deprecation/deprecation
-
-/**
- * Deprecated [[RelatedInstanceSpecification]] specification.
- * @public
- * @deprecated Use [[RelatedInstanceSpecificationNew]]. Will be removed in iModel.js 3.0
- */
-export interface DEPRECATED_RelatedInstanceSpecification { // eslint-disable-line @typescript-eslint/naming-convention
-  /** Specification of the relationship to use for joining the related instance */
-  relationship: SingleSchemaClassSpecification;
-
-  /** Specification of the related instance class. */
-  class: SingleSchemaClassSpecification;
-
-  /** Direction of the relationship */
-  requiredDirection: RelationshipDirection.Forward | RelationshipDirection.Backward;
-
-  /**
-   * The alias to give for the joined related instance. Used to reference the related instance in
-   * instance filter and customization rules.
-   *
-   * **The value must be unique per-specification!**
-   *
-   * @pattern ^\w[\w\d]*$
-   */
-  alias: string;
-
-  /**
-   * Is the related instance required to exist. If yes, primary instance won't be returned
-   * if the related instance doesn't exist. If not, primary instance will be returned, but related
-   * instance will be null.
-   *
-   * In SQL terms in can be compared to INNER JOIN vs OUTER JOIN.
-   */
-  isRequired?: boolean;
-}
-
-/**
- * Updated [[RelatedInstanceSpecification]] specification.
- * @public
- */
-export interface RelatedInstanceSpecificationNew {
+export interface RelatedInstanceSpecification {
   /**
    * Relationship path to find the related instance.
    */

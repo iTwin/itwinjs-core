@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeDuration } from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { ServerTimeoutError } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
@@ -158,7 +158,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return {}; }
   protected _selectTiles(): Tile[] { return []; }
   public draw() { }
   public prune() { }
@@ -220,9 +220,9 @@ class LoggingChannel extends TileRequestChannel {
     return false;
   }
 
-  public override recordCompletion(tile: Tile): void {
+  public override recordCompletion(tile: Tile, content: TileContent): void {
     this.log("recordCompletion");
-    super.recordCompletion(tile);
+    super.recordCompletion(tile, content);
   }
 
   public override recordTimeout() {

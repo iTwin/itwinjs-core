@@ -2,17 +2,15 @@
 
 Logging allows libraries and apps to report potentially useful information about operations, and it allows apps and users to control how or if the logged information is displayed or collected. Logging information is primarily used to diagnose problems after the fact. Logging may also be used to monitor application health.
 
-To log a message, call [Logger.logError]($bentleyjs-core), [Logger.logWarning]($bentleyjs-core), [Logger.logInfo]($bentleyjs-core), or [Logger.logTrace]($bentleyjs-core), depending on the level of importance of the message.
+To log a message, call [Logger.logError]($core-bentley), [Logger.logWarning]($core-bentley), [Logger.logInfo]($core-bentley), or [Logger.logTrace]($core-bentley), depending on the level of importance of the message.
 
-[BentleyError]($bentleyjs-core) is integrated with logging.
-
-Logging messages will be tagged with an [ActivityId](#activityid-and-clientrequestcontext) to help you correlate frontend requests with backend operations.
+[BentleyError]($core-bentley) is integrated with logging.
 
 ## LogLevels
 
-Each of the logging output functions assigns a [LogLevel]($bentleyjs-core) to the specified message. LogLevel is like a property of a logging message. The app that produces logging messages can control output by filtering on LogLevel. And the dashboards that consume logging messages can filter and organize logging messages by LogLevels.
+Each of the logging output functions assigns a [LogLevel]($core-bentley) to the specified message. LogLevel is like a property of a logging message. The app that produces logging messages can control output by filtering on LogLevel. And the dashboards that consume logging messages can filter and organize logging messages by LogLevels.
 
-[LogLevel]($bentleyjs-core) is a pre-defined enum that is chosen by the app that generates logging messages. The app must choose the appropriate level for each message, so that the purpose of a message is clear and so that the most important messages stand out.
+[LogLevel]($core-bentley) is a pre-defined enum that is chosen by the app that generates logging messages. The app must choose the appropriate level for each message, so that the purpose of a message is clear and so that the most important messages stand out.
 
 ## Categories
 
@@ -24,13 +22,11 @@ Parent/child category naming is often useful for achieving uniqueness and groupi
 
 ### Parent and Child Categories
 
-If a category name has a "." in it, then the part to the left is interpreted as the parent category and the part to the right is the child. If you pass a parent category to [Logger.setLevel]($bentleyjs-core), then the specified level filter will be applied to all children of that level. If you call [Logger.setLevel]($bentleyjs-core) on a specific child category, then the level you specify will apply to that child, while the parent's level will apply to all other children. Children can be nested.
+If a category name has a "." in it, then the part to the left is interpreted as the parent category and the part to the right is the child. If you pass a parent category to [Logger.setLevel]($core-bentley), then the specified level filter will be applied to all children of that level. If you call [Logger.setLevel]($core-bentley) on a specific child category, then the level you specify will apply to that child, while the parent's level will apply to all other children. Children can be nested.
 
 ## Controlling the Destination of Logging Messages
 
-The app controls how to handle log messages by supplying to [Logger.initialize]($bentleyjs-core) the functions that handle messages for each log level. These functions are called "streams". See the convenience method [Logger.initializeToConsole]($bentleyjs-core) for a simple way to direct logging output to the console.
-[BunyanLoggerConfig]($logger-config) will direct logging to the Bunyan logging system.
-[SeqLoggerConfig]($logger-config) will direct logging to the seq logging server. [FluentdBunyanLoggerConfig]($logger-config) will direct logging to fluentd.
+The app controls how to handle log messages by supplying to [Logger.initialize]($core-bentley) the functions that handle messages for each log level. These functions are called "streams". See the convenience method [Logger.initializeToConsole]($core-bentley) for a simple way to direct logging output to the console.
 
 ## Controlling What is Logged
 
@@ -40,7 +36,7 @@ The simplest way to turn off logging at a particular log level is for the app si
 
 ### Filtering messages by level and category
 
-[Logger.setLevel]($bentleyjs-core) and [Logger.configureLevels]($bentleyjs-core) can be used to control logging output by level and category.
+[Logger.setLevel]($core-bentley) and [Logger.configureLevels]($core-bentley) can be used to control logging output by level and category.
 
 There are two filtering strategies.
 
@@ -73,7 +69,7 @@ This approach is useful when you want to monitor the activity in a small number 
 
 ## Configuration Files
 
-A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config, for example, a [SeqConfig]($logger-config). Both are normally stored in a config file that is deployed with the service. Finally, some specific configuration parameters are normally set at runtime, based on deployment parameters using [EnvMacroSubst]($bentleyjs-core) to do macro substitution.
+A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($core-bentley). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service.
 
 *Example:*
 
@@ -104,9 +100,3 @@ An example of the logging-related sections of a configuration .json file that is
    }
 }
 ```
-
-## ActivityId and ClientRequestContext
-
-An [ActivityId](../../learning/RpcInterface.md#logging-and-activityids) is a globally unique Id that relates backend operations to frontend requests. The [ClientRequestContext]($bentleyjs-core) class manages the ActivityId for logging purposes. The current ActivityId is automatically associated as metadata with all logging messages.
-
-Backend code must cooperate with iTwin.js to [manage the ClientRequestContext](../RpcInterface.md#logging-and-activityIds)

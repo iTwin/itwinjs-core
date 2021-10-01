@@ -5,9 +5,9 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointProps } from "@bentley/ui-core";
-import { DragHandle, HorizontalAnchor, PointerCaptor, Tab, TabMode, TabModeHelpers, VerticalAnchor } from "../../../../ui-ninezone";
-import { createBoundingClientRect, createPointerEvent, mount } from "../../../Utils";
+import { PointProps } from "@itwin/appui-abstract";
+import { DragHandle, HorizontalAnchor, PointerCaptor, Tab, TabMode, TabModeHelpers, VerticalAnchor } from "../../../../appui-layout-react";
+import { createRect, mount } from "../../../Utils";
 
 describe("<Tab />", () => {
   it("should render", () => {
@@ -65,7 +65,7 @@ describe("<Tab />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode();
-    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(10);
@@ -86,7 +86,7 @@ describe("<Tab />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode();
-    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(0);
@@ -103,7 +103,7 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     const spy = sinon.spy(pointerDown, "preventDefault");
 
     pointerCaptor.prop("onPointerDown")!(pointerDown);
@@ -135,10 +135,10 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerMove = createPointerEvent();
+    const pointerMove = new PointerEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 6);
     pointerCaptor.prop("onPointerMove")!(pointerMove);
 
@@ -159,7 +159,7 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerMove = createPointerEvent();
+    const pointerMove = new PointerEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 6);
     pointerCaptor.prop("onPointerMove")!(pointerMove);
 
@@ -180,10 +180,10 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerMove = createPointerEvent();
+    const pointerMove = new PointerEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 6);
     pointerCaptor.prop("onPointerMove")!(pointerMove);
 
@@ -208,10 +208,10 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerDown = createPointerEvent();
+    const pointerDown = new PointerEvent("pointerdown");
     pointerCaptor.prop("onPointerDown")!(pointerDown);
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.calledOnceWithExactly().should.true;
@@ -233,7 +233,7 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;
@@ -249,9 +249,9 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
     const tabElement = sut.find("div").first().getDOMNode();
-    sinon.stub(tabElement, "getBoundingClientRect").returns(createBoundingClientRect(10, 10, 15, 15));
+    sinon.stub(tabElement, "getBoundingClientRect").returns(createRect(10, 10, 15, 15));
 
-    const pointerUp = createPointerEvent();
+    const pointerUp = new PointerEvent("pointerup");
     pointerCaptor.prop("onPointerUp")!(pointerUp);
 
     spy.notCalled.should.true;

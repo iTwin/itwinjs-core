@@ -6,12 +6,12 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps,
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicalEditingScope } from "../GraphicalEditingScope";
@@ -31,7 +31,7 @@ export interface IModelTileTreeOptions {
 }
 
 // Overrides nothing.
-const viewFlagOverrides = new ViewFlagOverrides();
+const viewFlagOverrides = {};
 
 /** Parameters used to construct an [[IModelTileTree]]
  * @internal

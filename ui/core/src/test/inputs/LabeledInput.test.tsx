@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { InputStatus, LabeledInput } from "../../ui-core";
+import { InputStatus, LabeledInput } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<LabeledInput />", () => {
   it("should render", () => {

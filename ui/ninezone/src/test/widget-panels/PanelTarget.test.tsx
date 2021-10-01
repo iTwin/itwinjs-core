@@ -10,7 +10,7 @@ import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {

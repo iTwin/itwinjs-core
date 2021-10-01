@@ -10,7 +10,7 @@ import {
   Message,
   MessageProgress,
   Status,
-} from "@bentley/ui-ninezone";
+} from "@itwin/appui-layout-react";
 import { cols2 } from "./Tools";
 
 export const cols3: React.CSSProperties = {

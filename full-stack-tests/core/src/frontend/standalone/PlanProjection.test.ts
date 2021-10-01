@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("Plan projections", () => {
@@ -70,8 +70,7 @@ describe("Plan projections", () => {
     await testOnScreenViewport("0x29", mirukuru, 100, 100, async (vp) => {
       for (const test of tests) {
         // Top view; rectangle is coincident with background map.
-        vp.viewFlags.backgroundMap = true;
-        vp.viewFlags.lighting = false;
+        vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
         vp.displayStyle.backgroundColor = ColorDef.fromJSON(ColorByName.magenta);
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
           useDepthBuffer: test.mapDepth,

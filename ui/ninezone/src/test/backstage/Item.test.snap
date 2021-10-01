@@ -3,6 +3,7 @@
 exports[`<Item /> renders correctly 1`] = `
 <li
   className="nz-backstage-item"
+  data-item-type="backstage-item"
   role="menuitem"
 >
   <div
@@ -17,6 +18,7 @@ exports[`<Item /> renders correctly 1`] = `
 exports[`<Item /> renders safe area aware correctly 1`] = `
 <li
   className="nz-backstage-item nz-safe-area-bottom nz-safe-area-left nz-safe-area-right nz-safe-area-top"
+  data-item-type="backstage-item"
   role="menuitem"
 >
   <div
@@ -31,6 +33,7 @@ exports[`<Item /> renders safe area aware correctly 1`] = `
 exports[`<Item /> should apply style 1`] = `
 <li
   className="nz-backstage-item"
+  data-item-type="backstage-item"
   role="menuitem"
   style={
     Object {
@@ -50,6 +53,7 @@ exports[`<Item /> should apply style 1`] = `
 exports[`<Item /> should render subtitle 1`] = `
 <li
   className="nz-backstage-item"
+  data-item-type="backstage-item"
   role="menuitem"
 >
   <div
@@ -67,6 +71,7 @@ exports[`<Item /> should render subtitle 1`] = `
 exports[`<Item /> should set is-active class 1`] = `
 <li
   className="nz-backstage-item nz-active"
+  data-item-type="backstage-item"
   role="menuitem"
 >
   <div
@@ -81,6 +86,7 @@ exports[`<Item /> should set is-active class 1`] = `
 exports[`<Item /> should set is-disabled class 1`] = `
 <li
   className="nz-backstage-item nz-disabled"
+  data-item-type="backstage-item"
   role="menuitem"
 >
   <div

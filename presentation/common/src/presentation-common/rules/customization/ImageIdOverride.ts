@@ -12,7 +12,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * Rule that allows overriding default icon and dynamically define an icon
  * for a particular node based on the context.
  *
- * @see [More details]($docs/learning/presentation/Customization/ImageIdOverride.md)
+ * @see [More details]($docs/presentation/Customization/ImageIdOverride.md)
  * @public
  */
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
@@ -21,14 +21,14 @@ export interface ImageIdOverride extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
    * Defines an image ID that should be used for nodes that meet rule condition. This is
-   * an [ECExpression]($docs/learning/presentation/Customization/ECExpressions.md), so ID can be
+   * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so ID can be
    * defined/formatted dynamically based on the context - for example ECInstance property value.
    *
    * @minLength 1

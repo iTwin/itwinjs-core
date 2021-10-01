@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { ThemedEnumEditor } from "../../ui-components/editors/ThemedEnumEditor";
+import { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { ThemedEnumEditor } from "../../components-react/editors/ThemedEnumEditor";
 import TestUtils from "../TestUtils";
 
 describe("<ThemedEnumEditor />", () => {
@@ -20,8 +21,6 @@ describe("<ThemedEnumEditor />", () => {
   after(() => {
     TestUtils.terminateUiComponents();
   });
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const wrapper = mount(<ThemedEnumEditor />);

@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { useResizeDetector } from "react-resize-detector";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
-  TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
-} from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+  TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
+} from "@itwin/components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@itwin/appui-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export class TreeExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -27,25 +29,8 @@ class EditableSimpleTreeDataProvider extends SimpleTreeDataProvider implements E
 
 function TreeExampleContent() {
   const [selectionMode, setSelectionMode] = React.useState(SelectionMode.Single);
-  const onChangeSelectionMode = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    let value: SelectionMode;
-    switch (e.target.value) {
-      case "1":
-        value = SelectionMode.Single;
-        break;
-      case "5":
-        value = SelectionMode.SingleAllowDeselect;
-        break;
-      case "6":
-        value = SelectionMode.Multiple;
-        break;
-      case "12":
-        value = SelectionMode.Extended;
-        break;
-      default:
-        value = SelectionMode.Single;
-    }
-    setSelectionMode(value);
+  const onChangeSelectionMode = React.useCallback((newValue: SelectionMode) => {
+    setSelectionMode(newValue);
   }, []);
 
   const dataProvider = React.useMemo(() => {
@@ -55,7 +40,7 @@ function TreeExampleContent() {
   }, []);
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const treeModel = useTreeModel(modelSource);
   const nodeUpdatedCallback = React.useCallback((node: TreeModelNode, newValue: string) => {
     modelSource.modifyModel((model) => {
       const modelNode = model.getNode(node.id);
@@ -71,24 +56,30 @@ function TreeExampleContent() {
       onNodeUpdated: nodeUpdatedCallback,
     },
   }), [modelSource, nodeLoader, nodeUpdatedCallback]));
+  const selectionModes = React.useMemo<SelectOption<SelectionMode>[]>(() => {
+    return [
+      { value: SelectionMode.Single, label: "Single" },
+      { value: SelectionMode.SingleAllowDeselect, label: "Single Allow Deselect" },
+      { value: SelectionMode.Multiple, label: "Multiple" },
+      { value: SelectionMode.Extended, label: "Extended" },
+    ];
+  }, []);
+  const { width, height, ref } = useResizeDetector();
 
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
-      <div style={{ marginBottom: "4px" }}>
-        <select onChange={onChangeSelectionMode} value={selectionMode} title="Selection Mode">
-          <option value={SelectionMode.Single}> Single </option>
-          <option value={SelectionMode.SingleAllowDeselect}> SingleAllowDeselect </option>
-          <option value={SelectionMode.Multiple}> Multiple </option>
-          <option value={SelectionMode.Extended}> Extended </option>
-        </select>
+      <div style={{ marginBottom: "4px", width: "200px" }}>
+        <Select onChange={onChangeSelectionMode} value={selectionMode} title="Selection Mode" options={selectionModes} />
       </div>
-      <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
-        <ControlledTree
+      <div ref={ref} style={{ flex: "1", height: "calc(100% - 22px)", width: "100%" }}>
+        {width && height ? <ControlledTree
           nodeLoader={nodeLoader}
-          visibleNodes={visibleNodes}
+          model={treeModel}
           selectionMode={selectionMode}
-          treeEvents={eventsHandler}
-        />
+          eventsHandler={eventsHandler}
+          width={width}
+          height={height}
+        /> : null}
       </div>
     </div >
   );

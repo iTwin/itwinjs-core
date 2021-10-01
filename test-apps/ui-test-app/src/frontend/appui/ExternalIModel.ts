@@ -3,13 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelConnection, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
-import { SampleAppIModelApp } from "..";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { SampleAppIModelApp } from "../";
 
 /* eslint-disable deprecation/deprecation */
+
+export interface IModelInfo {
+  id: string;
+  iTwinId: string;
+  name: string;
+  createdDate: Date;
+}
 
 /** Opens External IModel */
 export class ExternalIModel {
@@ -28,7 +35,7 @@ export class ExternalIModel {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
         `openIModel (external): projectId=${info.projectId}&iModelId=${info.imodelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      this.iModelConnection = await RemoteBriefcaseConnection.open(info.projectId, info.imodelId, SampleAppIModelApp.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      this.iModelConnection = await CheckpointConnection.openRemote(info.projectId, info.imodelId);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
   }
@@ -36,25 +43,34 @@ export class ExternalIModel {
   /** Finds project and imodel ids using their names */
   private async getIModelInfo(): Promise<{ projectId: string, imodelId: string }> {
     const projectName = this.projectName;
-    const imodelName = this.imodelName;
+    const iModelName = this.imodelName;
 
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await IModelApp.getAccessToken();
 
-    const connectClient = new ContextRegistryClient();
-    let project: Project;
-    try {
-      project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
-    } catch (e) {
-      throw new Error(`Project with name "${projectName}" does not exist`);
+    const connectClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await connectClient.getAll(accessToken, {
+      search: {
+        searchString: projectName,
+        propertyName: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      },
+    });
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${projectName} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+
+    const hubClient = new IModelHubFrontend();
+    const iModelId = await hubClient.queryIModelByName({
+      iModelName,
+      iTwinId: iTwinList[0].id,
+      accessToken,
+    });
+    if (undefined === iModelId) {
+      throw new Error(`iModel with name "${iModelName}" does not exist in project "${projectName}"`);
     }
-
-    const imodelQuery = new IModelQuery();
-    imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, project.wsgId, imodelQuery);
-    if (imodels.length === 0) {
-      throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
-    }
-    return { projectId: project.wsgId, imodelId: imodels[0].wsgId };
+    return { projectId: iTwinList[0].id, imodelId: iModelId };
   }
 
   /** Handle iModel open event */

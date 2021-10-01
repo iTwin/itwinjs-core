@@ -6,14 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { Listbox, ListboxItem, ListboxValue } from "../../ui-core/listbox/Listbox";
+import { fireEvent, render } from "@testing-library/react";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { Listbox, ListboxItem, ListboxValue } from "../../core-react/listbox/Listbox";
 
 describe("<ListBox />", () => {
   const listItems = ["London", "Paris", "Stockholm", "Berlin", "Mumbai", "Christchurch", "Johannesburg", "Beijing", "New York"];
-
-  afterEach(cleanup);
 
   it("renders single item list", () => {
     const listBox = render(

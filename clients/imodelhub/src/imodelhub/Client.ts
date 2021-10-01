@@ -13,7 +13,7 @@ import { PermissionHandler } from "./Permissions";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @public
+ * @internal
  */
 export class IModelHubClient extends IModelClient {
   /**

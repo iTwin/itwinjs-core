@@ -6,13 +6,13 @@
  * @module Ids
  */
 
-/** A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
+/** A string containing a well-formed string representation of an [Id64]($core-bentley).
  * See [Working with Ids]($docs/learning/common/Id64.md).
  * @public
  */
 export type Id64String = string;
 
-/** A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
+/** A string containing a well-formed string representation of a [Guid]($core-bentley).
  * @public
  */
 export type GuidString = string;
@@ -347,7 +347,7 @@ export namespace Id64 {
   /** Obtain iterator over the specified Ids.
    * @see [[Id64.iterable]].
    */
-  export function * iterator(ids: Id64Arg): Iterator<Id64String> {
+  export function* iterator(ids: Id64Arg): Iterator<Id64String> {
     if (typeof ids === "string") {
       yield ids;
     } else {
@@ -367,30 +367,6 @@ export namespace Id64 {
     return {
       [Symbol.iterator]: () => iterator(ids),
     };
-  }
-
-  /** Execute a function on each [[Id64String]] of an [[Id64Arg]].
-   * @param arg The Id(s) to iterate.
-   * @param callback The function to invoke on each Id.
-   * @deprecated use [[Id64.iterable]].
-   */
-  export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void {
-    for (const id of Id64.iterable(arg))
-      callback(id);
-  }
-
-  /** Execute a function on each [[Id64String]] of an [[Id64Arg]], optionally terminating before iteration completes.
-   * @param arg The Id(s) to iterate.
-   * @param callback The function to invoke on each Id. The function returns false to terminate iteration, or true to continue iteration.
-   * @returns True if all Ids were iterated, or false if iteration was terminated due to the callback returning false.
-   * @deprecated use [[Id64.iterable]].
-   */
-  export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean {
-    for (const id of Id64.iterable(arg))
-      if (!callback(id))
-        return false;
-
-    return true;
   }
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */

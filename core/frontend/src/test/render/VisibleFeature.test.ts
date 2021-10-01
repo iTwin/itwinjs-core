@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
@@ -41,7 +41,8 @@ describe("Visible feature query", () => {
     document.body.appendChild(div);
 
     const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
-    view.viewFlags.acsTriad = view.viewFlags.grid = false;
+    if (view.viewFlags.acsTriad || view.viewFlags.grid)
+      view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
     const vp = ScreenViewport.create(div, view);
     IModelApp.viewManager.addViewport(vp);

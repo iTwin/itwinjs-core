@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   IModelApp, IModelConnection,
   SnapshotConnection, ViewRect,
   ViewState3d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { expect } from "chai";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
@@ -107,11 +107,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -140,11 +136,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -175,11 +167,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -209,11 +197,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -243,11 +227,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -281,11 +261,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {
@@ -317,11 +293,7 @@ describe("Thematic display", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
-      vf.lighting = false;
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.thematicDisplay = true;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade, thematicDisplay: true });
 
       // Create a ThematicDisplay object with the desired thematic settings
       const thematicProps: ThematicDisplayProps = {

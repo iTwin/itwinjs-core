@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../ui-framework";
+import { Logger } from "@itwin/core-bentley";
+import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../appui-react";
 import TestUtils from "../TestUtils";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("Workflow & WorkflowManager", () => {
 
@@ -84,7 +86,7 @@ describe("Workflow & WorkflowManager", () => {
       expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;
     });
 
-    it("getTask, lastActiveTask & activeTask", () => {
+    it("getTask, lastActiveTask & activeTask", async () => {
       const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
       expect(workflow).to.not.be.undefined;
 
@@ -96,7 +98,7 @@ describe("Workflow & WorkflowManager", () => {
         const task2 = workflow.getTask("Task2");
         expect(task2).to.not.be.undefined;
         if (task2) {
-          workflow.setActiveTask(task2);
+          await workflow.setActiveTask(task2);
           expect(workflow.activeTask).to.eq(task2);
           expect(workflow.lastActiveTask).to.eq(task2);
         }
@@ -148,7 +150,7 @@ describe("Workflow & WorkflowManager", () => {
       }
     });
 
-    it("Workflow & Task getters & setters should return correct values", () => {
+    it("Workflow & Task getters & setters should return correct values", async () => {
       WorkflowManager.setActiveWorkflow(undefined);
       expect(WorkflowManager.activeWorkflow).to.be.undefined;
       expect(WorkflowManager.activeWorkflowId.length).to.eq(0);
@@ -167,7 +169,7 @@ describe("Workflow & WorkflowManager", () => {
         expect(task1).to.not.be.undefined;
 
         if (task1) {
-          workflow.setActiveTask(task1);
+          await workflow.setActiveTask(task1);
           expect(WorkflowManager.activeTaskId).to.eq(taskId);
         }
       }

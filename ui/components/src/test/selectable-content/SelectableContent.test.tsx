@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import React from "react";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
-import { SelectableContent } from "../../ui-components/selectable-content/SelectableContent";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { SelectableContent } from "../../components-react/selectable-content/SelectableContent";
 
 /* eslint-disable react/display-name */
 
@@ -40,7 +40,7 @@ describe("<SelectableContent />", () => {
     expect(uiCoreReactSelectTop?.firstElementChild).to.not.be.null.and.to.not.be.undefined;
 
     fireEvent.keyDown(uiCoreReactSelectTop!.firstElementChild!, { key: "ArrowDown" });
-    await waitForElement(() => getByText("B"));
+    await waitFor(() => getByText("B"));
     expect(getByText("C")).to.not.be.undefined;
     expect(queryAllByText("A")).to.have.length(2);
   });
@@ -109,7 +109,7 @@ describe("<SelectableContent />", () => {
     expect(uiCoreReactSelectTop?.firstElementChild).to.not.be.null.and.to.not.be.undefined;
 
     fireEvent.keyDown(uiCoreReactSelectTop!.firstElementChild!, { key: "ArrowDown" });
-    await waitForElement(() => getByText("B"));
+    await waitFor(() => getByText("B"));
     fireEvent.click(getByText("B"));
 
     expect(() => getByText("A")).to.throw;

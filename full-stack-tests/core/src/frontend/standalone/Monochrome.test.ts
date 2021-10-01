@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@bentley/imodeljs-common";
+import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
 import {
   FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { expect } from "chai";
 import { Color, testOnScreenViewport } from "../TestViewport";
 
@@ -24,12 +24,14 @@ describe("Monochrome", async () => {
 
   it("should always apply to surfaces and to edges only in wireframe", async () => {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.acsTriad = false;
-      vf.visibleEdges = true;
-      vf.hiddenEdges = false;
-      vf.lighting = false;
-      vf.monochrome = true;
+      let vf = vp.viewFlags.copy({
+        acsTriad: false,
+        visibleEdges: true,
+        hiddenEdges: false,
+        lighting: false,
+        monochrome: true,
+      });
+
       vp.displayStyle.settings.monochromeColor = ColorDef.red;
       vp.displayStyle.settings.monochromeMode = MonochromeMode.Flat;
       vp.displayStyle.backgroundColor = ColorDef.blue;
@@ -39,7 +41,7 @@ describe("Monochrome", async () => {
       const bgColor = Color.fromColorDef(ColorDef.blue);
 
       for (const renderMode of [RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {
-        vf.renderMode = renderMode;
+        vf = vf.withRenderMode(renderMode);
         vp.viewFlags = vf;
 
         await vp.waitForAllTilesToRender();
@@ -56,10 +58,13 @@ describe("Monochrome", async () => {
 
   it("should scale with surface color in scaled mode", async () => {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.acsTriad = vf.visibleEdges = vf.lighting = false;
-      vf.monochrome = true;
+      const vf = vp.viewFlags.copy({
+        renderMode: RenderMode.SmoothShade,
+        acsTriad: false,
+        visibleEdges: false,
+        lighting: false,
+        monochrome: true,
+      });
       vp.displayStyle.settings.monochromeColor = ColorDef.red;
       vp.displayStyle.settings.backgroundColor = ColorDef.blue;
 

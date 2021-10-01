@@ -6,21 +6,23 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
-import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
-import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
-import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
-import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { BeEvent, Id64String } from "@itwin/core-bentley";
+import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@itwin/core-frontend";
+import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@itwin/presentation-common";
+import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { CategoryTree, toggleAllCategories } from "../../../appui-react/imodel-components/category-tree/CategoriesTree";
+import { CategoryVisibilityHandler } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
+import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 
 describe("CategoryTree", () => {
+
+  const sizeProps = { width: 200, height: 200 };
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -31,11 +33,8 @@ describe("CategoryTree", () => {
     Presentation.terminate();
   });
 
-  beforeEach(() => {
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
+  afterEach(() => {
+    sinon.restore();
   });
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -77,6 +76,7 @@ describe("CategoryTree", () => {
   const createKey = (id: Id64String): ECInstancesNodeKey => {
     return {
       type: StandardNodeTypes.ECInstancesNode,
+      version: 0,
       instanceKeys: [{ className: "MyDomain:SpatialCategory", id }],
       pathFromRoot: [],
     };
@@ -84,28 +84,28 @@ describe("CategoryTree", () => {
 
   describe("<CategoryTree />", () => {
     const visibilityHandler = moq.Mock.ofType<CategoryVisibilityHandler>();
-    let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
-      dataProvider = {
-        imodel: imodelMock.object,
-        rulesetId: "",
-        onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-        dispose: () => { },
-        getFilteredNodePaths: async () => [],
-        getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-        getNodesCount: async () => 0,
-        getNodes: async () => [],
-        loadHierarchy: async () => { },
-      };
+      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() => imodelMock.object);
+      sinon.stub(PresentationTreeDataProvider.prototype, "rulesetId").get(() => "");
+      sinon.stub(PresentationTreeDataProvider.prototype, "dispose");
+      sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves([]);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake((node: any) => node.__key);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(0);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").resolves([]);
 
       resetVisibilityHandlerMock();
       visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
     });
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {
-      dataProvider.getNodesCount = async () => nodes.length;
-      dataProvider.getNodes = async () => nodes.map((n) => ({ __key: createKey(n.id), ...n }));
+      (PresentationTreeDataProvider.prototype.getNodesCount as any).restore();
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(nodes.length);
+
+      (PresentationTreeDataProvider.prototype.getNodes as any).restore();
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").callsFake(
+        async () => nodes.map((n) => ({ __key: createKey(n.id), ...n })),
+      );
     };
 
     const resetVisibilityHandlerMock = () => {
@@ -117,10 +117,14 @@ describe("CategoryTree", () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const result = render(
         <CategoryTree
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          {...sizeProps}
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          activeView={viewportMock.object}
+          categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
       expect(result.baseElement).to.matchSnapshot();
     });
 
@@ -128,10 +132,13 @@ describe("CategoryTree", () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const result = render(
         <CategoryTree
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          {...sizeProps}
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
     });
 
     it("takes open view from viewManager", async () => {
@@ -140,7 +147,10 @@ describe("CategoryTree", () => {
       viewManagerMock.setup((x) => x.getFirstOpenView()).returns(() => screenViewportMock.object);
       render(
         <CategoryTree
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          {...sizeProps}
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
       viewManagerMock.verify((x) => x.getFirstOpenView(), moq.Times.once());
@@ -151,7 +161,11 @@ describe("CategoryTree", () => {
       viewStateMock.setup((x) => x.is3d()).returns(() => true);
       render(
         <CategoryTree
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          {...sizeProps}
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          activeView={viewportMock.object}
+          categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
       rulesetVariablesMock.verify(async (x) => x.setString("ViewType", "3d"), moq.Times.once());
@@ -162,7 +176,11 @@ describe("CategoryTree", () => {
       viewStateMock.setup((x) => x.is3d()).returns(() => false);
       render(
         <CategoryTree
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          {...sizeProps}
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          activeView={viewportMock.object}
+          categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
       rulesetVariablesMock.verify(async (x) => x.setString("ViewType", "2d"), moq.Times.once());
@@ -174,16 +192,19 @@ describe("CategoryTree", () => {
       visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
       const result = render(
         <CategoryTree
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          {...sizeProps}
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          activeView={viewportMock.object}
+          categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      const node = await waitForElement(() => result.getByTestId("tree-node"));
+      const node = await waitFor(() => result.getByTestId("tree-node"));
       const cb = node.querySelector("input");
       expect(cb!.checked).to.be.true;
     });
 
     describe("categories", () => {
-
       it("disables category when enabled category checkbox is unchecked", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         resetVisibilityHandlerMock();
@@ -191,10 +212,14 @@ describe("CategoryTree", () => {
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => { });
         const result = render(
           <CategoryTree
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            activeView={viewportMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => result.getByTestId("tree-node"));
+        const node = await waitFor(() => result.getByTestId("tree-node"));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false), moq.Times.once());
@@ -207,10 +232,14 @@ describe("CategoryTree", () => {
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => { });
         const result = render(
           <CategoryTree
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            activeView={viewportMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => result.getByTestId("tree-node"));
+        const node = await waitFor(() => result.getByTestId("tree-node"));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true), moq.Times.once());
@@ -228,12 +257,13 @@ describe("CategoryTree", () => {
         (categoryNode as any).__key = createKey(categoryNode.id);
         (subcategoryNode as any).__key = createKey(subcategoryNode.id);
 
-        dataProvider.getNodesCount = async () => 1;
-        dataProvider.getNodes = async (parent) => {
-          if (parent === categoryNode)
-            return [subcategoryNode];
-          return [categoryNode];
-        };
+        (PresentationTreeDataProvider.prototype.getNodesCount as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(1);
+
+        (PresentationTreeDataProvider.prototype.getNodes as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").callsFake(
+          async (parent) => parent === categoryNode ? [subcategoryNode] : [categoryNode],
+        );
       });
 
       const getSubCategoryNode = (elements: HTMLElement[]) => {
@@ -246,10 +276,14 @@ describe("CategoryTree", () => {
         visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
         const result = render(
           <CategoryTree
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            activeView={viewportMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
+        const node = await waitFor(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
         const cb = node.querySelector("input");
         expect(cb!.checked).to.be.true;
       });
@@ -260,10 +294,14 @@ describe("CategoryTree", () => {
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => { });
         const result = render(
           <CategoryTree
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            activeView={viewportMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
+        const node = await waitFor(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(subcategoryNode, moq.It.isAny(), false), moq.Times.once());
@@ -275,10 +313,14 @@ describe("CategoryTree", () => {
         visibilityHandler.setup(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => { });
         const result = render(
           <CategoryTree
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            activeView={viewportMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
+        const node = await waitFor(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(subcategoryNode, moq.It.isAny(), true), moq.Times.once());
@@ -287,10 +329,12 @@ describe("CategoryTree", () => {
     });
 
     describe("filtering", () => {
-
       beforeEach(() => {
         resetVisibilityHandlerMock();
-        dataProvider.getNodeKey = (node: TreeNodeItem) => (node as any)["__presentation-components/key"];
+        (PresentationTreeDataProvider.prototype.getNodeKey as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake(
+          (node) => (node as any)["__presentation-components/key"],
+        );
         visibilityHandler.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ state: "hidden" }));
       });
 
@@ -299,11 +343,20 @@ describe("CategoryTree", () => {
           key: createKey("filtered-node"),
           label: LabelDefinition.fromLabelString("filtered-node"),
         };
-        const filterPromise = Promise.resolve<NodePathElement[]>([{ node: filteredNode, children: [], index: 0 }]);
-        dataProvider.getFilteredNodePaths = async () => filterPromise;
+        const filterValue: NodePathElement[] = [{ node: filteredNode, children: [], index: 0 }];
+        (PresentationTreeDataProvider.prototype.getFilteredNodePaths as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves(filterValue);
 
-        const result = render(<CategoryTree viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} />);
-        await waitForElement(() => result.getByText("filtered-node"));
+        const result = render(
+          <CategoryTree
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
+            filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }}
+          />,
+        );
+        await result.findByText("filtered-node");
       });
 
       it("invokes onFilterApplied callback", async () => {
@@ -311,28 +364,36 @@ describe("CategoryTree", () => {
           key: createKey("filtered-node"),
           label: LabelDefinition.fromLabelString("filtered-node"),
         };
-        const filterPromise = Promise.resolve<NodePathElement[]>([{ node: filteredNode, children: [], index: 0 }]);
-        dataProvider.getFilteredNodePaths = async () => filterPromise;
+        const filterValue: NodePathElement[] = [{ node: filteredNode, children: [], index: 0 }];
+        (PresentationTreeDataProvider.prototype.getFilteredNodePaths as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves(filterValue);
         const spy = sinon.spy();
 
-        const result = render(<CategoryTree viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} onFilterApplied={spy} />);
-        await waitForElement(() => result.getByText("filtered-node"));
+        const result = render(
+          <CategoryTree
+            {...sizeProps}
+            viewManager={viewManagerMock.object}
+            iModel={imodelMock.object}
+            categoryVisibilityHandler={visibilityHandler.object}
+            filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }}
+            onFilterApplied={spy}
+          />,
+        );
+        await result.findByText("filtered-node");
 
         expect(spy).to.be.calledOnce;
       });
 
       it("renders VisibilityTreeNoFilteredData", async () => {
-        dataProvider.getFilteredNodePaths = async () => [];
-
         const result = render(<CategoryTree
+          {...sizeProps}
           viewManager={viewManagerMock.object}
           iModel={imodelMock.object}
-          dataProvider={dataProvider}
           categoryVisibilityHandler={visibilityHandler.object}
           filterInfo={{ filter: "filtered-node1", activeMatchIndex: 0 }}
         />);
 
-        await waitForElement(() => result.getByText("categoriesTree.noCategoryFound"));
+        await waitFor(() => result.getByText("categoriesTree.noCategoryFound"));
       });
     });
 
@@ -380,7 +441,6 @@ describe("CategoryTree", () => {
           getNodeKey: (node: TreeNodeItem) => (node as any).__key,
           getNodesCount: async () => 1,
           getNodes: async () => [{ ...testNode, __key: createKey(testNode.id) }],
-          loadHierarchy: async () => { },
         };
       });
 
@@ -393,9 +453,6 @@ describe("CategoryTree", () => {
         await toggleAllCategories(viewManagerMock.object, imodelMock.object, false, viewportMock.object, true, dataProvider);
         expect(enableAllStub).to.be.calledWith(viewManagerMock.object, imodelMock.object, [testNode.id], false);
       });
-
     });
-
   });
-
 });

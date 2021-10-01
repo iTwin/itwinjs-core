@@ -6,12 +6,13 @@
  * @module Editing
  */
 
-import { editorChannel } from "@bentley/imodeljs-editor-common";
-import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
+import { editorChannel } from "@itwin/editor-common";
+import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
+import { OffsetFacesTool } from "./ElementGeometryTool";
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
-import { CreateArcTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
+import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
 import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
@@ -27,6 +28,8 @@ export interface EditorOptions {
   registerBasicManipulationTools?: true | undefined;
   /** If true, tools for sketching will be registered. */
   registerSketchTools?: true | undefined;
+  /** If true, tools for solid modeling will be registered. */
+  registerSolidModelingTools?: true | undefined;
 }
 
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
@@ -44,7 +47,7 @@ export class EditTools {
   }
 
   /** @internal */
-  public static translate(prompt: string) { return IModelApp.i18n.translate(this.tools + prompt); }
+  public static translate(prompt: string) { return IModelApp.localization.getLocalizedString(this.tools + prompt); }
 
   /** Call this before using the package (e.g., before attempting to use any of its tools.)
    * To initialize when starting up your app:
@@ -62,7 +65,7 @@ export class EditTools {
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
 
-    const i18n = IModelApp.i18n.registerNamespace(this.namespace);
+    const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
 
     // Register requested tools...
@@ -74,7 +77,7 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(this.namespace);
     }
 
     if (registerAllTools || options?.registerProjectLocationTools) {
@@ -89,7 +92,7 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(this.namespace);
     }
 
     if (registerAllTools || options?.registerBasicManipulationTools) {
@@ -100,12 +103,13 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(this.namespace);
     }
 
     if (registerAllTools || options?.registerSketchTools) {
       const tools = [
         CreateArcTool,
+        CreateBCurveTool,
         CreateCircleTool,
         CreateEllipseTool,
         CreateLineStringTool,
@@ -113,9 +117,18 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(this.namespace);
     }
 
-    return i18n.readFinished;
+    if (registerAllTools || options?.registerSolidModelingTools) {
+      const tools = [
+        OffsetFacesTool,
+      ];
+
+      for (const tool of tools)
+        tool.register(this.namespace);
+    }
+
+    return namespacePromise;
   }
 }

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { ByteStream, IDisposable } from "@itwin/core-bentley";
+import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
-} from "@bentley/imodeljs-frontend";
-import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend";
+import { MeshArgs } from "@itwin/core-frontend/lib/render-primitives";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/webgl";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -410,7 +410,7 @@ describe("Disposal of WebGL Resources", () => {
 
     const viewport = ScreenViewport.create(viewDiv, viewState);
     viewport.changeView(viewState);
-    viewport.viewFlags.grid = true;   // force a decoration to be turned on
+    viewport.viewFlags = viewport.viewFlags.with("grid", true); // force a decoration to be turned on
     viewport.renderFrame(); // force a frame to be rendered
 
     const target = viewport.target as OnScreenTarget;

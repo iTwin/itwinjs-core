@@ -6,14 +6,15 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat,
-  SpecialKey, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
-import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer";
-import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import {
+  AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat,
+  SpecialKey, StandardTypeNames, TimeDisplay,
+} from "@itwin/appui-abstract";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { EditorContainer /* PropertyUpdatedArgs */ } from "../../components-react/editors/EditorContainer";
+import { DateTimeEditor } from "../../components-react/editors/DateTimeEditor";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 function createDateProperty(propertyName: string, value: Date, option: number) {
   const v: PropertyValue = {
@@ -115,8 +116,6 @@ describe("<DateTimeEditor />", () => {
     await TestUtils.initializeUiComponents();
   });
 
-  afterEach(cleanup);
-
   after(() => {
     TestUtils.terminateUiComponents();
   });
@@ -125,14 +124,14 @@ describe("<DateTimeEditor />", () => {
     const spyOnCommit = sinon.spy();
     const record = createDateProperty("Test", date, 0);  // 0 creates a long DateTime record
     const renderedComponent = render(<DateTimeEditor showTime={true} propertyRecord={record} onCommit={spyOnCommit} />);
-    expect(await waitForElement(() => renderedComponent.getByText(date.toLocaleString()))).to.exist;
+    expect(await waitFor(() => renderedComponent.getByText(date.toLocaleString()))).to.exist;
     const originalValue = (record.value as PrimitiveValue).value as Date;
     expect(originalValue.getTime()).to.be.equal(date.getTime());
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
     fireEvent.click(popupButton);
-    const timeDiv = await waitForElement(() => renderedComponent.getByTestId("components-time-input"));
-    const hrInput = timeDiv.querySelector(".uicore-inputs-input.components-time-input") as HTMLInputElement;
+    const timeDiv = await renderedComponent.findByTestId("components-time-input");
+    const hrInput = timeDiv.querySelector(".iui-input.components-time-input") as HTMLInputElement;
     expect(hrInput).not.to.be.null;
     hrInput.focus();
     fireEvent.change(hrInput, { target: { value: "09" } });
@@ -149,10 +148,10 @@ describe("<DateTimeEditor />", () => {
     const spyOnCommit = sinon.spy();
     const record = createDateProperty("Test", date, 13);  // 13 creates a long utc DateTime record
     const renderedComponent = render(<DateTimeEditor showTime={true} propertyRecord={record} onCommit={spyOnCommit} />);
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
     fireEvent.click(popupButton);
-    const timeDiv = await waitForElement(() => renderedComponent.getByTestId("components-time-input"));
-    const hrInput = timeDiv.querySelector(".uicore-inputs-input.components-time-input") as HTMLInputElement;
+    const timeDiv = await renderedComponent.findByTestId("components-time-input");
+    const hrInput = timeDiv.querySelector(".iui-input.components-time-input") as HTMLInputElement;
     expect(hrInput).not.to.be.null;
     hrInput.focus();
     fireEvent.change(hrInput, { target: { value: "09" } });
@@ -167,12 +166,12 @@ describe("<DateTimeEditor />", () => {
 
   it("short date should render", async () => {
     const record = createDateProperty("Test", date, 1);  // 1 creates a short DateTime record
-    const renderedComponent = render(<DateTimeEditor showTime={true} propertyRecord={record} />);
-    expect(await waitForElement(() => renderedComponent.getByText(date.toLocaleDateString()))).to.exist;
+    const { getByText, findByTestId } = render(<DateTimeEditor showTime={true} propertyRecord={record} />);
+    await waitFor(() => expect(getByText(date.toLocaleDateString())).to.exist);
     const originalValue = (record.value as PrimitiveValue).value as Date;
     expect(originalValue.getTime()).to.be.equal(date.getTime());
-    expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    // expect(renderedComponent).not.to.be.undefined;
+    const popupButton = await findByTestId("components-popup-button");
     fireEvent.click(popupButton);
     fireEvent.keyDown(popupButton, { key: SpecialKey.Enter });
   });
@@ -184,7 +183,7 @@ describe("<DateTimeEditor />", () => {
     for (let i = 1; i < 18; i++) {
       record = createDateProperty("Test", date, i);
       renderedComponent.rerender(<EditorContainer propertyRecord={record} title="date" onCommit={() => { }} onCancel={() => { }} />);
-      const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+      const popupButton = renderedComponent.getByTestId("components-popup-button");
       expect(popupButton).not.to.be.undefined;
     }
   });
@@ -194,9 +193,9 @@ describe("<DateTimeEditor />", () => {
     const record = createDateProperty("Test", date, 10);
     const renderedComponent = render(<EditorContainer propertyRecord={record} title="date" onCommit={spyOnCommit} onCancel={() => { }} />);
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
     fireEvent.click(popupButton);
-    const portalDiv = await waitForElement(() => renderedComponent.getByTestId("core-popup"));
+    const portalDiv = await renderedComponent.findByTestId("core-popup");
 
     const dataValueSelector = `li[data-value='${jan4Ticks}']`; // Jan 4 2018 (UTC-0)
     const dayEntry = portalDiv.querySelector(dataValueSelector);
@@ -218,9 +217,9 @@ describe("<DateTimeEditor />", () => {
     renderedComponent.rerender(<EditorContainer propertyRecord={record2} title="date" onCommit={spyOnCommit} onCancel={() => { }} />);
 
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
     fireEvent.click(popupButton);
-    const portalDiv = await waitForElement(() => renderedComponent.getByTestId("core-popup"));
+    const portalDiv = await renderedComponent.findByTestId("core-popup");
 
     const dataValueSelector = `li[data-value='${jan4Ticks}']`; // Jan 4 2018 (UTC-0)
     const dayEntry = portalDiv.querySelector(dataValueSelector);
@@ -233,12 +232,6 @@ describe("<DateTimeEditor />", () => {
     expect(spyOnCommit.notCalled);
   });
 
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
-
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);
     const propertyRecord = createDateProperty("Test", date, 10);
@@ -247,7 +240,7 @@ describe("<DateTimeEditor />", () => {
     const spyOnCommit = sinon.spy();
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
     expect(popupButton).not.to.be.null;
 
     fireEvent.keyDown(popupButton, { key: SpecialKey.Enter });

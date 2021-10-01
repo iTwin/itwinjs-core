@@ -1,0 +1,17 @@
+{
+  "name": "@itwin/core-transformer",
+  "entries": [
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-transformer_v3.0.0",
+      "date": "Fri, 20 Aug 2021 20:34:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial release"
+          }
+        ]
+      }
+    }
+  ]
+}

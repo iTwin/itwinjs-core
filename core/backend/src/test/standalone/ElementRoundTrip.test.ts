@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@bentley/geometry-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 import {
   BriefcaseIdValue,
   Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
+} from "@itwin/core-common";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -461,7 +461,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
-    await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]);
+    await imodel.importSchemas([testSchemaPath]);
     imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);

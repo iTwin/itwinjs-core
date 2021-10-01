@@ -9,7 +9,7 @@ import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import {
   MultilineTextPropertyValueRenderer, MultilineTextRenderer,
-} from "../../../ui-components/properties/renderers/value/MultilineTextPropertyValueRenderer";
+} from "../../../components-react/properties/renderers/value/MultilineTextPropertyValueRenderer";
 import TestUtils from "../../TestUtils";
 
 describe("MultilineTextPropertyValueRenderer", () => {
@@ -70,7 +70,7 @@ describe("MultilineTextRenderer", () => {
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 50);
     const handleHeightChange = sinon.fake();
     render(<MultilineTextRenderer onHeightChanged={handleHeightChange} />);
-    expect(handleHeightChange).to.have.been.calledOnceWith(53);
+    expect(handleHeightChange).to.have.been.calledOnceWith(50);
   });
 
   it("doesn't report element's height change when height hasn't changed", () => {
@@ -88,7 +88,7 @@ describe("MultilineTextRenderer", () => {
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 50);
     const handleHeightChange = sinon.fake();
     const { rerender } = render(<MultilineTextRenderer onHeightChanged={handleHeightChange} />);
-    expect(handleHeightChange).to.have.been.calledWith(53);
+    expect(handleHeightChange).to.have.been.calledWith(50);
 
     sinon.restore();
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 5);

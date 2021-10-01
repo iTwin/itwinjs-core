@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ImageCheckBox, ImageCheckBoxProps } from "@bentley/ui-core";
+import { ImageCheckBox, ImageCheckBoxProps } from "@itwin/core-react";
 
 /** Sample component using ImageCheckBox with a checked state  */
 export const SampleImageCheckBox: React.FC<ImageCheckBoxProps> = (props: ImageCheckBoxProps) => {

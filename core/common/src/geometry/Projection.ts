@@ -7,6 +7,8 @@
  */
 // cspell:ignore Albers, Krovak, OSTN, Cassini, Grinten, Mollweide, Eckert, Homolosine, Carree, Winkel, Tripel, Polyconic
 
+import { Geometry } from "@itwin/core-geometry";
+
 /** This enum contains the list of all projection methods that can be represented as part of the HorizontalCRS
  *  class. The None method indicates there is no projection and thus the CRS is longitude/latitude based
  *  with units as degrees.
@@ -129,16 +131,15 @@ export class AffineTransform implements AffineTransformProps {
     return { translationX: this.translationX, a1: this.a1, a2: this.a2, translationY: this.translationY, b1: this.b1, b2: this.b2 };
   }
 
-  /** Compares two Affine Transforms. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Affine Transforms. It applies a minuscule tolerance for number compares
+   *  @public */
   public equals(other: AffineTransform): boolean {
-    return (this.translationX === other.translationX &&
-      this.translationY === other.translationY &&
-      this.a1 === other.a1 &&
-      this.b1 === other.b1 &&
-      this.a2 === other.a2 &&
-      this.b2 === other.b2);
+    return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
+      Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
+      Math.abs(this.a1 - other.a1) < Geometry.smallFraction &&
+      Math.abs(this.b1 - other.b1) < Geometry.smallFraction &&
+      Math.abs(this.a2 - other.a2) < Geometry.smallFraction &&
+      Math.abs(this.b2 - other.b2) < Geometry.smallFraction);
   }
 }
 
@@ -351,32 +352,37 @@ export class Projection implements ProjectionProps {
     return data;
   }
 
-  /** Compares two projections. It is a strict compare operation and not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two projections. It is a strict compare operation as descriptive data is compared
+   * but a minuscule tolerance is applied to number compares.
+   *  @public */
   public equals(other: Projection): boolean {
     if (this.method !== other.method ||
-      this.falseEasting !== other.falseEasting ||
-      this.falseNorthing !== other.falseNorthing ||
-      this.centralMeridian !== other.centralMeridian ||
-      this.latitudeOfOrigin !== other.latitudeOfOrigin ||
-      this.longitudeOfOrigin !== other.longitudeOfOrigin ||
-      this.scaleFactor !== other.scaleFactor ||
-      this.elevationAboveGeoid !== other.elevationAboveGeoid ||
-      this.geoidSeparation !== other.geoidSeparation ||
-      this.standardParallel !== other.standardParallel ||
-      this.standardParallel1 !== other.standardParallel1 ||
-      this.standardParallel2 !== other.standardParallel2 ||
       this.zoneNumber !== other.zoneNumber ||
       this.hemisphere !== other.hemisphere ||
-      this.centralPointLongitude !== other.centralPointLongitude ||
-      this.centralPointLatitude !== other.centralPointLatitude ||
-      this.point1Longitude !== other.point1Longitude ||
-      this.point1Latitude !== other.point1Latitude ||
-      this.point2Longitude !== other.point2Longitude ||
-      this.point2Latitude !== other.point2Latitude ||
-      this.danishSystem34Region !== other.danishSystem34Region ||
-      this.azimuth !== other.azimuth)
+      this.danishSystem34Region !== other.danishSystem34Region)
+      return false;
+
+    // Note that even though falseEasting, falseNorthing, elevationAboveGeoid and geoidSeparation are expressed
+    // in the units of the projection which can be foot or US survey foot, they are still within the same order
+    // of size that Geometry.smallMetricDistance can be used effectively.
+    if (!Geometry.isAlmostEqualOptional(this.falseEasting, other.falseEasting, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.falseNorthing, other.falseNorthing, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.centralMeridian, other.centralMeridian, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.latitudeOfOrigin, other.latitudeOfOrigin, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.longitudeOfOrigin, other.longitudeOfOrigin, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.scaleFactor, other.scaleFactor, Geometry.smallFraction) ||
+      !Geometry.isAlmostEqualOptional(this.elevationAboveGeoid, other.elevationAboveGeoid, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.geoidSeparation, other.geoidSeparation, Geometry.smallMetricDistance) ||
+      !Geometry.isAlmostEqualOptional(this.standardParallel, other.standardParallel, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.standardParallel1, other.standardParallel1, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.standardParallel2, other.standardParallel2, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.centralPointLongitude, other.centralPointLongitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.centralPointLatitude, other.centralPointLatitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point1Longitude, other.point1Longitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point1Latitude, other.point1Latitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point2Longitude, other.point2Longitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.point2Latitude, other.point2Latitude, Geometry.smallAngleDegrees) ||
+      !Geometry.isAlmostEqualOptional(this.azimuth, other.azimuth, Geometry.smallAngleDegrees))
       return false;
 
     if (this.affine && other.affine) {
@@ -435,11 +441,11 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
     return { latitude: this.latitude, longitude: this.longitude };
   }
 
-  /** Compares two Carto2DDegrees object. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Carto2DDegrees object. It applies a minuscule tolerance to compares.
+   *  @public */
   public equals(other: Carto2DDegrees): boolean {
-    return (this.latitude === other.latitude && this.longitude === other.longitude);
+    return (Math.abs(this.latitude - other.latitude) < Geometry.smallAngleDegrees &&
+      Math.abs(this.longitude - other.longitude) < Geometry.smallAngleDegrees);
   }
 }
 

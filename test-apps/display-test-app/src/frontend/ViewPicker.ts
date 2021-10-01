@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
+import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
   isPrivate: boolean;
@@ -125,9 +125,7 @@ export class ViewList extends SortedArray<ViewSpec> {
 
     // turn on the background map
     const style = blankView.displayStyle;
-    const viewFlags = style.viewFlags;
-    viewFlags.backgroundMap = true;
-    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
+    style.viewFlags = style.viewFlags.with("backgroundMap", true);
 
     style.backgroundColor = ColorDef.white;
 

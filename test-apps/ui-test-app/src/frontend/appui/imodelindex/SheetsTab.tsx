@@ -5,12 +5,13 @@
 import "./SheetsTab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { LoadingBar, SearchBox, Timer } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { Id64String } from "@itwin/core-bentley";
+import { ViewDefinitionProps } from "@itwin/core-common";
+import { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { LoadingBar, SearchBox, Timer } from "@itwin/core-react";
+import { UiFramework } from "@itwin/appui-react";
 import { ViewsList } from "./ViewsList";
+import { Button } from "@itwin/itwinui-react";
 
 /** @internal */
 export interface SheetsProps {
@@ -140,7 +141,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
           onViewsSelected={this._onSheetViewsSelected.bind(this)}
           filter={this.state.filter}
           onViewsInitialized={this._onViewsInitialized.bind(this)} />
-        <button className="open-button" disabled={this.state.isOpenDisabled} type="button" onClick={this._onOpen.bind(this)}>{label}</button>
+        <Button className="open-button" disabled={this.state.isOpenDisabled} styleType="high-visibility" onClick={this._onOpen.bind(this)}>{label}</Button>
         {this.state.showPrompt && this._onRenderPrompt()}
       </div>
     );

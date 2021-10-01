@@ -10,6 +10,7 @@ import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { GeometryQuery, Point3dArray, Sample } from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -18,7 +19,9 @@ import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { exerciseClipPrimitive } from "./ClipVector.test";
 
 /* eslint-disable no-console */
 
@@ -305,25 +308,12 @@ function pointArrayIsSubsetOfOther(arrayA: Point3d[], arrayB: Point3d[]): boolea
 }
 
 describe("ClipPrimitive", () => {
-  const min2D = Point3d.create(-54, 18);  // Bottom left point of the octagon formed from octagonalPoints
-  const max2D = Point3d.create(-42, 42);  // Top right point of the octagon formed from octagonalPoints
-  let octagonalPoints: Point3d[];         // Points array representing an octagon in quadrant II
   let clipPointsA: Point3d[];
   let polygonA: Point3d[];
   let clipPointsB: Point3d[];
   let polygonB: Point3d[];
 
   before(() => {
-    octagonalPoints = [
-      min2D,
-      Point3d.create(max2D.x, min2D.y),
-      Point3d.create(max2D.x + 5, min2D.y + 5),
-      Point3d.create(max2D.x + 5, max2D.y - 5),
-      max2D,
-      Point3d.create(min2D.x, max2D.y),
-      Point3d.create(min2D.x - 5, max2D.y - 5),
-      Point3d.create(min2D.x - 5, min2D.y + 5),
-    ];
     clipPointsA = [
       Point3d.create(0, 0, 0),
       Point3d.create(100, 0, 0),
@@ -444,47 +434,66 @@ describe("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("ClipShape creation (polygonal) and point proximity", () => {
+  it("ClipShapePointTests", () => {
     const ck = new Checker();
-    const minZ = -5;
-    const maxZ = 5;
+    const allGeometry: GeometryQuery[] = [];
+    const minZ =  undefined;  // EDL Sept 2021 z clip combined with hole is not clear.
+    const maxZ =  undefined;
     // Test point location
-    const clipShape0 = ClipShape.createEmpty();
+    const clipShape0 = ClipShape.createEmpty(true);
+    let x0 = 0;
+    const y0 = 0;
+    const circlePoints = Sample.createArcStrokes(0, Point3d.create(1, 2), 2.0, Angle.createDegrees(0), Angle.createDegrees(360));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circlePoints, x0, y0);
+    const rectanglePoints = Sample.createRectangleXY(-2, -2, 8, 8);
     ck.testFalse(clipShape0.isXYPolygon, "ClipShape does not contain polygon when no points are present");
-    ck.testTrue(ClipShape.createShape(octagonalPoints, minZ, maxZ, undefined, true, true, clipShape0) !== undefined);
-    const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
-    ck.testFalse(clipShape0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");
-    ck.testExactNumber(clipShape0.classifyPointContainment([midpoint], false), 3, "Midpoint is completely outside when ClipShape is a mask");
-    const clipShape1 = ClipShape.createShape(octagonalPoints, minZ, maxZ, undefined, false, false);
-    ck.testTrue(clipShape1!.pointInside(midpoint, 0), "Midpoint of polygon is inside.");
+    ck.testTrue(ClipShape.createShape(circlePoints, minZ, maxZ, undefined, true, true, clipShape0) !== undefined);
+    exerciseClipPrimitive(ck, allGeometry, clipShape0, rectanglePoints, true, x0, y0);
+    const centroid = Point3dArray.centroid(circlePoints);
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, centroid, 0.25, x0, y0);
+    ck.testFalse(clipShape0.pointInside(centroid), "Centroid of polygon is not inside due to mask.");
+    const containment = clipShape0.classifyPointContainment([centroid], true);
+    ck.testExactNumber(containment, 3, "centroid is completely outside when ClipShape is a mask");
+    let clipShape1 = ClipShape.createShape(circlePoints, minZ, maxZ, undefined, false, false);
+    exerciseClipPrimitive(ck, allGeometry, clipShape1!, rectanglePoints, false, x0 += 10, y0);
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, centroid, 0.25, x0, y0);
+
+    ck.testTrue(clipShape1!.pointInside(centroid, 0), "Midpoint of polygon is inside.");
 
     // Test createFrom method
-    ClipShape.createFrom(clipShape0, clipShape1);
-    ck.testTrue(clipShapesAreEqual(clipShape0, clipShape1!), "createFrom() method should clone the ClipShape");
+    clipShape1 = ClipShape.createFrom(clipShape0, clipShape1);
+    ck.testTrue(clipShapesAreEqual(clipShape0, clipShape1), "createFrom() method should clone the ClipShape");
 
     // Test JSON parsing
-    const jsonValue = clipShape1!.toJSON();
+    const jsonValue = clipShape1.toJSON();
     ck.testTrue(jsonValue.shape !== undefined, "Shape prop created in toJSON");
     const shape = jsonValue.shape!;
-    ck.testTrue(shape.points !== undefined && shape.points.length === clipShape1!.polygon.length, "Points prop created in toJSON");
-    ck.testTrue(shape.invisible !== undefined && shape.invisible === true, "Invisible prop created in toJSON");
+    ck.testTrue(shape.points !== undefined && shape.points.length === clipShape1.polygon.length, "Points prop created in toJSON");
     ck.testUndefined(shape.trans, "Transform is undefined prop in toJSON having not given one to original ClipShape");
     ck.testTrue(shape.mask !== undefined && shape.mask === true, "Mask prop created in toJSON");
-    ck.testTrue(shape.zlow !== undefined && shape.zlow === clipShape1!.zLow, "ZLow prop created in toJSON");
-    ck.testTrue(shape.zhigh !== undefined && shape.zhigh === clipShape1!.zHigh, "ZHigh prop is set in toJSON");
+    if (minZ === undefined)
+      ck.testTrue(shape.zlow === undefined);
+    else
+      ck.testTrue(shape.zlow !== undefined && shape.zlow === clipShape1.zLow, "ZLow prop created in toJSON");
+
+    if (maxZ === undefined)
+      ck.testTrue(shape.zhigh === undefined);
+    else
+      ck.testTrue(shape.zhigh !== undefined && shape.zhigh === clipShape1.zHigh, "ZHigh prop is set in toJSON");
 
     const clipShape1Copy = ClipShape.fromJSON(jsonValue) as ClipShape;
     ck.testTrue(clipShape1Copy !== undefined);
-    ck.testTrue(clipShapesAreEqual(clipShape1!, clipShape1Copy), "to and from JSON yields same ClipPrimitive");
+    ck.testTrue(clipShapesAreEqual(clipShape1, clipShape1Copy), "to and from JSON yields same ClipPrimitive");
 
     // Test clone method
     const clipShape2 = clipShape1Copy.clone();
-    ck.testTrue(clipShapesAreEqual(clipShape2, clipShape1!), "clone method produces a copy of ClipShape");
+    ck.testTrue(clipShapesAreEqual(clipShape2, clipShape1), "clone method produces a copy of ClipShape");
     const generalTransform = Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 1), Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(24)));
 
     clipShape2.transformInPlace(generalTransform);
     ck.testFalse(clipShape2.isXYPolygon);
     ck.checkpoint();
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipShapePointTests");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -591,7 +600,7 @@ describe("ClipPrimitive", () => {
 
   it("ClipPrimitive base class", () => {
     const ck = new Checker();
-    for (const invert of [false, true]) {
+    for (const invert of [false]) {   // EDL sept 2021 invert bit on simple plane set has no effect.  Don't test with true.
       const clipper = ConvexClipPlaneSet.createXYBox(1, 1, 10, 8);
       const prim0 = ClipPrimitive.createCapture(clipper, invert);
       const prim1 = prim0.clone();
@@ -665,8 +674,14 @@ describe("ClipPrimitive", () => {
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
-
-  it("ClipVectorWithHole", () => {
+// EDL Sept 2021
+// This tests a ClipPrimitive which is defined ONLY by caller-provided clip planes -- no ClipShape polygon involved.
+// This set on a sense reversal bit in the ClipPrimitive to make one of the clippers act like a hole.
+// But that reversal has been declared a porting mistake -- the native side doesn't support that.
+//   But the native side expects the "hole" to provide its own mask planes, in the manner of the ClipShape.
+//   But there have not been persistent clip plane sets that call for this.
+// Soo .. This test is being marked skip.
+  it.skip("ClipVectorWithHole", () => {
     const ck = new Checker();
     const convexClip = ConvexClipPlaneSet.createXYBox(-1, -2, 8, 10);
     const outerClip = ClipPrimitive.createCapture(convexClip.clone());

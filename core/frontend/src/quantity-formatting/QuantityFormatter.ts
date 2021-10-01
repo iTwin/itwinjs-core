@@ -6,24 +6,15 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import {
-  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
-} from "@bentley/imodeljs-quantity";
+  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
+} from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
-import { BasicUnitsProvider } from "./BasicUnitsProvider";
 import { IModelConnection } from "../IModelConnection";
+import { BasicUnitsProvider } from "./BasicUnitsProvider";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
-
-/** Used to uniquely identify a unit system. There should be an entry for each entry in `PresentationUnitSystem` @presentation-common package
- * "metric" -> PresentationUnitSystem.Metric
- * "imperial" -> PresentationUnitSystem.BritishImperial
- * "usCustomary" -> PresentationUnitSystem.UsCustomary
- * "usSurvey" -> PresentationUnitSystem.UsSurvey
- * @beta
- */
-export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
 /** Defines standard format types for tools that need to display measurements to user. Kept only to provide compatibility for existing API.
  * @beta
@@ -127,9 +118,9 @@ export interface QuantityTypeDefinition {
   description: string;
   /* Provide a default FormatProps for a unit system. */
   getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
-  /** Generate a [FormatterSpec]$(imodeljs-quantity) that will be called to format values.*/
+  /** Generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  /** Generate a [ParserSpec]$(imodeljs-quantity) that will be called to parse a string into a quantity value.*/
+  /** Generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
 }
 
@@ -171,14 +162,14 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
 
   public get label(): string {
     if (!this._label) {
-      this._label = IModelApp.i18n.translate(this._labelKey);
+      this._label = IModelApp.localization.getLocalizedString(this._labelKey);
     }
     return this._label;
   }
 
   public get description(): string {
     if (!this._description) {
-      this._description = IModelApp.i18n.translate(this._descriptionKey);
+      this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
     }
     return this._description;
   }
@@ -295,8 +286,8 @@ export interface UnitFormattingSettingsProvider {
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
  * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
  * provided by the Presentation Manager on the backend. The QuantityFormatter contains a registry of quantity type definitions. These definitions implement
- * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(imodeljs-quantity), and provide methods
- * to generate both a [FormatterSpec]$(imodeljs-quantity) and a [ParserSpec]$(imodeljs-quantity). There are built-in quantity types that are
+ * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(core-quantity), and provide methods
+ * to generate both a [FormatterSpec]$(core-quantity) and a [ParserSpec]$(core-quantity). There are built-in quantity types that are
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
  *
@@ -317,13 +308,6 @@ export class QuantityFormatter implements UnitsProvider {
     if (!provider.maintainOverridesPerIModel)
       await provider.loadOverrides(undefined);
   }
-
-  /** Called after the active unit system is changed.
-   * The useImperial argument should not be relied on now that multiple systems are supported. It will
-   * only return true if unit system is explicitly set to "imperial"
-   * @deprecated use onActiveFormattingUnitSystemChanged event for multiple unit system support.
-   */
-  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial: boolean }>();
 
   /** Called after the active unit system is changed.
   * The system will report the UnitSystemKey/name of the the system that was activated.
@@ -577,24 +561,16 @@ export class QuantityFormatter implements UnitsProvider {
 
     this._activeUnitSystem = systemType;
     await this.loadFormatAndParsingMapsForSystem(systemType);
-    // fire deprecated event
-    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial" }); // eslint-disable-line deprecation/deprecation
     // allow settings provider to store the change
     this._unitFormattingSettingsProvider && this._unitFormattingSettingsProvider.storeUnitSystemSetting({ system: systemType });
     // fire current event
     this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
-      IModelApp.toolAdmin.startDefaultTool();
+      return IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
   public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
-
-  /** @deprecated use setActiveUnitSystem method and activeUnitSystem property */
-  public get useImperialFormats(): boolean { return this._activeUnitSystem === "imperial"; }
-  public set useImperialFormats(useImperial: boolean) {
-    this.setActiveUnitSystem(useImperial ? "imperial" : "metric", true); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
 
   public async clearOverrideFormats(type: QuantityTypeArg) {
     await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
@@ -671,7 +647,8 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous Call to get a FormatterSpec of a QuantityType.
    * @param type        One of the built-in quantity types supported.
-   * @param system  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+   * @param system      Requested unit system key. Note it is more efficient to use setActiveUnitSystem to set up formatters for all
+   * quantity types of a unit system.
    * @return A FormatterSpec Promise.
    */
   public async getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {
@@ -1085,7 +1062,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
         units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 0,
+      precision: 4,
       type: "Decimal",
       uomSeparator: "",
     },

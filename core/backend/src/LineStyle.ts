@@ -6,8 +6,8 @@
  * @module Symbology
  */
 
-import { DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@bentley/imodeljs-common";
+import { Id64String, IModelStatus } from "@itwin/core-bentley";
+import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
 import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -303,10 +303,11 @@ export namespace LineStyleDefinition {
   export class Utils {
 
     /** Create a file property for a new stroke pattern component. */
-    public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps | undefined {
+    public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.StrokePattern } : undefined);
+      iModel.saveFileProperty(fileProps, JSON.stringify(props));
+      return { compId: fileProps.id, compType: ComponentType.StrokePattern };
     }
 
     /** Create a file property for a new point symbol component.
@@ -330,33 +331,36 @@ export namespace LineStyleDefinition {
 
       const fileProps: FilePropertyProps = { name: "PointSymV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.PointSymbol } : undefined);
+      iModel.saveFileProperty(fileProps, JSON.stringify(props));
+      return { compId: fileProps.id, compType: ComponentType.PointSymbol };
     }
 
     /** Create a file property for a new stroke point component. */
-    public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps | undefined {
+    public static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "LinePointV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.StrokePoint } : undefined);
+      iModel.saveFileProperty(fileProps, JSON.stringify(props));
+      return { compId: fileProps.id, compType: ComponentType.StrokePoint };
     }
 
     /** Create a file property for a new compound component. */
-    public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps | undefined {
+    public static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "CompoundV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.Compound } : undefined);
+      iModel.saveFileProperty(fileProps, JSON.stringify(props));
+      return { compId: fileProps.id, compType: ComponentType.Compound };
     }
 
     /** Create a file property for a new raster image component. */
     public static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined {
       const rasterFileProps: FilePropertyProps = { name: "RasterImageV1", namespace: "dgn_LStyle" };
       rasterFileProps.id = iModel.queryNextAvailableFileProperty(rasterFileProps);
-      if (DbResult.BE_SQLITE_OK !== iModel.saveFileProperty(rasterFileProps, undefined, image))
-        return undefined;
+      iModel.saveFileProperty(rasterFileProps, undefined, image);
       props.imageId = rasterFileProps.id;
       const fileProps: FilePropertyProps = { name: "RasterComponentV1", namespace: "dgn_LStyle" };
       fileProps.id = iModel.queryNextAvailableFileProperty(fileProps);
-      return (DbResult.BE_SQLITE_OK === iModel.saveFileProperty(fileProps, JSON.stringify(props)) ? { compId: fileProps.id, compType: ComponentType.RasterImage } : undefined);
+      iModel.saveFileProperty(fileProps, JSON.stringify(props));
+      return { compId: fileProps.id, compType: ComponentType.RasterImage };
     }
 
     /** Query for an existing line style with the supplied name. */

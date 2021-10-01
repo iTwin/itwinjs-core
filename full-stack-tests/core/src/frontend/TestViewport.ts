@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ColorDef, Feature, GeometryClass } from "@bentley/imodeljs-common";
+import { Id64String, SortedArray } from "@itwin/core-bentley";
+import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)
@@ -296,7 +296,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
     const view = await imodel.views.load(viewId);
 
     // NB: Don't allow ACS triad etc to interfere with tests...
-    view.viewFlags.acsTriad = view.viewFlags.grid = false;
+    view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
     const vp = this.create(div, view) as ScreenTestViewport;
     expect(vp).instanceof(ScreenTestViewport);

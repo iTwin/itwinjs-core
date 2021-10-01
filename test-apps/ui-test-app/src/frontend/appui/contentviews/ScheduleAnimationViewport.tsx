@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
-import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@bentley/ui-components";
-import { LoadingSpinner } from "@bentley/ui-core";
+import { Id64String } from "@itwin/core-bentley";
+import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import { viewWithUnifiedSelection } from "@itwin/presentation-components";
+import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@itwin/imodel-components-react";
+import { LoadingSpinner } from "@itwin/core-react";
 import {
   AnalysisAnimationTimelineDataProvider, ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, ScheduleAnimationTimelineDataProvider,
   UiFramework, ViewportContentControl,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
 
 // create a HOC viewport component that supports unified selection
@@ -20,7 +20,7 @@ import { SampleAppIModelApp } from "../..";
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
- */
+ */
 export class ScheduleAnimationViewportControl extends ViewportContentControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -67,7 +67,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
       const viewState = await this.props.iModelConnection.views.load(savedAnimationViewId);
       SampleAppIModelApp.saveAnimationViewId(""); // clear out the saved viewId
       if (viewState) {
-        if (this._setTimelineDataProvider(viewState))
+        if (await this._setTimelineDataProvider(viewState))
           return;
       }
     } else {
@@ -80,7 +80,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
         for (const view of viewProps) {
           const viewState = await this.props.iModelConnection.views.load(view.id!);
           if (viewState) {
-            if (this._setTimelineDataProvider(viewState))
+            if (await this._setTimelineDataProvider(viewState))
               return;
             if (undefined === firstViewId)
               firstViewId = view.id!;
@@ -94,17 +94,17 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
     }
   }
 
-  private _getTimelineDataProvider(viewState: ViewState): TimelineDataProvider | undefined {
+  private async _getTimelineDataProvider(viewState: ViewState): Promise<TimelineDataProvider | undefined> {
     let timelineDataProvider: TimelineDataProvider;
 
     timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewState);
     if (timelineDataProvider.supportsTimelineAnimation) {
-      if (timelineDataProvider.loadTimelineData()) // eslint-disable-line @typescript-eslint/no-misused-promises
+      if (await timelineDataProvider.loadTimelineData())
         return timelineDataProvider;
     } else {
       timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewState);
       if (timelineDataProvider.supportsTimelineAnimation) {
-        if (timelineDataProvider.loadTimelineData()) // eslint-disable-line @typescript-eslint/no-misused-promises
+        if (await timelineDataProvider.loadTimelineData())
           return timelineDataProvider;
       }
     }
@@ -124,8 +124,8 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
       this.state.dataProvider.onAnimationFractionChanged(animationFraction);
   };
 
-  private _setTimelineDataProvider(viewState: ViewState): boolean {
-    const dataProvider = this._getTimelineDataProvider(viewState);
+  private async _setTimelineDataProvider(viewState: ViewState): Promise<boolean> {
+    const dataProvider = await this._getTimelineDataProvider(viewState);
     if (dataProvider && dataProvider.supportsTimelineAnimation) {
       this.setState({ viewId: viewState.id, dataProvider });
       return true;

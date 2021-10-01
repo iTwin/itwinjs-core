@@ -5,14 +5,14 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createNineZoneState, DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
-import { NineZoneProvider } from "@bentley/ui-ninezone/lib/test/Providers";
+import { createNineZoneState, DragManager, DragManagerContext, ToolSettingsStateContext } from "@itwin/appui-layout-react";
+import { NineZoneProvider } from "@itwin/appui-layout-react/lib/test/Providers";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
   ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 
 describe("WidgetPanelsToolSettings", () => {
   it("should not render w/o tool settings top center zone", () => {
@@ -85,7 +85,7 @@ describe("ToolSettingsContent", () => {
     (container.firstChild === null).should.true;
   });
 
-  it("should render", () => {
+  it("should render (Floating Widget mode)", () => {
     const activeToolSettingsProvider = new ToolUiProviderMock(new ConfigurableCreateInfo("test", "test", "test"), undefined);
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => activeToolSettingsProvider);
     sinon.stub(activeToolSettingsProvider, "toolSettingsNode").get(() => <div>Hello World</div>);
@@ -97,12 +97,15 @@ describe("ToolSettingsContent", () => {
     const { container } = render(
       <ToolSettingsStateContext.Provider value={{ type: "widget" }}>
         <NineZoneProvider state={state}>
-          <ToolSettingsContent />
+          <div className="nz-floating-toolsettings">
+            <ToolSettingsContent />
+          </div>
         </NineZoneProvider>
       </ToolSettingsStateContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
+
 });
 
 describe("useHorizontalToolSettingNodes", () => {

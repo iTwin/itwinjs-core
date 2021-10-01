@@ -1,8 +1,6 @@
----
-browserTabTitle: iTwin.js Tutorials
----
+# Tutorials
 
-### Creating a test iModel
+## Creating a test iModel
 
 Test iModels can be used for local development. There are a few different ways to procure a test iModel.
 
@@ -12,30 +10,29 @@ Test iModels can be used for local development. There are a few different ways t
 [!bwc tile heading="Online iModel from local files" linkTo="create-test-imodel-itwin-sync" contents="Create a test iModel from local files for online testing" icon="iModel-Hub-Sync.svg" step="13" width="28%"]
 [!bwc tile heading="Offline snapshot from local files" linkTo="create-test-imodel-offline" contents="Create a local snapshot file from files on your local computer" icon="document.svg" step="13" width="28%"]
 
-### Exploring iModels
+## Exploring iModels
 
 [!bwc tile heading="ECSQL tutorial" linkTo="index path=learning/ecsqltutorial/index subPath=/ecsqltutorial" contents="Familiarize yourself with the basics of ECSQL" icon="database.svg" step="13" width="28%"]
 [!bwc tile heading="View in iModelHub" linkTo="use-existing-imodel" contents="How to view your iModel in iModelHub" icon="visibility.svg" step="13" width="28%"]
 [!bwc tile heading="Explore iModel content" linkTo="explore-imodel-console" contents="How to query the data in your iModel" icon="developer.svg" step="13" width="28%"]
 [!bwc tile heading="Explore schemas in the iModel" linkTo="explore-schema-browser" contents="How to browse the schemas in your iModel" icon="ec-schema.svg" step="13" width="28%"]
 
-### Starter Applications
+## Starter Applications
 
 [!bwc tile heading="Web viewer" linkTo="develop-web-viewer" contents="Create a web based viewer" icon="network.svg" step="13" width="28%" ]
 [!bwc tile heading="Desktop viewer" linkTo="develop-desktop-viewer" contents="Create a desktop viewer" icon="computer.svg" step="13" width="28%"]
 [!bwc tile heading="Agent application" linkTo="develop-agent" contents="Create an agent application" icon="notification.svg" step="13" width="28%"]
-[!bwc tile heading="Extension" linkTo="gettingstarted subPath=/frontend/extensions" contents="Create an iTwin.js Extension" icon="puzzle.svg" step="13" width="28%"]
 
-### Building Applications
+## Building Applications
 
 [!bwc tile heading="iTwin Viewer - 'Hello World'" linkTo="hello-world-viewer" contents="Get a basic understanding of the iTwin Viewer" icon="network.svg" step="13" width="28%" ]
 [!bwc tile heading="Adding showcase widgets to the iTwin Viewer" linkTo="showcase-to-viewer" contents="Use widgets from the showcase in your own iTwin Viewer" icon="puzzle.svg" step="13" width="28%" ]
 
-### Registering Applications
+## Registering Applications
 
 [!bwc tile heading="Register application" linkTo="registering-applications" contents="Register an application for deployment" icon="applications.svg" step="13" width="28%"]
 
-### Support
+## Support
 
 Please see the [Community Resources]($docs/learning/CommunityResources.md) page for the best places to get more help.
 

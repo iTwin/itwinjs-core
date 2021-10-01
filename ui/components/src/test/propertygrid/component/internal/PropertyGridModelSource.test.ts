@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { IPropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
-import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource";
+import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { IPropertyGridModel } from "../../../../components-react/propertygrid/internal/PropertyGridModel";
+import { PropertyGridModelSource } from "../../../../components-react/propertygrid/internal/PropertyGridModelSource";
 import { TestUtils } from "../../../TestUtils";
 import { FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
 
@@ -71,7 +71,7 @@ describe("PropertyGridModelSource", () => {
         },
         expectedLastItemData: {
           "Cat1_Cat1-1_Array1-1-1_Struct1-1-1-2_1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
-          "Cat2": { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
+          "Cat2": { isLastInRootCategory: true, lastInNumberOfCategories: 0 },
         },
       },
       changedPropertyKey: "Cat2",
@@ -122,7 +122,7 @@ describe("PropertyGridModelSource", () => {
         },
         expectedLastItemData: {
           "Cat1_Cat1-1_Array1-1-1_Struct1-1-1-2_1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
-          "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
+          "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
         },
       },
     };

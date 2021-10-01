@@ -4,14 +4,27 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { IDisposable } from '@bentley/bentleyjs-core';
+import { BeEvent } from '@itwin/core-bentley';
+import { IDisposable } from '@itwin/core-bentley';
+import { Logger } from 'oidc-client';
 import { User } from 'oidc-client';
 import { UserManager } from 'oidc-client';
 import { UserManagerSettings } from 'oidc-client';
+
+// @beta (undocumented)
+export abstract class BrowserAuthorizationBase<TConfig> {
+    protected constructor(configuration: TConfig);
+    // (undocumented)
+    protected _advancedSettings?: UserManagerSettings;
+    // (undocumented)
+    protected _basicSettings: TConfig;
+    // @internal
+    setAdvancedSettings(settings: UserManagerSettings): void;
+    // (undocumented)
+    protected _userManager?: UserManager;
+}
 
 // @beta
 export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBase<BrowserAuthorizationCallbackHandlerConfiguration> {
@@ -30,14 +43,16 @@ export interface BrowserAuthorizationCallbackHandlerConfiguration {
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
-    protected _accessToken?: AccessToken;
-    checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean>;
+    protected _accessToken: AccessToken;
+    checkSessionStatus(): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // (undocumented)
-    protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
-    protected getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
+    protected _expiresAt?: Date;
+    getAccessToken(): Promise<AccessToken>;
+    // (undocumented)
+    protected getUserManager(): Promise<UserManager>;
+    protected getUserManagerSettings(basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
     // (undocumented)
     get hasExpired(): boolean;
     // (undocumented)
@@ -46,27 +61,27 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     protected initAccessToken(user: User | undefined): void;
     // (undocumented)
     get isAuthorized(): boolean;
-    protected loadUser(requestContext: ClientRequestContext): Promise<User | undefined>;
-    protected nonInteractiveSignIn(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
+    protected loadUser(): Promise<User | undefined>;
+    protected nonInteractiveSignIn(args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
+    // (undocumented)
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     protected _onAccessTokenExpired: () => void;
     protected _onAccessTokenExpiring: () => Promise<void>;
     protected _onSilentRenewError: () => void;
     protected _onUserLoaded: (user: User) => void;
     protected _onUserSignedOut: () => void;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
-    // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;
-    signIn(requestContext?: ClientRequestContext): Promise<void>;
-    signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
-    signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
-    signInSilent(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
+    signIn(): Promise<void>;
+    signInPopup(args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
+    signInRedirect(successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
+    signInSilent(): Promise<void>;
+    signOut(): Promise<void>;
     // (undocumented)
-    signOutPopup(requestContext: ClientRequestContext): Promise<void>;
+    signOutPopup(): Promise<void>;
     // (undocumented)
-    signOutRedirect(requestContext: ClientRequestContext): Promise<void>;
+    signOutRedirect(): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -78,6 +93,13 @@ export interface BrowserAuthorizationClientConfiguration extends BrowserAuthoriz
     readonly redirectUri: string;
     readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
     readonly scope: string;
+    readonly silentRedirectUri?: string;
+}
+
+// @internal
+export interface BrowserAuthorizationClientRedirectState {
+    // (undocumented)
+    successRedirectUrl: string;
 }
 
 // @public
@@ -85,12 +107,33 @@ export interface BrowserAuthorizationClientRequestOptions {
     prompt?: "none" | "login" | "consent" | "select_account" | string;
 }
 
+// @beta
+export class BrowserAuthorizationLogger implements Logger {
+    // (undocumented)
+    debug(message?: any, ...optionalParams: any[]): void;
+    // (undocumented)
+    error(message?: any, ...optionalParams: any[]): void;
+    // (undocumented)
+    protected static getLogLevel(loggerCategory: string): number;
+    // (undocumented)
+    info(message?: any, ...optionalParams: any[]): void;
+    static initializeLogger(): void;
+    static reset(): void;
+    // (undocumented)
+    warn(message?: any, ...optionalParams: any[]): void;
+}
+
 // @beta (undocumented)
 export interface FrontendAuthorizationClient extends AuthorizationClient {
     readonly hasSignedIn: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext?: ClientRequestContext): Promise<void>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
+}
+
+// @beta
+export enum FrontendAuthorizationClientLoggerCategory {
+    Authorization = "frontend-authorization-client.Authorization"
 }
 
 // @beta

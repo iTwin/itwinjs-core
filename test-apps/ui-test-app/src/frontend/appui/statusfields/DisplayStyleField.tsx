@@ -9,16 +9,16 @@
 import "./DisplayStyleField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { Select } from "@bentley/ui-core";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+import { Id64String } from "@itwin/core-bentley";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 interface DisplayStyleFieldState {
   viewport?: ScreenViewport;
   displayStyles: Map<Id64String, DisplayStyleState>;
-  styleEntries: { [key: string]: string };
+  styleEntries: SelectOption<string>[];
 }
 
 /**
@@ -26,24 +26,24 @@ interface DisplayStyleFieldState {
  * It is used to enable/disable display of shadows.
  */
 export class DisplayStyleField extends React.Component<StatusFieldProps, DisplayStyleFieldState> {
-  private _label = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.label");
-  private _tooltip = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.tooltip");
+  private _label = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.label");
+  private _tooltip = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.tooltip");
 
   constructor(props: StatusFieldProps) {
     super(props);
 
-    this.state = { viewport: undefined, displayStyles: new Map<Id64String, DisplayStyleState>(), styleEntries: {} };
+    this.state = { viewport: undefined, displayStyles: new Map<Id64String, DisplayStyleState>(), styleEntries: [] };
   }
 
   private async setStateFromActiveContent(contentControl?: ContentControl): Promise<void> {
     if (contentControl && contentControl.viewport) {
-      const unnamedPrefix = IModelApp.i18n.translate("SampleApp:statusFields.unnamedDisplayStyle");
+      const unnamedPrefix = IModelApp.localization.getLocalizedString("SampleApp:statusFields.unnamedDisplayStyle");
       const displayStyles = new Map<Id64String, DisplayStyleState>();
       const view = contentControl.viewport.view;
       const is3d = view.is3d();
       const sqlName: string = is3d ? DisplayStyle3dState.classFullName : DisplayStyle2dState.classFullName;
       const displayStyleProps = await view.iModel.elements.queryProps({ from: sqlName, where: "IsPrivate=FALSE" });
-      const styleEntries: { [key: string]: string } = {};
+      const styleEntries: SelectOption<string>[] = [];
       let emptyNameSuffix = 0;
       for (const displayStyleProp of displayStyleProps) {
         let name = displayStyleProp.code.value!;
@@ -51,7 +51,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
           emptyNameSuffix++;
           name = `${unnamedPrefix}-${emptyNameSuffix}`;
         }
-        styleEntries[displayStyleProp.id!] = name;
+        styleEntries.push({ value: displayStyleProp.id!, label: name });
 
         let displayStyle: DisplayStyleState;
         if (is3d)
@@ -86,12 +86,12 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
     FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
   }
 
-  private _handleDisplayStyleSelected = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+  private _handleDisplayStyleSelected = async (newValue: string) => {
     if (!this.state.viewport)
       return;
 
     const viewport = this.state.viewport;
-    const style = this.state.displayStyles.get(event.target.value)!.clone();
+    const style = this.state.displayStyles.get(newValue)!.clone();
     if (style) {
       await style.load();
 

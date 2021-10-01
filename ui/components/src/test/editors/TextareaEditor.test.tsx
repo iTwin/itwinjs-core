@@ -5,13 +5,15 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
-  PropertyEditorParamTypes, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
-import { TextareaEditor } from "../../ui-components/editors/TextareaEditor";
-import { EditorContainer } from "../../ui-components/editors/EditorContainer";
+import {
+  InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
+  PropertyEditorParamTypes, SpecialKey, StandardEditorNames,
+} from "@itwin/appui-abstract";
+import { TextareaEditor } from "../../components-react/editors/TextareaEditor";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
 import TestUtils from "../TestUtils";
 
 describe("<TextareaEditor />", () => {
@@ -180,7 +182,7 @@ describe("<TextareaEditor />", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test", "MyValue", undefined, editorInfo);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.container.querySelector(".components-textarea-editor")).to.not.be.empty;
-    cleanup();
+
   });
 
   it("calls onCancel on Escape on button", async () => {
@@ -193,7 +195,7 @@ describe("<TextareaEditor />", () => {
     const spyOnCancel = sinon.spy();
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={spyOnCancel} />);
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await waitFor(() => renderedComponent.getByTestId("components-popup-button"));
     expect(popupButton).not.to.be.null;
 
     fireEvent.keyDown(popupButton, { key: SpecialKey.Escape });

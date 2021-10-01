@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutDef, CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../ui-framework";
+import { MockRender } from "@itwin/core-frontend";
+import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
-import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@bentley/ui-ninezone";
-import { UiSettingsStatus } from "@bentley/ui-core";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
+import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
+import { UiSettingsStatus } from "@itwin/core-react";
+import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
@@ -30,37 +30,43 @@ describe("FrontstageDef", () => {
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {
+    public static stageId = "BadLayout";
+    public get id(): string {
+      return BadLayoutFrontstage.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       return (
         <Frontstage
-          id="BadLayout"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout="abc"
-          contentGroup="def"
+          contentGroup={TestUtils.TestContentGroup1}
         />
       );
     }
   }
 
   class BadGroupFrontstage extends FrontstageProvider {
+    public static stageId = "BadGroup";
+    public get id(): string {
+      return BadGroupFrontstage.stageId;
+    }
+
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
-      const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-        {
-          id: "SingleContent",
-          descriptionKey: "App:ContentLayoutDef.SingleContent",
-          priority: 100,
-        },
-      );
+      // const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+      //   {
+      //     id: "SingleContent",
+      //     description: "App:ContentLayoutDef.SingleContent",
+      //   },
+      // );
 
       return (
         <Frontstage
-          id="BadGroup"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={contentLayoutDef}
-          contentGroup="def"
+          contentGroup={TestUtils.TestContentGroup1}
         />
       );
     }
@@ -142,13 +148,17 @@ describe("FrontstageDef", () => {
     }
 
     class EmptyFrontstageProvider extends FrontstageProvider {
+      public static stageId = "TestFrontstageUi2";
+      public get id(): string {
+        return EmptyFrontstageProvider.stageId;
+      }
+
       public get frontstage() {
         return (
           <Frontstage
-            id="TestFrontstageUi2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="SingleContent"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             defaultContentId="defaultContentId"
             isInFooterMode={false}
             applicationData={{ key: "value" }}
@@ -168,7 +178,8 @@ describe("FrontstageDef", () => {
     it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
-      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
       sut.rightPanel!.panelZones.middle.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);
@@ -465,6 +476,50 @@ describe("float and dock widget", () => {
 
     frontstageDef.floatWidget("ta");
     nineZoneStateSetter.calledOnce.should.true;
+  });
+
+  it("set floating widget bounds", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addFloatingWidget(state, "fw1", ["t1"]);
+    state = addTab(state, "t1");
+
+    const frontstageDef = new FrontstageDef();
+    const nineZoneStateSetter = sinon.spy();
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
+    expect(frontstageDef.setFloatingWidgetContainerBounds("fw1", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.true;
+    expect(frontstageDef.setFloatingWidgetContainerBounds("bad", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.false;
+    frontstageDef.setFloatingWidgetBoundsInternal("fw1", { top: 55, left: 105, bottom: 155, right: 255 }, true); // should not trigger setter
+    nineZoneStateSetter.calledOnce.should.true;
+  });
+
+  it("get floating containers 1 available", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addFloatingWidget(state, "fw1", ["t1"], { bounds: { top: 55, left: 105, bottom: 155, right: 255 } });
+    state = addTab(state, "t1");
+    const frontstageDef = new FrontstageDef();
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state);
+    expect(frontstageDef.getFloatingWidgetContainerIds().length).to.eql(1);
+    expect(frontstageDef.getFloatingWidgetContainerIdByWidgetId("t1")).to.eql("fw1");
+    expect(frontstageDef.getFloatingWidgetContainerBounds("fw1")).to.eql({
+      left: 105,
+      top: 55,
+      bottom: 155,
+      right: 255,
+    });
+
+  });
+
+  it("get floating containers 0 available", () => {
+    const frontstageDef = new FrontstageDef();
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => undefined);
+    expect(frontstageDef.getFloatingWidgetContainerIds().length).to.eql(0);
+    expect(frontstageDef.getFloatingWidgetContainerIdByWidgetId("t1")).to.be.undefined;
+    expect(frontstageDef.getFloatingWidgetContainerBounds("t1")).to.be.undefined;
+    expect(frontstageDef.getFloatingWidgetContainerBounds(undefined)).to.be.undefined;
   });
 
 });

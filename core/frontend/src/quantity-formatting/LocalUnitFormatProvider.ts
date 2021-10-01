@@ -6,7 +6,8 @@
  * @module QuantityFormatting
  */
 
-import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey, UnitSystemKey } from "./QuantityFormatter";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey } from "./QuantityFormatter";
 import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider";
 
 /** Implementation of BaseUnitFormattingSettingsProvider that stores and retrieves data in local storage.

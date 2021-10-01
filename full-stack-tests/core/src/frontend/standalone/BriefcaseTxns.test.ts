@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { BriefcaseConnection, EditingFunctions } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { deleteElements, initializeEditTools, insertLineElement, transformElements } from "../Editing";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { BriefcaseConnection } from "@itwin/core-frontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 describe("BriefcaseTxns", () => {
   if (ProcessDetector.isElectronAppFrontend) {
@@ -66,15 +66,13 @@ describe("BriefcaseTxns", () => {
 
       const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
-      // eslint-disable-next-line deprecation/deprecation
-      const editing = new EditingFunctions(imodel);
-
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
+      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
       await expectCommit("onElementsChanged");
 
-      const model = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
+      const code = await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue());
+      const model = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, code);
       await imodel.saveChanges();
       await expectCommit("onElementsChanged", "onModelsChanged");
 

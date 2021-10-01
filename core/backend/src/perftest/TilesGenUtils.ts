@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@bentley/geometry-core";
-import { IModelDb, SpatialModel } from "../imodeljs-backend";
+
+import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString,
-  TileMetadata, TileMetadataReader, TileProps,
-} from "@bentley/imodeljs-common";
-import { ByteStream, ClientRequestContext, GuidString, Id64String, Logger, StopWatch } from "@bentley/bentleyjs-core";
+  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
+} from "@itwin/core-common";
+import { IModelDb } from "../IModelDb";
+import { SpatialModel } from "../Model";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
 
 interface TileTreeInfo {
@@ -52,7 +53,6 @@ const loggerCategory = "TileGenerationPerformance";
 
 export class BackendTileGenerator {
   private readonly _iModel: IModelDb;
-  private readonly _requestContext = ClientRequestContext.current;
   private readonly _maxDepth: number;
   private readonly _treeQueue: ConcurrencyQueue<void>;
   private readonly _tileQueue: ConcurrencyQueue<void>;
@@ -62,11 +62,12 @@ export class BackendTileGenerator {
     maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
     enableInstancing: true,
     enableImprovedElision: true,
-    useProjectExtents: false,
+    useProjectExtents: true,
     disableMagnification: false,
     ignoreAreaPatterns: false,
-    enableExternalTextures: false,
+    enableExternalTextures: true,
     alwaysSubdivideIncompleteTiles: false,
+    optimizeBRepProcessing: true,
   };
   private readonly _stats: Stats = {
     modelCount: 0,
@@ -133,7 +134,7 @@ export class BackendTileGenerator {
     const tilePropsTime = new StopWatch(undefined, true);
 
     try {
-      treeProps = await this._iModel.tiles.requestTileTreeProps(this._requestContext, info.treeId);
+      treeProps = await this._iModel.tiles.requestTileTreeProps(info.treeId);
     } catch (err) {
       Logger.logInfo(loggerCategory, `Failed to get "${info.treeId}" tile tree props: ${err}`);
       return;
@@ -169,7 +170,7 @@ export class BackendTileGenerator {
     const tileTime = new StopWatch(undefined, true);
     let content;
     try {
-      content = (await this._iModel.tiles.requestTileContent(this._requestContext, treeInfo.treeId, tile.contentId)).content;
+      content = (await this._iModel.tiles.requestTileContent(treeInfo.treeId, tile.contentId)).content;
     } catch (err) {
       throw err;
     }

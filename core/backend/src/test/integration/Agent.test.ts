@@ -1,44 +1,46 @@
-import { assert } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "chai";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { AccessToken } from "@itwin/core-bentley";
 
 // Configuration needed
-//    imjs_agent_test_client_id
-//    imjs_agent_test_client_secret
+//    IMJS_AGENT_TEST_CLIENT_ID
+//    IMJS_AGENT_TEST_CLIENT_SECRET
 
 describe("Agent iModel Download (#integration)", () => {
   let testProjectId: string;
   let testReadIModelId: string;
-  let requestContext: AuthorizedBackendRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
+    if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      scope: "imodelhub context-registry-service:read-only",
+      clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
+      scope: process.env.IMJS_AGENT_TEST_CLIENT_SCOPES ?? "",
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    const jwt = await agentClient.getAccessToken(new ClientRequestContext());
-    requestContext = new AuthorizedBackendRequestContext(jwt);
-    requestContext.enter();
+    accessToken = await agentClient.getAccessToken();
 
-    testProjectId = await HubUtility.getTestContextId(requestContext);
-    testReadIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
+    testProjectId = await HubUtility.getTestITwinId(accessToken);
+    testReadIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
   });
 
   it("Agent should be able to open a checkpoint", async () => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testReadIModelId });
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testProjectId, iModelId: testReadIModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   });

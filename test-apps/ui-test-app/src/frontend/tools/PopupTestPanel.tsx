@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@bentley/ui-components";
-import { Button } from "@bentley/ui-core";
-import { ModalDialogManager, ModelessDialogManager, PopupManager } from "@bentley/ui-framework";
+import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@itwin/components-react";
+import { ModalDialogManager, ModelessDialogManager, PopupManager } from "@itwin/appui-react";
 import { SampleModelessDialog } from "../appui/dialogs/SampleModelessDialog";
 import { TestModalDialog } from "../appui/dialogs/TestModalDialog";
 
 import { SamplePopupContextMenu } from "../appui/frontstages/component-examples/SamplePopupContextMenu";
 import { TableExampleContent } from "../appui/contentviews/TableExampleContent";
 import "./PopupTestPanel.scss";
-import { AbstractToolbarProps, BadgeType, RelativePosition } from "@bentley/ui-abstract";
+import { AbstractToolbarProps, BadgeType, RelativePosition } from "@itwin/appui-abstract";
 import { WeightPickerHost } from "../appui/frontstages/component-examples/ComponentExamplesProvider";
+import { Button } from "@itwin/itwinui-react";
 
 export function DatePickerHost(props: DatePickerPopupButtonProps) {
   const { onDateChange, selected, ...otherProp } = props;

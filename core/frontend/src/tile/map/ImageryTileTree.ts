@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@bentley/bentleyjs-core";
-import { Angle, Range3d, Transform } from "@bentley/geometry-core";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
+import { Angle, Range3d, Transform } from "@itwin/core-geometry";
+import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -18,9 +18,8 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import {
   MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
-  TileTreeSupplier,
+  TileTreeSupplier, WebMercatorTilingScheme,
 } from "../internal";
-import { WebMercatorTilingScheme } from "./MapTilingScheme";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
@@ -107,7 +106,7 @@ export class ImageryMapTile extends RealityTile {
           const quadId = new QuadId(level, column + i, row + j);
           const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
           const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-          const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
+          const maximumSize = (childrenAreDisabled ? 0 : imageryTree.imageryLoader.maximumScreenSize);
           children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
         }
       }
@@ -157,7 +156,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public get imageryLoader(): ImageryTileLoader { return this._imageryLoader; }
   public override get is3d(): boolean { assert(false); return false; }
-  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return new ViewFlagOverrides(); }
+  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return {}; }
   public override get isContentUnbounded(): boolean { assert(false); return true; }
   protected override _selectTiles(_args: TileDrawArgs): Tile[] { assert(false); return []; }
   public override draw(_args: TileDrawArgs): void { assert(false); }
@@ -275,7 +274,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
     const loader = new ImageryTileLoader(imageryProvider, iModel);
-    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader };
+    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader, gcsConverterAvailable: false };
     return new ImageryMapTileTree(treeProps, loader);
   }
 }

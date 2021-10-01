@@ -6,6 +6,8 @@
  * @module Geometry
  */
 
+import { Geometry } from "@itwin/core-geometry";
+
 /** This interface defines the mathematical model of the Earth shape in the form of an ellipsoid.
  *  There are various ways to define an ellipsoid but we have retained the definition based on the polar and equatorial radiuses.
  *  The other ellipsoid properties, such as flattening and inverse flattening, can be obtained using
@@ -97,18 +99,18 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     return data;
   }
 
-  /** Compares two Geodetic Ellipsoid. It is a strict compare operation not an equivalence test.
+  /** Compares two Geodetic Ellipsoid. It is a strict compare operation not an equivalence test
+   * but it applies a minuscule tolerance for floating point compares.
    * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GeodeticEllipsoid): boolean {
     return this.id === other.id &&
       this.description === other.description &&
       this.deprecated === other.deprecated &&
       this.source === other.source &&
       this.epsg === other.epsg &&
-      this.equatorialRadius === other.equatorialRadius &&
-      this.polarRadius === other.polarRadius;
+      Geometry.isAlmostEqualOptional(this.equatorialRadius, other.equatorialRadius, Geometry.smallMetricDistance) &&
+      Geometry.isAlmostEqualOptional(this.polarRadius, other.polarRadius, Geometry.smallMetricDistance);
   }
 }
 

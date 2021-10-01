@@ -8,12 +8,11 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { ToggleEditor } from "../../ui-components/editors/ToggleEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { ToggleEditor } from "../../components-react/editors/ToggleEditor";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<ToggleEditor />", () => {
   it("should render", () => {
@@ -103,12 +102,6 @@ describe("<ToggleEditor />", () => {
 
     wrapper.unmount();
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/components-react";
+import {
+  ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver,
+} from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@itwin/appui-react";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -35,6 +37,7 @@ export interface State {
   dataProvider: PresentationPropertyDataProvider;
   contextMenu?: PropertyGridContextMenuArgs;
   contextMenuItemInfos?: ContextMenuItemInfo[];
+  gridSize?: { width: number, height: number };
 }
 
 class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectionPropertyGridWidgetProps, State> {
@@ -78,16 +81,16 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
           key: "remove-favorite",
           icon: "icon-remove-2",
           onSelect: async () => this._onRemoveFavorite(field),
-          title: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.description"),
-          label: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.remove-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.remove-favorite.label"),
         });
       } else {
         items.push({
           key: "add-favorite",
           icon: "icon-add",
           onSelect: async () => this._onAddFavorite(field),
-          title: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.description"),
-          label: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.add-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.add-favorite.label"),
         });
       }
     }
@@ -146,24 +149,33 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
     );
   };
 
+  private _onPropertyGridResize = (width: number, height: number) => {
+    this.setState({ gridSize: { width, height } });
+  };
+
   public override render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
     if (this.props.iModelConnection) {
-      const element = <>
+      const element = (this.state.gridSize?.width && this.state.gridSize.height) ? <>
         <UnifiedSelectionPropertyGrid
           dataProvider={this.state.dataProvider}
           orientation={Orientation.Horizontal}
+          width={this.state.gridSize.width}
+          height={this.state.gridSize.height}
           isPropertyHoverEnabled={true}
           onPropertyContextMenu={this._onPropertyContextMenu}
           actionButtonRenderers={actionButtonRenderers}
         />
         {this.renderContextMenu()}
-      </>;
+      </> : null;
       return (
-        <FrameworkVersionSwitch
-          v1={<div style={{ height: "100%" }}>{element}</div>}
-          v2={<div style={{ height: "100%", width: "100%", position: "absolute" }}>{element}</div>}
-        />
+        <>
+          <FrameworkVersionSwitch
+            v1={<div style={{ height: "100%" }}>{element}</div>}
+            v2={<div style={{ height: "100%", width: "100%", position: "absolute" }}>{element}</div>}
+          />
+          <ResizableContainerObserver onResize={this._onPropertyGridResize} />
+        </>
       );
     }
 
@@ -175,7 +187,7 @@ function UnifiedSelectionPropertyGrid(props: VirtualizedPropertyGridWithDataProv
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
 
   if (isOverLimit) {
-    return (<FillCentered>{IModelApp.i18n.translate("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
+    return (<FillCentered>{IModelApp.localization.getLocalizedString("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
   }
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }

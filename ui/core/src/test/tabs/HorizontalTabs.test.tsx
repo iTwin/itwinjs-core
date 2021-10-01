@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { HorizontalTabs } from "../../ui-core";
+import { HorizontalTabs } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<HorizontalTabs />", () => {
   it("should render", () => {

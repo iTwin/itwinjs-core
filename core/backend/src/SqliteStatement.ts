@@ -6,12 +6,12 @@
  * @module SQLite
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@bentley/bentleyjs-core";
-import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
+import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
-/** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
+/** Marks a string as either an [Id64String]($core-bentley) or [GuidString]($core-bentley), so
  * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
  * methods of [SqliteStatement]($backend).
  * @internal
@@ -60,14 +60,15 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
    * @param sql The SQL statement string to prepare
+   * @param logErrors Determine if errors are logged or not
    * @throws if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb): void {
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors = true): void {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._stmt = new IModelHost.platform.SqliteStatement();
-    this._stmt.prepare(db, this._sql);
+    this._stmt.prepare(db, this._sql, logErrors);
   }
 
   /** Indicates whether the prepared statement makes no **direct* changes to the content of the file
@@ -223,12 +224,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Step this statement to the next row.
    *
    *  For **SQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - [DbResult.BE_SQLITE_ROW]($core-bentley) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has no more rows.
    *  - Error status in case of errors.
    *
    *  For **SQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
   public step(): DbResult { return this._stmt!.step(); }

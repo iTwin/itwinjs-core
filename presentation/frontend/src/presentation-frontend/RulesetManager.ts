@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { BeEvent, Guid } from "@itwin/core-bentley";
+import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 
 /**
  * Presentation ruleset registry.
@@ -68,8 +68,7 @@ export class RulesetManagerImpl implements RulesetManager {
    * Register the supplied ruleset
    */
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    const registered = new RegisteredRuleset(ruleset, Guid.createValue(), (r: RegisteredRuleset) => this.remove(r));
+    const registered = new RegisteredRuleset(ruleset, Guid.createValue(), async (r: RegisteredRuleset) => this.remove(r));
     if (!this._clientRulesets.has(ruleset.id))
       this._clientRulesets.set(ruleset.id, []);
     this._clientRulesets.get(ruleset.id)!.push(registered);

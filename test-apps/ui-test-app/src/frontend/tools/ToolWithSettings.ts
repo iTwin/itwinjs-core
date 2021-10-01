@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   AngleDescription, BeButtonEvent, EventHandled, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
   QuantityType, SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
+} from "@itwin/core-frontend";
+import { FormatterSpec } from "@itwin/core-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
   EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
   PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
-} from "@bentley/ui-abstract";
-import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 
 enum ToolOptions {
   Red = 1,
@@ -41,7 +41,7 @@ enum ToolOptionNames {
 
 class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   // ------------- Weight ---------------
-  public weightProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildWeightPickerDescription("weight", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight")), 3);
+  public weightProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildWeightPickerDescription("weight", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Weight")), 3);
 
   /** Called by UI to inform data provider of changes.  */
   public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
@@ -76,7 +76,7 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
 class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   // ------------- text based edit field ---------------
   public sourceProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("source", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source")),
+    PropertyDescriptionHelper.buildTextEditorDescription("source", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Source")),
     "unknown", undefined);
 
   /** Called by UI to inform data provider of changes.  */
@@ -137,7 +137,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- Color Enum ---------------
-  private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
+  private enumAsPicklistMessage(str: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
   private getColorChoices = (): EnumerationChoice[] => {
     return this.useLengthProperty.isDisabled ? [
       { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
@@ -160,7 +160,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get colorOptionProperty() {
     if (!this._colorOptionProperty)
       this._colorOptionProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
-        "colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices()), ToolOptions.Blue as number);
+        "colorOption", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices()), ToolOptions.Blue as number);
     return this._colorOptionProperty;
   }
 
@@ -168,7 +168,7 @@ export class ToolWithSettings extends PrimitiveTool {
   private _colorPickerProperty: DialogProperty<number> | undefined;
   public get colorPickerProperty() {
     if (!this._colorPickerProperty)
-      this._colorPickerProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+      this._colorPickerProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Color"),
         [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.black, ColorByName.gray, ColorByName.purple, ColorByName.pink],
         2), ColorByName.blue);
     return this._colorPickerProperty;
@@ -179,7 +179,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get lockProperty() {
     if (!this._lockProperty)
       this._lockProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildToggleDescription("lockToggle",
-        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock")), true, undefined, false);
+        IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Lock")), true, undefined, false);
     return this._lockProperty;
   }
 
@@ -200,7 +200,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get cityProperty() {
     if (!this._cityProperty)
       this._cityProperty = new DialogProperty<string>(PropertyDescriptionHelper.buildTextEditorDescription("city",
-        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City")), "Exton", undefined);
+        IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.City")), "Exton", undefined);
     return this._cityProperty;
   }
 
@@ -209,7 +209,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get stateProperty() {
     if (!this._stateProperty)
       this._stateProperty = new DialogProperty<string>(
-        PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
+        PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.State"),
           [
             {
               type: PropertyEditorParamTypes.InputEditorSize,
@@ -226,7 +226,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get coordinateProperty() {
     if (!this._coordinateProperty)
       this._coordinateProperty = new DialogProperty<string>(
-        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
+        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
         "0.0, 0.0, 0.0", undefined);
     return this._coordinateProperty;
   }
@@ -236,7 +236,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get numberProperty() {
     if (!this._numberProperty)
       this._numberProperty = new DialogProperty<number>(
-        PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Number"),
+        PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Number"),
           {
             type: PropertyEditorParamTypes.Range,
             step: 2,
@@ -274,7 +274,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public get stationProperty() {
     if (!this._stationProperty)
       this._stationProperty = new DialogProperty<string>(
-        PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station")),
+        PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Station")),
         this.formatStation(0.0), undefined);
     return this._stationProperty;
   }
@@ -298,12 +298,12 @@ export class ToolWithSettings extends PrimitiveTool {
   // -------- end of ToolSettings ----------
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
     this.points = [];
   }
-  public override onUnsuspend(): void { this.provideToolAssistance(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -334,7 +334,7 @@ export class ToolWithSettings extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.GetPoint"));
     const instructions = ToolAssistance.createInstructions(mainInstruction);
 
     IModelApp.notifications.setToolAssistance(instructions);
@@ -379,7 +379,7 @@ export class ToolWithSettings extends PrimitiveTool {
     IModelApp.uiAdmin.closeToolSettingsPopup();
 
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -401,7 +401,7 @@ export class ToolWithSettings extends PrimitiveTool {
       // test updating color option and available colors by providing a new enum list
       this.colorOptionProperty.value = this.useLengthProperty.isDisabled ? ToolOptions.Pink : ToolOptions.Red;
       this.colorOptionProperty.description = PropertyDescriptionHelper.buildEnumPicklistEditorDescription("colorOption",
-        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices());
+        IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices());
       const syncColorItem: DialogPropertySyncItem = { propertyName: this.colorOptionProperty.name, value: this.colorOptionProperty.dialogItemValue, property: this.colorOptionProperty.description };
       this.syncToolSettingsProperties([this.useLengthProperty.syncItem, syncColorItem]);
       const msg = `UseLength checkbox is now '${this.useLengthProperty.isDisabled ? "disabled" : "enabled"}'`;
@@ -436,10 +436,10 @@ export class ToolWithSettings extends PrimitiveTool {
     this.syncCoordinateValue(formattedString, this.formatStation(distance), distance);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new ToolWithSettings();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
@@ -461,6 +461,12 @@ export class ToolWithSettings extends PrimitiveTool {
     return toolSettings;
   }
 
+  private showColorOptionSelectionInfo(updatedValue: DialogPropertySyncItem) {
+    const colorStrings = ["none", "Red", "White", "Blue", "Yellow", "Purple", "Pink", "Green"];
+    const msg = `Property '${updatedValue.propertyName}' updated to value ${colorStrings[updatedValue.value.value as number]}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  }
+
   private showColorInfoFromUi(updatedValue: DialogPropertySyncItem) {
     const colorDef = ColorDef.create(this.colorPickerProperty.value);
     const msg = `Property '${updatedValue.propertyName}' updated to value ${colorDef.toRgbString()}`;
@@ -479,10 +485,13 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   /** Used to send changes from UI back to Tool */
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === this.lockProperty.name) {
       this.lockProperty.value = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === this.colorOptionProperty.name) {
+      this.colorOptionProperty.value = updatedValue.value.value as number;
+      this.showColorOptionSelectionInfo(updatedValue);
     } else if (updatedValue.propertyName === this.imageCheckBoxProperty.name) {
       this.imageCheckBoxProperty.value = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);

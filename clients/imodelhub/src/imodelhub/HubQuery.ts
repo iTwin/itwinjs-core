@@ -6,12 +6,13 @@
  * @module iModelHubClient
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { RequestQueryOptions, WsgQuery } from "@bentley/itwin-client";
+import { GuidString } from "@itwin/core-bentley";
+import { RequestQueryOptions } from "@bentley/itwin-client";
+import { WsgQuery } from "../wsg/WsgQuery";
 import { ArgumentCheck } from "./Errors";
 
 /** Query for instances with string based instance ids.
- * @public
+ * @internal
  */
 export class StringIdQuery extends WsgQuery {
   /** @internal */
@@ -45,7 +46,7 @@ export class StringIdQuery extends WsgQuery {
 }
 
 /** Query for instances with Guid based instance ids.
- * @public
+ * @internal
  */
 export class InstanceIdQuery extends WsgQuery {
   /** @internal */

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Corner, Point, Rectangle, RectangleProps } from "../../ui-core";
+import { Corner, Point, Rectangle, RectangleProps } from "../../core-react";
 
 // cSpell:ignore offsetted
 
@@ -178,6 +178,16 @@ describe("Rectangle", () => {
   it("should return false if rectangle does not contain the point", () => {
     const sut = new Rectangle(-5, 0, 5, 1);
     sut.containsPoint({ x: 2, y: 2 }).should.false;
+  });
+
+  it("should return true if rectangle contains the x,y", () => {
+    const sut = new Rectangle(-5, 2, 5, 8);
+    sut.containsXY(2, 2).should.true;
+  });
+
+  it("should return false if rectangle does not contain the x,y", () => {
+    const sut = new Rectangle(-5, 0, 5, 1);
+    sut.containsXY(2, 2).should.false;
   });
 
   it("should return true if rectangle contains other rectangle", () => {

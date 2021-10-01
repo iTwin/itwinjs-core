@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
-import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@bentley/geometry-core";
-import { ColorDef, RenderMode } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
+import { ColorDef, RenderMode } from "@itwin/core-common";
+import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
 class GeometryDecorator {
@@ -82,13 +82,13 @@ export function openDecorationGeometryExample(viewer: Viewer): void {
   viewer.viewport.turnCameraOn();
   viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
 
-  const viewFlags = viewer.viewport.viewFlags.clone();
-  viewFlags.renderMode = RenderMode.SmoothShade;
-  viewFlags.lighting = true;
-  viewFlags.visibleEdges = true;
-  viewFlags.whiteOnWhiteReversal = false;
-  viewFlags.backgroundMap = true;
-  viewer.viewport.viewFlags = viewFlags;
+  viewer.viewport.viewFlags = viewer.viewport.viewFlags.copy({
+    renderMode: RenderMode.SmoothShade,
+    lighting: true,
+    visibleEdges: true,
+    whiteOnWhiteReversal: false,
+    backgroundMap: true,
+  });
 
   viewer.viewport.view.getDisplayStyle3d().settings.environment = {
     sky: {

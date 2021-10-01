@@ -5,15 +5,14 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Set, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { GeometryPartProps, IModel } from "@bentley/imodeljs-common";
+import { Id64, Id64Set, Logger, LogLevel } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { GeometryPartProps, IModel } from "@itwin/core-common";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
-} from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelTransformerUtils } from "../IModelTransformerUtils";
+} from "../../core-backend";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("DeleteDefinitionElements", () => {
@@ -36,10 +35,10 @@ describe("DeleteDefinitionElements", () => {
   it("should delete if not used", async () => {
     const iModelFile: string = IModelTestUtils.prepareOutputFile("DeleteDefinitionElements", "DeleteDefinitionElements.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "DeleteDefinitionElements" } });
-    await IModelTransformerUtils.prepareSourceDb(iModelDb);
-    IModelTransformerUtils.populateSourceDb(iModelDb);
+    await ExtensiveTestScenario.prepareDb(iModelDb);
+    ExtensiveTestScenario.populateDb(iModelDb);
 
-    // Get ElementIds of DefinitionElements created by populateSourceDb
+    // Get ElementIds of DefinitionElements created by populateDb
     const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     const definitionModelId = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Definition"))!;
     const spatialCategoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, definitionModelId, "SpatialCategory"))!;
@@ -55,9 +54,9 @@ describe("DeleteDefinitionElements", () => {
     const geometryPartId = iModelDb.elements.queryElementIdByCode(GeometryPart.createCode(iModelDb, definitionModelId, "GeometryPart"))!;
     const renderMaterialId = iModelDb.elements.queryElementIdByCode(RenderMaterialElement.createCode(iModelDb, definitionModelId, "RenderMaterial"))!;
     const textureId = iModelDb.elements.queryElementIdByCode(Texture.createCode(iModelDb, definitionModelId, "Texture"))!;
-    const physicalObjectId1 = IModelTransformerUtils.queryByUserLabel(iModelDb, "PhysicalObject1");
-    const physicalObjectId2 = IModelTransformerUtils.queryByUserLabel(iModelDb, "PhysicalObject2");
-    const physicalObjectId3 = IModelTransformerUtils.queryByUserLabel(iModelDb, "PhysicalObject3");
+    const physicalObjectId1 = IModelTestUtils.queryByUserLabel(iModelDb, "PhysicalObject1");
+    const physicalObjectId2 = IModelTestUtils.queryByUserLabel(iModelDb, "PhysicalObject2");
+    const physicalObjectId3 = IModelTestUtils.queryByUserLabel(iModelDb, "PhysicalObject3");
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     assert.isTrue(Id64.isValidId64(subCategoryId));
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
@@ -100,7 +99,7 @@ describe("DeleteDefinitionElements", () => {
       classFullName: GeometryPart.classFullName,
       model: definitionModelId,
       code: GeometryPart.createCode(iModelDb, definitionModelId, "Unused GeometryPart"),
-      geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1)),
+      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
     };
     const unusedGeometryPartId = iModelDb.elements.insertElement(unusedGeometryPartProps);
     assert.isTrue(Id64.isValidId64(unusedGeometryPartId));
@@ -130,7 +129,7 @@ describe("DeleteDefinitionElements", () => {
     assert.isDefined(iModelDb.elements.tryGetElement(textureId));
 
     // deleteDefinitionElements for an unused Texture should succeed, delete should still fail
-    const unusedTextureId = IModelTransformerUtils.insertTextureElement(iModelDb, definitionModelId, "Unused Texture");
+    const unusedTextureId = IModelTestUtils.insertTextureElement(iModelDb, definitionModelId, "Unused Texture");
     assert.isTrue(Id64.isValidId64(unusedTextureId));
     assert.throws(() => iModelDb.elements.deleteElement(unusedTextureId));
     usedDefinitionElementIds = iModelDb.elements.deleteDefinitionElements([unusedTextureId]);

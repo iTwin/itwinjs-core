@@ -289,6 +289,7 @@ Object {
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
       "preferredPopoutWidgetSize": undefined,
+      "userSized": undefined,
     },
   },
   "toolSettings": Object {
@@ -394,6 +395,7 @@ Object {
     "t1": Object {
       "canPopout": undefined,
       "id": "t1",
+      "isFloatingStateWindowResizable": true,
       "label": "Widget",
     },
   },
@@ -495,9 +497,7 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render 1
 <ActiveFrontstageDefProvider
   frontstageDef={
     FrontstageDef {
-      "_contentGroupId": "",
       "_defaultContentId": "",
-      "_defaultLayoutId": "",
       "_id": "",
       "_isApplicationClosing": false,
       "_isInFooterMode": true,
@@ -524,9 +524,7 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render m
 <ActiveFrontstageDefProvider
   frontstageDef={
     FrontstageDef {
-      "_contentGroupId": "",
       "_defaultContentId": "",
-      "_defaultLayoutId": "",
       "_id": "",
       "_isApplicationClosing": false,
       "_isInFooterMode": true,

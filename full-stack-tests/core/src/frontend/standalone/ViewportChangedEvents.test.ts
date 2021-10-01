@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 
 describe("Viewport changed events", async () => {
@@ -76,7 +76,7 @@ describe("Viewport changed events", async () => {
     // Viewport-changed events are not dispatched immediately - they are accumulated between frames and dispatched from inside Viewport.renderFrame().
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if the set is already empty when we clear it.
-      mon.expect(ChangeFlag.None,undefined, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
       mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Assigning the set always raises an event.
@@ -133,15 +133,15 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if equivalent flags
-      const newFlags = vp.viewFlags.clone();
+      let newFlags = vp.viewFlags.copy({});
       mon.expect(ChangeFlag.None, undefined, () => vp.viewFlags = newFlags);
 
       // ViewFlags which do not affect symbology overrides
-      newFlags.solarLight = !newFlags.solarLight;
+      newFlags = newFlags.with("lighting", !newFlags.lighting);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
 
       // ViewFlags which affect symbology overrides
-      newFlags.constructions = !newFlags.constructions;
+      newFlags = newFlags.with("constructions", !newFlags.constructions);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = newFlags);
 
       // Modifying the style's properties directly also produces an event.
@@ -165,7 +165,7 @@ describe("Viewport changed events", async () => {
       vp.saveViewUndo();
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => {
         const newStyle = vp.displayStyle.clone();
-        newStyle.viewFlags.constructions = !newStyle.viewFlags.constructions;
+        newStyle.viewFlags = newStyle.viewFlags.with("constructions", !newStyle.viewFlags.constructions);
         vp.displayStyle = newStyle;
       });
 
@@ -212,9 +212,9 @@ describe("Viewport changed events", async () => {
       const style = view.getDisplayStyle3d();
       const settings = style.settings;
 
-      const vf = settings.viewFlags.clone();
+      let vf = settings.viewFlags.copy({});
       expectNoChange(() => settings.viewFlags = vf);
-      vf.transparency = !vf.transparency;
+      vf = vf.with("transparency", !vf.transparency);
       expectChange(() => settings.viewFlags = vf);
 
       expectOverrideChange(() => settings.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr })));
@@ -286,11 +286,10 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
-      const vf = vp.viewFlags.clone();
-      vf.backgroundMap = !vf.backgroundMap;
+      let vf = vp.viewFlags.with("backgroundMap", !vp.viewFlags.backgroundMap);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
 
-      vf.backgroundMap = !vf.backgroundMap;
+      vf = vf.with("backgroundMap", !vf.backgroundMap);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
 
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.backgroundMapSettings = vp.backgroundMapSettings.clone({ groundBias: 123 }));
@@ -304,8 +303,7 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, (mon) => {
       const settings = view.displayStyle.settings;
-      const vf = settings.viewFlags.clone();
-      vf.backgroundMap = !vf.backgroundMap;
+      const vf = settings.viewFlags.with("backgroundMap", !settings.viewFlags.backgroundMap);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.viewFlags = vf);
       mon.expect(ChangeFlag.None, undefined, () => settings.viewFlags = vf);
 
@@ -320,11 +318,7 @@ describe("Viewport changed events", async () => {
     vp = ScreenViewport.create(viewDiv, view);
 
     ViewportChangedHandler.test(vp, (mon) => {
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => {
-        const vf = vp.viewFlags.clone();
-        vf.shadows = true;
-        vp.viewFlags = vf;
-      });
+      mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => vp.viewFlags = vp.viewFlags.with("shadows", true));
 
       const idSet = new Set<string>();
       idSet.add("0x321");
@@ -647,7 +641,7 @@ describe("Viewport changed events", async () => {
       const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
 
       expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
-      expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ ModelClipGroup.fromJSON({ models: [ "0x123" ] }) ]));
+      expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
       expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
     });
   });
@@ -669,9 +663,7 @@ describe("Viewport changed events", async () => {
     expect(vp.renderPlanValid).to.be.true;
     expect(vp2.renderPlanValid).to.be.true;
 
-    const vf = vp.viewFlags.clone();
-    vf.transparency = !vf.transparency;
-    vp.viewFlags = vf;
+    vp.viewFlags = vp.viewFlags.with("transparency", !vp.viewFlags.transparency);
     expect(vp.renderPlanValid).to.be.false;
     expect(vp2.renderPlanValid).to.be.false;
 

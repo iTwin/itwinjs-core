@@ -1,10 +1,10 @@
-# @bentley/frontend-devtools
+# @itwin/frontend-devtools
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
+The __@itwin/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
 
 Because this is a developer-only package, its functionality is not expected to ever be promoted from "beta" to "public".
 
@@ -78,6 +78,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+* `fdt wow ignore background` Toggle whether the background color needs to be white for white-on-white reversal to apply.
 
 ### Screen-space effect key-ins
 
@@ -314,11 +315,6 @@ These keysins control the planar masking of reality models.
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
   * * `id=`: the source aspect Id or element Id.
   * * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
-* `fdt add extensionService <context>` - Adds a context id to be used with Extension Service. It's added to the front of loaders list, so the most recently added context will get used first. `<context>` can be one of the following:
-  * `id <id>`, where `<id>` is a Connected Context GUID.
-  * `project <projectName>`.
-  * `asset <assetName>`.
-  * `public` - loads Bentley-published public extensions.
 
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Geometry } from "@bentley/geometry-core";
+import { Geometry } from "@itwin/core-geometry";
 /** Margins for white space to be left around view volumes for [[ViewState.lookAtVolume]].
  * Values mean "fraction of view size" and must be between 0 and .25.
  * @public

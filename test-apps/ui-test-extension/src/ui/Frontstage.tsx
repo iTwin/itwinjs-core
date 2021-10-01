@@ -3,24 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import { CommonToolbarItem, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
-  BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, ContentGroup, ContentLayoutDef, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, ModelsTreeNodeType, StagePanel,
-  StagePanelState, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget, Zone,
-} from "@bentley/ui-framework";
-import { SelectionMode } from "@bentley/ui-components";
-import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
-import { NodeKey } from "@bentley/presentation-common";
-
+  BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, Zone,
+} from "@itwin/appui-react";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
 import { GenericTool } from "./tools/GenericTool";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class ExtensionFrontstage extends FrontstageProvider {
-  public static get id() {
-    return "ui-test.SampleStage";
+  public static stageId = "ui-test.SampleStage";
+  public get id(): string {
+    return ExtensionFrontstage.stageId;
   }
 
   private get _additionalVerticalToolWidgetItems(): CommonToolbarItem[] {
@@ -39,22 +36,18 @@ export class ExtensionFrontstage extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const pluginContentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "ui-test.TwoHalvesHorizontal",
-        descriptionKey: "ContentDef.TwoStacked",
-        priority: 50,
-        horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.80, top: 0, bottom: 1 },
-      });
-
     const pluginContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ui-test:content-group",
+        layout: StandardContentLayouts.twoHorizontalSplit,
         contents: [
           {
+            id: "ui-test:primary",
             classId: IModelViewportControl,
-            applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true },
+            applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "ui-test:primary",
             classId: "SampleExtensionContentControl",
           },
         ],
@@ -62,10 +55,9 @@ export class ExtensionFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id={ExtensionFrontstage.id}
+      <Frontstage id={this.id}
         version={1.2}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={pluginContentLayoutDef}
         contentGroup={pluginContentGroup}
         defaultContentId="singleIModelView"
         isInFooterMode={true}
@@ -110,34 +102,6 @@ export class ExtensionFrontstage extends FrontstageProvider {
                 start: {
                   widgets: [
                     <Widget id="LeftStart1" defaultState={WidgetState.Closed} label="Start1" element={<h2>Left Start1 widget</h2>} />,
-                  ],
-                },
-              }}
-          />
-        }
-        rightPanel={
-          <StagePanel
-            defaultState={StagePanelState.Open}
-            panelZones={
-              {
-                middle: {
-                  widgets: [
-                    <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                      applicationData={{
-                        iModelConnection: UiFramework.getIModelConnection(),
-                        enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                        config: {
-                          modelsTree: {
-                            selectionMode: SelectionMode.Extended,
-                            selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Element || type === ModelsTreeNodeType.Grouping),
-                            enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                          },
-                          spatialContainmentTree: {
-                            enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                          },
-                        },
-                      }}
-                      fillZone={true} />,
                   ],
                 },
               }}

@@ -2,29 +2,37 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
+
 import * as React from "react";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
-} from "@bentley/imodeljs-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
-  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityNumberInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
-} from "@bentley/ui-components";
+  adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
+  IntlFormatter, ParsedInput, Table, TableDataChangeEvent, TableDataProvider,
+} from "@itwin/components-react";
 import {
+  ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, LineWeightSwatch,
+  QuantityInput, QuantityNumberInput, WeightPickerButton,
+} from "@itwin/imodel-components-react";
+import {
+  AutoSuggest,
+  AutoSuggestData,
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  DisabledText, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
-  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
+  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
+} from "@itwin/core-react";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
@@ -33,8 +41,25 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
+import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
-import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+
+function DualColorPickers() {
+  const [colorDef, setColorDef] = React.useState(ColorDef.green);
+  const onPopupClose = (color: ColorDef) => {
+    setColorDef(color);
+    const msg = `popup color value: ${color.toRgbaString()}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "4px" }}>
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="RGB" />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="HSL" showCaret />
+    </div>
+  );
+}
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -401,7 +426,8 @@ export function ColorPickerToggle() {
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
-      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
+      colorInputType="RGB" />);
   }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
 
   return (
@@ -416,6 +442,37 @@ export const createComponentExample = (title: string, description: string | unde
 
 /** Provides Component Examples */
 export class ComponentExamplesProvider {
+
+  private static get autoSuggestSamples(): ComponentExampleCategory {
+    const options: AutoSuggestData[] = [];
+
+    for (let index = 0; index < 100; index++) {
+      options.push({ value: index.toString(), label: `Option ${index}` });
+    }
+
+    const getSuggestions = async (value: string): Promise<AutoSuggestData[]> => {
+      const inputValue = value.trim().toLowerCase();
+      const inputLength = inputValue.length;
+
+      return Promise.resolve(
+        inputLength === 0 ?
+        /* istanbul ignore next */[] :
+          options.filter((data: AutoSuggestData) => {
+            return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
+          })
+      );
+    };
+
+    return {
+      title: "AutoSuggest",
+      examples: [
+        createComponentExample("AutoSuggest", undefined,
+          <AutoSuggest placeholder="Type..." onSuggestionSelected={() => { }} getSuggestions={getSuggestions} />
+        ),
+      ],
+    };
+  }
+
   private static get badgeSamples(): ComponentExampleCategory {
     return {
       title: "Badge",
@@ -432,11 +489,17 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Button", "Primary Button", <Button>Primary Button</Button>),
         createComponentExample("Disabled Button", "Button with disabled prop", <Button disabled>Disabled Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Blue Button", "Button with ButtonType.Blue", <Button buttonType={ButtonType.Blue}>Blue Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Hollow Button", "Button with ButtonType.Hollow", <Button buttonType={ButtonType.Hollow}>Hollow Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Basic Button", "Primary Button with size={ButtonSize.Large}", <Button size={ButtonSize.Large}>Primary Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Disabled Button", "Button with disabled and size={ButtonSize.Large} props", <Button disabled size={ButtonSize.Large}>Disabled Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Blue Button", "Button with ButtonType.Blue and size={ButtonSize.Large}", <Button buttonType={ButtonType.Blue} size={ButtonSize.Large}>Blue Button</Button>),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Large Hollow Button", "Button with ButtonType.Hollow and size={ButtonSize.Large}", <Button buttonType={ButtonType.Hollow} size={ButtonSize.Large}>Hollow Button</Button>),
         createComponentExample("Underlined Button", "UnderlinedButton component",
           <UnderlinedButton
@@ -475,9 +538,10 @@ export class ComponentExamplesProvider {
   }
 
   private static get colorSamples(): ComponentExampleCategory {
-    const colorDef = ColorDef.blue;
+    let colorDef = ColorDef.blue;
     const handleColorPick = (color: ColorDef) => {
       console.log(`color picked: ${color.toRgbaString()}`);
+      colorDef = color;
     };
 
     const onPopupClose = (color: ColorDef) => {
@@ -503,6 +567,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
+        createComponentExample("Dual Color Pickers", "test update initialColor", <DualColorPickers />),
       ],
     };
   }
@@ -591,27 +656,39 @@ export class ComponentExamplesProvider {
               Hello World!
             </SampleExpandableBlock>
           </ExpandableList>),
+        createComponentExample("ExpandableList", "ExpandableList with 3 ExpandableBlocks",
+          <ExpandableList className="uicore-full-width">
+            <SampleExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+              Hello World 1
+            </SampleExpandableBlock>
+            <SampleExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+              Hello World 2
+            </SampleExpandableBlock>
+            <SampleExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+              Hello World 3
+            </SampleExpandableBlock>
+          </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test1" isExpanded={false} >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test2" isExpanded={false} >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test3" isExpanded={false} >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test1" isExpanded={false} >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test2" isExpanded={false} >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} onClick={() => { }}>
+            <ExpandableBlock title="Test3" isExpanded={false} >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
@@ -725,8 +802,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
-        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} />),
-        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} />),
+        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} message="Warning message text" />),
+        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} message="Error message text" />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
@@ -748,14 +825,18 @@ export class ComponentExamplesProvider {
     return {
       title: "Loading",
       examples: [
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("Small Spinner", undefined, <Spinner size={SpinnerSize.Small} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("Medium Spinner", undefined, <Spinner size={SpinnerSize.Medium} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("Large Spinner", undefined, <Spinner size={SpinnerSize.Large} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("XLarge Spinner", undefined, <Spinner size={SpinnerSize.XLarge} />),
-        createComponentExample("Small LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.Small} message="This is a Small LoadingSpinner" />),
-        createComponentExample("Medium LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.Medium} message="This is a Medium LoadingSpinner" />),
-        createComponentExample("Large LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.Large} message="This is a Large LoadingSpinner" />),
-        createComponentExample("XLarge LoadingSpinner", undefined, <LoadingSpinner size={SpinnerSize.XLarge} message="This is a XLarge LoadingSpinner" />),
+        createComponentExample("X-Small LoadingSpinner", undefined, <LoadingSpinner size="x-small" message="This is a X-Small LoadingSpinner" />),
+        createComponentExample("Small LoadingSpinner", undefined, <LoadingSpinner size="small" message="This is a Small LoadingSpinner" />),
+        createComponentExample("Medium LoadingSpinner", undefined, <LoadingSpinner size="" message="This is a Medium LoadingSpinner" />),
+        createComponentExample("Large LoadingSpinner", undefined, <LoadingSpinner size="large" message="This is a Large LoadingSpinner" />),
         createComponentExample("LoadingStatus", undefined, <LoadingStatus message="Loading status..." percent={50} />),
         createComponentExample("Basic LoadingPrompt", undefined, <LoadingPrompt title="Title" />),
         createComponentExample("LoadingPrompt with message", undefined, <LoadingPrompt title="Title" message="This is the message" />),
@@ -848,9 +929,13 @@ export class ComponentExamplesProvider {
         createComponentExample("Success ProgressSpinner", "success prop", <ProgressSpinner success />),
         createComponentExample("Error ProgressSpinner", "error prop", <ProgressSpinner error />),
         createComponentExample("ProgressSpinner with value", "display value of 63", <ProgressSpinner value={63}>63</ProgressSpinner>),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner Small", "width/height of 16", <ProgressSpinner indeterminate size={SpinnerSize.Small} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner Medium", "width/height of 32", <ProgressSpinner indeterminate size={SpinnerSize.Medium} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner Large", "width/height of 64", <ProgressSpinner indeterminate size={SpinnerSize.Large} />),
+        /* eslint-disable-next-line deprecation/deprecation */
         createComponentExample("ProgressSpinner XLarge", "width/height of 96", <ProgressSpinner indeterminate size={SpinnerSize.XLarge} />),
         createComponentExample("ProgressSpinner with style", "width/height of 120",
           <div><ProgressSpinner indeterminate style={{ display: "inline-block", width: 120, height: 120 }} />... Loading</div>),
@@ -1018,7 +1103,7 @@ export class ComponentExamplesProvider {
 
   private static get sliderSamples(): ComponentExampleCategory {
     return {
-      title: "Slider",
+      title: "Deprecated Slider",
       examples: [
         createComponentExample("Slider", "Basic Slider",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip />),
@@ -1071,10 +1156,12 @@ export class ComponentExamplesProvider {
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
         createComponentExample("SplitButton with Blue buttonType", "SplitButton with buttonType={ButtonType.Blue} prop",
+          // eslint-disable-next-line deprecation/deprecation
           <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} buttonType={ButtonType.Blue}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
         createComponentExample("SplitButton with Primary buttonType", "SplitButton with buttonType={ButtonType.Primary} prop",
+          // eslint-disable-next-line deprecation/deprecation
           <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }} buttonType={ButtonType.Primary}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
@@ -1094,9 +1181,34 @@ export class ComponentExamplesProvider {
     return {
       title: "Tabs",
       examples: [
-        createComponentExample("Horizontal Tabs", undefined, <HorizontalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />),
+        createComponentExample("Horizontal Tabs", "full width",
+          <div className="uicore-full-width">
+            <HorizontalTabs className="component-examples-horizontal-tabs"
+              labels={[
+                { label: "Tab 1", tabId: "tab1", icon: "icon-placeholder", subLabel: "Sub-label 1" },
+                { label: "Tab 2", tabId: "tab2", icon: "icon-placeholder", subLabel: "Sub-label 2" },
+                { label: "Tab 3", tabId: "tab3", icon: "icon-placeholder", subLabel: "Sub-label 3" },
+              ]}
+              activeIndex={0} />
+          </div>
+        ),
         createComponentExample("Green Horizontal Tabs", "with green prop", <HorizontalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} green />),
-        createComponentExample("Vertical Tabs", undefined, <VerticalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} />),
+        createComponentExample("Horizontal Tabs", undefined,
+          <HorizontalTabs className="component-examples-horizontal-tabs"
+            labels={[
+              { label: "Tab 1", tabId: "tab1", icon: "icon-placeholder", subLabel: "Sub-label 1" },
+              { label: "Tab 2", tabId: "tab2", icon: "icon-placeholder", subLabel: "Sub-label 2" },
+              { label: "Tab 3", tabId: "tab3", icon: "icon-placeholder", subLabel: "Sub-label 3", disabled: true },
+            ]}
+            activeIndex={0} />
+        ),
+        createComponentExample("Vertical Tabs", undefined, <VerticalTabs
+          labels={[
+            { label: "Tab 1", tabId: "tab1", icon: "icon-placeholder", subLabel: "Sub-label 1" },
+            { label: "Tab 2", tabId: "tab2", icon: "icon-placeholder", subLabel: "Sub-label 2" },
+            { label: "Tab 3", tabId: "tab3", icon: "icon-placeholder", subLabel: "Sub-label 3", disabled: true },
+          ]}
+          activeIndex={0} />),
         createComponentExample("Green Vertical Tabs", "with green prop", <VerticalTabs labels={["Tab 1", "Tab 2", "Tab 3"]} activeIndex={0} green />),
       ],
     };
@@ -1148,12 +1260,13 @@ export class ComponentExamplesProvider {
       title: "Toggle",
       examples: [
         createComponentExample("Basic Toggle", undefined, <Toggle isOn={true} />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Primary Toggle", "Toggle with buttonType={ToggleButtonType.Primary}", <Toggle isOn={true} buttonType={ToggleButtonType.Primary} />),
         createComponentExample("Large Toggle", "Toggle with large={true}", <Toggle isOn={true} large={true} />),
         createComponentExample("Square Toggle", "Toggle with rounded={false}", <Toggle isOn={true} rounded={false} />),
         createComponentExample("Toggle with Checkmark", "Toggle with showCheckmark prop", <Toggle isOn={true} showCheckmark={true} />),
         createComponentExample("Disabled Toggle", "Toggle with disabled prop", <Toggle isOn={true} showCheckmark={true} disabled />),
-        createComponentExample("LabeledToggle", undefined, <LabeledToggle isOn={true} label="Toggle label" />),
+        createComponentExample("LabeledToggle", undefined, <LabeledToggle checked={true} label="Toggle label" />),
       ],
     };
   }
@@ -1188,17 +1301,6 @@ export class ComponentExamplesProvider {
       ],
     };
   }
-  private static get deprecatedComponentSamples(): ComponentExampleCategory {
-    return {
-      title: "Deprecated Components",
-      examples: [
-        // eslint-disable-next-line deprecation/deprecation
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
-        // eslint-disable-next-line deprecation/deprecation
-        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
-      ],
-    };
-  }
 
   private static get quantityFormatting(): ComponentExampleCategory {
     const examples = [];
@@ -1225,10 +1327,14 @@ export class ComponentExamplesProvider {
   private static get timelineSamples(): ComponentExampleCategory {
     const examples = [];
     examples.push(
-      createComponentExample("TimelineComponent", "With appended menu items", <ItemsAppendedSampleTimeline/> ),
-      createComponentExample("TimelineComponent", "With prefixed menu items", <ItemsPrefixedSampleTimeline/> ),
-      createComponentExample("TimelineComponent", "With menu items replaced", <ItemsReplacedSampleTimeline/> ),
-      createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With appended menu items", <ItemsAppendedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With prefixed menu items", <ItemsPrefixedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With menu items replaced", <ItemsReplacedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline />),
+      createComponentExample("TimelineComponent", "With timezone offset of 0", <NoLocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With no timezone offset specified", <LocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by the default marker", <CurrentDateMarkedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by a star", <CurrentDateMarkedCustomIconSampleTimeline />),
     );
     return {
       title: "Timelines",
@@ -1237,6 +1343,7 @@ export class ComponentExamplesProvider {
   }
   public static get categories(): ComponentExampleCategory[] {
     return [
+      ComponentExamplesProvider.autoSuggestSamples,
       ComponentExamplesProvider.badgeSamples,
       ComponentExamplesProvider.buttonSamples,
       ComponentExamplesProvider.checkListBoxSamples,
@@ -1264,7 +1371,6 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.settingPage,
-      ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }
 }

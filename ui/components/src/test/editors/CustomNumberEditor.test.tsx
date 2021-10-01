@@ -7,13 +7,14 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { fireEvent, render } from "@testing-library/react";
+import {
+  IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, SpecialKey,
+} from "@itwin/appui-abstract";
+import { CustomNumberEditor } from "../../components-react/editors/CustomNumberEditor";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 // cSpell:ignore customnumber
 
@@ -21,8 +22,6 @@ const numVal = 3.345689;
 const displayVal = "3.35";
 
 describe("<CustomNumberEditor />", () => {
-  afterEach(cleanup);
-
   it("should render", () => {
 
     const record = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
@@ -32,7 +31,7 @@ describe("<CustomNumberEditor />", () => {
 
   it("renders correctly with style", () => {
     const record = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
-    shallow(<CustomNumberEditor propertyRecord={record}  style={{color: "red"}} />).should.matchSnapshot();
+    shallow(<CustomNumberEditor propertyRecord={record} style={{ color: "red" }} />).should.matchSnapshot();
   });
 
   it("change input value", () => {
@@ -192,12 +191,6 @@ describe("<CustomNumberEditor />", () => {
 
     wrapper.unmount();
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

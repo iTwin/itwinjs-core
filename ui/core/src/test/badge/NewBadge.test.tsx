@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { NewBadge } from "../../ui-core";
+import { NewBadge } from "../../core-react";
 
 describe("<NewBadge />", () => {
   it("should render", () => {

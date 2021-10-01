@@ -6,13 +6,13 @@
  * @module QuantityFormatting
  */
 
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectedViewportChangedArgs } from "../ViewManager";
 import {
   FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs, QuantityFormatter,
-  QuantityTypeKey, UnitFormattingSettingsProvider, UnitSystemKey,
+  QuantityTypeKey, UnitFormattingSettingsProvider,
 } from "./QuantityFormatter";
 
 /** This abstract class reacts to changes in the "active" iModel and updates the [[QuantityFormatter]] overrides and active

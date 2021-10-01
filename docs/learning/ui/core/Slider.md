@@ -1,6 +1,6 @@
 # Slider
 
-The [Slider]($ui-core) React component displays a range slider with thumbs for changing the value.
+The [Slider]($core-react) React component displays a range slider with thumbs for changing the value.
 The Slider component also support multiple values.
 The following items may optionally be shown:
 
@@ -9,11 +9,11 @@ The following items may optionally be shown:
 - Tick marks
 - Tick labels
 
-**Note**: The Slider component uses various components from the [react-compound-slider](https://www.npmjs.com/package/react-compound-slider) package internally.
+**Note**: The Slider component uses various components from the [react-compound-slider](https://www.npmjs.com/package/react-compound-slider) package internally. This slider is Deprecated and the Slider from [iTwinUI-react](https://www.npmjs.com/package/@itwin/itwinui-react) package should be used.
 
 ## Properties
 
-The Slider component has numerous properties, as defined in the [SliderProps]($ui-core) interface.
+The Slider component has numerous properties, as defined in the [SliderProps]($core-react) interface.
 There are 3 required props:
 
 - min - Minimum value
@@ -28,7 +28,6 @@ The `mode` prop specifies the interaction mode. The default is 1. Possible value
 
 - 1 - allows handles to cross each other.
 - 2 - keeps the sliders from crossing and separated by a step.
-- 3 - makes the handles pushable and keep them a step apart.
 
 The `reversed` prop indicates whether the display of the Slider values is reversed.
 
@@ -72,10 +71,6 @@ the end of a slide as well as changes from clicks on rails and tracks.
 
 The `onUpdate` prop specifies a handler for value updates.
 It is called with the values at each update (caution: high-volume updates when dragging).
-
-The `onSlideStart` prop specifies a handler triggered with onTouchStart or onMouseDown on a handle.
-
-The `onSlideEnd` prop specifies a handler triggered with onTouchEnd or onMouseUp on a handle.
 
 ## Examples
 
@@ -155,4 +150,4 @@ The `showTickLabels` prop is added in this example.
 
 ## API Reference
 
-- [Slider]($ui-core:Slider)
+- [Slider]($core-react:Slider)

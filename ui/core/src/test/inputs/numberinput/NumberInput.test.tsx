@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpecialKey } from "@bentley/ui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { NumberInput } from "../../../ui-core/inputs/numberinput/NumberInput";
+import { NumberInput } from "../../../core-react/inputs/numberinput/NumberInput";
 
 // cSpell:ignore decrementor numberinput
 
@@ -290,9 +290,9 @@ describe("<NumberInput - React Testing Library />", () => {
     const wrapper = render(<NumberInput precision={2} value={value} step={.25} onChange={handleChange} onBlur={spyBlur} />);
     const input = wrapper.container.querySelector("input");
     expect(input).not.to.be.null;
-    input?.focus();
+    fireEvent.focusIn(input!);
     fireEvent.change(input!, { target: { value: "22.3" } });
-    input?.blur();
+    fireEvent.blur(input!);
     spyMethod.calledOnce.should.true;
     spyBlur.calledOnce.should.true;
     expect(value).to.eq(22.3);

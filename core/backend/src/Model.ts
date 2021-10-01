@@ -8,14 +8,12 @@
 
 // cspell:ignore elid
 
-import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError,
-  InformationPartitionElementProps, ModelProps, RelatedElement,
-} from "@bentley/imodeljs-common";
-import { LockScope } from "./BackendHubAccess";
-import { ConcurrencyControl } from "./ConcurrencyControl";
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
+  ModelProps, RelatedElement,
+} from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -96,43 +94,6 @@ export class Model extends Entity implements ModelProps {
     return val;
   }
 
-  /** Disclose the codes and locks needed to perform the specified operation on this model
-   * @param req The request to be populated
-   * @param props The version of the model that will be written
-   * @param iModel The iModel
-   * @param opcode The operation that will be performed on the model
-   * @beta
-   */
-  public static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void {
-    if (!iModel.isBriefcaseDb()) {
-      assert(false);
-      return;
-    }
-    switch (opcode) {
-      case DbOpcode.Insert: {
-        req.addLocks([ConcurrencyControl.Request.dbLock]);
-        break;
-      }
-      case DbOpcode.Delete: {
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockScope.Exclusive)]);
-        // before we can delete a model, we must delete all of its elements. If that fails, we cannot continue.
-        iModel.withPreparedStatement(`select ecinstanceid from BisCore.Element where model.id=?`, (stmt) => {
-          stmt.bindId(1, props.id!);
-          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-            const elid = stmt.getValue(0).getId();
-            const el = iModel.elements.getElement(elid);
-            iModel.concurrencyControl.buildRequestForElementTo(req, el, DbOpcode.Delete);
-          }
-        });
-        break;
-      }
-      case DbOpcode.Update: {
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockScope.Exclusive)]);
-        break;
-      }
-    }
-  }
-
   /** Called before a new Model is inserted.
    * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
@@ -140,9 +101,9 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onInsert(arg: OnModelPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Insert);
-    }
+    const { props } = arg;
+    if (props.parentModel)   // inserting requires shared lock on parent, if present
+      arg.iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
 
   /** Called after a new Model is inserted.
@@ -150,10 +111,8 @@ export class Model extends Entity implements ModelProps {
    * @note `this` is the class of the Model that was inserted
    * @beta
    */
-  protected static onInserted(arg: OnModelIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Insert);
-    }
+  protected static onInserted(_arg: OnModelIdArg): void {
+    // we don't need to tell LockControl about models being created - their ModeledElement does that
   }
 
   /** Called before a Model is updated.
@@ -163,9 +122,7 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onUpdate(arg: OnModelPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Update);
-    }
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "model", "update");
   }
 
   /** Called after a Model is updated.
@@ -173,10 +130,7 @@ export class Model extends Entity implements ModelProps {
    * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(arg: OnModelIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Update);
-    }
+  protected static onUpdated(_arg: OnModelIdArg): void {
   }
 
   /** Called before a Model is deleted.
@@ -186,10 +140,7 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onDelete(arg: OnModelIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      const props = arg.iModel.models.getModelProps(arg.id);
-      arg.iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
-    }
+    arg.iModel.locks.checkExclusiveLock(arg.id, "model", "delete");
   }
 
   /** Called after a Model was deleted.
@@ -258,15 +209,6 @@ export class Model extends Entity implements ModelProps {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
-  /** Add a request for the locks that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the element.
-   */
-  public override buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel.isBriefcaseDb()) {
-      this.iModel.concurrencyControl.buildRequestForModel(this, opcode);
-    }
-  }
-
   /** Insert this Model in the iModel */
   public insert() { return this.iModel.models.insertModel(this); }
   /** Update this Model in the iModel. */
@@ -288,10 +230,8 @@ export class GeometricModel extends Model implements GeometricModelProps {
 
   /** Query for the union of the extents of the elements contained by this model. */
   public queryExtents(): AxisAlignedBox3d {
-    const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
-    if (error)
-      throw new IModelError(error.status, "Error querying model extents");
-    return Range3d.fromJSON(JSON.parse(result!).modelExtents);
+    const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;
+    return Range3d.fromJSON(extents);
   }
 }
 
@@ -309,8 +249,6 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
   public readonly isNotSpatiallyLocated: boolean;
   /** If true, then the elements in this GeometricModel3d are in real-world coordinates and will be in the spatial index. */
   public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
-  /** @deprecated use [[isSpatiallyLocated]] */
-  public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 
   /** @internal */
   public static override get className(): string { return "GeometricModel3d"; }

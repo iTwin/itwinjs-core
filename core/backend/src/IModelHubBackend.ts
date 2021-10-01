@@ -8,19 +8,22 @@
 
 import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
-  IModelHubClient, IModelQuery, Lock, LockLevel, LockQuery, LockType, VersionQuery,
+  IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+} from "@itwin/core-common";
+import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import {
+  AcquireNewBriefcaseIdArg, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg,
+  IModelNameArg, ITwinIdArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { ConcurrencyControl } from "./ConcurrencyControl";
+import { CheckpointProps } from "./CheckpointManager";
+import { BriefcaseLocalValue, IModelDb, SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -47,19 +50,18 @@ export class IModelHubBackend {
     return this._imodelClient;
   }
 
-  public static async getRequestContext(arg: { requestContext?: AuthorizedClientRequestContext }): Promise<AuthorizedClientRequestContext> {
-    return arg.requestContext ?? AuthorizedBackendRequestContext.create();
+  private static async getAccessToken(arg: TokenArg) {
+    return arg.accessToken ?? await IModelHost.getAccessToken();
   }
-
   public static async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps> {
-    const requestContext = await this.getRequestContext(arg);
-    const changeSets: ChangeSet[] = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, new ChangeSetQuery().top(1).latest());
+    const accessToken = await this.getAccessToken(arg);
+    const changeSets: ChangeSet[] = await this.iModelClient.changeSets.get(accessToken, arg.iModelId, new ChangeSetQuery().top(1).latest());
     return (changeSets.length === 0) ? this.changeSet0 : this.toChangeSetProps(changeSets[changeSets.length - 1]);
   }
 
   public static async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetProps> {
-    const requestContext = await this.getRequestContext(arg);
-    const versions = await this.iModelClient.versions.get(requestContext, arg.iModelId, new VersionQuery().select("ChangeSetId").byName(arg.versionName));
+    const accessToken = await this.getAccessToken(arg);
+    const versions = await this.iModelClient.versions.get(accessToken, arg.iModelId, new VersionQuery().select("ChangeSetId").byName(arg.versionName));
     if (!versions[0] || !versions[0].changeSetId)
       throw new IModelError(IModelStatus.NotFound, `Named version ${arg.versionName} not found`);
 
@@ -82,27 +84,53 @@ export class IModelHubBackend {
     return this.getLatestChangeset(arg);
   }
 
-  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: string }): Promise<GuidString> {
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
 
-    const requestContext = await this.getRequestContext(arg);
-    const hubIModel = await this.iModelClient.iModels.create(requestContext, arg.contextId, arg.iModelName, { path: arg.revision0, description: arg.description });
-    requestContext.enter();
+    const revision0 = join(IModelHost.cacheDir, "temp-revision0.bim");
+    IModelJsFs.removeSync(revision0);
+    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
+      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+      blank.saveChanges();
+      blank.close();
+    } else {
+      IModelJsFs.copySync(revision0, arg.revision0);
+    }
+
+    const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
+    try {
+      nativeDb.setITwinId(arg.iTwinId);
+      // nativeDb.setDbGuid(this.iModelId); NEEDS_WORK - iModelHub should accept this value, not create it.
+      nativeDb.saveChanges();
+      nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+      nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : undefined);
+      nativeDb.saveChanges();
+    } finally {
+      nativeDb.closeIModel();
+    }
+
+    const accessToken = await this.getAccessToken(arg);
+    const hubIModel = await this.iModelClient.iModels.create(accessToken, arg.iTwinId, arg.iModelName, { path: revision0, description: arg.description });
+    IModelJsFs.removeSync(revision0);
     return hubIModel.wsgId;
   }
 
-  public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
+  public static async deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void> {
     const dirName = BriefcaseManager.getIModelPath(arg.iModelId);
     if (IModelJsFs.existsSync(dirName)) {
       IModelJsFs.purgeDirSync(dirName);
       IModelJsFs.rmdirSync(dirName);
     }
-    return this.iModelClient.iModels.delete(await this.getRequestContext(arg), arg.contextId, arg.iModelId);
+
+    const accessToken = await this.getAccessToken(arg);
+    return this.iModelClient.iModels.delete(accessToken, arg.iTwinId, arg.iModelId);
   }
 
-  public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
-    const iModels = await this.iModelClient.iModels.get(await this.getRequestContext(arg), arg.contextId, new IModelQuery().byName(arg.iModelName));
+  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+    const accessToken = await this.getAccessToken(arg);
+    const iModels = await this.iModelClient.iModels.get(accessToken, arg.iTwinId, new IModelQuery().byName(arg.iModelName));
     return iModels.length === 0 ? undefined : iModels[0].id!;
   }
 
@@ -120,8 +148,8 @@ export class IModelHubBackend {
       changeset.description = changeset.description.slice(0, 254);
     }
 
-    const requestContext = await this.getRequestContext(arg);
-    return +(await this.iModelClient.changeSets.create(requestContext, arg.iModelId, changeset, changesetProps.pathname)).index!;
+    const accessToken = await this.getAccessToken(arg);
+    return +(await this.iModelClient.changeSets.create(accessToken, arg.iModelId, changeset, changesetProps.pathname)).index!;
   }
 
   /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.
@@ -130,32 +158,28 @@ export class IModelHubBackend {
    */
   public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     const { briefcaseId, iModelId } = arg;
-    const requestContext = await this.getRequestContext(arg);
+    const accessToken = await this.getAccessToken(arg);
     try {
-      await this.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
-      requestContext.enter();
+      await this.iModelClient.briefcases.get(accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
     } catch (error) {
-      requestContext.enter();
       throw error;
     }
 
-    await this.iModelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
-    requestContext.enter();
+    await this.iModelClient.briefcases.delete(accessToken, iModelId, briefcaseId);
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const requestContext = await this.getRequestContext(arg);
-    const myHubBriefcases = await this.iModelClient.briefcases.get(requestContext, arg.iModelId, new BriefcaseQuery().ownedByMe().selectDownloadUrl());
+    const accessToken = await this.getAccessToken(arg);
+    const myHubBriefcases = await this.iModelClient.briefcases.get(accessToken, arg.iModelId, new BriefcaseQuery().ownedByMe().selectDownloadUrl());
     const myBriefcaseIds: number[] = [];
     for (const hubBc of myHubBriefcases)
       myBriefcaseIds.push(hubBc.briefcaseId!); // save the list of briefcaseIds we already own.
     return myBriefcaseIds;
   }
 
-  public static async acquireNewBriefcaseId(arg: { requestContext?: AuthorizedClientRequestContext, iModelId: GuidString }): Promise<number> {
-    const requestContext = await this.getRequestContext(arg);
-    const briefcase = await this.iModelClient.briefcases.create(requestContext, arg.iModelId);
-    requestContext.enter();
+  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
+    const accessToken = await this.getAccessToken(arg);
+    const briefcase = await this.iModelClient.briefcases.create(accessToken, arg.iModelId);
 
     if (!briefcase)
       throw new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase");
@@ -177,12 +201,12 @@ export class IModelHubBackend {
   }
 
   public static async downloadChangeset(arg: ChangesetArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps> {
-    const requestContext = await this.getRequestContext(arg);
+    const accessToken = await this.getAccessToken(arg);
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(arg.iModelId);
 
     // NEEDS_WORK - allow download by index
     const cSet = await this.queryChangeset(arg);
-    const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, new ChangeSetQuery().byId(cSet.id), changeSetsPath);
+    const changeSets = await this.iModelClient.changeSets.download(accessToken, arg.iModelId, new ChangeSetQuery().byId(cSet.id), changeSetsPath);
     if (undefined === changeSets)
       throw new IModelError(IModelStatus.NotFound, `Cannot download changeset`);
 
@@ -191,17 +215,17 @@ export class IModelHubBackend {
 
   public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
     const hasIndex = (undefined !== arg.changeset.index);
-    if ((hasIndex && arg.changeset.index! <= 0) || arg.changeset.id === "")
+    if ((hasIndex && arg.changeset.index <= 0) || arg.changeset.id === "")
       return this.changeSet0;
 
     const query = new ChangeSetQuery();
     if (hasIndex)
       query.filter(`Index+eq+${arg.changeset.index}`);
     else
-      query.byId(arg.changeset.id!);
+      query.byId(arg.changeset.id);
 
-    const requestContext = await this.getRequestContext(arg);
-    const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, query);
+    const accessToken = await this.getAccessToken(arg);
+    const changeSets = await this.iModelClient.changeSets.get(accessToken, arg.iModelId, query);
     if (undefined === changeSets)
       throw new IModelError(IModelStatus.NotFound, `Changeset not found`);
 
@@ -233,9 +257,8 @@ export class IModelHubBackend {
     const query = await this.getQueryFromRange(arg);
     const val: ChangesetProps[] = [];
     if (query) {
-      const requestContext = await this.getRequestContext(arg);
-      const changeSets = await this.iModelClient.changeSets.get(requestContext, arg.iModelId, query);
-      requestContext.enter();
+      const accessToken = await this.getAccessToken(arg);
+      const changeSets = await this.iModelClient.changeSets.get(accessToken, arg.iModelId, query);
 
       for (const cs of changeSets)
         val.push(this.toChangeSetProps(cs));
@@ -248,8 +271,8 @@ export class IModelHubBackend {
     const val: ChangesetFileProps[] = [];
     const query = await this.getQueryFromRange(arg);
     if (query) {
-      const requestContext = await this.getRequestContext(arg);
-      const changeSets = await this.iModelClient.changeSets.download(requestContext, arg.iModelId, query, arg.targetDir);
+      const accessToken = await this.getAccessToken(arg);
+      const changeSets = await this.iModelClient.changeSets.download(accessToken, arg.iModelId, query, arg.targetDir);
 
       for (const cs of changeSets)
         val.push(this.toChangeSetFileProps(cs, arg.targetDir));
@@ -260,9 +283,9 @@ export class IModelHubBackend {
   public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeSetId);
-    const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const checkpoints = await this.iModelClient.checkpoints.get(requestContext, checkpoint.iModelId, checkpointQuery);
+    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
+    const accessToken = await this.getAccessToken(checkpoint);
+    const checkpoints = await this.iModelClient.checkpoints.get(accessToken, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
@@ -272,18 +295,38 @@ export class IModelHubBackend {
         cancelRequest.cancel?.();
     };
 
-    await this.iModelClient.checkpoints.download(requestContext, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
+    await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
     return checkpoints[0].mergedChangeSetId!;
+  }
+
+  public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(arg.changeset.id).selectContainerAccessKey();
+    const accessToken = await this.getAccessToken(arg);
+    const checkpoints = await this.iModelClient.checkpointsV2.get(accessToken, arg.iModelId, checkpointQuery);
+    if (checkpoints.length < 1)
+      return undefined;
+
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
+      throw new Error("Invalid V2 checkpoint in iModelHub");
+
+    return {
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
+      storageType: "azure?sas=1",
+    };
   }
 
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId).selectContainerAccessKey();
-    const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
+    const accessToken = await this.getAccessToken(checkpoint);
     let checkpoints: CheckpointV2[] = [];
     try {
-      checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, checkpoint.iModelId, checkpointQuery);
+      checkpoints = await this.iModelClient.checkpointsV2.get(accessToken, checkpoint.iModelId, checkpointQuery);
     } catch (error) {
       if (error instanceof BentleyError && error.errorNumber === IModelHubStatus.Unknown)
         throw new IModelError(IModelStatus.NotFound, "V2 checkpoints not supported");
@@ -321,7 +364,7 @@ export class IModelHubBackend {
       }
       await downloader.downloadPromise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
-    } catch (err) {
+    } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
     } finally {
       if (timer)
@@ -330,36 +373,36 @@ export class IModelHubBackend {
     return checkpoints[0].changeSetId!;
   }
 
-  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
-    const requestContext = await this.getRequestContext(arg);
-    return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
+  public static async releaseAllLocks(arg: BriefcaseDbArg) {
+    const accessToken = await this.getAccessToken(arg);
+    return this.iModelClient.locks.deleteAll(accessToken, arg.iModelId, arg.briefcaseId);
   }
 
-  public static async releaseAllCodes(arg: BriefcaseIdArg) {
-    const requestContext = await this.getRequestContext(arg);
-    return this.iModelClient.codes.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
+  public static async releaseAllCodes(arg: BriefcaseDbArg) {
+    const accessToken = await this.getAccessToken(arg);
+    return this.iModelClient.codes.deleteAll(accessToken, arg.iModelId, arg.briefcaseId);
   }
 
   public static async queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
-    const requestContext = await this.getRequestContext(arg);
-    const heldLocks = await this.iModelClient.locks.get(requestContext, arg.briefcase.iModelId, new LockQuery().byBriefcaseId(arg.briefcase.briefcaseId));
-    return heldLocks.map((lock) => ({ entityId: lock.objectId!, scope: lock.lockLevel! as number }));
+    const accessToken = await this.getAccessToken(arg);
+    const heldLocks = await this.iModelClient.locks.get(accessToken, arg.iModelId, new LockQuery().byBriefcaseId(arg.briefcaseId));
+    return heldLocks.map((lock) => ({ id: lock.objectId!, state: lock.lockLevel! as number }));
   }
 
   public static async queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]> {
-    const requestContext = await this.getRequestContext(arg);
-    const reservedCodes = await this.iModelClient.codes.get(requestContext, arg.briefcase.iModelId, new CodeQuery().byBriefcaseId(arg.briefcase.briefcaseId));
+    const accessToken = await this.getAccessToken(arg);
+    const reservedCodes = await this.iModelClient.codes.get(accessToken, arg.iModelId, new CodeQuery().byBriefcaseId(arg.briefcaseId));
     return reservedCodes.map((code) => ({ spec: code.codeSpecId!, scope: code.codeScope!, value: code.value! }));
   }
 
   public static toHubLock(arg: BriefcaseDbArg, reqLock: LockProps): Lock {
     const lock = new Lock();
-    lock.briefcaseId = arg.briefcase.briefcaseId;
-    lock.lockLevel = reqLock.scope as number;
+    lock.briefcaseId = arg.briefcaseId;
+    lock.lockLevel = reqLock.state as number;
     lock.lockType = LockType.Element;
-    lock.objectId = reqLock.entityId;
-    lock.releasedWithChangeSet = arg.briefcase.changeSetId;
-    lock.seedFileId = arg.briefcase.iModelId;
+    lock.objectId = reqLock.id;
+    lock.releasedWithChangeSet = arg.changeset.id;
+    lock.seedFileId = arg.iModelId;
     return lock;
   }
 
@@ -369,15 +412,7 @@ export class IModelHubBackend {
 
   public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
     const hubLocks = this.toHubLocks(arg);
-    await this.iModelClient.locks.update(await this.getRequestContext(arg), arg.briefcase.iModelId, hubLocks);
-  }
-
-  public static async acquireSchemaLock(arg: BriefcaseDbArg): Promise<void> {
-    await this.acquireLocks({ ...arg, locks: [ConcurrencyControl.Request.schemaLock] });
-  }
-
-  public static async querySchemaLock(arg: BriefcaseDbArg): Promise<boolean> {
-    const locks = await this.iModelClient.locks.get(await this.getRequestContext(arg), arg.briefcase.iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
-    return locks.length > 0;
+    const accessToken = await this.getAccessToken(arg);
+    await this.iModelClient.locks.update(accessToken, arg.iModelId, hubLocks);
   }
 }

@@ -1,20 +1,20 @@
 {
-  "name": "@bentley/imodeljs-common",
-  "version": "2.19.0-dev.16",
-  "description": "iModel.js components common to frontend and backend",
-  "main": "lib/imodeljs-common.js",
-  "typings": "lib/imodeljs-common",
+  "name": "@itwin/core-common",
+  "version": "3.0.0-dev.73",
+  "description": "iTwin.js components common to frontend and backend",
+  "main": "lib/core-common.js",
+  "typings": "lib/core-common",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-common/file.json --tsIndexFile=./imodeljs-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-common",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-common",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test",
-    "cover": "nyc npm test"
+    "test": "mocha",
+    "cover": "nyc npm -s test"
   },
   "repository": {
     "type": "git",
@@ -37,42 +37,37 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.16",
-    "@bentley/geometry-core": "workspace:^2.19.0-dev.16",
-    "@bentley/imodelhub-client": "workspace:^2.19.0-dev.16",
-    "@bentley/itwin-client": "workspace:^2.19.0-dev.16",
-    "@bentley/rbac-client": "workspace:^2.19.0-dev.16"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.73",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.73"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
-    "@types/js-base64": "^2.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
-    "js-base64": "^2.4.5",
+    "js-base64": "^3.6.1",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "all": true
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

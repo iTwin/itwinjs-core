@@ -5,20 +5,22 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+} from "@itwin/core-common";
+import {
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
+  LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
-import { SnapshotDb } from "../IModelDb";
+import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
+import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { LocalHub, LocalHubProps } from "./LocalHub";
+import { LocalHub } from "./LocalHub";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -76,15 +78,7 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
-    HubUtility.contextId = Guid.createValue(); // all iModels for this test get the same "contextId"
-
-    sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (): Promise<GuidString> => {
-      throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
-    });
-
-    sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (): Promise<GuidString> => {
-      throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
-    });
+    HubUtility.iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
 
     sinon.stub(IModelHubBackend, "iModelClient").get(() => {
       throw new Error("IModelHubAccess is mocked for this test - use only IModelHost.hubaccess functions");
@@ -99,7 +93,7 @@ export class HubMock {
     if (!this.isValid)
       return;
 
-    HubUtility.contextId = undefined;
+    HubUtility.iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
 
@@ -119,18 +113,19 @@ export class HubMock {
   }
 
   /** create a [[LocalHub]] for an iModel.  */
-  public static create(arg: LocalHubProps) {
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
     if (!this.mockRoot)
       throw new Error("call startup first");
 
-    const mock = new LocalHub(join(this.mockRoot, arg.iModelId), arg);
-    this.hubs.set(arg.iModelId, mock);
+    const props = { ...arg, iModelId: Guid.createValue() };
+    const mock = new LocalHub(join(this.mockRoot, props.iModelId), props);
+    this.hubs.set(props.iModelId, mock);
+    return props.iModelId;
   }
 
   /** remove the [[LocalHub]] for an iModel */
   public static destroy(iModelId: GuidString) {
-    const hub = this.findLocalHub(iModelId);
-    hub.cleanup();
+    this.findLocalHub(iModelId).cleanup();
     this.hubs.delete(iModelId);
   }
 
@@ -165,16 +160,20 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
+  private static async getAccessToken(arg: TokenArg) {
+    return arg.accessToken ?? await IModelHost.getAccessToken();
+  }
+
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(requestContext.accessToken.getUserInfo()!.id);
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(accessToken);
   }
 
-  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(requestContext.accessToken.getUserInfo()!.id);
-
+  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(accessToken, arg.briefcaseAlias);
   }
+
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
@@ -200,75 +199,41 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
   }
 
+  public static async queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    return undefined;
+  }
+
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: { id: arg.checkpoint.changeSetId }, targetFile: arg.localFile });
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
   public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: { id: arg.checkpoint.changeSetId }, targetFile: arg.localFile });
+    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
-  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
+  public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const hub = this.findLocalHub(arg.iModelId);
-    const locks = hub.queryAllLocks(arg.briefcaseId);
-    for (const props of locks)
-      hub.releaseLock({ props, csIndex: arg.csIndex, briefcaseId: arg.briefcaseId });
-  }
-
-  public static async releaseAllCodes(_arg: BriefcaseIdArg) {
+    hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
   }
 
   public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
     return [];
   }
 
-  public static async queryAllCodes(_arg: BriefcaseDbArg): Promise<CodeProps[]> {
-    return [];
+  public static async acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void> {
+    this.findLocalHub(arg.iModelId).acquireLocks(locks, arg);
   }
 
-  public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
-    const hub = this.findLocalHub(arg.briefcase.iModelId);
-    for (const lock of arg.locks) {
-      hub.requestLock(lock, arg.briefcase);
-    }
-  }
-
-  public static async acquireSchemaLock(_arg: BriefcaseDbArg): Promise<void> {
-  }
-
-  public static async querySchemaLock(_arg: BriefcaseDbArg): Promise<boolean> {
-    return false;
-  }
-
-  public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
+  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
     for (const hub of this.hubs) {
       const localHub = hub[1];
-      if (localHub.contextId === arg.contextId && localHub.iModelName === arg.iModelName)
+      if (localHub.iTwinId === arg.iTwinId && localHub.iModelName === arg.iModelName)
         return localHub.iModelId;
     }
     return undefined;
   }
 
-  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }): Promise<GuidString> {
-    const revision0 = arg.revision0 ?? join(this.mockRoot!, "revision0.bim");
-
-    const localProps = { ...arg, iModelId: Guid.createValue(), revision0 };
-    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
-      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
-      blank.saveChanges();
-      blank.close();
-    }
-
-    this.create(localProps);
-    if (!arg.revision0)
-      IModelJsFs.removeSync(revision0);
-
-    return localProps.iModelId;
-  }
-
-  public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
+  public static async deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void> {
     return this.destroy(arg.iModelId);
   }
-
 }
-

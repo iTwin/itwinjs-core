@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { config, expect } from "chai";
 import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { MutablePropertyGridModel } from "../../../../components-react/propertygrid/internal/PropertyGridModel";
 import TestUtils from "../../../TestUtils";
 import { FlattenedProperty, GridModelLastItemData, FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
 
@@ -26,7 +26,7 @@ describe("MutablePropertyGridModel", () => {
         },
       },
       expectedLastItemData: {
-        Cat1: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
+        Cat1: { isLastInRootCategory: true, lastInNumberOfCategories: 0 },
       },
       unexistingItemKey: "does not exist",
     },
@@ -46,9 +46,9 @@ describe("MutablePropertyGridModel", () => {
         },
       },
       expectedLastItemData: {
-        Cat1: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
-        Cat2: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
-        Cat3: { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
+        Cat1: { isLastInRootCategory: true, lastInNumberOfCategories: 0 },
+        Cat2: { isLastInRootCategory: true, lastInNumberOfCategories: 0 },
+        Cat3: { isLastInRootCategory: true, lastInNumberOfCategories: 0 },
       },
       unexistingItemKey: "does not exist",
     },
@@ -74,7 +74,7 @@ describe("MutablePropertyGridModel", () => {
         },
       },
       expectedLastItemData: {
-        "Cat1_Cat1-1_Cat1-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
+        "Cat1_Cat1-1_Cat1-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
       },
       unexistingItemKey: "does not exist",
     },
@@ -217,7 +217,7 @@ describe("MutablePropertyGridModel", () => {
       },
       expectedLastItemData: {
         "Cat1_Cat1-1_Array1-1-1_Struct1-1-1-2_1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
-        "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
+        "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
       },
       unexistingItemKey: "Cat2_Struct2-1_does not exist",
     },
@@ -344,10 +344,10 @@ describe("MutablePropertyGridModel", () => {
         "Cat1_Cat1-1_Array1-1-1_Property1-1-1-5_4": { isLastInRootCategory: false, lastInNumberOfCategories: 1 },
         "Cat1_Cat1-2_Array1-2-1_Property1-2-1-5_4": { isLastInRootCategory: false, lastInNumberOfCategories: 1 },
         "Cat1_Cat1-3_Array1-3-1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
-        "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: false, lastInNumberOfCategories: 1 },
+        "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: false, lastInNumberOfCategories: 0 },
         "Cat2_Cat2-1_Cat2-1-2_Struct": { isLastInRootCategory: false, lastInNumberOfCategories: 1 },
-        "Cat2_Cat2-1_Cat2-1-3": { isLastInRootCategory: false, lastInNumberOfCategories: 2 },
-        "Cat2_Cat2-2": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
+        "Cat2_Cat2-1_Cat2-1-3": { isLastInRootCategory: false, lastInNumberOfCategories: 1 },
+        "Cat2_Cat2-2": { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
       },
       unexistingItemKey: "Cat2_Struct2_does not exist",
     },

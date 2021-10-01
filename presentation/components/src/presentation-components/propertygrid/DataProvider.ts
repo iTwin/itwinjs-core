@@ -8,17 +8,17 @@
 
 import { inPlaceSort } from "fast-sort";
 import memoize from "micro-memoize";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
   InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
   RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
   Value, ValuesMap,
-} from "@bentley/presentation-common";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@bentley/ui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
+} from "@itwin/presentation-common";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@itwin/appui-abstract";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
@@ -93,7 +93,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     });
     this._includeFieldsWithNoValues = true;
     this._includeFieldsWithCompositeValues = true;
-    this._isNestedPropertyCategoryGroupingEnabled = false;
+    this._isNestedPropertyCategoryGroupingEnabled = true;
     this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
     this._shouldCreateFavoritesCategory = !props.disableFavoritesCategory;
   }
@@ -120,17 +120,11 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /**
-   * Tells the data provider to _not_ request descriptor and instead configure
-   * content using `getDescriptorOverrides()` call
-   */
-  protected override shouldConfigureContentDescriptor(): boolean { return false; }
-
-  /**
    * Provides content configuration for the property grid
    */
-  protected override getDescriptorOverrides(): DescriptorOverrides {
+  protected override async getDescriptorOverrides(): Promise<DescriptorOverrides> {
     return {
-      ...super.getDescriptorOverrides(),
+      ...(await super.getDescriptorOverrides()),
       contentFlags: ContentFlags.ShowLabels | ContentFlags.MergeResults,
     };
   }
@@ -138,7 +132,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Hides the computed display label field from the list of properties
    */
-  protected override isFieldHidden(field: Field) {
+  protected isFieldHidden(field: Field) {
     return field.name === "/DisplayLabel/";
   }
 

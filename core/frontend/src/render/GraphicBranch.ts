@@ -17,8 +17,8 @@ export interface GraphicBranchFrustum {
   };
 }
 
-import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
-import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
+import { disposeArray, IDisposable } from "@itwin/core-bentley";
+import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -42,7 +42,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   /** Selectively overrides the view's [ViewFlags]($common) while drawing graphics within this branch. The default overrides nothing.
    * @see [[setViewFlagOverrides]].
    */
-  public viewFlagOverrides = new ViewFlagOverrides();
+  public viewFlagOverrides: ViewFlagOverrides = {};
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
   /** Optional animation branch Id.
@@ -64,21 +64,20 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 
   /** Compute the view flags that result from applying this branch's [[viewFlagOverrides]] to the input flags.
    * @param flags The input view flags, e.g., from the view's [[DisplayStyleState]].
-   * @param out If supplied, these flags will be modified and returned as the result; otherwise, a new ViewFlags will be allocated and returned.
    * @returns The result of applying [[viewFlagOverrides]] to `flags`.
    */
-  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags {
-    return this.viewFlagOverrides.apply(flags.clone(out));
+  public getViewFlags(flags: ViewFlags): ViewFlags {
+    return flags.override(this.viewFlagOverrides);
   }
 
   /** Set [[viewFlagOverrides]] to override **all** ViewFlags as specified by `flags`. */
   public setViewFlags(flags: ViewFlags): void {
-    this.viewFlagOverrides.overrideAll(flags);
+    this.viewFlagOverrides = { ...flags };
   }
 
   /** Change [[viewFlagOverrides]]. */
   public setViewFlagOverrides(ovr: ViewFlagOverrides): void {
-    this.viewFlagOverrides.copyFrom(ovr);
+    this.viewFlagOverrides = { ...ovr };
   }
 
   /** Disposes of all graphics in this branch, if and only if [[ownsEntries]] is true. */

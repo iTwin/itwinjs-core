@@ -7,19 +7,17 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { RpcRequestsHandler } from "@bentley/presentation-common";
-import { createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@bentley/imodeljs-frontend";
-import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
-import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
+import { IModelRpcProps } from "@itwin/core-common";
+import { RpcRequestsHandler } from "@itwin/presentation-common";
+import { createRandomSelectionScope } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@itwin/core-frontend";
+import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
+import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
+import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
-import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
-import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
+import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
 
@@ -50,16 +48,16 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(() => UiFramework.store).to.throw(Error);
     });
 
-    it("i18n should throw Error without initialize", () => {
-      expect(() => UiFramework.i18n).to.throw(Error);
+    it("localization should throw Error without initialize", () => {
+      expect(() => UiFramework.localization).to.throw(Error);
     });
 
-    it("i18nNamespace should return UiFramework", () => {
-      expect(UiFramework.i18nNamespace).to.eq("UiFramework");
+    it("localizationNamespace should return UiFramework", () => {
+      expect(UiFramework.localizationNamespace).to.eq("UiFramework");
     });
 
-    it("packageName should return ui-framework", () => {
-      expect(UiFramework.packageName).to.eq("ui-framework");
+    it("packageName should return appui-react", () => {
+      expect(UiFramework.packageName).to.eq("appui-react");
     });
 
     it("translate should return the key (in test environment)", async () => {
@@ -87,7 +85,7 @@ describe("UiFramework localStorage Wrapper", () => {
       });
       const tool = new OpenSettingsTool();
       // tabid arg
-      tool.parseAndRun(tabName);
+      await tool.parseAndRun(tabName);
       spy.calledOnce.should.true;
       spy.resetHistory();
 
@@ -95,7 +93,7 @@ describe("UiFramework localStorage Wrapper", () => {
       Object.defineProperty(SettingsModalFrontstage, "showSettingsStage", {
         get: () => handleOpenSetting2,
       });
-      tool.parseAndRun();
+      await tool.parseAndRun();
       spy.calledOnce.should.true;
       spy.resetHistory();
 
@@ -110,9 +108,9 @@ describe("UiFramework localStorage Wrapper", () => {
     it("calling initialize twice should log", async () => {
       const spyLogger = sinon.spy(Logger, "logInfo");
       expect(UiFramework.initialized).to.be.false;
-      await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
       expect(UiFramework.initialized).to.be.true;
-      await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
       spyLogger.calledOnce.should.true;
     });
 
@@ -120,30 +118,13 @@ describe("UiFramework localStorage Wrapper", () => {
       await MockRender.App.startup();
 
       await UiFramework.initialize(TestUtils.store);
-      expect(UiFramework.i18n).to.eq(IModelApp.i18n);
+      expect(UiFramework.localization).to.eq(IModelApp.localization);
 
       await MockRender.App.shutdown();
     });
 
-    it("projectServices should throw Error without initialize", () => {
-      expect(() => UiFramework.projectServices).to.throw(Error);
-    });
-
-    it("iModelServices should throw Error without initialize", () => {
-      expect(() => UiFramework.iModelServices).to.throw(Error);
-    });
-
-    it("projectServices & iModelServices should return defaults", async () => {
-      await TestUtils.initializeUiFramework(true);
-      expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
-      expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
-      expect(UiFramework.frameworkStateKey).to.equal("testDifferentFrameworkKey");
-    });
-
     it("test default frameworkState key", async () => {
       await TestUtils.initializeUiFramework();
-      expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
-      expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
       expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
       TestUtils.terminateUiFramework();
     });

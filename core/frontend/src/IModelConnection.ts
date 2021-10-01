@@ -8,17 +8,18 @@
 
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
-} from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams,
+  FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota,
+  QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData, TextureLoadProps,
+  ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+} from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
-import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
+import { CheckpointConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
@@ -27,7 +28,7 @@ import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { BingElevationProvider } from "./tile/map/BingElevation";
+import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 
@@ -46,7 +47,7 @@ export interface BlankConnectionProps {
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
   /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
-  contextId?: GuidString;
+  iTwinId?: GuidString;
 }
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
@@ -84,7 +85,7 @@ export abstract class IModelConnection extends IModel {
   /** @internal */
   public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
   /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
-   * [[expandDisplayedExtents]], but never smaller, to accomodate data sources like reality models that may exceed the project extents.
+   * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
    * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
    */
   public readonly displayedExtents: AxisAlignedBox3d;
@@ -92,16 +93,11 @@ export abstract class IModelConnection extends IModel {
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
-  /** The RPC routing for this connection.  */
+  /** The RPC routing for this connection. */
   public routingContext: IModelRoutingContext = IModelRoutingContext.default;
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return false; }
-
-  /** Type guard for instanceof [[RemoteBriefcaseConnection]]
-   * @deprecated use BriefcaseConnection with an IpcApp
-   */
-  public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; } // eslint-disable-line deprecation/deprecation
 
   /** Type guard for instanceof [[CheckpointConnection]]
    * @beta
@@ -122,7 +118,7 @@ export abstract class IModelConnection extends IModel {
    */
   public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
 
-  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).  */
+  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection). */
   public get isBlank(): boolean { return this.isBlankConnection(); }
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
@@ -167,7 +163,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = JSON.parse(await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps())) as FontMapProps;
+        const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
@@ -212,7 +208,7 @@ export abstract class IModelConnection extends IModel {
 
   /** @internal */
   protected constructor(iModelProps: IModelConnectionProps) {
-    super(iModelProps, iModelProps.openMode ?? OpenMode.Readonly);
+    super(iModelProps);
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -435,7 +431,7 @@ export abstract class IModelConnection extends IModel {
   /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($backend)s suitable for debugging and diagnostics.
    * @param requestProps Specifies the elements to query and options for how to format the output.
    * @returns A string containing the summary, typically consisting of multiple lines.
-   * @note Trying to parse the output to programatically inspect an element's geometry is not recommended.
+   * @note Trying to parse the output to programmatically inspect an element's geometry is not recommended.
    * @see [GeometryStreamIterator]($common) to more directly inspect a geometry stream.
    */
   public async getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string> {
@@ -447,10 +443,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[Id64]]
    * @public
    */
-  public async getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
+  public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     if (this.isOpen) {
       const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
-      const img = rpcClient.getTextureImage(this.getRpcProps(), textureLoadProps);
+      const img = rpcClient.queryTextureData(this.getRpcProps(), textureLoadProps);
       return img;
     }
     return undefined;
@@ -481,7 +477,7 @@ export abstract class IModelConnection extends IModel {
     }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-    return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
+    return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
@@ -567,14 +563,14 @@ export abstract class IModelConnection extends IModel {
   private _geodeticToSeaLevel?: number | Promise<number>;
   private _projectCenterAltitude?: number | Promise<number>;
 
-  /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
-   * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
+  /** Event called immediately after map elevation request is completed. This occurs only in the case where background map terrain is displayed
+   * with either geoid or ground offset. These require a query to BingElevation and therefore synching the view may be required
    * when the request is completed.
    * @internal
    */
   public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** The offset between sea level and the geodetic ellipsoid.  This will return undefined only if the request for the offset to Bing Elevation
+  /** The offset between sea level and the geodetic ellipsoid. This will return undefined only if the request for the offset to Bing Elevation
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
@@ -590,20 +586,20 @@ export abstract class IModelConnection extends IModel {
     return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
   }
 
-  /** The altitude (geodetic) at the project center.  This will return undefined only if the request for the offset to Bing Elevation
+  /** The altitude (geodetic) at the project center. This will return undefined only if the request for the offset to Bing Elevation
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get projectCenterAltitude(): number | undefined {
     if (undefined === this._projectCenterAltitude) {
       const elevationProvider = new BingElevationProvider();
-      this._projectCenterAltitude =  elevationProvider.getHeightValue(this.projectExtents.center, this);
+      this._projectCenterAltitude = elevationProvider.getHeightValue(this.projectExtents.center, this);
       this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;
         this.onMapElevationLoaded.raiseEvent(this);
       }).catch((_error) => this._projectCenterAltitude = 0.0);
     }
-    return  ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
+    return ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
   }
 }
 
@@ -615,10 +611,10 @@ export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
   /** The Guid that identifies the *context* for this BlankConnection.
-   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
+   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
-  public override get contextId(): GuidString | undefined { return this._contextId; }
-  public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
+  public override get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public override set iTwinId(iTwinId: GuidString | undefined) { this._iTwinId = iTwinId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
@@ -638,7 +634,7 @@ export class BlankConnection extends IModelConnection {
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
-      contextId: props.contextId,
+      iTwinId: props.iTwinId,
     });
   }
 
@@ -744,14 +740,8 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   export class Models implements Iterable<ModelState> {
     private _loaded = new Map<string, ModelState>();
 
-    /** The set of loaded models for this IModelConnection, indexed by Id.
-     * @deprecated Use `for..of` to iterate and getLoaded() to look up by Id.
-     */
+    /** @internal */
     public get loaded(): Map<string, ModelState> { return this._loaded; }
-    public set loaded(loaded: Map<string, ModelState>) {
-      this._loaded = loaded;
-      assert(false, "there is no reason to replace the map of loaded models");
-    }
 
     /** An iterator over all currently-loaded models. */
     public [Symbol.iterator](): Iterator<ModelState> {
@@ -866,6 +856,18 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
   }
 
+  /** Options controlling the results produced by [[IModelConnection.Elements.getPlacements]].
+   * @public
+   */
+  export interface GetPlacementsOptions {
+    /** The types of elements for which to query [Placement]($common)s:
+     *  - "2d": Include only [GeometricElement2d]($backend)s.
+     *  - "3d": Include only [GeometricElement3d]($backend)s.
+     *  - `undefined`: Include both 2d and 3d [GeometricElement]($backend)s.
+     */
+    type?: "3d" | "2d";
+  }
+
   /** The collection of Elements for an [[IModelConnection]]. */
   export class Elements {
     /** @internal */
@@ -913,10 +915,11 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Obtain the [Placement]($common)s of a set of [GeometricElement]($backend)s.
      * @param elementIds The Ids of the elements whose placements are to be queried.
+     * @param options Options customizing how the placements are queried.
      * @returns an array of placements, each having an additional `elementId` property identifying the element from which the placement was obtained.
      * @note Any Id that does not identify a geometric element with a valid bounding box and origin is omitted from the returned array.
      */
-    public async getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & { elementId: Id64String }>> {
+    public async getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & { elementId: Id64String }>> {
       let ids: Id64String[];
       if (typeof elementIds === "string")
         ids = [elementIds];
@@ -928,33 +931,53 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       if (ids.length === 0)
         return [];
 
-      const ecsql = `
-        SELECT * FROM (
-          SELECT
-            ECInstanceId,
-            Origin.x as x, Origin.y as y, Origin.z as z,
-            BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
-            BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-            Yaw, Pitch, Roll,
-            NULL as Rotation
-          FROM bis.GeometricElement3d
-          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
-          UNION ALL
-          SELECT
-            ECInstanceId,
-            Origin.x, Origin.y, NULL,
-            BBoxLow.x, BBoxLow.y, NULL,
-            BBoxHigh.x, BBoxHigh.y, NULL,
-            NULL, NULL, NULL,
-            Rotation
-          FROM bis.GeometricElement2d
-          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
-        ) WHERE ECInstanceId IN (${ids.join(",")})
-      `;
+      const select3d = `
+        SELECT
+          ECInstanceId,
+          Origin.x as x, Origin.y as y, Origin.z as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
+          Yaw, Pitch, Roll,
+          NULL as Rotation
+        FROM bis.GeometricElement3d
+        WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
-      const placements = new Array<Placement & { elementId: Id64String}>();
+      // Note: For the UNION ALL statement, the column aliases in select2d are ignored - so they
+      // must match those in select3d.
+      const select2d = `
+        SELECT
+          ECInstanceId,
+          Origin.x as x, Origin.y as y, NULL as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
+          NULL as yaw, NULL as pitch, NULL as roll,
+          Rotation
+        FROM bis.GeometricElement2d
+        WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
+
+      const idCriterion = `ECInstanceId IN (${ids.join(",")})`;
+
+      let ecsql;
+      switch (options?.type) {
+        case "3d":
+          ecsql = `${select3d} AND ${idCriterion}`;
+          break;
+        case "2d":
+          ecsql = `${select2d} AND ${idCriterion}`;
+          break;
+        default:
+          ecsql = `
+            SELECT * FROM (
+              ${select3d}
+              UNION ALL
+              ${select2d}
+            ) WHERE ${idCriterion}`;
+          break;
+      }
+
+      const placements = new Array<Placement & { elementId: Id64String }>();
       for await (const row of this._iModel.query(ecsql)) {
-        const origin =  [row.x, row.y, row.z];
+        const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },
           high: { x: row.hx, y: row.hy, z: row.hz },
@@ -1001,12 +1024,12 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
       if (!Id64.isValid(codeSpecId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId }));
+        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1020,7 +1043,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
       if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1082,7 +1105,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
       if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid view definition Id for IModelConnection.Views.load", Logger.logError, loggerCategory, () => { return { viewDefinitionId }; });
+        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
 
       const options: ViewStateLoadProps = {
         displayStyle: {
@@ -1096,7 +1119,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
       if (undefined === ctor)
-        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", () => viewProps);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
@@ -1117,22 +1140,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         throw new Error("Invalid thumbnail");
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
-    }
-
-    /** Save a thumbnail for a view.
-     * @param viewId The id of the view for the thumbnail.
-     * @param thumbnail The thumbnail data to save.
-     * @returns A void Promise
-     * @throws `Error` exception if the thumbnail wasn't successfully saved.
-     */
-    public async saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void> {
-      const val = new Uint8Array(thumbnail.image.length + 24);  // include the viewId and metadata in the binary transfer by allocating a new buffer 24 bytes larger than the image size
-      new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
-      const low32 = Id64.getLowerUint32(viewId);
-      const high32 = Id64.getUpperUint32(viewId);
-      new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
-      val.set(thumbnail.image, 24); // image data at offset 24
-      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val); // eslint-disable-line deprecation/deprecation
     }
   }
 }

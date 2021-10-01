@@ -6,31 +6,34 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
-import { initializeRpcRequest, RpcConfiguration, RpcPendingQueue, RpcRoutingToken } from "../../imodeljs-common";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcPendingQueue } from "./RpcPendingQueue";
+import { initializeRpcRequest } from "./RpcRequest";
+import { RpcRoutingToken } from "./RpcRoutingToken";
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
 import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
 /** @internal */
-export const REGISTRY = Symbol.for("@bentley/imodeljs-common/RpcRegistry");
+export const REGISTRY = Symbol.for("@itwin/core-common/RpcRegistry");
 
 /** @internal */
-export const OPERATION = Symbol.for("@bentley/imodeljs-common/RpcOperation");
+export const OPERATION = Symbol.for("@itwin/core-common/RpcOperation");
 
 /** @internal */
-export const POLICY = Symbol.for("@bentley/imodeljs-common/RpcOperationPolicy");
+export const POLICY = Symbol.for("@itwin/core-common/RpcOperationPolicy");
 
 /** @internal */
-export const INSTANCE = Symbol.for("@bentley/imodeljs-common/RpcInterface/__instance__");
+export const INSTANCE = Symbol.for("@itwin/core-common/RpcInterface/__instance__");
 
 /** @internal */
-export const CURRENT_REQUEST = Symbol.for("@bentley/imodeljs-common/RpcRequest/__current__");
+export const CURRENT_REQUEST = Symbol.for("@itwin/core-common/RpcRequest/__current__");
 
 /** @internal */
-export const CURRENT_INVOCATION = Symbol.for("@bentley/imodeljs-common/RpcInvocation/__current__");
+export const CURRENT_INVOCATION = Symbol.for("@itwin/core-common/RpcInvocation/__current__");
 
 /** @internal */
 export class RpcRegistry {

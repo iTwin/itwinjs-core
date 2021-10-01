@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
@@ -55,13 +55,22 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
-const computeInstanceFeatureIndex = `a_featureId`;
+const computeInstanceFeatureIndex = `g_isAreaPattern ? u_patternFeatureId : a_featureId`;
 function computeFeatureIndex(vertex: VertexShaderBuilder): string {
-  if (vertex.usesInstancedGeometry)
+  if (vertex.usesInstancedGeometry) {
+    vertex.addUniform("u_patternFeatureId", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_patternFeatureId", (uniform, params) => {
+        const id = params.geometry.asInstanced?.patternFeatureId;
+        assert(undefined !== id);
+        if (id)
+          uniform.setUniform3fv(id);
+      });
+    });
+
     return `g_featureIndex = ${computeInstanceFeatureIndex};`;
-  else if (vertex.usesVertexTable)
-    return `g_featureIndex = ${computeLUTFeatureIndex};`;
-  else return "";
+  }
+
+  return vertex.usesVertexTable ? `g_featureIndex = ${computeLUTFeatureIndex};` : "";
 }
 function getFeatureIndex(vertex: VertexShaderBuilder): string {
   return `
@@ -160,6 +169,26 @@ const checkVertexDiscard = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
+function addTransparencyDiscardFlags(vert: VertexShaderBuilder) {
+  // Even when transparency view flag is off, we need to allow features to override transparency, because it
+  // is used when applying transparency threshold. However, we need to ensure we don't DISCARD transparent stuff during
+  // opaque pass if transparency is off (see checkVertexDiscard). Especially important for transparency threshold and readPixels().
+  // Also, if we override raster text to be opaque we must still draw it in the translucent pass.
+  // 1: discard translucent during opaque.
+  // 2: discard opaque during translucent.
+  // 3: both
+  vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
+    prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
+      // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
+      let flags = params.target.currentViewFlags.transparency && !params.target.isReadPixelsInProgress ? 1 : 0;
+      if (!params.geometry.alwaysRenderTranslucent)
+        flags += 2;
+
+      uniform.setUniform1i(flags);
+    });
+  });
+}
+
 function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions, wantGlobalOvrFlags = true): boolean {
   if (FeatureMode.None === mode)
     return false;
@@ -246,24 +275,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       addMaxAlpha(vert);
       addRenderPass(vert);
       addAlpha(vert);
-
-      // Even when transparency view flag is off, we need to allow features to override transparency, because it
-      // is used when applying transparency threshold. However, we need to ensure we don't DISCARD transparent stuff during
-      // opaque pass if transparency is off (see checkVertexDiscard). Especially important for transparency threshold and readPixels().
-      // Also, if we override raster text to be opaque we must still draw it in the translucent pass.
-      // 1: discard translucent during opaque.
-      // 2: discard opaque during translucent.
-      // 3: both
-      vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
-        prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
-          // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
-          let flags = params.target.currentViewFlags.transparency && !params.target.isReadPixelsInProgress ? 1 : 0;
-          if (!params.geometry.alwaysRenderTranslucent)
-            flags += 2;
-
-          uniform.setUniform1i(flags);
-        });
-      });
+      addTransparencyDiscardFlags(vert);
 
       vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
     }
@@ -320,7 +332,7 @@ const computeHiliteColor = `
 const computeSurfaceHiliteColor = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture) && TEXTURE(s_texture, v_texCoord).a <= 0.15)
     return vec4(0.0);
-${  computeHiliteColor}`;
+${computeHiliteColor}`;
 
 const computeHiliteOverrides = `
   vec4 value = getFirstFeatureRgba();
@@ -645,6 +657,14 @@ const applyFeatureColor = `
   return vec4(rgb, alpha);
 `;
 
+// feature_rgb.r = -1.0 if rgb color not overridden for feature, else mix based on u_overrrideColorMix.
+// feature_alpha = -1.0 if alpha not overridden for feature.
+export const mixFeatureColor = `
+  vec3 rgb = mix(baseColor.rgb, mix(baseColor.rgb, feature_rgb.rgb, u_overrideColorMix), step(0.0, feature_rgb.r));
+  float alpha = mix(baseColor.a, feature_alpha, step(0.0, feature_alpha));
+  return vec4(rgb, alpha);
+  `;
+
 const applyFlash = `
   float flashHilite = floor(v_feature_emphasis + 0.5);
   return doApplyFlash(flashHilite, baseColor);
@@ -743,7 +763,7 @@ export function addUniformHiliter(builder: ProgramBuilder): void {
  *  - Visibility - implcitly, because if the feature is invisible its geometry will never be drawn.
  *  - Flash
  *  - Hilite
- *  - Color - only for point clouds currently which set addFetureColor to true.
+ *  - Color and Transparency- only for point clouds currently which set addFeatureColor to true.
  * This shader could be simplified, but want to share code with the non-uniform versions...hence uniforms/globals with "v_" prefix typically used for varyings on no prefix...
  * @internal
  */
@@ -764,14 +784,27 @@ export function addUniformFeatureSymbology(builder: ProgramBuilder, addFeatureCo
     });
 
     builder.vert.addUniform("feature_alpha", VariableType.Float, (prog) => {
-      prog.addGraphicUniform("feature_alpha", (uniform, _params) => {
-        // For now just hard-code alpha so it doesn't get overridden. Need to do more than setting this to make it work.
-        uniform.setUniform1f(-1.0);
+      prog.addGraphicUniform("feature_alpha", (uniform, params) => {
+        params.target.uniforms.batch.bindUniformTransparencyOverride(uniform);
       });
     });
 
     builder.vert.set(VertexShaderComponent.ApplyFeatureColor, applyFeatureColor);
+    addAlpha(builder.vert);
+    addMaxAlpha(builder.vert);
+    addRenderPass(builder.vert);
+    addTransparencyDiscardFlags(builder.vert);
+    builder.vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
+  } else {
+    builder.vert.set(VertexShaderComponent.CheckForDiscard, "return feature_invisible;");
   }
+
+  // Non-Locatable...  Discard if picking
+  builder.vert.addUniform("feature_invisible", VariableType.Boolean, (prog) => {
+    prog.addGraphicUniform("feature_invisible", (uniform, params) => {
+      params.target.uniforms.batch.bindUniformNonLocatable(uniform, params.target.drawNonLocatable);
+    });
+  });
 
   addApplyFlash(builder.frag);
 }

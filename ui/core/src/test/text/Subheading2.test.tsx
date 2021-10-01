@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Subheading2 } from "../../ui-core";
+import { Subheading2 } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<Subheading2 />", () => {
   it("should render", () => {

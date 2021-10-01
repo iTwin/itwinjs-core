@@ -55,6 +55,7 @@ exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
   }
   isActive={false}
   isDisabled={false}
+  itemId="Action"
   onClick={[Function]}
 >
   Custom Label
@@ -116,6 +117,7 @@ exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] 
   }
   isActive={false}
   isDisabled={false}
+  itemId="Stage"
   onClick={[Function]}
 >
   Custom Label

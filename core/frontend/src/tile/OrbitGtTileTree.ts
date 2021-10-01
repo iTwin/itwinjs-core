@@ -6,35 +6,32 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  BatchType, Cartographic, ColorDef, Feature,
-  FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
+  Quantization, ViewFlagOverrides,
+} from "@itwin/core-common";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
-} from "@bentley/orbitgt-core";
+} from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Mesh, PointCloudArgs } from "../render-primitives";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityModelTileClient, RealityModelTileTree, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
+  RealityModelTileClient, RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
+  TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "./internal";
-import { TileUsageMarker } from "./TileUsageMarker";
-import { AccessToken } from "@bentley/itwin-client";
-import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
@@ -216,7 +213,7 @@ class OrbitGtTileGraphic extends TileUsageMarker {
 export class OrbitGtTileTree extends TileTree {
   private _tileParams: TileParams;
   public rootTile: OrbitGtRootTile;
-  public viewFlagOverrides = new ViewFlagOverrides();
+  public viewFlagOverrides: ViewFlagOverrides = {};
   private _tileGraphics = new Map<string, OrbitGtTileGraphic>();
 
   public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d, private _ecefTransform: Transform) {
@@ -345,52 +342,97 @@ export namespace OrbitGtTileTree {
     modelId?: Id64String;
   }
 
-  async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
+  function isValidSASToken(downloadUrl: string): boolean {
 
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
-      return undefined; // Not signed in
+    // Create fake URL for and parameter parsing and SAS token URI parsing
+    if (!downloadUrl.startsWith("http"))
+      downloadUrl = `http://x.com/x?${downloadUrl}`;
 
-    try {
-      return await IModelApp.authorizationClient.getAccessToken();
-    } catch (_) {
-      return undefined;
+    const sasUrl = new URL(downloadUrl);
+
+    const se = sasUrl.searchParams.get("se");
+    if (se) {
+      const expiryUTC = new Date(se);
+      const now = new Date();
+      const currentUTC = new Date(now?.toUTCString());
+
+      return expiryUTC >= currentUTC;
     }
+
+    return false;
   }
 
-  async function initializeBlobStorage(_props: OrbitGtBlobProps, iModel: IModelConnection, _modelId: Id64String) {
+  function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
 
-    // rdsUrl must be defined and not null to be resolved
-    if(!_props.rdsUrl)
+    // Check main OrbitGtBlobProps fields are defined
+    if (!props.rdsUrl || !props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
       return false;
 
-    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
-    if (!accessToken)
+    // Check SAS token is valid
+    return isValidSASToken(props.sasToken);
+  }
+
+  function parseOrbitGtBlobUrl(blobUrl: string, props: OrbitGtBlobProps) {
+
+    const url = new URL(blobUrl);
+
+    if (!url.hostname || !url.pathname || !url.search)
       return false;
 
-    const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
-    authRequestContext.enter();
+    props.accountName = url.hostname.split(".")[0];
+    const pathSplit = url.pathname.split("/");
+    props.containerName = pathSplit[1];
+    props.blobFileName = `/${pathSplit[2]}`;
+    props.sasToken = url.search.substr(1);
 
-    const tileClient = new RealityModelTileClient(_props.rdsUrl, accessToken, iModel.contextId);
+    return true;
+  }
+
+  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, containerId: string | undefined): Promise<boolean> {
+
+    if (!rdsUrl || !containerId)
+      return false;
+
+    const tileClient = new RealityModelTileClient(rdsUrl, containerId);
 
     const blobUrl = await tileClient.getBlobAccessData();
-    if (blobUrl === undefined)
+    if (!blobUrl)
       return false;
 
-    _props.accountName = "";
-    _props.containerName = "";
-    _props.sasToken = "";
+    props.accountName = blobUrl.hostname.split(".")[0];     // take first word up to first .
+    props.containerName = blobUrl.pathname.substring(1);      // strip off leading slash
+    props.sasToken = blobUrl.search.substring(1);        // strip off leading ?
 
-    // _props.blobFileName originates from Connector Conversion
-    _props.accountName = blobUrl.hostname.split(".")[0];   // take first word up to first .
-    _props.containerName = blobUrl.pathname.substring(1);  // strip off leading slash
-    _props.sasToken = blobUrl.search.substring(1);         // strip off leading ?
+    return isValidOrbitGtBlobProps(props);
+  }
 
-    return _props.accountName !== "" && _props.containerName !== "" && _props.sasToken !== "" && _props.blobFileName !== "";
+  async function initializeOrbitGtBlobProps(props: OrbitGtBlobProps, iModel: IModelConnection): Promise<boolean> {
+
+    // If blobFileName is full http(s), parse it to orbitGtBlobProps
+    if (props.blobFileName) {
+      if (props.blobFileName.toLowerCase().startsWith("http"))
+        if (parseOrbitGtBlobUrl(props.blobFileName, props) === false)
+          return false;
+    }
+
+    // If there's no rdsUrl, request one from RealityDataAccessClient
+    if (!props.rdsUrl) {
+      if (undefined === IModelApp.realityDataAccess)
+        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access orbit tiles. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+      props.rdsUrl = await IModelApp.realityDataAccess.getRealityDataUrl(iModel.iTwinId, props.containerName);
+    }
+
+    // If props are now valid, return OK
+    if (isValidOrbitGtBlobProps(props))
+      return true;
+
+    // Otherwise, refresh using RDS URL
+    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.iTwinId);
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
 
-    if (await initializeBlobStorage(props, iModel, modelId) === false)
+    if (await initializeOrbitGtBlobProps(props, iModel) === false)
       return undefined;
 
     const { accountName, containerName, blobFileName, sasToken } = props;
@@ -479,10 +521,10 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const strings = [];
-    strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
+    strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
 
     if (this._name)
-      strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

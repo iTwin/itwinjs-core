@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { focusIntoContainer, FocusTrap } from "../../ui-core/focustrap/FocusTrap";
+import { Logger } from "@itwin/core-bentley";
+import { focusIntoContainer, FocusTrap } from "../../core-react/focustrap/FocusTrap";
 
 // cspell:ignore focustrap
 
@@ -17,6 +17,7 @@ describe("<FocusTrap />", () => {
 
   afterEach(() => {
     sandbox.restore();
+
   });
 
   it("renders correctly", () => {
@@ -69,7 +70,7 @@ describe("<FocusTrap />", () => {
 
     const limitDiv = component.getByTestId("focus-trap-limit-div");
     expect(limitDiv).to.exist;
-    limitDiv.focus();
+    fireEvent.focusIn(limitDiv);
 
     const activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test1");
@@ -92,7 +93,7 @@ describe("<FocusTrap />", () => {
 
     const firstDiv = component.getByTestId("focus-trap-div");
     expect(firstDiv).to.exist;
-    firstDiv.focus();
+    fireEvent.focusIn(firstDiv);
 
     activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test3");
@@ -122,7 +123,7 @@ describe("focusIntoContainer", () => {
     const button1 = component.getByTestId("button1");
     const button2 = component.getByTestId("button2");
 
-    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
+    expect(focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
 
     clock.tick(100);
     await Promise.resolve();
@@ -130,7 +131,7 @@ describe("focusIntoContainer", () => {
     expect(document.activeElement).to.eq(button1);
 
     button2.focus();
-    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
+    expect(focusIntoContainer(div1 as HTMLDivElement)).to.be.true;
 
     clock.tick(100);
     await Promise.resolve();
@@ -148,7 +149,7 @@ describe("focusIntoContainer", () => {
     );
 
     const div1 = component.getByTestId("div1");
-    expect (focusIntoContainer(div1 as HTMLDivElement)).to.be.false;
+    expect(focusIntoContainer(div1 as HTMLDivElement)).to.be.false;
   });
 
 });

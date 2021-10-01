@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
@@ -59,6 +59,32 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     this._properties.set(prop.name.toUpperCase(), prop);
     return prop;
+  }
+
+  /**
+   * Deletes a property from within this class.
+   * @param name The property name to delete, lookup is case-insensitive
+   * @alpha
+   */
+  protected async deleteProperty(name: string): Promise<void> {
+    if (this._properties) {
+      const property = await this.getProperty(name);
+      if (property)
+        this._properties.delete(name.toUpperCase());
+    }
+  }
+
+  /**
+   * Deletes a property from within this class.
+   * @param name The property name to delete, lookup is case-insensitive
+   * @alpha
+   */
+  protected deletePropertySync(name: string): void {
+    if (this._properties) {
+      const property = this.getPropertySync(name);
+      if (property)
+        this._properties.delete(name.toUpperCase());
+    }
   }
 
   public getBaseClassSync(): ECClass | undefined {
@@ -709,4 +735,6 @@ export abstract class MutableClass extends ECClass {
   public abstract override createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract override createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
 
+  public abstract override deleteProperty(name: string): Promise<void>;
+  public abstract override deletePropertySync(name: string): void;
 }

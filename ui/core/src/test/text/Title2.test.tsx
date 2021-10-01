@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Title2 } from "../../ui-core";
+import { Title2 } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<Title2 />", () => {
   it("should render", () => {

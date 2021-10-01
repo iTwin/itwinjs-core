@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
-import { DatePickerPopupButton } from "../../ui-components/datepicker/DatePickerPopupButton";
-import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
+import { DatePickerPopupButton } from "../../components-react/datepicker/DatePickerPopupButton";
+import { SpecialKey, TimeDisplay } from "@itwin/appui-abstract";
 
 describe("<DatePickerPopupButton />", () => {
   let renderSpy: sinon.SinonSpy;
@@ -25,8 +25,6 @@ describe("<DatePickerPopupButton />", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();
@@ -56,7 +54,7 @@ describe("<DatePickerPopupButton />", () => {
     const pickerButton = renderedComponent.getByTestId("components-date-picker-calendar-popup-button");
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.pointerDown(pickerButton);
-    const popupPanelDiv = await waitForElement(() => renderedComponent.getByTestId("components-date-picker-calendar-popup-panel"));
+    const popupPanelDiv = renderedComponent.getByTestId("components-date-picker-calendar-popup-panel");
     expect(popupPanelDiv).not.to.be.undefined;
 
     const testDayTicks = new Date(2018, 6, 19).getTime();
@@ -75,7 +73,7 @@ describe("<DatePickerPopupButton />", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.keyDown(pickerButton, { key: SpecialKey.Space });
 
-    const popupPanelDiv = await waitForElement(() => renderedComponent.getByTestId("components-date-picker-calendar-popup-panel"));
+    const popupPanelDiv = renderedComponent.getByTestId("components-date-picker-calendar-popup-panel");
     expect(popupPanelDiv).not.to.be.undefined;
 
     const testDayTicks = new Date(2018, 6, 19).getTime();
@@ -93,7 +91,7 @@ describe("<DatePickerPopupButton />", () => {
     const pickerButton = renderedComponent.getByTestId("components-date-picker-calendar-popup-button");
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.pointerDown(pickerButton);
-    const popupPanelDiv = await waitForElement(() => renderedComponent.getByTestId("components-date-picker-calendar-popup-panel"));
+    const popupPanelDiv = renderedComponent.getByTestId("components-date-picker-calendar-popup-panel");
     expect(popupPanelDiv).not.to.be.undefined;
     const timeInputContainer = renderedComponent.getByTestId("components-time-input");
     const inputs = timeInputContainer.querySelectorAll("input");

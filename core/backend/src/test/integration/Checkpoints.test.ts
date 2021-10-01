@@ -7,20 +7,20 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
-import { ChangesetProps } from "@bentley/imodeljs-common";
+import { ChangesetProps } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
+import { IModelHost, IModelJsFs, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 describe("Checkpoints (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
+  let accessToken: AccessToken;
   let testIModelId: GuidString;
-  let testContextId: GuidString;
+  let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
 
   const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
@@ -32,13 +32,13 @@ describe("Checkpoints (#integration)", () => {
     process.env.BLOCKCACHE_DIR = blockcacheDir;
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
-    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ requestContext, iModelId: testIModelId });
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId });
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSet.id).selectContainerAccessKey();
-    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, testIModelId, checkpointQuery);
+    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(accessToken, testIModelId, checkpointQuery);
     assert.equal(checkpoints.length, 1, "checkpoint missing");
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
@@ -67,19 +67,19 @@ describe("Checkpoints (#integration)", () => {
 
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
-      requestContext,
-      contextId: testContextId,
+      accessToken,
+      iTwinId: testITwinId,
       iModelId: testIModelId,
-      changeSetId: testChangeSet.id,
+      changeset: testChangeSet,
     });
-    assert.equal(iModel.getGuid(), testIModelId);
+    assert.equal(iModel.iModelId, testIModelId);
     assert.equal(iModel.changeset.id, testChangeSet.id);
-    assert.equal(iModel.contextId, testContextId);
+    assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
-    await iModel.reattachDaemon(requestContext);
+    await iModel.reattachDaemon(accessToken);
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 

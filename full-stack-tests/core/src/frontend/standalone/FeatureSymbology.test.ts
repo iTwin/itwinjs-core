@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import {
   ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 
 class Overrides extends FeatureSymbology.Overrides {
@@ -62,30 +62,23 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("isClassVisible works as expected", () => {
     let overrides = new Overrides();
-    const vf = new ViewFlags();
-    vf.constructions = false;
-    vf.dimensions = false;
-    vf.patterns = false;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: false, dimensions: false, patterns: false });
 
     assert.isFalse(overrides.isClassVisible(GeometryClass.Construction), "constructions 1");
     assert.isFalse(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 1");
     assert.isFalse(overrides.isClassVisible(GeometryClass.Pattern), "patterns 1");
 
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("constructions", true);
     overrides = new Overrides(viewState);
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Construction), "constructions 2");
 
-    vf.dimensions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("dimensions", true);
     overrides = new Overrides(viewState);
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 2");
 
-    vf.patterns = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("patterns", true);
     overrides = new Overrides(viewState);
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Pattern), "patterns 2");
@@ -121,9 +114,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isFalse(overrides.isFeatureVisible(feature), "if geometryClass isn't visible, feature isn't visible");
 
-    const vf = new ViewFlags();
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isTrue(overrides.isFeatureVisible(feature), "if geometryClass and subCategory are visible, feature is visible");
@@ -166,9 +157,7 @@ describe("FeatureSymbology.Overrides", () => {
     appearance = overrides.getFeatureAppearance(feature, id);
     assert.isDefined(appearance, "return true if elementId is in always drawn set");
 
-    const vf = new ViewFlags();
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     appearance = overrides.getFeatureAppearance(feature, id);
@@ -259,9 +248,7 @@ describe("FeatureSymbology.Overrides", () => {
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in display style's excludedElements, feature isn't visible");
     assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is in always drawn set and not in the neverDrawn set and not in display style's excludedElements, feature is visible");
 
-    const vf = new ViewFlags();
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible");

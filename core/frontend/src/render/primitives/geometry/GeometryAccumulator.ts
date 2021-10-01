@@ -6,10 +6,9 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
-import { AnalysisStyleDisplacement } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../../IModelConnection";
+import { assert } from "@itwin/core-bentley";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
+import { AnalysisStyleDisplacement } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -29,7 +28,6 @@ export class GeometryAccumulator {
 
   public readonly tileRange: Range3d;
   public readonly geometries: GeometryList = new GeometryList();
-  public readonly iModel: IModelConnection;
   public readonly system: RenderSystem;
 
   public get surfacesOnly(): boolean { return this._surfacesOnly; }
@@ -37,20 +35,18 @@ export class GeometryAccumulator {
   public get isEmpty(): boolean { return this.geometries.isEmpty; }
   public get haveTransform(): boolean { return !this._transform.isIdentity; }
 
-  public constructor(options: {
-    iModel: IModelConnection;
+  public constructor(options?: {
     system?: RenderSystem;
     surfacesOnly?: boolean;
     transform?: Transform;
     tileRange?: Range3d;
     analysisStyleDisplacement?: AnalysisStyleDisplacement;
   }) {
-    this.iModel = options.iModel;
-    this.system = options.system ?? IModelApp.renderSystem;
-    this.tileRange = options.tileRange ?? Range3d.createNull();
-    this._surfacesOnly = true === options.surfacesOnly;
-    this._transform = options.transform ?? Transform.createIdentity();
-    this._analysisDisplacement = options.analysisStyleDisplacement;
+    this.system = options?.system ?? IModelApp.renderSystem;
+    this.tileRange = options?.tileRange ?? Range3d.createNull();
+    this._surfacesOnly = true === options?.surfacesOnly;
+    this._transform = options?.transform ?? Transform.createIdentity();
+    this._analysisDisplacement = options?.analysisStyleDisplacement;
   }
 
   private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
@@ -59,9 +55,12 @@ export class GeometryAccumulator {
     return range.isNull ? undefined : range;
   }
 
-  private calculateTransform(transform: Transform, range: Range3d): void {
-    if (this.haveTransform) this._transform.multiplyTransformTransform(transform, transform);
+  private calculateTransform(transform: Transform, range: Range3d): Transform {
+    if (this.haveTransform)
+      transform = this._transform.multiplyTransformTransform(transform);
+
     transform.multiplyRange(range, range);
+    return transform;
   }
 
   public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
@@ -69,8 +68,8 @@ export class GeometryAccumulator {
     if (!range)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromLoop(loop, transform, range, displayParams, disjoint));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromLoop(loop, xform, range, displayParams, disjoint));
   }
 
   public addLineString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
@@ -80,8 +79,8 @@ export class GeometryAccumulator {
     if (range.isNull)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromLineString(pts, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromLineString(pts, xform, range, displayParams));
   }
 
   public addPointString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
@@ -91,8 +90,8 @@ export class GeometryAccumulator {
     if (range.isNull)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPointString(pts, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPointString(pts, xform, range, displayParams));
   }
 
   public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
@@ -100,8 +99,8 @@ export class GeometryAccumulator {
     if (!range)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPath(path, transform, range, displayParams, disjoint));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPath(path, xform, range, displayParams, disjoint));
   }
 
   public addPolyface(pf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
@@ -124,8 +123,8 @@ export class GeometryAccumulator {
     if (!range && !(range = this.getPrimitiveRange(pf)))
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPolyface(pf, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPolyface(pf, xform, range, displayParams));
   }
 
   public addSolidPrimitive(primitive: SolidPrimitive, displayParams: DisplayParams, transform: Transform): boolean {
@@ -133,19 +132,13 @@ export class GeometryAccumulator {
     if (!range)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams));
   }
 
   public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }
 
   public clear(): void { this.geometries.clear(); }
-
-  public reset(transform: Transform = Transform.createIdentity(), surfacesOnly: boolean = false) {
-    this.clear();
-    this._transform = transform;
-    this._surfacesOnly = surfacesOnly;
-  }
 
   /**
    * Generates a MeshBuilderMap

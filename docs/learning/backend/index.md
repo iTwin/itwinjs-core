@@ -12,7 +12,7 @@ A backend package can be a [service](../../learning/App.md#agents-and-services),
 - See [iModel contents](./iModelContents.md) for guidance on whether a data type belongs in the iModel or should be stored in a separate repository.
 - See [best practices](./BestPractices.md) for writing backend code.
 
-App backends require the `@bentley/imodeljs-backend` npm package.
+App backends require the `@itwin/core-backend` npm package.
 The [common packages](../common/index.md) will also be required. Please also note the [supported platforms](../SupportedPlatforms.md).
 
 These packages provide the following functions to support backend operations:
@@ -25,8 +25,7 @@ These packages provide the following functions to support backend operations:
   - [Open an IModelDb](./IModelDb.md)
   - [Synchronizing with iModelHub](./IModelDbSync.md)
   - [Writing to an IModelDb](./IModelDbReadwrite.md)
-  - [Concurrency control](./ConcurrencyControl.md)
-  - [iModel Transformation and Data Exchange](./IModelTransformation.md)
+  - [iModel Transformation and Data Exchange](../transformer/index.md)
 
 - Working with Schemas and Elements in TypeScript
   - [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)
@@ -52,9 +51,6 @@ These packages provide the following functions to support backend operations:
   - [Change Summary Overview](../ChangeSummaries)
 
 For services and app backends:
-
-- Correlating backend operations with frontend Requests
-  - [Manage the ClientRequestContext](./ManagingClientRequestContext.md).
 
 - Exposing the operations of the backend as RpcInterfaces
   - [Define](../RpcInterface.md#define-the-interface) one or more RpcInterfaces.

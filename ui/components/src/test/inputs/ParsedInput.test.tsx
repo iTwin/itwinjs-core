@@ -6,10 +6,9 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
-import { ParsedInput } from "../../ui-components/inputs/ParsedInput";
-import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
+import { ParsedInput } from "../../components-react/inputs/ParsedInput";
+import { ParseResults, SpecialKey } from "@itwin/appui-abstract";
 
 function fahrenheitToCelsius(f: number) {
   return (f - 32) * 5 / 9;
@@ -44,22 +43,13 @@ function formatCelsiusValue(temperature: number): string {
 }
 
 describe("ParsedInput", () => {
-  const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
-  function requestNextAnimation() { }
 
   before(async () => {
-    // Avoid requestAnimationFrame exception during test by temporarily replacing function that calls it.
-    Object.defineProperty(IModelApp, "requestNextAnimation", {
-      get: () => requestNextAnimation,
-    });
     await TestUtils.initializeUiComponents();
-    await MockRender.App.startup();
   });
 
   after(async () => {
-    await MockRender.App.shutdown();
     TestUtils.terminateUiComponents();
-    Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
   });
 
   it("should process format and parse function", () => {
@@ -78,6 +68,86 @@ describe("ParsedInput", () => {
     fireEvent.change(input, { target: { value: "0.0C" } });
     fireEvent.keyDown(input, { key: SpecialKey.Enter });
     expect(spyOnChange).to.not.have.been.called;
+  });
+
+  it("should process blur", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Blur does change
+    fireEvent.change(input, { target: { value: "10.0C" } });
+    fireEvent.blur(input);
+    expect(spyOnChange).to.have.been.called;
+  });
+
+  it("should process Escape keystroke", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Escape does not change
+    fireEvent.change(input, { target: { value: "20.0C" } });
+    fireEvent.keyDown(input, { key: SpecialKey.Escape });
+    expect(spyOnChange).to.not.have.been.called;
+  });
+
+  it("should process keystrokes and initialValue prop change", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Should process updated initialValue prop
+    const newTemperature = 100;  // 100 C
+    wrapper.rerender(<ParsedInput onChange={spyOnChange} initialValue={newTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const updatedInput = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(updatedInput.value).to.eq("100.0C");
+  });
+
+  it("should process keystrokes and initialValue prop change", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Should process updated initialValue prop
+    const newTemperature = 100;  // 100 C
+    wrapper.rerender(<ParsedInput onChange={spyOnChange} initialValue={newTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const updatedInput = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(updatedInput.value).to.eq("100.0C");
+  });
+
+  it("should notify on bad input", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Should add "components-parsed-input-has-error" CSS class on bad input
+    fireEvent.change(input, { target: { value: "XYZ" } });
+    fireEvent.keyDown(input, { key: SpecialKey.Enter });
+    expect(spyOnChange).to.not.have.been.called;
+    expect(wrapper.container.querySelector(".components-parsed-input-has-error")).to.not.be.null;
   });
 
 });

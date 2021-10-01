@@ -6,11 +6,11 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RelatedElement, SpatialClassifiers,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
@@ -117,7 +117,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const orbitGtBlob = this.jsonProperties.orbitGtBlob;
 
     // If this is an OrbitGt reality model, create it's reference
-    if(orbitGtBlob) {
+    if (orbitGtBlob) {
 
       const spatialModel = this.asSpatialModel;
 
@@ -142,12 +142,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     // If this is a TileTree reality model, create it's reference
     const tilesetUrl = this.jsonProperties.tilesetUrl;
 
-    if(tilesetUrl) {
+    if (tilesetUrl) {
 
       const spatialModel = this.asSpatialModel;
 
       return createRealityTileTreeReference({
-        url : tilesetUrl,
+        url: tilesetUrl,
         iModel: this.iModel,
         source: view,
         modelId: this.id,
@@ -227,8 +227,6 @@ export class GeometricModel3dState extends GeometricModelState {
 
   /** If true, then the elements in this GeometricModel3dState are in real-world coordinates and will be in the spatial index. */
   public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
-  /** @deprecated use [[isSpatiallyLocated]] */
-  public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 }
 
 /** Represents the front-end state of a [SheetModel]($backend).

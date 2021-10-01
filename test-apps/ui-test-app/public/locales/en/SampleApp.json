@@ -303,6 +303,15 @@
     "EditingSession": {
       "keyin": "test edit"
     },
+    "SaveContentLayoutTool": {
+      "flyover": "Save Content Layout"
+    },
+    "RestoreSavedContentLayoutTool": {
+      "flyover": "Restore Content Layout"
+    },
+    "RemoveSavedContentLayoutTool": {
+      "flyover": "Remove Saved Content Layout"
+    },
     "PlaceBlock": {
       "keyin": "test place block",
       "description": "Place Block",
@@ -331,8 +340,7 @@
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo",
     "ActiveSettings": "Active Settings",
-    "ModelCreation": "Create Models",
-    "MobxDemoWidget": "Mobx Demo"
+    "ModelCreation": "Create Models"
   },
   "localFileStage": {
     "localFile": "Local File",
@@ -343,6 +351,12 @@
       "tooltip": "Display Style",
       "label": "Display"
     },
+    "pullMergePushFailed": "Pull or push failed.",
+    "pullMergeFailed": "Failed to pull changes from server",
+    "pushButtonTitle": "Push",
+    "pushButtonDisabledTitle": "No local changes to push",
+    "pullButtonTitle": "Pull",
+    "pullButtonDisabledTitle": "No server changes to pull",
     "sampleField": "Sample StatusBar Field",
     "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"

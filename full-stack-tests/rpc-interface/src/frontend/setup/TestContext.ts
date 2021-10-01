@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
 
 declare const PACKAGE_VERSION: string;
 
@@ -26,7 +26,7 @@ export class TestContext {
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -62,7 +62,7 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     // Setup environment
-    Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
@@ -84,13 +84,13 @@ export class TestContext {
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      hubAccess: new IModelHubFrontend(),
     });
 
-    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
-    this.iModelWithChangesets = await IModelSession.create(requestContext, this.settings.iModel);
-    this.contextId = this.iModelWithChangesets.contextId;
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
+    this.iTwinId = this.iModelWithChangesets.iTwinId;
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(requestContext, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
 
     console.log("TestSetup: Done");
   }

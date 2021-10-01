@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
@@ -78,7 +78,7 @@ describe("Surface transparency", () => {
 
   beforeEach(() => {
     const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
-    view.viewFlags.renderMode = RenderMode.SmoothShade;
+    view.viewFlags = view.viewFlags.withRenderMode(RenderMode.SmoothShade);
     viewport = ScreenViewport.create(viewDiv, view);
   });
 
@@ -148,7 +148,7 @@ describe("Surface transparency", () => {
   });
 
   it("uses base transparency if materials are disabled", () => {
-    viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.with("materials", false);
     expectOpaque(() => createMesh(0, opaqueMaterial));
     expectOpaque(() => createMesh(0, translucentMaterial));
     expectTranslucent(() => createMesh(127, opaqueMaterial));
@@ -172,7 +172,7 @@ describe("Surface transparency", () => {
   });
 
   it("ignores texture transparency if textures are disabled", () => {
-    viewport.viewFlags.textures = false;
+    viewport.viewFlags = viewport.viewFlags.with("textures", false);
 
     const m1 = createMaterial(1, opaqueTexture);
     const m2 = createMaterial(0.5, opaqueTexture);
@@ -195,7 +195,7 @@ describe("Surface transparency", () => {
   });
 
   it("ignores material and texture transparency if both view flags are disabled", () => {
-    viewport.viewFlags.textures = viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.copy({ textures: false, materials: false });
 
     const materials = [
       createMaterial(1, opaqueTexture),
@@ -226,7 +226,7 @@ describe("Surface transparency", () => {
   });
 
   it("uses combination of element and texture transparency if materials are disabled", () => {
-    viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.with("materials", false);
 
     const m1 = createMaterial(1, opaqueTexture);
     const m2 = createMaterial(0.5, opaqueTexture);
@@ -251,15 +251,15 @@ describe("Surface transparency", () => {
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 
-    viewport.viewFlags.textures = viewport.viewFlags.materials = false;
+    viewport.viewFlags = viewport.viewFlags.copy({ textures: false, materials: false });
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 
-    viewport.viewFlags.renderMode = RenderMode.Wireframe;
+    viewport.viewFlags = viewport.viewFlags.withRenderMode(RenderMode.Wireframe);
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 
-    viewport.viewFlags.renderMode = RenderMode.HiddenLine;
+    viewport.viewFlags = viewport.viewFlags.withRenderMode(RenderMode.HiddenLine);
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
 

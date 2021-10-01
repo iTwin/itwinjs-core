@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "@bentley/geometry-core";
-import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@bentley/imodeljs-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@itwin/core-frontend";
 
 /** @internal */
 export class Tool1 extends PrimitiveTool {
@@ -12,7 +12,7 @@ export class Tool1 extends PrimitiveTool {
   public readonly points: Point3d[] = [];
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.notifications.outputPromptByKey("SampleApp:tools.Tool1.Prompts.GetPoint");
@@ -25,13 +25,13 @@ export class Tool1 extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return EventHandled.No;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new Tool1();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

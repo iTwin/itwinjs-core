@@ -8,8 +8,10 @@ import * as sinon from "sinon";
 import {
   ConfigurableUiManager, CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider, TaskPropsList,
   WorkflowManager, WorkflowPropsList,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("Task", () => {
 
@@ -23,13 +25,17 @@ describe("Task", () => {
 
   it("Task should activate Frontstage", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "Test1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="Test1"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
           />
         );
       }
@@ -73,13 +79,16 @@ describe("Task", () => {
     if (workflow) {
       const task = workflow.getTask("Task1");
       if (task) {
-        await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+        setImmediate(async () => {
+          await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+          await TestUtils.flushAsyncOperations();
+          expect(spyMethod.calledOnce).to.be.true;
+          expect(FrontstageManager.activeFrontstageId).to.eq("Test1");
+          remove();
+        });
       }
     }
 
-    expect(spyMethod.calledOnce).to.be.true;
-    expect(FrontstageManager.activeFrontstageId).to.eq("Test1");
-    remove();
   });
 
 });

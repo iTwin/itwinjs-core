@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@itwin/core-frontend";
 import TestUtils, { storageMock } from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
+import { UiFramework } from "../../appui-react/UiFramework";
 
 // cspell:ignore dont uiadmin
 
@@ -54,7 +54,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       FrameworkAccuDraw.displayNotifications = true;
       const spy = sinon.spy();
       const spyMessage = sinon.spy(IModelApp.notifications, "outputMessage");
-      const remove = AccuDrawUiAdmin.onAccuDrawSetModeEvent.addListener(spy);
+      const remove = FrameworkAccuDraw.onAccuDrawSetCompassModeEvent.addListener(spy);
 
       IModelApp.accuDraw.setCompassMode(CompassMode.Polar);
       FrameworkAccuDraw.isPolarModeConditional.refresh();
@@ -80,7 +80,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
     it("should call onFieldLockChange & emit onAccuDrawSetFieldLockEvent", () => {
       const spy = sinon.spy();
-      const remove = AccuDrawUiAdmin.onAccuDrawSetFieldLockEvent.addListener(spy);
+      const remove = FrameworkAccuDraw.onAccuDrawSetFieldLockEvent.addListener(spy);
       IModelApp.accuDraw.setFieldLock(ItemField.X_Item, true);
       spy.calledOnce.should.true;
       spy.resetHistory();
@@ -142,7 +142,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
     it("should call onFieldValueChange & emit onAccuDrawSetFieldValueToUiEvent", () => {
       const spy = sinon.spy();
-      const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(spy);
+      const remove = FrameworkAccuDraw.onAccuDrawSetFieldValueToUiEvent.addListener(spy);
       IModelApp.accuDraw.setValueByIndex(ItemField.X_Item, 1.0);
       IModelApp.accuDraw.onFieldValueChange(ItemField.X_Item);
       spy.calledOnce.should.true;
@@ -151,7 +151,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
     it("should emit onAccuDrawSetFieldFocusEvent", () => {
       const spy = sinon.spy();
-      const remove = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spy);
+      const remove = FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.addListener(spy);
       IModelApp.accuDraw.setFocusItem(ItemField.X_Item);
       spy.calledOnce.should.true;
       remove();
@@ -159,7 +159,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
     it("should emit onAccuDrawGrabInputFocusEvent", () => {
       const spy = sinon.spy();
-      const remove = AccuDrawUiAdmin.onAccuDrawGrabInputFocusEvent.addListener(spy);
+      const remove = FrameworkAccuDraw.onAccuDrawGrabInputFocusEvent.addListener(spy);
       IModelApp.accuDraw.grabInputFocus();
       spy.calledOnce.should.true;
       remove();
@@ -171,9 +171,9 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
     it("should emit onAccuDrawSetFieldValueToUiEvent & onAccuDrawSetFieldFocusEvent", () => {
       const spyValue = sinon.spy();
-      const remove = AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(spyValue);
+      const remove = FrameworkAccuDraw.onAccuDrawSetFieldValueToUiEvent.addListener(spyValue);
       const spyFocus = sinon.spy();
-      const removeFocusSpy = AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(spyFocus);
+      const removeFocusSpy = FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.addListener(spyFocus);
 
       IModelApp.accuDraw.currentState = CurrentState.Deactivated;
       IModelApp.accuDraw.onMotion(new BeButtonEvent());
@@ -205,7 +205,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       expect(FrameworkAccuDraw.displayNotifications).to.be.false;
 
       const instance = new FrameworkAccuDraw();
-      await instance.loadUserSettings (UiFramework.getUiSettingsStorage());
+      await instance.loadUserSettings(UiFramework.getUiSettingsStorage());
       await TestUtils.flushAsyncOperations();
       expect(FrameworkAccuDraw.displayNotifications).to.be.false;
     });

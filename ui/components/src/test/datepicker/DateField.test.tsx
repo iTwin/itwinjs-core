@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { DateFormatter, SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
+import { fireEvent, render } from "@testing-library/react";
+import { DateFormatter, SpecialKey, TimeDisplay } from "@itwin/appui-abstract";
 
-import { DateField } from "../../ui-components/datepicker/DateField";
+import { DateField } from "../../components-react/datepicker/DateField";
 import TestUtils from "../TestUtils";
-import { IntlFormatter } from "../../ui-components/datepicker/IntlFormatter";
+import { IntlFormatter } from "../../components-react/datepicker/IntlFormatter";
 
 // Note many test do not test exact time because it may yield different results depending on time zone of machine running test.
 
@@ -69,8 +69,6 @@ describe("<DateField />", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();

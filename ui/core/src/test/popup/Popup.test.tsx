@@ -6,10 +6,9 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { RelativePosition } from "@itwin/appui-abstract";
 import { fireEvent, render, RenderResult } from "@testing-library/react";
-import { Popup, PopupProps } from "../../ui-core";
-import { createBoundingClientRect } from "../Utils";
+import { Popup, PopupProps } from "../../core-react";
 
 function NestedPopup() {
   const [showPopup, setShowPopup] = React.useState(false);
@@ -208,15 +207,15 @@ describe("<Popup />", () => {
     expect(document.activeElement).to.eq(inputOne);
     const inputTwo = component.getByTestId("input-two") as HTMLInputElement;
     inputTwo.focus();
-    expect(document.activeElement).to.eq(inputTwo);
+    expect(document.activeElement).to.eq(inputTwo as HTMLElement);
 
     // if we hit top - reset focus to bottom
     topDiv.focus();
-    expect(document.activeElement).to.eq(inputTwo);
+    expect(document.activeElement).to.eq(inputTwo as HTMLElement);
 
     // if we hit bottom - reset focus to top
     bottomDiv.focus();
-    expect(document.activeElement).to.eq(inputOne);
+    expect(document.activeElement).to.eq(inputOne as HTMLElement);
   });
 
   it("popup and moves focus to first available (button)", async () => {
@@ -290,8 +289,7 @@ describe("<Popup />", () => {
     expect(nestedButton).to.exist;
     fireEvent.click(nestedButton);
 
-    const mouseDown = document.createEvent("HTMLEvents");
-    mouseDown.initEvent("pointerdown");
+    const mouseDown = new PointerEvent("pointerdown");
     sinon.stub(mouseDown, "target").get(() => nestedButton);
     window.dispatchEvent(mouseDown);
     // component.debug();
@@ -311,8 +309,7 @@ describe("<Popup />", () => {
     expect(nestedButton).to.exist;
     fireEvent.click(nestedButton);
 
-    const mouseDown = document.createEvent("HTMLEvents");
-    mouseDown.initEvent("pointerdown");
+    const mouseDown = new PointerEvent("pointerdown");
     sinon.stub(mouseDown, "target").get(() => nestedButton);
     window.dispatchEvent(mouseDown);
     // component.debug();
@@ -393,7 +390,7 @@ describe("<Popup />", () => {
 
     it("should render TopLeft", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 150));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-top-left");
@@ -405,7 +402,7 @@ describe("<Popup />", () => {
 
     it("should render TopRight", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 150));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopRight} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-top-right");
@@ -435,7 +432,7 @@ describe("<Popup />", () => {
 
     it("should render Top", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 150));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-top");
@@ -447,7 +444,7 @@ describe("<Popup />", () => {
 
     it("should render Left", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(100, 0, 150, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-left");
@@ -477,7 +474,7 @@ describe("<Popup />", () => {
 
     it("should render LeftTop", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(100, 0, 150, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-left-top");
@@ -512,7 +509,7 @@ describe("<Popup />", () => {
     it("should reposition Bottom to Top", () => {
       sandbox.stub(window, "innerHeight").get(() => 1000);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 1000));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Bottom} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Top);
@@ -522,7 +519,7 @@ describe("<Popup />", () => {
     it("should reposition BottomLeft to TopLeft", () => {
       sandbox.stub(window, "innerHeight").get(() => 1000);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 1000));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.TopLeft);
@@ -532,7 +529,7 @@ describe("<Popup />", () => {
     it("should reposition BottomRight to TopRight", () => {
       sandbox.stub(window, "innerHeight").get(() => 1000);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 1000));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomRight} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.TopRight);
@@ -542,7 +539,7 @@ describe("<Popup />", () => {
     it("should reposition Top to Bottom", () => {
       sandbox.stub(window, "scrollY").get(() => 100);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 80, 0, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Bottom);
@@ -552,7 +549,7 @@ describe("<Popup />", () => {
     it("should reposition TopLeft to BottomLeft", () => {
       sandbox.stub(window, "scrollY").get(() => 100);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 80, 0, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.BottomLeft);
@@ -562,7 +559,7 @@ describe("<Popup />", () => {
     it("should reposition TopLeft to BottomLeft", () => {
       sandbox.stub(window, "scrollY").get(() => 100);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 80, 0, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.BottomLeft);
@@ -572,7 +569,7 @@ describe("<Popup />", () => {
     it("should reposition TopRight to BottomRight", () => {
       sandbox.stub(window, "scrollY").get(() => 100);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 80, 0, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopRight} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.BottomRight);
@@ -582,7 +579,7 @@ describe("<Popup />", () => {
     it("should reposition Left to Right", () => {
       sandbox.stub(window, "scrollX").get(() => 100);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(80, 0, 0, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 80 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Right);
@@ -592,7 +589,7 @@ describe("<Popup />", () => {
     it("should reposition LeftTop to RightTop", () => {
       sandbox.stub(window, "scrollX").get(() => 100);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(80, 0, 0, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 80 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.RightTop);
@@ -602,7 +599,7 @@ describe("<Popup />", () => {
     it("should reposition Right to Left", () => {
       sandbox.stub(window, "innerWidth").get(() => 1000);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 1010, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 1010 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Right} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Left);
@@ -612,7 +609,7 @@ describe("<Popup />", () => {
     it("should reposition RightTop to LeftTop", () => {
       sandbox.stub(window, "innerWidth").get(() => 1000);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 1010, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 1010 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.RightTop} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.LeftTop);
@@ -622,7 +619,7 @@ describe("<Popup />", () => {
     it("should not reposition on bottom overflow", () => {
       sandbox.stub(window, "innerHeight").get(() => 900);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 100, 0, 1000));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Top);
@@ -632,7 +629,7 @@ describe("<Popup />", () => {
     it("should not reposition on right overflow", () => {
       sandbox.stub(window, "innerWidth").get(() => 1000);
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(100, 0, 1100, 0));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 1000 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Left);
@@ -648,8 +645,7 @@ describe("<Popup />", () => {
       const popup = wrapper.find(".core-popup").getDOMNode();
       sinon.stub(popup, "contains").returns(false);
 
-      const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("pointerdown");
+      const mouseDown = new PointerEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 
@@ -664,8 +660,7 @@ describe("<Popup />", () => {
       const popup = wrapper.find(".core-popup").getDOMNode();
       sinon.stub(popup, "contains").returns(false);
 
-      const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("pointerdown");
+      const mouseDown = new PointerEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 
@@ -682,8 +677,7 @@ describe("<Popup />", () => {
       const popup = wrapper.find(".core-popup").getDOMNode();
       sinon.stub(popup, "contains").returns(false);
 
-      const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("pointerdown");
+      const mouseDown = new PointerEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 
@@ -700,8 +694,7 @@ describe("<Popup />", () => {
       const popup = wrapper.find(".core-popup").getDOMNode();
       sinon.stub(popup, "contains").returns(true);
 
-      const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("pointerdown");
+      const mouseDown = new PointerEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 
@@ -718,8 +711,7 @@ describe("<Popup />", () => {
       const spyOnClose = sinon.spy();
       const wrapper = mount(<Popup isOpen onClose={spyOnClose} target={target} />);
 
-      const mouseDown = document.createEvent("HTMLEvents");
-      mouseDown.initEvent("pointerdown");
+      const mouseDown = new PointerEvent("pointerdown");
       sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseDown);
 
@@ -734,8 +726,7 @@ describe("<Popup />", () => {
     it("should hide when scrolling", () => {
       const wrapper = mount<Popup>(<Popup isOpen />);
 
-      const scroll = document.createEvent("HTMLEvents");
-      scroll.initEvent("wheel");
+      const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
@@ -747,8 +738,7 @@ describe("<Popup />", () => {
       const wrapper = mount<Popup>(<Popup isOpen />);
       const popup = wrapper.find(".core-popup").getDOMNode();
 
-      const scroll = document.createEvent("HTMLEvents");
-      scroll.initEvent("wheel");
+      const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => popup);
       window.dispatchEvent(scroll);
 
@@ -759,8 +749,7 @@ describe("<Popup />", () => {
     it("should not hide when scrolling if pinned", () => {
       const wrapper = mount<Popup>(<Popup isOpen isPinned />);
 
-      const scroll = document.createEvent("HTMLEvents");
-      scroll.initEvent("wheel");
+      const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
@@ -771,8 +760,7 @@ describe("<Popup />", () => {
     it("should not hide when scrolling if closeOnWheel=false", () => {
       const wrapper = mount<Popup>(<Popup isOpen closeOnWheel={false} />);
 
-      const scroll = document.createEvent("HTMLEvents");
-      scroll.initEvent("wheel");
+      const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
@@ -784,8 +772,7 @@ describe("<Popup />", () => {
       const spyWheel = sinon.spy();
       const wrapper = mount<Popup>(<Popup isOpen onWheel={spyWheel} />);
 
-      const scroll = document.createEvent("HTMLEvents");
-      scroll.initEvent("wheel");
+      const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
@@ -800,8 +787,7 @@ describe("<Popup />", () => {
     it("should hide when context menu used", () => {
       const wrapper = mount<Popup>(<Popup isOpen />);
 
-      const contextMenu = document.createEvent("HTMLEvents");
-      contextMenu.initEvent("contextmenu");
+      const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
@@ -813,8 +799,7 @@ describe("<Popup />", () => {
       const wrapper = mount<Popup>(<Popup isOpen />);
       const popup = wrapper.find(".core-popup").getDOMNode();
 
-      const contextMenu = document.createEvent("HTMLEvents");
-      contextMenu.initEvent("contextmenu");
+      const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => popup);
       window.dispatchEvent(contextMenu);
 
@@ -825,8 +810,7 @@ describe("<Popup />", () => {
     it("should not hide when context menu used if pinned", () => {
       const wrapper = mount<Popup>(<Popup isOpen isPinned />);
 
-      const contextMenu = document.createEvent("HTMLEvents");
-      contextMenu.initEvent("contextmenu");
+      const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
@@ -837,8 +821,7 @@ describe("<Popup />", () => {
     it("should not hide when context menu used if closeOnContextMenu=false", () => {
       const wrapper = mount<Popup>(<Popup isOpen closeOnContextMenu={false} />);
 
-      const contextMenu = document.createEvent("HTMLEvents");
-      contextMenu.initEvent("contextmenu");
+      const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
@@ -850,8 +833,7 @@ describe("<Popup />", () => {
       const spyContextMenu = sinon.spy();
       const wrapper = mount<Popup>(<Popup isOpen onContextMenu={spyContextMenu} />);
 
-      const contextMenu = document.createEvent("HTMLEvents");
-      contextMenu.initEvent("contextmenu");
+      const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 

@@ -7,7 +7,7 @@
  */
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, NADCON, GEOCN
 
-import { Vector3d, XYAndZ } from "@bentley/geometry-core";
+import { Geometry, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 
 /** Holds 3 components of a Positional Vector rotation definition in arc seconds
@@ -53,11 +53,12 @@ export class XyzRotation implements XyzRotationProps {
     return { x: this.x, y: this.y, z: this.z };
   }
 
-  /** Compares two geodetic rotations. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two geodetic rotations. It applies a minuscule angular tolerance
+   *  @public */
   public equals(other: XyzRotation): boolean {
-    return (this.x === other.x && this.y === other.y && this.z === other.z);
+    return (Math.abs(this.x - other.x) < Geometry.smallAngleSeconds &&
+      Math.abs(this.y - other.y) < Geometry.smallAngleSeconds &&
+      Math.abs(this.z - other.z) < Geometry.smallAngleSeconds);
   }
 }
 
@@ -103,11 +104,12 @@ export class GeocentricTransform implements GeocentricTransformProps {
     return { delta: { x: this.delta.x, y: this.delta.y, z: this.delta.z } };
   }
 
-  /** Compares two geodetic transforms. It is a strict compare operation not equivalence test.
-   *  It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two geodetic transforms. It applies a minuscule tolerance.
+   *  @public */
   public equals(other: GeocentricTransform): boolean {
-    return (this.delta.x === other.delta.x && this.delta.z === other.delta.z);
+    return (Math.abs(this.delta.x - other.delta.x) < Geometry.smallMetricDistance &&
+      Math.abs(this.delta.y - other.delta.y) < Geometry.smallMetricDistance &&
+      Math.abs(this.delta.z - other.delta.z) < Geometry.smallMetricDistance);
   }
 }
 
@@ -164,11 +166,13 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
     };
   }
 
-  /** Compares two Positional Vector Transforms. It is a strict compare operation not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Positional Vector Transforms. It applies a minuscule tolerance to number compares.
+   *  @public */
   public equals(other: PositionalVectorTransform): boolean {
-    if (this.delta.x !== other.delta.x || this.delta.z !== other.delta.z || this.scalePPM !== other.scalePPM)
+    if (Math.abs(this.delta.x - other.delta.x) > Geometry.smallMetricDistance ||
+      Math.abs(this.delta.y - other.delta.y) > Geometry.smallMetricDistance ||
+      Math.abs(this.delta.z - other.delta.z) > Geometry.smallMetricDistance ||
+      Math.abs(this.scalePPM - other.scalePPM) > Geometry.smallFraction)
       return false;
 
     return this.rotation.equals(other.rotation);
@@ -251,8 +255,7 @@ export class GridFileDefinition implements GridFileDefinitionProps {
   }
 
   /** Compares two grid file definition. It is a strict compare operation not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GridFileDefinition): boolean {
     return (this.fileName === other.fileName && this.direction === other.direction && this.format === other.format);
   }
@@ -310,8 +313,7 @@ export class GridFileTransform implements GridFileTransformProps {
   }
 
   /** Compares two Grid File Transforms. It is a strict compare operation not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GridFileTransform): boolean {
     if (this.files.length !== other.files.length)
       return false;
@@ -406,9 +408,9 @@ export class GeodeticTransform implements GeodeticTransformProps {
     return data;
   }
 
-  /** Compares two geodetic Transforms. It is a strict compare operation not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two geodetic Transforms. It is not an equivalence test since
+   * descriptive information is strictly compared. A minuscule tolerance is applied to number compares.
+   *  @public */
   public equals(other: GeodeticTransform): boolean {
     if (this.method !== other.method)
       return false;
@@ -563,8 +565,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
 
   /** Compares two Geodetic Datums. It is a strict compare operation not an equivalence test.
    * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GeodeticDatum): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||

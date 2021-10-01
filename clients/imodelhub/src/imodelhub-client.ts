@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./IModelClient";
+export * from "./IModelHub";
 export * from "./IModelCloudEnvironment";
 export * from "./IModelHubClientLoggerCategories";
 
@@ -27,6 +28,12 @@ export * from "./imodelhub/Permissions";
 export * from "./imodelbank/IModelBankClient";
 export * from "./imodelbank/IModelBankFileSystemContextClient";
 export * from "./imodelbank/IModelBankHandler";
+
+export * from "./wsg/ChunkedQueryContext";
+export * from "./wsg/ECJsonTypeMap";
+export * from "./wsg/WsgClient";
+export * from "./wsg/WsgLoggerCategory";
+export * from "./wsg/WsgQuery";
 
 /**
  * @docs-package-description

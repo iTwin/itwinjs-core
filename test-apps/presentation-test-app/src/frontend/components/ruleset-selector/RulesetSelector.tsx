@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Select } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { Select } from "@itwin/core-react";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 export interface RulesetSelectorProps {
@@ -33,15 +33,16 @@ export class RulesetSelector extends React.Component<RulesetSelectorProps, Rules
   };
   public override render() {
     if (!this.state.availableRulesets)
-      return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.loading")}</div>);
+      return (<div className="RulesetSelector">{IModelApp.localization.getLocalizedString("Sample:controls.notifications.loading")}</div>);
     if (0 === this.state.availableRulesets.length)
-      return (<div className="RulesetSelector">{IModelApp.i18n.translate("Sample:controls.notifications.no-available-rulesets")}</div>);
+      return (<div className="RulesetSelector">{IModelApp.localization.getLocalizedString("Sample:controls.notifications.no-available-rulesets")}</div>);
     return (
       <div className="RulesetSelector">
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <Select
           options={this.state.availableRulesets}
           defaultValue={this.props.activeRulesetId}
-          placeholder={IModelApp.i18n.translate("Sample:controls.notifications.select-ruleset")}
+          placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-ruleset")}
           onChange={this.onSelectedRulesetIdChanged}
         />
       </div>

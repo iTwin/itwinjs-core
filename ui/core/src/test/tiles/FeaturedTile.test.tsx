@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { FeaturedTile } from "../../ui-core";
+import { FeaturedTile } from "../../core-react";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("<FeaturedTile />", () => {
   const icon = <i className="icon icon-placeholder" />;
