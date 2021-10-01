@@ -12,8 +12,8 @@ describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await TestUtility.initialize(TestUsers.regular);
     await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);

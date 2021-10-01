@@ -54,17 +54,26 @@ export class TestUtility {
    *
    * @param user The user to sign-in with to perform all of the tests.
    */
-  public static async initialize(user?: TestUserCredentials): Promise<void> {
+  public static async initialize(user: TestUserCredentials): Promise<void> {
     // If provided, create, setup and sign-in with the Auth client.
+    if (!IModelApp.initialized)
+      throw new Error("IModelApp must be initialized");
+
     let authorizationClient: FrontendAuthorizationClient | undefined;
-    if (user) {
-      if (NativeApp.isValid) {
-        authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
-        await NativeApp.callNativeHost("setAccessToken", (await getAccessTokenFromBackend(user)));
-      } else {
-        authorizationClient = new IModelHubUserMgr(user);
-        await authorizationClient.signIn();
-      }
+    if (NativeApp.isValid) {
+      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+      IModelApp.authorizationClient = authorizationClient;
+      const accessToken = await getAccessTokenFromBackend(user);
+      if ("" === accessToken)
+        throw new Error("no access token");
+
+      // TRICKY: when the tests run multiple times, it doesn't see the token change so doesn't send it to the frontend. Simulate logout.
+      await NativeApp.callNativeHost("setAccessToken", "");
+      await NativeApp.callNativeHost("setAccessToken", accessToken);
+    } else {
+      authorizationClient = new IModelHubUserMgr(user);
+      IModelApp.authorizationClient = authorizationClient;
+      await authorizationClient.signIn();
     }
 
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
@@ -72,10 +81,15 @@ export class TestUtility {
       this.itwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
     else
       this.itwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
+
+    ((IModelApp as any)._hubAccess) = this.itwinPlatformEnv.hubAccess;
   }
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
+    if (accessToken === "")
+      throw new Error("no access token");
+
     const iTwin: ITwin = await this.itwinPlatformEnv.contextMgr.getITwinByName(accessToken, contextName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
@@ -105,8 +119,6 @@ export class TestUtility {
 
   public static get iModelAppOptions(): IModelAppOptions {
     return {
-      authorizationClient: this.itwinPlatformEnv.authClient,
-      hubAccess: this.itwinPlatformEnv.hubAccess,
       applicationVersion: "1.2.1.1",
     };
   }

@@ -16,6 +16,7 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -181,6 +182,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: this.curConfig.renderOptions,
           tileAdmin: this.curConfig.tileProps,
+          realityDataAccess: new RealityDataAccessClient(),
         });
       }
 

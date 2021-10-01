@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/telemetry-client",

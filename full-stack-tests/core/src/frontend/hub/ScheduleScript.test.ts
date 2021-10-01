@@ -29,10 +29,9 @@ describe("Schedule script (#integration)", () => {
   const modelId = "0x10000000001";
 
   before(async () => {
-    await TestUtility.initialize(TestUsers.regular);
-
     await IModelApp.shutdown();
     await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);

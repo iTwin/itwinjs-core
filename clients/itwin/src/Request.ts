@@ -263,7 +263,6 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
 // module that will rid us of NodeJs dependency.
 
 /** Wrapper around HTTP request utility
- * @param requestContext The client request context
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
