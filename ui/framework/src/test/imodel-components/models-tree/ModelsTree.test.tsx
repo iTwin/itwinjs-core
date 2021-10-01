@@ -357,8 +357,7 @@ describe("ModelsTree", () => {
         backendProps: {
           caching: {
             hierarchies: {
-              mode: HierarchyCacheMode.Disk,
-              directory: path.join("lib", "test", "cache"),
+              mode: HierarchyCacheMode.Memory,
             },
           },
         },
