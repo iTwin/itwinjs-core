@@ -55,7 +55,6 @@ import { FunctionKey } from '@itwin/appui-abstract';
 import { GroupButton as GroupButton_2 } from '@itwin/appui-abstract';
 import { GuidString } from '@itwin/core-bentley';
 import { HorizontalAnchor } from '@itwin/appui-layout-react';
-import { I18N } from '@itwin/core-i18n';
 import { IconProps } from '@itwin/core-react';
 import { IconSpec } from '@itwin/core-react';
 import { Id64Array } from '@itwin/core-bentley';
@@ -69,6 +68,7 @@ import { InteractiveTool } from '@itwin/core-frontend';
 import { IPresentationTreeDataProvider } from '@itwin/presentation-components';
 import { ItemField } from '@itwin/core-frontend';
 import { LayoutFragmentProps } from '@itwin/appui-abstract';
+import { Localization } from '@itwin/core-common';
 import { MessageBoxIconType } from '@itwin/core-frontend';
 import { MessageBoxType } from '@itwin/core-frontend';
 import { MessageBoxValue } from '@itwin/core-frontend';
@@ -6550,16 +6550,16 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
+    static get localization(): Localization;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal

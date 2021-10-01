@@ -753,19 +753,19 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       // Case insensitive
       switch (type.toUpperCase()) {
         case DefaultSupportedTypes.RealityMesh3dTiles.toUpperCase():
-          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
+          strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
           break;
         case DefaultSupportedTypes.Terrain3dTiles.toUpperCase():
-          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
+          strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.Terrain3DTiles"));
           break;
         case DefaultSupportedTypes.Cesium3dTiles.toUpperCase():
-          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
+          strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.Cesium3DTiles"));
           break;
       }
     }
 
     if (this._name) {
-      strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
     } else {
       const cesiumAsset = parseCesiumUrl(this._url);
       strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : this._url);
@@ -783,7 +783,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
     if (this._url === getCesiumOSMBuildingsUrl()) {
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.i18n.translate("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }
   }
 }

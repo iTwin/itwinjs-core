@@ -16,11 +16,11 @@ describe("UiIModelComponents", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiIModelComponents.i18n).to.throw(Error);
+    expect(() => UiIModelComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return 'UiIModelComponents'", () => {
-    expect(UiIModelComponents.i18nNamespace).to.eq("UiIModelComponents");
+    expect(UiIModelComponents.localizationNamespace).to.eq("UiIModelComponents");
   });
 
   it("packageName should return 'imodel-components-react'", () => {
@@ -54,7 +54,7 @@ describe("UiIModelComponents", () => {
     await MockRender.App.startup();
 
     await UiIModelComponents.initialize();
-    expect(UiIModelComponents.i18n).to.eq(IModelApp.i18n);
+    expect(UiIModelComponents.localization).to.eq(IModelApp.localization);
 
     await MockRender.App.shutdown();
   });

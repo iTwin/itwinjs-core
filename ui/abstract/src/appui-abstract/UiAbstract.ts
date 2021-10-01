@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { I18N } from "@itwin/core-i18n";
+import { Localization } from "@itwin/core-common";
 import { MessagePresenter } from "./notification/MessagePresenter";
 import { getClassName } from "./utils/getClassName";
 import { UiError } from "./utils/UiError";
@@ -18,29 +18,29 @@ import { UiError } from "./utils/UiError";
  */
 export class UiAbstract {
   private static _initialized = false;
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
   private static _messagePresenter?: MessagePresenter;
 
   /**
-   * Registers the I18N service namespace for UiAbstract
-   * @param i18n The internationalization service created by the application.
+   * Registers the Localization service namespace for UiAbstract
+   * @param localization The internationalization service created by the application.
    */
-  public static async initialize(i18n: I18N): Promise<void> {
+  public static async initialize(localization: Localization): Promise<void> {
     if (UiAbstract._initialized) {
       Logger.logInfo(UiAbstract.loggerCategory(UiAbstract), `UiAbstract.initialize already called`);
       return;
     }
 
-    UiAbstract._i18n = i18n;
-    await UiAbstract._i18n.registerNamespace(UiAbstract.i18nNamespace).readFinished;
+    UiAbstract._localization = localization;
+    await UiAbstract._localization.registerNamespace(UiAbstract.localizationNamespace);
     UiAbstract._initialized = true;
   }
 
   /** Unregisters the UiAbstract internationalization service namespace */
   public static terminate() {
-    if (UiAbstract._i18n)
-      UiAbstract._i18n.unregisterNamespace(UiAbstract.i18nNamespace);
-    UiAbstract._i18n = undefined;
+    if (UiAbstract._localization)
+      UiAbstract._localization.unregisterNamespace(UiAbstract.localizationNamespace);
+    UiAbstract._localization = undefined;
     UiAbstract._initialized = false;
   }
 
@@ -48,22 +48,22 @@ export class UiAbstract {
   public static get initialized(): boolean { return UiAbstract._initialized; }
 
   /** The internationalization service created by the application. */
-  public static get i18n(): I18N {
-    if (!UiAbstract._i18n)
+  public static get localization(): Localization {
+    if (!UiAbstract._localization)
       throw new UiError(UiAbstract.loggerCategory(this), "UiAbstract not initialized");
-    return UiAbstract._i18n;
+    return UiAbstract._localization;
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
+  public static get localizationNamespace(): string {
     return "UiAbstract";
   }
 
-  /** Calls i18n.translateWithNamespace with the "UiAbstract" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedStringWithNamespace with the "UiAbstract" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return UiAbstract.i18n.translateWithNamespace(UiAbstract.i18nNamespace, key);
+    return UiAbstract.localization.getLocalizedStringWithNamespace(UiAbstract.localizationNamespace, key);
   }
 
   /** @internal */

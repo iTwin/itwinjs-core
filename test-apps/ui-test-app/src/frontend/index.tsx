@@ -8,6 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
+import { I18N } from "@itwin/core-i18n";
 import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
@@ -23,7 +24,6 @@ import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool,
   SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { I18NNamespace } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { MapLayersUI } from "@itwin/map-layers";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/MobileFrontend";
@@ -156,7 +156,7 @@ interface SampleIModelParams {
 }
 
 export class SampleAppIModelApp {
-  public static sampleAppNamespace: I18NNamespace;
+  public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
@@ -179,8 +179,14 @@ export class SampleAppIModelApp {
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
+
+    const iModelAppOpts = {
+      ...opts.iModelApp,
+      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+    };
+
     if (ProcessDetector.isElectronAppFrontend) {
-      await ElectronApp.startup(opts);
+      await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
@@ -200,7 +206,7 @@ export class SampleAppIModelApp {
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
-      await IModelApp.startup(opts.iModelApp);
+      await IModelApp.startup(iModelAppOpts);
     }
 
     window.onerror = function (error) {
@@ -208,7 +214,8 @@ export class SampleAppIModelApp {
       console.log(error);
     };
 
-    this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
+    this.sampleAppNamespace = "SampleApp";
+    await IModelApp.localization.registerNamespace(this.sampleAppNamespace);
 
     // use new state manager that allows dynamic additions from extensions and snippets
     if (!this._appStateManager) {
@@ -235,7 +242,7 @@ export class SampleAppIModelApp {
     // initialize Presentation
     await Presentation.initialize({
       presentation: {
-        activeLocale: IModelApp.i18n.languageList()[0],
+        activeLocale: IModelApp.localization.languageList()[0],
       },
       favorites: {
         storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings

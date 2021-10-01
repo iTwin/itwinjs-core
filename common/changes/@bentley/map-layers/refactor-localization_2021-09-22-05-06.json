@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/map-layers",
+      "comment": "\"Replaced usage of I18N with Localization.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/map-layers"
+}

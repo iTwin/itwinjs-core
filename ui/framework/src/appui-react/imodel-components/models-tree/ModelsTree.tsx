@@ -134,8 +134,8 @@ export function ModelsTree(props: ModelsTreeProps) {
   // istanbul ignore next
   const noFilteredDataRenderer = React.useCallback(() => {
     return <VisibilityTreeNoFilteredData
-      title={UiFramework.i18n.translate("UiFramework:modelTree.noModelFound")}
-      message={UiFramework.i18n.translate("UiFramework:modelTree.noMatchingModelNames")}
+      title={UiFramework.localization.getLocalizedString("UiFramework:modelTree.noModelFound")}
+      message={UiFramework.localization.getLocalizedString("UiFramework:modelTree.noMatchingModelNames")}
     />;
   }, []);
 

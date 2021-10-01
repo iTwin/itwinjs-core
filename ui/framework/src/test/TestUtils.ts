@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
+import { Localization } from "@itwin/core-common";
 import { I18N } from "@itwin/core-i18n";
 import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
@@ -54,17 +55,17 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get i18n(): I18N {
-    if (!TestUtils._i18n) {
-      TestUtils._i18n = new I18N();
+  public static get localization(): Localization {
+    if (!TestUtils._localization) {
+      TestUtils._localization = new I18N();
     }
-    return TestUtils._i18n;
+    return TestUtils._localization;
   }
 
   public static async initializeUiFramework(testAlternateKey = false) {
@@ -91,9 +92,9 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.i18n, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.localization, "testDifferentFrameworkKey");
       else
-        await UiFramework.initialize(this.store, TestUtils.i18n);
+        await UiFramework.initialize(this.store, TestUtils.localization);
 
       TestUtils._uiFrameworkInitialized = true;
     }

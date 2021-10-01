@@ -123,9 +123,6 @@ import { GroundPlane } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
-import { I18N } from '@itwin/core-i18n';
-import { I18NNamespace } from '@itwin/core-i18n';
-import { I18NOptions } from '@itwin/core-i18n';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -154,6 +151,7 @@ import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
+import { Localization } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
@@ -4260,9 +4258,9 @@ export class IModelApp {
     static get hasRenderSystem(): boolean;
     // @internal
     static get hubAccess(): FrontendHubAccess | undefined;
-    static get i18n(): I18N;
     // @internal (undocumented)
     static get initialized(): boolean;
+    static get localization(): Localization;
     // @internal (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
@@ -4332,7 +4330,7 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
     hubAccess?: FrontendHubAccess;
-    i18n?: I18N | I18NOptions;
+    localization?: Localization;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     // @beta
@@ -10580,16 +10578,16 @@ export class Tool {
     static get flyover(): string;
     get flyover(): string;
     static hidden: boolean;
-    static i18n: I18N;
     static iconSpec: string;
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
+    static localization: Localization;
     static get maxArgs(): number | undefined;
     static get minArgs(): number;
-    static namespace: I18NNamespace;
+    static namespace: string;
     parseAndRun(..._args: string[]): Promise<boolean>;
-    static register(namespace?: I18NNamespace, i18n?: I18N): void;
+    static register(namespace?: string, localization?: Localization): void;
     run(..._args: any[]): Promise<boolean>;
     static toolId: string;
     get toolId(): string;
@@ -10852,8 +10850,8 @@ export class ToolRegistry {
     getToolList(): ToolList;
     parseAndRun(keyin: string): Promise<ParseAndRunResult>;
     parseKeyin(keyin: string): ParseKeyinResult;
-    register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
-    registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
+    register(toolClass: ToolType, namespace?: string, localization?: Localization): void;
+    registerModule(moduleObj: any, namespace?: string, localization?: Localization): void;
     run(toolId: string, ...args: any[]): Promise<boolean>;
     // (undocumented)
     readonly tools: Map<string, typeof Tool>;

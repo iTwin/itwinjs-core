@@ -9,41 +9,41 @@
 import { enablePatches } from "immer";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { Localization } from "@itwin/core-common";
 import { getClassName, UiError } from "@itwin/appui-abstract";
 import { UiComponents } from "@itwin/components-react";
 
 /**
- * Manages the I18N service for the imodel-components-react package.
+ * Manages the localization service for the imodel-components-react package.
  * @public
  */
 export class UiIModelComponents {
   private static _initialized = false;
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
 
   /**
-   * Registers the I18N service namespace for UiIModelComponents. Also initializes UiCore.
-   * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
+   * Registers the localization service namespace for UiIModelComponents. Also initializes UiCore.
+   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    */
-  public static async initialize(i18n?: I18N): Promise<void> {
+  public static async initialize(localization?: Localization): Promise<void> {
     if (UiIModelComponents._initialized) {
       Logger.logInfo(UiIModelComponents.loggerCategory(UiIModelComponents), `UiIModelComponents.initialize already called`);
       return;
     }
 
     enablePatches();
-    UiIModelComponents._i18n = i18n || IModelApp.i18n;
-    await UiIModelComponents._i18n.registerNamespace(UiIModelComponents.i18nNamespace).readFinished;
+    UiIModelComponents._localization = localization || IModelApp.localization;
+    await UiIModelComponents._localization.registerNamespace(UiIModelComponents.localizationNamespace);
 
-    await UiComponents.initialize(UiIModelComponents._i18n);
+    await UiComponents.initialize(UiIModelComponents._localization);
     UiIModelComponents._initialized = true;
   }
 
-  /** Unregisters the UiIModelComponents I18N namespace */
+  /** Unregisters the UiIModelComponents localization namespace */
   public static terminate() {
-    if (UiIModelComponents._i18n)
-      UiIModelComponents._i18n.unregisterNamespace(UiIModelComponents.i18nNamespace);
-    UiIModelComponents._i18n = undefined;
+    if (UiIModelComponents._localization)
+      UiIModelComponents._localization.unregisterNamespace(UiIModelComponents.localizationNamespace);
+    UiIModelComponents._localization = undefined;
 
     UiComponents.terminate();
     UiIModelComponents._initialized = false;
@@ -53,14 +53,14 @@ export class UiIModelComponents {
   public static get initialized(): boolean { return UiIModelComponents._initialized; }
 
   /** The internationalization service created by the application. */
-  public static get i18n(): I18N {
-    if (!UiIModelComponents._i18n)
-      throw new UiError(UiIModelComponents.loggerCategory(this), "i18n: UiIModelComponents.initialize has not been called. Unable to return I18N object.");
-    return UiIModelComponents._i18n;
+  public static get localization(): Localization {
+    if (!UiIModelComponents._localization)
+      throw new UiError(UiIModelComponents.loggerCategory(this), "localization: UiIModelComponents.initialize has not been called. Unable to return Localization object.");
+    return UiIModelComponents._localization;
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
+  public static get localizationNamespace(): string {
     return "UiIModelComponents";
   }
 
@@ -69,7 +69,7 @@ export class UiIModelComponents {
     return "imodel-components-react";
   }
 
-  /** Calls i18n.translateWithNamespace with the "UiIModelComponents" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedStringWithNamespace with the "UiIModelComponents" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
@@ -77,7 +77,7 @@ export class UiIModelComponents {
       Logger.logError(UiIModelComponents.loggerCategory(this), `translate: UiIModelComponents.initialize has not been called. Returning blank string.`);
       return "";
     }
-    return UiIModelComponents.i18n.translateWithNamespace(UiIModelComponents.i18nNamespace, key);
+    return UiIModelComponents.localization.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
   }
 
   /** @internal */

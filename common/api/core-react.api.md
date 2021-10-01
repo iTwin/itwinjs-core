@@ -17,13 +17,13 @@ import { FocusEventHandler } from 'react-select/src/types';
 import { formatGroupLabel } from 'react-select/src/builtins';
 import { getOptionLabel } from 'react-select/src/builtins';
 import { getOptionValue } from 'react-select/src/builtins';
-import { I18N } from '@itwin/core-i18n';
 import { IDisposable } from '@itwin/core-bentley';
 import { IMatch } from '@itwin/appui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
 import { Interaction } from 'scheduler/tracing';
 import { KeyboardEventHandler } from 'react-select/src/types';
+import { Localization } from '@itwin/core-common';
 import { MessageSeverity as MessageSeverity_2 } from '@itwin/appui-abstract';
 import { PointProps as PointProps_2 } from '@itwin/appui-abstract';
 import { ProgressRadialProps } from '@itwin/itwinui-react';
@@ -2379,10 +2379,10 @@ export interface TreeProps extends CommonProps {
 
 // @public
 export class UiCore {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n: I18N): Promise<void>;
+    static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
+    static get localization(): Localization;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)

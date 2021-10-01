@@ -417,7 +417,7 @@ export class AccuSnap implements Decorator {
     if (!this.errorKey)
       return;
 
-    this.explanation = IModelApp.i18n.translate(this.errorKey);
+    this.explanation = IModelApp.localization.getLocalizedString(this.errorKey);
     if (!this.explanation)
       return;
 
@@ -642,7 +642,7 @@ export class AccuSnap implements Decorator {
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
-          out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
+          out.explanation = IModelApp.localization.getLocalizedString(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
         }
         return undefined;
       }

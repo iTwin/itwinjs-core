@@ -7,7 +7,6 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { I18NNamespace } from "@itwin/core-i18n";
 import { SectionType } from "@itwin/core-common";
 import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-frontend";
 import { registerTools } from "./Tools";
@@ -22,7 +21,7 @@ export interface MarkerData {
 }
 
 interface Resources {
-  readonly namespace: I18NNamespace;
+  readonly namespace?: string;
   readonly markers: {
     readonly section: MarkerData;
     readonly plan: MarkerData;
@@ -72,8 +71,8 @@ export class HyperModeling {
       return;
     }
 
-    const namespace = IModelApp.i18n.registerNamespace("HyperModeling");
-    await namespace.readFinished;
+    const namespace = "HyperModeling";
+    await IModelApp.localization.registerNamespace(namespace);
 
     const loadImages = [
       tryImageElementFromUrl("section-marker.svg"),
@@ -86,14 +85,14 @@ export class HyperModeling {
     this.resources = {
       namespace,
       markers: {
-        section: { image: images[0], label: IModelApp.i18n.translate("HyperModeling:Message.SectionCallout") },
-        detail: { image: images[1], label: IModelApp.i18n.translate("HyperModeling:Message.DetailCallout") },
-        elevation: { image: images[2], label: IModelApp.i18n.translate("HyperModeling:Message.ElevationCallout") },
-        plan: { image: images[3], label: IModelApp.i18n.translate("HyperModeling:Message.PlanCallout") },
+        section: { image: images[0], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.SectionCallout") },
+        detail: { image: images[1], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.DetailCallout") },
+        elevation: { image: images[2], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.ElevationCallout") },
+        plan: { image: images[3], label: IModelApp.localization.getLocalizedString("HyperModeling:Message.PlanCallout") },
       },
     };
 
-    registerTools(namespace, IModelApp.i18n);
+    registerTools(namespace, IModelApp.localization);
     this.replaceConfiguration(config);
   }
 
@@ -254,7 +253,7 @@ export class HyperModeling {
   }
 
   /** @internal */
-  public static get namespace(): I18NNamespace {
+  public static get namespace(): string | undefined {
     assertInitialized(this);
     return this.resources.namespace;
   }

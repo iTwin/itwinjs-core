@@ -46,6 +46,7 @@
   ],
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
