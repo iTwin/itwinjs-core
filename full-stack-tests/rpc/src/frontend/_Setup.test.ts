@@ -59,14 +59,5 @@ before(async () => {
       return initializeCloud("http");
     case "electron":
       return ElectronApp.startup({ iModelApp: { rpcInterfaces } });
-    case "direct": {
-      // (global as any).window = undefined;
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { commonSetup } = require("../backend/CommonBackendSetup");
-      await commonSetup();
-      const config = RpcConfiguration.obtain(RpcDefaultConfiguration);
-      config.interfaces = () => rpcInterfaces as any;
-      return RpcConfiguration.initializeInterfaces(config);
-    }
   }
 });

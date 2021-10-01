@@ -29,7 +29,9 @@ export interface RpcActivity extends SessionProps {
 
   /** access token for authorization  */
   readonly accessToken: AccessToken;
-  readonly methodName?: string;
+
+  /** the name of the current rpc method */
+  readonly rpcMethod?: string;
 }
 
 /** Serialized format for sending the request across the RPC layer
@@ -156,7 +158,7 @@ export class RpcInvocation {
       applicationVersion: request.applicationVersion,
       sessionId: request.sessionId,
       accessToken: request.authorization,
-      methodName: request.operation.operationName,
+      rpcMethod: request.operation.operationName,
     };
 
     try {

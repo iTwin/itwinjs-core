@@ -15,7 +15,7 @@ import {
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { RpcTracer } from "../RpcBackend";
+import { RpcTrace } from "../RpcBackend";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface TileRequestProps {
@@ -178,7 +178,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    const activity = RpcTracer.currentActivity!;
+    const activity = RpcTrace.currentActivity!;
     return RequestTileTreePropsMemoizer.perform({ accessToken: activity.accessToken, tokenProps, treeId });
   }
 
@@ -187,17 +187,17 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     if (null === modelIds)
       modelIds = undefined;
 
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTracer.currentActivity!.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    const activity = RpcTracer.currentActivity!;
+    const activity = RpcTrace.currentActivity!;
     return RequestTileContentMemoizer.perform({ accessToken: activity.accessToken, tokenProps, treeId, contentId, guid });
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTracer.currentActivity!.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
@@ -223,7 +223,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const user = RpcTracer.currentActivity!;
+    const user = RpcTrace.currentActivity!;
     const iModel = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, rpcProps);
     return iModel.generateElementGraphics(request);
   }
@@ -231,7 +231,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
 /** @internal */
 export async function cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
-  const activity = RpcTracer.currentActivity!;
+  const activity = RpcTrace.currentActivity!;
   const iModel = await RpcBriefcaseUtility.findOpenIModel(activity.accessToken, tokenProps);
 
   const props: TileContentRequestProps = {

@@ -16,7 +16,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";
 
 import sinon = require("sinon");
-import { RpcTracer } from "../../RpcBackend";
+import { RpcTrace } from "../../RpcBackend";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
@@ -38,7 +38,7 @@ describe("TileCache open v1", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    await RpcTracer.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
+    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     assert.isTrue(IModelJsFs.existsSync(tilesCache));
@@ -112,7 +112,7 @@ describe("TileCache, open v2", async () => {
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
-    await RpcTracer.run(fakeRpc, async () => tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
+    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
     const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);

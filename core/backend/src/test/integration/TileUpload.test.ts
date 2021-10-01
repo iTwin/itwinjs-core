@@ -14,7 +14,7 @@ import { IModelDb } from "../../IModelDb";
 import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { RpcTracer } from "../../RpcBackend";
+import { RpcTrace } from "../../RpcBackend";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -118,7 +118,7 @@ describe("TileUpload (#integration)", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    const tile = await RpcTracer.run({
+    const tile = await RpcTrace.run({
       accessToken: user,
       activityId: "",
       applicationId: "",

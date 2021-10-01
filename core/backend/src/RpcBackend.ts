@@ -6,28 +6,38 @@
  * @module RpcInterface
  */
 
+// cspell:ignore calltrace
+
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
 import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
 import { Logger } from "@itwin/core-bentley";
 
+/**
+ * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
+ * class can be used to correlate the current calltrace with the originating RpcActivity. This is used for automatic appending
+ * RpcActivity for any log messages emitted during Rpc processing. It may also be used to retrieve the user accessToken
+ * from the RpcRequest.
+ * @public
+ */
+export class RpcTrace {
+  private static _storage = new AsyncLocalStorage();
 
-export class RpcTracer {
-  private static storage = new AsyncLocalStorage();
-
-  /** Get the [RpcActivity]($common) for the currently executing async, or undefined if there is no RpcActivity in the call stack. */
+  /** Get the [RpcActivity]($common) for the currently executing async, or `undefined` if there is no
+   * RpcActivity in the current call stack.
+   * */
   public static get currentActivity(): RpcActivity | undefined {
-    return RpcTracer.storage.getStore() as RpcActivity | undefined;
+    return RpcTrace._storage.getStore() as RpcActivity | undefined;
   }
 
+  /** Start the processing of an RpcActivity. */
   public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
-    return RpcTracer.storage.run(activity, fn);
+    return RpcTrace._storage.run(activity, fn);
   }
 }
 
 let initialized = false;
-
 /** @internal */
 export function initializeRpcBackend() {
   if (initialized)
@@ -35,16 +45,18 @@ export function initializeRpcBackend() {
 
   initialized = true;
 
-  RpcInvocation.runActivity = RpcTracer.run;
+  RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
+
+  // set up static logger metadata to include current RpcActivity information for messages during rpc processing
   Logger.staticMetaData.set("rpc", () => {
-    const activity = RpcTracer.currentActivity;
-    return activity ? {
+    const activity = RpcTrace.currentActivity;
+    return undefined === activity ? undefined : {
       activityId: activity.activityId,
       sessionId: activity.sessionId,
       applicationId: activity.applicationId,
       applicationVersion: activity.applicationVersion,
-      methodName: activity.methodName,
-    } : undefined;
+      rpcMethod: activity.rpcMethod,
+    };
   });
 
   RpcMultipart.createStream = (value: RpcSerializedValue) => {
