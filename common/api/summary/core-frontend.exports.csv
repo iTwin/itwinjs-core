@@ -263,7 +263,6 @@ internal;IModelTile
 internal;IModelTileContent 
 internal;IModelTileParams 
 internal;iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams
-internal;IModelTileRequestChannels
 internal;IModelTileTree 
 internal;IModelTileTreeOptions
 internal;IModelTileTreeParams 
