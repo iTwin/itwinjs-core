@@ -29,12 +29,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
-  public async openForRead(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
+  public async getConnectionProps(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.currentActivity!, tokenProps, SyncMode.FixedVersion);
-  }
-
-  public async close(_tokenProps: IModelRpcProps): Promise<boolean> {
-    return true;
   }
 
   public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
