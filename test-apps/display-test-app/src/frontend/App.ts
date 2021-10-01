@@ -8,6 +8,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
+import { I18N } from "@itwin/core-i18n";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
@@ -190,6 +191,7 @@ export class DisplayTestApp {
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
     const opts = {
       iModelApp: {
+        localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
