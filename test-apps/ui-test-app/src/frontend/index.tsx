@@ -13,7 +13,7 @@ import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/cont
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isBrowserAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+} from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";

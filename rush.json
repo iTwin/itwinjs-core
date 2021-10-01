@@ -56,13 +56,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/frontend-authorization-client",
-      "projectFolder": "clients/frontend-authorization",
-      "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodelhub-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",

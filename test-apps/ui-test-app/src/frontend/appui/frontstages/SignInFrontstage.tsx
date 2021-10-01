@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { isBrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelApp } from "@itwin/core-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,

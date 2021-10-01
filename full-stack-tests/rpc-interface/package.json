@@ -45,7 +45,6 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
@@ -56,6 +55,7 @@
     "dotenv-expand": "^5.1.0",
     "mocha": "^8.3.2",
     "openid-client": "^4.7.4",
+    "@itwin/service-authorization": "^0.1.0",
     "puppeteer": "chrome-86"
   },
   "devDependencies": {

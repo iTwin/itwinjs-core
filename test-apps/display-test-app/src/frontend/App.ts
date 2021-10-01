@@ -5,7 +5,7 @@
 
 import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
-import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {

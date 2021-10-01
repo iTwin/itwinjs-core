@@ -35,7 +35,6 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.72",
     "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
     "@bentley/imodelhub-client": "workspace:^3.0.0-dev.72",
     "@itwin/core-common": "workspace:^3.0.0-dev.72",
@@ -65,7 +64,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -143,6 +141,7 @@
     "@itwin/presentation-components": "workspace:*",
     "@itwin/itwinui-css": "^0.27.0",
     "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/browser-authorization": "^0.1.0",
     "classnames": "^2.3.1",
     "immer": "9.0.2",
     "lodash": "^4.17.10",

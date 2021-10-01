@@ -40,7 +40,6 @@
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/electron-manager": "workspace:*",
     "@itwin/mobile-manager": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
@@ -52,6 +51,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
+    "@itwin/browser-authorization": "^0.1.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

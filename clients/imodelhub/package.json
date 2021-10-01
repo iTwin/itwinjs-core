@@ -40,14 +40,12 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.72",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.72"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@types/deep-assign": "^0.1.0",
     "@types/node": "14.14.31",

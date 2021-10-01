@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
-import { BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { Briefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelApp, IModelHubFrontend } from "@itwin/core-frontend";
 import { AuthorizationClient } from "@bentley/itwin-client";

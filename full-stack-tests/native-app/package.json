@@ -24,7 +24,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",

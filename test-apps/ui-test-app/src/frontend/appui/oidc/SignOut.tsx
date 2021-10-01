@@ -9,7 +9,7 @@
 import "./SignOut.scss";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { isBrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelApp } from "@itwin/core-frontend";
 import { getUserColor } from "@itwin/core-react";
 import { Button } from "@itwin/itwinui-react";

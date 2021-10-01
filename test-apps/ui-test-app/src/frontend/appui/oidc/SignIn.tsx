@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { BrowserAuthorizationClient, isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient, isBrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelApp } from "@itwin/core-frontend";
 import { SignInBase } from "./SignInBase";
 import { CommonProps } from "@itwin/core-react";

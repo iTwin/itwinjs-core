@@ -10,7 +10,7 @@
 
 import { Store } from "redux";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { isBrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient, isBrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
