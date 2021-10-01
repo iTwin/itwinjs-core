@@ -17,8 +17,8 @@ import { Logger } from "@itwin/core-bentley";
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
  * class can be used to correlate the current calltrace with the originating RpcActivity. This is used for automatic appending
- * RpcActivity for any log messages emitted during Rpc processing. It may also be used to retrieve the user accessToken
- * from the RpcRequest.
+ * of RpcActivity to log messages emitted during Rpc processing. It may also be used to retrieve the user accessToken
+ * from the RpcActivity.
  * @public
  */
 export class RpcTrace {
