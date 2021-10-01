@@ -51,7 +51,7 @@ export class IModelHubBackend {
   }
 
   private static async getAccessToken(arg: UserArg) {
-    return arg.user ?? await IModelHost.getAccessToken() ?? "";
+    return arg.user ?? await IModelHost.getAccessToken();
   }
   public static async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps> {
     const user = await this.getAccessToken(arg);

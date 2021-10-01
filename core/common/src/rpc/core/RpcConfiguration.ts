@@ -15,13 +15,13 @@ import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
 import { RpcRoutingToken } from "./RpcRoutingToken";
 
-/** @public */
+/** @internal */
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
 
-/** @alpha */
+/** @internal */
 export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier> }
 
-/** @alpha */
+/** @internal */
 export namespace RpcRoutingMap {
   export function create(): RpcRoutingMap {
     const configurations = new Map();
@@ -31,7 +31,7 @@ export namespace RpcRoutingMap {
 
 /** A RpcConfiguration specifies how calls on an RPC interface will be marshalled, plus other operating parameters.
  * RpcConfiguration is the base class for specific configurations.
- * @public
+ * @internal
  */
 export abstract class RpcConfiguration {
   /** Whether development mode is enabled.
@@ -107,16 +107,18 @@ export abstract class RpcConfiguration {
   /** @internal */
   public attached: RpcInterfaceDefinition[] = [];
 
-  /** The protocol of the configuration. */
+  /** The protocol of the configuration.
+   * @internal
+   */
   public abstract readonly protocol: RpcProtocol;
 
   /** The RPC interfaces managed by the configuration. */
   public abstract readonly interfaces: () => RpcInterfaceDefinition[];
 
-  /** @alpha */
+  /** @internal */
   public allowAttachedInterfaces: boolean = true;
 
-  /** @alpha */
+  /** @internal */
   public get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition> { return this.attached; }
 
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
@@ -125,7 +127,7 @@ export abstract class RpcConfiguration {
   /** The maximum number of transient faults permitted before request failure. */
   public transientFaultLimit = 3;
 
-  /** @alpha */
+  /** @internal */
   public readonly routing: RpcRoutingToken = RpcRoutingToken.default;
 
   /** The control channel for the configuration.
@@ -133,7 +135,7 @@ export abstract class RpcConfiguration {
    */
   public readonly controlChannel = RpcControlChannel.obtain(this);
 
-  /** @alpha */
+  /** @internal */
   public attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
     if (!this.allowAttachedInterfaces) {
       return;

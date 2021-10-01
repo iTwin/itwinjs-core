@@ -2349,7 +2349,7 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal (undocumented)
     static flushLog(): void;
-    static getAccessToken(): Promise<AccessToken | undefined>;
+    static getAccessToken(): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @beta
@@ -3011,13 +3011,13 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
     protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
-    protected _accessToken?: AccessToken;
+    protected _accessToken: AccessToken;
     // (undocumented)
     config?: NativeAppAuthorizationConfiguration;
     // (undocumented)
     expireSafety: number;
     // (undocumented)
-    getAccessToken(): Promise<AccessToken | undefined>;
+    getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
@@ -3025,7 +3025,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected abstract refreshToken(): Promise<AccessToken>;
     // (undocumented)
-    setAccessToken(token?: AccessToken): void;
+    setAccessToken(token: AccessToken): void;
     // (undocumented)
     abstract signIn(): Promise<void>;
     // (undocumented)
@@ -3067,8 +3067,8 @@ export class NativeHost {
     // (undocumented)
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
+    static readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    static readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static get settingsStore(): NativeAppStorage;

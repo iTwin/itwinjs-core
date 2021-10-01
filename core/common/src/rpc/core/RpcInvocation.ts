@@ -50,7 +50,7 @@ export interface SerializedRpcActivity {
 export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 /** An RPC operation invocation in response to a request.
- * @public
+ * @internal
  */
 export class RpcInvocation {
   public static runActivity: RpcActivityRun = async (_activity, fn) => fn();

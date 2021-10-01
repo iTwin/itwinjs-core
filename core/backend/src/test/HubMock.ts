@@ -161,7 +161,7 @@ export class HubMock {
   }
 
   private static async getAccessToken(arg: UserArg) {
-    return arg.user ?? await IModelHost.getAccessToken() ?? "";
+    return arg.user ?? await IModelHost.getAccessToken();
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {

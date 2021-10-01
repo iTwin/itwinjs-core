@@ -30,14 +30,14 @@ export class NativeAppTest {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const project = await this.imodelCloudEnv.contextMgr.getITwinByName(accessToken, props.projectName);
     assert(project && project.id);
     return project.id;
   }
 
   public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
