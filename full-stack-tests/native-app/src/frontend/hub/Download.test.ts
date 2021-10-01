@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GuidString } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@itwin/core-common";
 import { BriefcaseConnection, NativeApp } from "@itwin/core-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";

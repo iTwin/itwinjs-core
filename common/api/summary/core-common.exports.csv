@@ -517,6 +517,7 @@ public;RgbColorProps
 public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
+internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
 internal;class RpcConfiguration
 internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
@@ -531,7 +532,6 @@ internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
 internal;RpcInvocation
-internal;RpcInvocationCallback = (invocation: RpcInvocation) => void
 internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart

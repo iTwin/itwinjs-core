@@ -16,7 +16,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 
-const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
+const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
 /**
  * An IModelConnection to a checkpoint of an iModel, hosted on a remote backend over RPC.
@@ -27,9 +27,9 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
  */
 export class CheckpointConnection extends IModelConnection {
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId!; }
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
+  public override get iModelId(): GuidString { return super.iModelId!; }
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
@@ -65,14 +65,12 @@ export class CheckpointConnection extends IModelConnection {
     const connectionRetryIntervalRange = { min: 100, max: 5000 }; // in milliseconds
     let connectionRetryInterval = Math.min(connectionRetryIntervalRange.min, IModelConnection.connectionTimeout);
 
-    const openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "openForRead");
+    const openForReadOperation = RpcOperation.lookup(IModelReadRpcInterface, "getConnectionProps");
     if (!openForReadOperation)
-      throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
+      throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.getConnectionProps() is not available");
     openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
 
-    Logger.logTrace(loggerCategory, `Received open request in IModelConnection.open`, () => iModelToken);
-    Logger.logTrace(loggerCategory, `Setting retry interval in IModelConnection.open`, () => ({ ...iModelToken, connectionRetryInterval }));
-
+    Logger.logTrace(loggerCategory, `IModelConnection.open`, iModelToken);
     const startTime = Date.now();
 
     const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, request: RpcRequest) => {
@@ -81,28 +79,27 @@ export class CheckpointConnection extends IModelConnection {
       if (!(openForReadOperation && request.operation === openForReadOperation))
         return;
 
-      Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
+      Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", iModelToken);
 
       const connectionTimeElapsed = Date.now() - startTime;
       if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
-        Logger.logError(loggerCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, () => iModelToken);
+        Logger.logError(loggerCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, iModelToken);
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
       connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
-        Logger.logTrace(loggerCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, () => iModelToken);
+        Logger.logTrace(loggerCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, iModelToken);
       }
     });
 
-    const openPromise = IModelReadRpcInterface.getClientForRouting(routingContext.token).openForRead(iModelToken);
-
+    const openPromise = IModelReadRpcInterface.getClientForRouting(routingContext.token).getConnectionProps(iModelToken);
     let openResponse: IModelConnectionProps;
     try {
       openResponse = await openPromise;
     } finally {
-      Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", () => iModelToken);
+      Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", iModelToken);
       removeListener();
     }
 
@@ -130,7 +127,7 @@ export class CheckpointConnection extends IModelConnection {
     } finally {
     }
 
-    Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelRpcProps);
+    Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", iModelRpcProps);
     request.parameters[0] = this.getRpcProps(); // Modify the token of the original request before resubmitting it.
     resubmit();
   };
@@ -142,11 +139,6 @@ export class CheckpointConnection extends IModelConnection {
 
     this.beforeClose();
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
-
-    try {
-      await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
-    } finally {
-      this._isClosed = true;
-    }
+    this._isClosed = true;
   }
 }

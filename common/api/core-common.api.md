@@ -4324,13 +4324,13 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void>;
     // (undocumented)
-    close(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
     getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]>;
     // (undocumented)
     getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]>;
     static getClient(): IModelReadRpcInterface;
     static getClientForRouting(token: RpcRoutingToken): IModelReadRpcInterface;
+    // (undocumented)
+    getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
@@ -4357,8 +4357,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
-    // (undocumented)
-    openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)
@@ -6783,7 +6781,11 @@ export interface RootSubjectProps {
 export interface RpcActivity extends SessionProps {
     readonly accessToken: AccessToken;
     readonly activityId: GuidString;
+    readonly rpcMethod?: string;
 }
+
+// @internal (undocumented)
+export type RpcActivityRun = (activity: RpcActivity, fn: () => Promise<any>) => Promise<any>;
 
 // @internal
 export abstract class RpcConfiguration {
@@ -6941,20 +6943,24 @@ export { RpcInterfaceStatus }
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
-    // (undocumented)
-    static currentActivity: RpcActivity;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
-    static logRpcException(activity: RpcActivity, operationName: string, error: unknown): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
     readonly result: Promise<any>;
+    // (undocumented)
+    static runActivity: RpcActivityRun;
+    // (undocumented)
+    static sanitizeForLog(activity?: RpcActivity): {
+        activityId: string;
+        sessionId: string;
+        applicationId: string;
+        applicationVersion: string;
+        rpcMethod: string | undefined;
+    } | undefined;
     get status(): RpcRequestStatus;
     }
-
-// @internal
-export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 // @internal
 export class RpcManager {
@@ -7023,7 +7029,6 @@ export class RpcOperationPolicy {
     allowResponseCaching: RpcResponseCachingCallback_T;
     allowTokenMismatch: boolean;
     forceStrictMode: boolean;
-    invocationCallback: RpcInvocationCallback;
     requestCallback: RpcRequestCallback_T;
     retryInterval: RpcRequestInitialRetryIntervalSupplier_T;
     sentCallback: RpcRequestCallback_T;
@@ -7289,7 +7294,6 @@ export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
 // @internal
 export interface RpcRequestContext {
-    deserialize: (request: SerializedRpcActivity) => RpcActivity;
     getId: (request: RpcRequest) => string;
     serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 }

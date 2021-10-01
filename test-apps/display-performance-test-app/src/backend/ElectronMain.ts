@@ -5,7 +5,7 @@
 import { assert } from "@itwin/core-bentley";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
-import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 
 const dptaElectronMain = async () => {
 
