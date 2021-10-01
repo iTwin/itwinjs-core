@@ -27,7 +27,7 @@ const NODE_LOAD_DELAY = 500;
 
 /**
  * Data structure that describes range of rendered items in the tree.
- * @alpha
+ * @beta
  */
 export interface RenderedItemsRange {
   overscanStartIndex: number;
@@ -58,7 +58,7 @@ export interface TreeRendererProps {
 
   /**
    * Callback that is called when rendered items range changes.
-   * @alpha
+   * @beta
    */
   onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
 
