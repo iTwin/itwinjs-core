@@ -23,11 +23,26 @@ import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
  * @public
  */
 export interface TreeNodeRendererProps extends CommonProps {
+  /** Tree node to render. */
   node: TreeModelNode;
+
+  /** Action handler. */
   treeActions: TreeActions;
 
   /** Properties used to highlight matches when tree is filtered. */
   nodeHighlightProps?: HighlightableTreeNodeProps;
+
+  /** Specifies whether to show descriptions or not. */
+  descriptionEnabled?: boolean;
+
+  /** Image loader for node icons. */
+  imageLoader?: ITreeImageLoader;
+
+  /** Callback to render custom checkbox. */
+  checkboxRenderer?: NodeCheckboxRenderer;
+
+  /** Callback to render custom node editor when node is in editing mode. */
+  nodeEditorRenderer?: TreeNodeEditorRenderer;
 
   /**
    * Callback used to detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
@@ -37,25 +52,10 @@ export interface TreeNodeRendererProps extends CommonProps {
 }
 
 /**
- * Extended properties for [[TreeNodeRenderer]].
- * @beta
- */
-export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
-  /** Callback to render custom checkbox. */
-  checkboxRenderer?: NodeCheckboxRenderer;
-  /** Callback to render custom node editor when node is in editing mode. */
-  nodeEditorRenderer?: TreeNodeEditorRenderer;
-  /** Specifies whether to show descriptions or not. */
-  descriptionEnabled?: boolean;
-  /** Image loader used to load icon. */
-  imageLoader?: ITreeImageLoader;
-}
-
-/**
  * Default component for rendering tree node.
- * @beta
+ * @public
  */
-export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => { // eslint-disable-line @typescript-eslint/naming-convention
+export const TreeNodeRenderer = React.memo((props: TreeNodeRendererProps) => {
   const label = (
     <TreeNodeContent
       key={props.node.id}

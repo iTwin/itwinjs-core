@@ -39,35 +39,35 @@ export namespace IModelHubUtils {
     process.env.IMJS_URL_PREFOX = `${"prod" === arg ? "" : arg}-`;
   }
 
-  export async function queryIModelId(user: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
+  export async function queryIModelId(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
   }
 
   /** Temporarily needed to convert from the now preferred ChangesetIndex to the legacy ChangesetId.
    * @note This function should be removed when full support for ChangesetIndex is in place.
    */
-  export async function queryChangesetId(user: AccessToken, iModelId: GuidString, changesetIndex: ChangesetIndex): Promise<ChangesetId> {
-    return (await IModelHost.hubAccess.queryChangeset({ user, iModelId, changeset: { index: changesetIndex } })).id;
+  export async function queryChangesetId(accessToken: AccessToken, iModelId: GuidString, changesetIndex: ChangesetIndex): Promise<ChangesetId> {
+    return (await IModelHost.hubAccess.queryChangeset({ accessToken, iModelId, changeset: { index: changesetIndex } })).id;
   }
 
   /** Temporarily needed to convert from the legacy ChangesetId to the now preferred ChangeSetIndex.
    * @note This function should be removed when full support for ChangesetIndex is in place.
    */
-  export async function queryChangesetIndex(user: AccessToken, iModelId: GuidString, changesetId: ChangesetId): Promise<ChangesetIndex> {
-    return (await IModelHost.hubAccess.queryChangeset({ user, iModelId, changeset: { id: changesetId } })).index;
+  export async function queryChangesetIndex(accessToken: AccessToken, iModelId: GuidString, changesetId: ChangesetId): Promise<ChangesetIndex> {
+    return (await IModelHost.hubAccess.queryChangeset({ accessToken, iModelId, changeset: { id: changesetId } })).index;
   }
 
   /** Call the specified function for each changeset of the specified iModel. */
-  export async function forEachChangeset(user: AccessToken, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
-    const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
+  export async function forEachChangeset(accessToken: AccessToken, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
     for (const changeset of changesets) {
       func(changeset);
     }
   }
 
   /** Call the specified function for each (named) Version of the specified iModel. */
-  export async function forEachNamedVersion(requestContext: AccessToken, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
-    const namedVersions = await IModelHubBackend.iModelClient.versions.get(requestContext, iModelId);
+  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
+    const namedVersions = await IModelHubBackend.iModelClient.versions.get(accessToken, iModelId);
     for (const namedVersion of namedVersions) {
       func(namedVersion);
     }

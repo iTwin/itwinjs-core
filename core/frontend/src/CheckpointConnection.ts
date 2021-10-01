@@ -45,6 +45,9 @@ export class CheckpointConnection extends IModelConnection {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     const accessToken = await IModelApp.getAccessToken();
 
+    if (undefined === IModelApp.hubAccess)
+      throw new Error("Missing an implementation of FrontendHubAccess on IModelApp, it is required to open a remote iModel Connection. Please provide an implementation to the IModelApp.startup using IModelAppOptions.hubAccess.");
+
     const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ accessToken, iModelId, version }) };
 
     const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };

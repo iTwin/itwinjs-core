@@ -459,6 +459,10 @@ The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute w
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
+## `KeySetJSON` in `@itwin/presentation-common`
+
+The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
+
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
 - [PresentationManagerProps]($presentation-backend) have been restructured to make attributes' purpose clearer. This affects calls to constructor of [PresentationManager]($presentation-backend) and [Presentation.initialize]($presentation-backend). Typical migration:
@@ -714,16 +718,21 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                                                    | Replacement                                                                                                                   |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                          |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                             |
 | `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                |
 | `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
 | `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
-| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                             |
+| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                                |
 | `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
 | `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                           |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                              |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `TreeRendererContext`                                      | _eliminated_                                                                                                                  |
+| `TreeRendererContextProvider`                              | _eliminated_                                                                                                                  |
+| `TreeRendererContextConsumer`                              | _eliminated_                                                                                                                  |
+| `useTreeRendererContext`                                   | _eliminated_                                                                                                                  |
+| `ExtendedTreeNodeRendererProps`                            | `TreeNodeRendererProps`                                                                                                       |
 | `SignIn`                                                   | _eliminated_                                                                                                                  |
 | All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |

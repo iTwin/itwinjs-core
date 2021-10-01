@@ -57,7 +57,7 @@ export interface ControlledTreeProps extends CommonProps {
   noDataRenderer?: () => React.ReactElement;
   /**
    * Callback that is invoked when rendered items range changes.
-   * @alpha
+   * @beta
    */
   onItemsRendered?: (items: RenderedItemsRange) => void;
   /** Width of the tree renderer. */

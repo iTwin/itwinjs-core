@@ -26,12 +26,12 @@ import { PerfTestUtility } from "./PerfTestUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-async function getIModelAfterApplyingCS(user: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelId: string, client: IModelHubClient) {
-  const changeSets = await client.changeSets.get(user, imodelId);
+async function getIModelAfterApplyingCS(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelId: string, client: IModelHubClient) {
+  const changeSets = await client.changeSets.get(accessToken, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
 
-  const args = { user, iTwinId, iModelId: imodelId };
+  const args = { accessToken, iTwinId, iModelId: imodelId };
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
   const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ ...args, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
@@ -73,8 +73,8 @@ async function getIModelAfterApplyingCS(user: AccessToken, reporter: Reporter, i
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
-async function pushIModelAfterMetaChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelPushId: string) {
-  const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelPushId });
+async function pushIModelAfterMetaChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelPushId: string) {
+  const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: imodelPushId });
   assert.exists(iModelPullAndPush);
 
   // get the time of applying a meta data change on an imodel
@@ -90,13 +90,13 @@ async function pushIModelAfterMetaChanges(user: AccessToken, reporter: Reporter,
   try {
     // get the time to push a meta data change of an imodel to imodel hub
     const startTime1 = new Date().getTime();
-    await iModelPullAndPush.pushChanges({ user, description: "test change" });
+    await iModelPullAndPush.pushChanges({ accessToken, description: "test change" });
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "meta changes to hub", Operation: "Push" });
   } catch (error) { }
 
-  await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModelPullAndPush);
+  await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModelPullAndPush);
 }
 
 async function createNewModelAndCategory(rwIModel: IModelDb) {
@@ -111,17 +111,17 @@ async function createNewModelAndCategory(rwIModel: IModelDb) {
   return { modelId, spatialCategoryId };
 }
 
-async function pushIModelAfterDataChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
+async function pushIModelAfterDataChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
-  const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+  const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
-    await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: rwIModelId });
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel);
@@ -130,24 +130,24 @@ async function pushIModelAfterDataChanges(user: AccessToken, reporter: Reporter,
 
   // get the time to push a data change of an imodel to imodel hub
   const startTime1 = new Date().getTime();
-  await rwIModel.pushChanges({ user, description: "test change" }).catch(() => { });
+  await rwIModel.pushChanges({ accessToken, description: "test change" }).catch(() => { });
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushDataChangeToHub", "Execution time(s)", elapsedTime1, { Description: "data changes to hub", Operation: "Push" });
-  await IModelTestUtils.closeAndDeleteBriefcaseDb(user, rwIModel);
+  await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, rwIModel);
 }
 
-async function pushIModelAfterSchemaChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
+async function pushIModelAfterSchemaChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
-  const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+  const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
-    await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: rwIModelId });
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
@@ -155,13 +155,13 @@ async function pushIModelAfterSchemaChanges(user: AccessToken, reporter: Reporte
   await rwIModel.importSchemas([schemaPathname]).catch(() => { });
   assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
   rwIModel.saveChanges("schema change pushed");
-  await rwIModel.pullChanges({ user });
+  await rwIModel.pullChanges({ accessToken });
   const startTime1 = new Date().getTime();
-  await rwIModel.pushChanges({ user, description: "test change" });
+  await rwIModel.pushChanges({ accessToken, description: "test change" });
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushSchemaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "schema changes to hub", Operation: "Push" });
-  await IModelTestUtils.closeAndDeleteBriefcaseDb(user, rwIModel);
+  await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, rwIModel);
 }
 
 const getElementCount = (iModel: IModelDb): number => {
@@ -170,8 +170,8 @@ const getElementCount = (iModel: IModelDb): number => {
   return count;
 };
 
-async function executeQueryTime(user: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelId: string) {
-  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
+async function executeQueryTime(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString, imodelId: string) {
+  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
   const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT * FROM BisCore.LineStyle");
@@ -182,23 +182,23 @@ async function executeQueryTime(user: AccessToken, reporter: Reporter, iTwinId: 
   iModelDb.close();
 }
 
-async function reverseChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
+async function reverseChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "reverseChangeTest";
   // delete any existing imodel with given name
-  const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+  const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
-    await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: rwIModelId });
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
-  await rwIModel.pushChanges({ user, description: "test change" }).catch(() => { });
+  await rwIModel.pushChanges({ accessToken, description: "test change" }).catch(() => { });
   const firstCount = getElementCount(rwIModel);
   assert.equal(firstCount, 7);
 
@@ -208,12 +208,12 @@ async function reverseChanges(user: AccessToken, reporter: Reporter, iTwinId: Gu
     i = i + 1;
   }
   rwIModel.saveChanges("added more elements to imodel");
-  await rwIModel.pushChanges({ user, description: "test change" }).catch(() => { });
+  await rwIModel.pushChanges({ accessToken, description: "test change" }).catch(() => { });
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
   const startTime = new Date().getTime();
-  await rwIModel.pullChanges({ user, toIndex: 0 }); // reverses changes.
+  await rwIModel.pullChanges({ accessToken, toIndex: 0 }); // reverses changes.
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
 
@@ -224,23 +224,23 @@ async function reverseChanges(user: AccessToken, reporter: Reporter, iTwinId: Gu
   rwIModel.close();
 }
 
-async function reinstateChanges(user: AccessToken, reporter: Reporter, iTwinId: GuidString) {
+async function reinstateChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
   const iModelName = "reinstateChangeTest";
   // delete any existing imodel with given name
-  const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+  const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
-    await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
-  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: rwIModelId });
+  const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
-  await rwIModel.pushChanges({ user, description: "test change" }).catch(() => { });
+  await rwIModel.pushChanges({ accessToken, description: "test change" }).catch(() => { });
   const firstCount = getElementCount(rwIModel);
   assert.equal(firstCount, 7);
 
@@ -250,16 +250,16 @@ async function reinstateChanges(user: AccessToken, reporter: Reporter, iTwinId: 
     i = i + 1;
   }
   rwIModel.saveChanges("added more elements to imodel");
-  await rwIModel.pushChanges({ user, description: "test change" }).catch(() => { });
+  await rwIModel.pushChanges({ accessToken, description: "test change" }).catch(() => { });
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  await rwIModel.pullChanges({ user, toIndex: 0 });
+  await rwIModel.pullChanges({ accessToken, toIndex: 0 });
   const reverseCount = getElementCount(rwIModel);
   assert.equal(reverseCount, firstCount);
 
   const startTime = new Date().getTime();
-  await rwIModel.pullChanges({ user });
+  await rwIModel.pullChanges({ accessToken });
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   const reinstateCount = getElementCount(rwIModel);
@@ -479,8 +479,8 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const imodelId: string = ds.modelId;
 
       const client: IModelHubClient = new IModelHubClient();
-      let user = await TestUtility.getAccessToken(TestUsers.regular);
-      const changeSets = await client.changeSets.get(user, imodelId);
+      let accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+      const changeSets = await client.changeSets.get(accessToken, imodelId);
       const startNum: number = ds.csStart ? ds.csStart : 0;
       const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
       const modelInfo = {
@@ -491,7 +491,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       };
 
       const firstChangeSetId = changeSets[startNum].wsgId;
-      const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelId, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
+      const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: imodelId, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
 
       for (let j = startNum; j < endNum; ++j) {
         const cs: ChangeSet = changeSets[j];
@@ -506,9 +506,9 @@ describe("ImodelChangesetPerformance big datasets", () => {
         if (apply) {
           // eslint-disable-next-line no-console
           console.log(`For iModel: ${ds.modelName}: Applying changeset: ${(j + 1).toString()} / ${endNum.toString()}`);
-          user = await TestUtility.getAccessToken(TestUsers.regular);
+          accessToken = await TestUtility.getAccessToken(TestUsers.regular);
           const startTime = new Date().getTime();
-          await iModelDb.pullChanges({ user }); // needs work - get index IModelVersion.asOfChangeSet(cs.wsgId));
+          await iModelDb.pullChanges({ accessToken }); // needs work - get index IModelVersion.asOfChangeSet(cs.wsgId));
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
 
@@ -579,7 +579,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
 
 describe("ImodelChangesetPerformance own data", () => {
   const seedVersionName: string = "Seed data";
-  let user: AccessToken;
+  let accessToken: AccessToken;
   const outDir: string = path.join(KnownTestLocations.outputDir, "ChangesetPerfOwn");
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerfOwnData.csv");
   const reporter = new Reporter();
@@ -596,8 +596,8 @@ describe("ImodelChangesetPerformance own data", () => {
   const className: string = `${baseClassName}Sub${(hier - 1).toString()}`;
 
   async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
-    user = await TestUtility.getAccessToken(TestUsers.regular);
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: projId, iModelId: modelId, asOf: IModelVersion.named(seedVersionName).toJSON() });
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: projId, iModelId: modelId, asOf: IModelVersion.named(seedVersionName).toJSON() });
     const pathName = iModelDb.pathName;
     iModelDb.close();
     if (fs.existsSync(localPath))
@@ -611,13 +611,13 @@ describe("ImodelChangesetPerformance own data", () => {
   }
 
   async function lastChangesetToken(modelId: string): Promise<IModelJsNative.ChangesetFileProps> {
-    user = await TestUtility.getAccessToken(TestUsers.regular);
-    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(user, modelId);
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(accessToken, modelId);
     const changeSet = changeSets[changeSets.length - 1];
     const query = new ChangeSetQuery();
     query.byId(changeSet.wsgId);
     const downloadDir = BriefcaseManager.getChangeSetsPath(modelId);
-    await IModelHubBackend.iModelClient.changeSets.download(user, modelId, query, downloadDir);
+    await IModelHubBackend.iModelClient.changeSets.download(accessToken, modelId, query, downloadDir);
     const pathname = path.join(downloadDir, changeSet.fileName!);
     return { id: changeSet.id!, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType!, index: +changeSet.index!, pushDate: "", userCreated: "", briefcaseId: 0, description: "" };
   }
@@ -633,17 +633,17 @@ describe("ImodelChangesetPerformance own data", () => {
     if (!fs.existsSync(outDir))
       fs.mkdirSync(outDir);
 
-    user = await TestUtility.getAccessToken(TestUsers.regular);
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     for (const opSize of opSizes) {
       for (const baseName of baseNames) {
         const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;
-        const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+        const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
         if (iModels.length === 0) {
           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
           // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
-          const iModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: "TestSubject" });
-          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
+          const iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
+          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId });
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
           const sxml = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
@@ -652,8 +652,8 @@ describe("ImodelChangesetPerformance own data", () => {
           await iModelDb.importSchemas([schemaPathname]).catch(() => { });
           assert.isDefined(iModelDb.getMetaData(`${schemaName}:${baseClassName}`), `${baseClassName} is not present in iModel.`);
           iModelDb.saveChanges("schema changes");
-          await iModelDb.pullChanges({ user });
-          await iModelDb.pushChanges({ user, description: "perf schema import" });
+          await iModelDb.pullChanges({ accessToken });
+          await iModelDb.pushChanges({ accessToken, description: "perf schema import" });
 
           // seed with existing elements
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModelDb, Code.createEmpty(), true);
@@ -667,14 +667,14 @@ describe("ImodelChangesetPerformance own data", () => {
             const id = iModelDb.elements.insertElement(geomElement);
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
-          user = await TestUtility.getAccessToken(TestUsers.regular);
+          accessToken = await TestUtility.getAccessToken(TestUsers.regular);
           iModelDb.saveChanges();
-          await iModelDb.pushChanges({ user, description: `Seed data for ${className}` });
+          await iModelDb.pushChanges({ accessToken, description: `Seed data for ${className}` });
 
           // create named version here
-          const changeSets = await IModelHubBackend.iModelClient.changeSets.get(user, iModelId);
+          const changeSets = await IModelHubBackend.iModelClient.changeSets.get(accessToken, iModelId);
           const lastCSId = changeSets[changeSets.length - 1].wsgId;
-          const seedData = await IModelHubBackend.iModelClient.versions.create(user, iModelId, lastCSId, seedVersionName);
+          const seedData = await IModelHubBackend.iModelClient.versions.create(accessToken, iModelId, lastCSId, seedVersionName);
           assert.equal(seedData.name, seedVersionName);
 
           const minId: number = PerfTestUtility.getMinId(iModelDb, "bis.PhysicalElement");
@@ -689,7 +689,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 assert.isTrue(Id64.isValidId64(id), "insert failed");
               }
               iModelDb.saveChanges();
-              await iModelDb.pushChanges({ user, description: `${className} inserts: ${opSize}` });
+              await iModelDb.pushChanges({ accessToken, description: `${className} inserts: ${opSize}` });
               break;
             case "D": // create changeset with Delete operation
               for (let i = 0; i < opSize; ++i) {
@@ -701,7 +701,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 }
               }
               iModelDb.saveChanges();
-              await iModelDb.pushChanges({ user, description: `${className} deletes: ${opSize}` });
+              await iModelDb.pushChanges({ accessToken, description: `${className} deletes: ${opSize}` });
               break;
             case "U": // create changeset with Update operation
               const geomArray: Arc3d[] = [
@@ -727,7 +727,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 }
               }
               iModelDb.saveChanges();
-              await iModelDb.pushChanges({ user, description: `${className} updates: ${opSize}` });
+              await iModelDb.pushChanges({ accessToken, description: `${className} updates: ${opSize}` });
               break;
             default:
               break;
@@ -744,7 +744,7 @@ describe("ImodelChangesetPerformance own data", () => {
   it("InsertChangeset", async () => {
     for (const opSize of opSizes) {
       const iModelName = `${iModelNameBase}I_${opSize.toString()}`;
-      const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+      const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
         // eslint-disable-next-line no-console
@@ -756,7 +756,7 @@ describe("ImodelChangesetPerformance own data", () => {
         const csToken = await lastChangesetToken(iModel.id!);
         // eslint-disable-next-line no-console
         console.log(`Applying Insert changeset to iModel ${iModelName}.`);
-        user = await TestUtility.getAccessToken(TestUsers.regular);
+        accessToken = await TestUtility.getAccessToken(TestUsers.regular);
         try {
           const startTime = new Date().getTime();
           saIModel.nativeDb.applyChangeset(csToken);
@@ -775,7 +775,7 @@ describe("ImodelChangesetPerformance own data", () => {
   it("DeleteChangeset", async () => {
     for (const opSize of opSizes) {
       const iModelName = `${iModelNameBase}D_${opSize.toString()}`;
-      const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+      const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
         // eslint-disable-next-line no-console
@@ -805,7 +805,7 @@ describe("ImodelChangesetPerformance own data", () => {
   it("UpdateChangeset", async () => {
     for (const opSize of opSizes) {
       const iModelName = `${iModelNameBase}U_${opSize.toString()}`;
-      const iModels = await IModelHubBackend.iModelClient.iModels.get(user, iTwinId, new IModelQuery().byName(iModelName));
+      const iModels = await IModelHubBackend.iModelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
       const iModel = iModels.find((im) => im.name === iModelName);
       if (iModel) {
         // eslint-disable-next-line no-console

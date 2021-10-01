@@ -6,21 +6,23 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActivityMessagePopup, IModelInfo, UiFramework } from "@itwin/appui-react";
+import { AccessToken, BeDuration } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
+import { ActivityMessagePopup } from "@itwin/appui-react";
+import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { IModelInfo } from "../ExternalIModel";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
-import { AccessToken, BeDuration } from "@itwin/core-bentley";
-import { Button } from "@itwin/itwinui-react";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
   getAccessToken?: () => Promise<AccessToken | undefined>;
-  onIModelSelected?: (iModelInfo: IModelInfo) => void;
+  onIModelSelected?: (iModelInfo: { iTwinId: string, id: string, name: string }) => void;
   initialIModels?: IModelInfo[];
 }
 
@@ -84,6 +86,38 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       this._selectITwin(iTwins[0]);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
+  public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
+
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const hubAccess = new IModelHubFrontend();
+
+    const iModelInfos: IModelInfo[] = [];
+    const queryOptions = new IModelQuery();
+    queryOptions.select("*").top(top).skip(skip);
+    try {
+      const iModels: HubIModel[] = await hubAccess.hubClient.iModels.get(accessToken, iTwinId, queryOptions);
+      for (const imodel of iModels) {
+        const versions: Version[] = await hubAccess.hubClient.versions.get(accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        if (versions.length > 0) {
+          imodel.latestVersionName = versions[0].name;
+          imodel.latestVersionChangeSetId = versions[0].changeSetId;
+        }
+      }
+      for (const thisIModel of iModels) {
+        iModelInfos.push({
+          iTwinId,
+          id: thisIModel.id!,
+          name: thisIModel.name!,
+          createdDate: new Date(thisIModel.createdDate!),
+        });
+      }
+    } catch (e) {
+      alert(JSON.stringify(e));
+      throw e;
+    }
+    return iModelInfos;
+  }
+
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
   private startRetrieveIModels = async (iTwin: ITwin) => {
     this.setState({
@@ -92,7 +126,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingProjects: false,
       currentITwin: iTwin,
     });
-    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(iTwin.id, 80, 0);
+    const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
     this.setState({
       isLoadingiModels: false,
       iModels: iModelInfos,

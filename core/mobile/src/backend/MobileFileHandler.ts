@@ -10,7 +10,6 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import { AccessToken, Logger } from "@itwin/core-bentley";
-import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
   CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
   UserCancelledError,
@@ -19,6 +18,11 @@ import { MobileHost } from "./MobileHost";
 import { Base64 } from "js-base64";
 
 const loggerCategory: string = "mobile.filehandler";
+
+const defined = (argumentName: string, argument?: any, allowEmpty: boolean = false) => {
+  if (argument === undefined || argument === null || (argument === "" && !allowEmpty))
+    throw Error(`Argument ${argumentName} is null or undefined`);
+};
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
@@ -89,8 +93,9 @@ export class MobileFileHandler implements FileHandler {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
-    ArgumentCheck.defined("downloadUrl", downloadUrl);
-    ArgumentCheck.defined("downloadToPathname", downloadToPathname);
+
+    defined("downloadUrl", downloadUrl);
+    defined("downloadToPathname", downloadToPathname);
     if (MobileFileHandler.isUrlExpired(downloadUrl)) {
       Logger.logError(loggerCategory, `Sas url has expired ${safeToLogUrl}`);
       throw new SasUrlExpired(403, "Download URL has expired");
@@ -160,8 +165,8 @@ export class MobileFileHandler implements FileHandler {
   public async uploadFile(requestContext: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
-    ArgumentCheck.defined("uploadUrlString", uploadUrlString);
-    ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
+    defined("uploadUrlString", uploadUrlString);
+    defined("uploadFromPathname", uploadFromPathname);
 
     const fileSize = this.getFileSize(uploadFromPathname);
     const file = fs.openSync(uploadFromPathname, "r");
