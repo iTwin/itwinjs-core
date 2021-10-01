@@ -489,7 +489,6 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
 
 // @public
 export interface CommonPropertyGridProps extends CommonProps {
-    // @beta
     actionButtonRenderers?: ActionButtonRenderer[];
     actionButtonWidth?: number;
     // @beta
@@ -544,7 +543,7 @@ export interface CompositeFilterDescriptorCollection {
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @beta
+// @public
 export enum CompositeFilterType {
     // (undocumented)
     And = 0,
@@ -552,7 +551,7 @@ export enum CompositeFilterType {
     Or = 1
 }
 
-// @beta
+// @public
 export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
     constructor(_leftFilterer: IPropertyDataFilterer, _operator: CompositeFilterType, _rightFilterer: IPropertyDataFilterer);
     // (undocumented)
@@ -838,7 +837,7 @@ export class DirectionHelpers {
     static readonly TOP_CLASS_NAME = "components-direction-top";
 }
 
-// @beta
+// @public
 export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -1077,9 +1076,8 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     remove(item: TDescriptor): boolean;
 }
 
-// @beta
+// @public
 export interface FilteredPropertyData extends PropertyData {
-    // (undocumented)
     filteredTypes?: FilteredType[];
     // (undocumented)
     getMatchByIndex?: (index: number) => HighlightInfo | undefined;
@@ -1087,7 +1085,7 @@ export interface FilteredPropertyData extends PropertyData {
     matchesCount?: number;
 }
 
-// @beta
+// @public
 export enum FilteredType {
     // (undocumented)
     Category = 0,
@@ -1123,7 +1121,7 @@ export enum FilteringInputStatus {
     ReadyToFilter = 0
 }
 
-// @beta
+// @public
 export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
     constructor(_dataProvider: IPropertyDataProvider, _filterer: IPropertyDataFilterer);
     // (undocumented)
@@ -1595,7 +1593,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Int): string;
 }
 
-// @beta
+// @public
 export interface IPropertyDataFilterer {
     // (undocumented)
     categoryMatchesFilter: (node: PropertyCategory, parents: PropertyCategory[]) => Promise<PropertyDataFilterResult>;
@@ -1719,7 +1717,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
     readonly dataProvider: TDataProvider;
 }
 
-// @beta
+// @public
 export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -2311,7 +2309,7 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 
 // @public
 export interface PropertyCategory {
-    // @beta (undocumented)
+    // (undocumented)
     childCategories?: PropertyCategory[];
     // (undocumented)
     expand: boolean;
@@ -2319,7 +2317,7 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @beta (undocumented)
+    // (undocumented)
     renderer?: {
         name: string;
     };
@@ -2335,18 +2333,17 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 // @public
 export interface PropertyCategoryBlockProps extends CommonProps {
     category: PropertyCategory;
-    // @beta
     highlight?: HighlightingComponentProps;
     onExpansionToggled?: (categoryName: string) => void;
 }
 
-// @beta
+// @public
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     recordMatchesFilter(): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -2410,7 +2407,7 @@ export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener
 // @public
 export type PropertyDataChangesListener = () => void;
 
-// @beta
+// @public
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
     // (undocumented)
     abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
@@ -2422,7 +2419,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
     abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export interface PropertyDataFilterResult {
     filteredTypes?: FilteredType[];
     matchesCount?: number;
@@ -2492,11 +2489,11 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
-// @beta
+// @public
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
-// @beta
+// @public
 export type PropertyFilterChangesListener = () => void;
 
 // @public
@@ -2673,7 +2670,7 @@ export interface PropertyPopupState {
     };
 }
 
-// @beta
+// @public
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
@@ -4226,7 +4223,7 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
 // @beta
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
-// @beta
+// @public
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
 }): {

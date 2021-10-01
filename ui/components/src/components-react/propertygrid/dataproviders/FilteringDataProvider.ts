@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 /** @packageDocumentation
  * @module PropertyGrid
  */
 import { IDisposable } from "@itwin/core-bentley";
-import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
 import { HighlightInfo } from "../../common/HighlightingComponentProps";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
@@ -22,27 +22,29 @@ interface FilteredRecords {
 }
 
 /**
- *  Data returned by [[FilteringPropertyDataProvider]]
- * @beta
+ * Data returned by [[FilteringPropertyDataProvider]]
+ * @public
  */
 export interface FilteredPropertyData extends PropertyData {
   /*
   * Shows how many matches were found when filtering data.
-  * Undefined when filterer is not active
+  * `undefined` when filterer is not active
   */
   matchesCount?: number;
+
   /*
-  * Function used for getting PropertyRecordMatchInfo by index from all the filtered matches.
-  * Undefined when filterer is not active
+  * Function used for getting [[HighlightInfo]] by index from all the filtered matches.
+  * `undefined` when filterer is not active
   */
   getMatchByIndex?: (index: number) => HighlightInfo | undefined;
 
+  /** Types of objects that were used for filtering. */
   filteredTypes?: FilteredType[];
 }
 
 /**
- * IPropertyDataProvider implementation which will filter wrapped provider PropertyData using passed IPropertyDataFilterer.
- * @beta
+ * [[IPropertyDataProvider]] implementation which filters wrapped provider [[PropertyData]] using passed [[IPropertyDataFilterer]].
+ * @public
  */
 export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
   public onDataChanged = new PropertyDataChangeEvent();

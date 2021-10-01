@@ -25,7 +25,7 @@ export interface PropertyCategoryRendererProps {
 
 /**
  * Factory function that produces custom property category components.
- *  @beta
+ * @beta
  */
 export type PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType<PropertyCategoryRendererProps> | undefined;
 
