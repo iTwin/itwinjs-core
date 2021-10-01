@@ -959,24 +959,6 @@ export interface CategoryTreeProps {
     width: number;
 }
 
-// @internal
-export interface ChangeSetInfo {
-    // (undocumented)
-    changeSetId?: string;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    largeThumbnail?: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    pushDate: Date;
-    // (undocumented)
-    smallThumbnail?: string;
-    // (undocumented)
-    userCreated?: string;
-}
-
 // @public (undocumented)
 export interface ChildWindowLocationProps {
     // (undocumented)
@@ -3081,57 +3063,6 @@ export const IModelConnectedViewport: import("react-redux").ConnectedComponent<R
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
-
-// @internal
-export interface IModelInfo {
-    // (undocumented)
-    createdDate: Date;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    iTwinId: GuidString;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    status: string;
-    // (undocumented)
-    thumbnail?: string;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @internal
-export enum IModelScope {
-    // (undocumented)
-    All = 2,
-    // (undocumented)
-    Favorites = 0,
-    // (undocumented)
-    MostRecentlyUsed = 1
-}
-
-// @internal
-export interface IModelServices {
-    getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]>;
-    getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
-    getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
-    getUsers(iModelId: string): Promise<IModelUserInfo[]>;
-    getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(iTwinId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
-}
-
-// @internal
-export interface IModelUserInfo {
-    // (undocumented)
-    email: string;
-    // (undocumented)
-    firstName: string;
-    // (undocumented)
-    id?: string;
-    // (undocumented)
-    lastName: string;
-}
 
 // @public
 export class IModelViewportControl extends ViewportContentControl {
@@ -6621,12 +6552,10 @@ export class UiFramework {
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
     static get i18n(): I18N;
     static get i18nNamespace(): string;
-    // @internal (undocumented)
-    static get iModelServices(): IModelServices;
     static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
@@ -6970,24 +6899,6 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
     // @internal (undocumented)
     render(): React.ReactNode;
     }
-
-// @internal
-export interface VersionInfo {
-    // (undocumented)
-    changeSetId?: string;
-    // (undocumented)
-    createdDate: Date;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    largeThumbnail?: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    smallThumbnail?: string;
-    // (undocumented)
-    userCreated?: string;
-}
 
 // @beta
 export class ViewAttributesStatusField extends React.Component<StatusFieldProps, ViewAttributesStatusFieldState> {

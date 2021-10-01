@@ -27,7 +27,7 @@ async function createNewModelAndCategory(rwIModel: IModelDb) {
 
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
-  let user: AccessToken;
+  let accessToken: AccessToken;
   let iModelDbHub: SnapshotDb;
 
   before(async () => {
@@ -38,8 +38,8 @@ describe("ElementAspectPerformance", () => {
     const iTwinId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 
-    user = await TestUtility.getAccessToken(TestUsers.regular);
-    iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId, iModelId: imodelId });
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId: imodelId });
     assert.exists(iModelDbHub);
   });
 

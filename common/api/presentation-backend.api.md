@@ -32,6 +32,7 @@ import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
+import { NodeKeyJSON } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
 import { PagedResponse } from '@itwin/presentation-common';
@@ -61,6 +62,9 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 // @internal (undocumented)
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
+
+// @internal (undocumented)
+export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;

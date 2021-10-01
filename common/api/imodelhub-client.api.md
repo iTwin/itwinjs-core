@@ -6,15 +6,20 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
+import { BriefcaseId } from '@itwin/core-common';
 import { CancelRequest } from '@bentley/itwin-client';
+import { ChangesetId } from '@itwin/core-common';
 import { Client } from '@bentley/itwin-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
+import { FrontendHubAccess } from '@itwin/core-frontend';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { HttpStatus } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelHubStatus } from '@itwin/core-bentley';
+import { IModelIdArg } from '@itwin/core-frontend';
+import { IModelVersion } from '@itwin/core-common';
 import { ITwin } from '@bentley/context-registry-client';
 import { LogFunction } from '@itwin/core-bentley';
 import { ProgressCallback } from '@bentley/itwin-client';
@@ -130,6 +135,12 @@ export class BriefcaseHandler {
     download(accessToken: AccessToken, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     get(accessToken: AccessToken, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
     update(accessToken: AccessToken, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase>;
+}
+
+// @internal (undocumented)
+export interface BriefcaseIdArg extends IModelIdArg {
+    // (undocumented)
+    readonly briefcaseId: BriefcaseId;
 }
 
 // @internal
@@ -870,11 +881,42 @@ export enum IModelHubEventType {
 }
 
 // @internal
+export class IModelHubFrontend implements FrontendHubAccess {
+    // (undocumented)
+    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
+        versionName: string;
+    }): Promise<ChangesetId>;
+    // (undocumented)
+    getChangesetIdFromVersion(arg: IModelIdArg & {
+        version: IModelVersion;
+    }): Promise<ChangesetId>;
+    // (undocumented)
+    getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
+    // (undocumented)
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    // (undocumented)
+    readonly hubClient: IModelHubClient;
+    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    // (undocumented)
+    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+}
+
+// @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     contextId?: string;
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;
+}
+
+// @internal (undocumented)
+export interface IModelNameArg {
+    // (undocumented)
+    readonly accessToken: AccessToken;
+    // (undocumented)
+    readonly iModelName: string;
+    // (undocumented)
+    readonly iTwinId: GuidString;
 }
 
 // @internal

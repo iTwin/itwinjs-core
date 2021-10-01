@@ -51,7 +51,7 @@ export class HubUtility {
   }
 
   public static async queryIModelByName(accessToken: AccessToken, iTwinId: string, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ user: accessToken, iTwinId, iModelName });
+    return IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
   }
 
   private static async queryIModelById(accessToken: AccessToken, iTwinId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
@@ -192,7 +192,7 @@ export class HubUtility {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
     const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, iModelName);
 
-    await IModelHost.hubAccess.deleteIModel({ user: accessToken, iTwinId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
@@ -335,19 +335,19 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
-  public static async pushIModel(user: AccessToken, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+  public static async pushIModel(accessToken: AccessToken, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModels");
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
-    const iModelId = await HubUtility.queryIModelByName(user, iTwinId, locIModelName);
+    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, locIModelName);
     if (iModelId) {
       if (!overwrite)
         return iModelId;
-      await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName: locIModelName, revision0: pathname });
+    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, revision0: pathname });
   }
 
   /** Upload an IModel's seed files and change sets to the hub
@@ -374,7 +374,7 @@ export class HubUtility {
     return iModelId;
   }
 
-  private static async pushChangeSets(user: AccessToken, briefcase: Briefcase, uploadDir: string): Promise<void> {
+  private static async pushChangeSets(accessToken: AccessToken, briefcase: Briefcase, uploadDir: string): Promise<void> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests push changesets");
     const changeSetJsonPathname = path.join(uploadDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
@@ -384,7 +384,7 @@ export class HubUtility {
     const changeSetsJson = JSON.parse(jsonStr);
 
     // Find the last change set that was already uploaded
-    const lastCs = await IModelHost.hubAccess.getLatestChangeset({ user, iModelId: briefcase.iModelId! });
+    const lastCs = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: briefcase.iModelId! });
     const filteredChangeSetsJson = (lastCs.index === 0) ? changeSetsJson.slice(lastCs.index + 1) : changeSetsJson;
 
     // Upload change sets
@@ -403,7 +403,7 @@ export class HubUtility {
       changeSet.changesType = changeSetJson.changesType;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await IModelHubBackend.iModelClient.changeSets.create(user, briefcase.iModelId!, changeSet, changeSetPathname);
+      await IModelHubBackend.iModelClient.changeSets.create(accessToken, briefcase.iModelId!, changeSet, changeSetPathname);
       ii++;
       Logger.logInfo(HubUtility.logCategory, `Uploaded Change Set ${ii} of ${count}`, () => ({ ...changeSet }));
     }
@@ -431,16 +431,16 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcasesById(user: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
+  public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ user, iModelId });
+    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
         onReachThreshold();
 
       const promises: Promise<void>[] = [];
       briefcases.forEach((briefcaseId) => {
-        promises.push(IModelHost.hubAccess.releaseBriefcase({ user, iModelId, briefcaseId }));
+        promises.push(IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
       });
       await Promise.all(promises);
     }
@@ -565,22 +565,22 @@ export class HubUtility {
   /** Deletes and re-creates an iModel with the provided name in the Context.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(arg: { user: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
+  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const deleteIModel = await HubUtility.queryIModelByName(arg.user, arg.iTwinId, arg.iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(arg.accessToken, arg.iTwinId, arg.iModelName);
     if (undefined !== deleteIModel)
-      await IModelHost.hubAccess.deleteIModel({ user: arg.user, iTwinId: arg.iTwinId, iModelId: deleteIModel });
+      await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
     return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
   }
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
-  public static async createIModel(user: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
+  public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    let iModelId = await HubUtility.queryIModelByName(user, iTwinId, iModelName);
+    let iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
     if (!iModelId)
-      iModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: `Description for iModel` });
+      iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
     return iModelId;
   }
 }

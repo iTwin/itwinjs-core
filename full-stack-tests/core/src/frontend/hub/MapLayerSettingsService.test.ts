@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
-import { TestFrontendAuthorizationClient, TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 
 import { TestUtility } from "./TestUtility";
-import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
@@ -18,15 +18,10 @@ describe("MapLayerSettingsService (#integration)", () => {
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
-    const authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
-    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-
-    new TestFrontendAuthorizationClient(accessToken);
-    const options: IModelAppOptions = {
-      authorizationClient,
-    };
     await IModelApp.shutdown();
-    await IModelApp.startup(options);
+    await IModelApp.startup();
+    await TestUtility.initialize(TestUsers.regular);
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     chai.assert.isDefined(iTwinId);
     iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.readOnly);

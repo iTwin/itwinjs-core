@@ -30,12 +30,12 @@ describe("Schema XML Import Tests (#integration)", () => {
     HubMock.startup("schemaImport");
     accessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
-    readWriteTestIModelId = await HubUtility.recreateIModel({ user: accessToken, iTwinId: testITwinId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
+    readWriteTestIModelId = await HubUtility.recreateIModel({ accessToken, iTwinId: testITwinId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
   after(async () => {
     try {
-      await IModelHost.hubAccess.deleteIModel({ user: accessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -47,7 +47,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: accessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
     await iModel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure

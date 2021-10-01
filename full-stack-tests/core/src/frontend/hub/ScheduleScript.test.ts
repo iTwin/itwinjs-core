@@ -7,7 +7,7 @@ import {
   Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
 } from "@itwin/core-common";
 import {
-  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, IModelHubFrontend, SpatialViewState, ViewState,
+  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -30,9 +30,8 @@ describe("Schedule script (#integration)", () => {
 
   before(async () => {
     await IModelApp.shutdown();
-    await IModelApp.startup();
-    IModelApp.authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
-    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
+    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);

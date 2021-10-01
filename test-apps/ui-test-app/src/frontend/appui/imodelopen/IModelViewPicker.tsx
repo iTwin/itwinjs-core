@@ -190,8 +190,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { IModelInfo, UiFramework } from "@itwin/appui-react";
 import { Button, ProgressRadial } from "@itwin/itwinui-react";
+import { ExternalIModel } from "../ExternalIModel";
 
 interface ViewCardProps {
   view: ViewDefinitionProps;
@@ -241,7 +241,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
 
 /** Properties for the [[IModelViewPicker]] component */
 export interface ViewsProps {
-  iModelInfo?: IModelInfo;
+  iModelInfo?: { id: string, iTwinId: string, name: string };
   iModelConnection?: IModelConnection;
   onViewsSelected?: (views: ViewDefinitionProps[]) => void;
   onClose: () => void;
@@ -292,7 +292,9 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   private async startRetrieveViews() {
     if (this.props.iModelInfo) {
-      this._iModelConnection = await UiFramework.iModelServices.openIModel(this.props.iModelInfo.iTwinId, this.props.iModelInfo.wsgId);
+      const iModel = new ExternalIModel(this.props.iModelInfo.iTwinId, this.props.iModelInfo.id);
+      await iModel.openIModel();
+      this._iModelConnection = iModel.iModelConnection!;
     } else if (this.props.iModelConnection) {
       this._iModelConnection = this.props.iModelConnection;
     } else {

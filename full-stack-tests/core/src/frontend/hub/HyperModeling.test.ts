@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
 import { SectionType } from "@itwin/core-common";
 import {
-  CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend, ParseAndRunResult, SnapshotConnection,
+  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
 } from "@itwin/core-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
@@ -21,9 +21,9 @@ describe("HyperModeling (#integration)", () => {
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
-    await IModelApp.startup();
-    IModelApp.authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
-    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
+    await IModelApp.shutdown();
+    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);

@@ -20,7 +20,7 @@ describe("ApplyChangesets (#integration)", () => {
   };
 
   const testOpen = async (accessToken: AccessToken, iTwinId: string, iModelId: string) => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user: accessToken, iTwinId, iModelId });
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   };

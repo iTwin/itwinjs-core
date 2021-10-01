@@ -115,7 +115,7 @@ async function generateResultFiles(result: TileResult, configData: ConfigData, r
   await writeOverallStats(result, configData, resultFilePath);
 }
 
-async function generateIModelDbTiles(user: AccessToken, config: ConfigData): Promise<TileResult | undefined> {
+async function generateIModelDbTiles(accessToken: AccessToken, config: ConfigData): Promise<TileResult | undefined> {
   let peakMemUsage: number = 0;
   let peakCPUUsage: number = 0;
 
@@ -125,10 +125,10 @@ async function generateIModelDbTiles(user: AccessToken, config: ConfigData): Pro
   if (config.localPath) {
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
-    const iModelId = await HubUtility.queryIModelIdByName(user, config.iTwinId, config.iModelName);
+    const iModelId = await HubUtility.queryIModelIdByName(accessToken, config.iTwinId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
-    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
+    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 
@@ -197,8 +197,8 @@ describe("TilesGenerationPerformance", () => {
 
   before(async () => {
     assert.isDefined(config.regionId, "No Region defined");
-    assert.isDefined(config.contextId, "No iTwinId defined");
-    imodels.forEach((element) => element.iTwinId = config.contextId);
+    assert.isDefined(config.iTwinId, "No iTwinId defined");
+    imodels.forEach((element) => element.iTwinId = config.iTwinId);
 
     IModelTestUtils.setupLogging();
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);

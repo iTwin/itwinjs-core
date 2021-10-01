@@ -16,7 +16,7 @@ import { AccessToken } from "@itwin/core-bentley";
 describe("Agent iModel Download (#integration)", () => {
   let testITwinId: string;
   let testReadIModelId: string;
-  let user: AccessToken;
+  let accessToken: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
@@ -33,14 +33,14 @@ describe("Agent iModel Download (#integration)", () => {
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    user = await agentClient.getAccessToken();
+    accessToken = await agentClient.getAccessToken();
 
-    testITwinId = await HubUtility.getTestITwinId(user);
-    testReadIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testReadIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
   });
 
   it("Agent should be able to open a checkpoint", async () => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testReadIModelId });
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testReadIModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   });

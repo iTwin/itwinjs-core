@@ -5,7 +5,7 @@
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcInvocation, RpcManager, RpcRegistry, TileContentSource,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
@@ -14,6 +14,7 @@ import { IModelDb } from "../../IModelDb";
 import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { RpcTrace } from "../../RpcBackend";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -99,7 +100,7 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user: accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
@@ -111,20 +112,19 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user: accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    RpcInvocation.currentActivity = {
+    const tile = await RpcTrace.run({
       accessToken,
       activityId: "",
       applicationId: "",
       applicationVersion: "",
       sessionId: "",
-    };
-    const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    }, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     assert.equal(tile, TileContentSource.ExternalCache);
 

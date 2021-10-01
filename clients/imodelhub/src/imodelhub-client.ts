@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./IModelClient";
+export * from "./IModelHub";
 export * from "./IModelCloudEnvironment";
 export * from "./IModelHubClientLoggerCategories";
 

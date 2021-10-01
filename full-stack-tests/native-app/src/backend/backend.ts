@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,

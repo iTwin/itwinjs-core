@@ -16,6 +16,7 @@ internal;BriefcaseAccessMode
 internal;BriefcaseDeletedEvent 
 public;class BriefcaseEvent 
 internal;BriefcaseHandler
+internal;BriefcaseIdArg 
 internal;BriefcaseQuery 
 internal;ChangeSet 
 internal;ChangeSetCreatedEvent 
@@ -95,7 +96,9 @@ public;IModelHubClientLoggerCategory
 internal;IModelHubError 
 public;class IModelHubEvent 
 public;IModelHubEventType
+internal;IModelHubFrontend 
 internal;class IModelHubGlobalEvent 
+internal;IModelNameArg
 internal;IModelPermissions 
 internal;IModelQuery 
 internal;IModelsHandler
