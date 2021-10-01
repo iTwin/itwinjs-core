@@ -91,11 +91,8 @@ export interface TreeRendererAttributes {
 
 type Alignment = "auto" | "smart" | "center" | "end" | "start";
 
-/**
- * Context of [[TreeRenderer]] component.
- * @beta
- */
-export interface TreeRendererContext {
+/** [[TreeRenderer]] context that is provided to each rendered node. */
+interface TreeRendererContext {
   /** Callback to render custom node. */
   nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
 
@@ -108,48 +105,25 @@ export interface TreeRendererContext {
   /** Engine used to created node highlighting properties. */
   highlightingEngine?: HighlightingEngine;
 
-  /**
-   * Callback used detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
-   * @internal
-   */
+  /** Callback used detect when label is rendered. It is used by TreeRenderer for scrolling to active match. */
   onLabelRendered?: (node: TreeModelNode) => void;
 
-  /**
-   * A callback that node calls after rendering to report its width
-   * @internal
-   */
+  /** A callback that node calls after rendering to report its width */
   onNodeWidthMeasured?: (width: number) => void;
 
-  /**
-   * Callback used when an editor closes
-   * @internal
-   */
+  /** Callback used when an editor closes */
   onNodeEditorClosed?: () => void;
 }
 
-/**
- * [[TreeRenderer]] context provider, consumer and custom hook.
- * @beta
- */
-export const [
-  /**
-   * Context of [[TreeRenderer]] provider.
-   * @beta
-   */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+/** [[TreeRenderer]] context provider, consumer and custom hook. */
+const [
+  /** Context of [[TreeRenderer]] provider. */
   TreeRendererContextProvider,
 
-  /**
-   * Context of [[TreeRenderer]] consumer.
-   * @beta
-   */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+  /** Context of [[TreeRenderer]] consumer. */
   TreeRendererContextConsumer,
 
-  /**
-   * Custom hook to use [[TreeRenderer]] context.
-   * @beta
-   */
+  /** Custom hook to use [[TreeRenderer]] context. */
   useTreeRendererContext,
 ] = createContextWithMandatoryProvider<TreeRendererContext>("TreeRendererContext");
 

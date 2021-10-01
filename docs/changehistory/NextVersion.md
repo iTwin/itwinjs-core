@@ -724,6 +724,10 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                              |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `TreeRendererContext`                                      | _eliminated_                                                                                                                  |
+| `TreeRendererContextProvider`                              | _eliminated_                                                                                                                  |
+| `TreeRendererContextConsumer`                              | _eliminated_                                                                                                                  |
+| `useTreeRendererContext`                                   | _eliminated_                                                                                                                  |
 | `ExtendedTreeNodeRendererProps`                            | `TreeNodeRendererProps`                                                                                                       |
 | `SignIn`                                                   | _eliminated_                                                                                                                  |
 | All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
