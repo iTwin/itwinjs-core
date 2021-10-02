@@ -1156,224 +1156,114 @@ were removed from the `@itwin/core-backend` package and moved to a new package, 
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
 
-## Changes to how ECSql are executed from frontend and backend
+## Changes to ECSql APIs
 
-There are many improvement made to how backend execute ECSQL and have been made efficient.
+Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
 
-Following classes has breaking changes related to signature.
+- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
 
-- [IModelConnection]($frontend)
-  - query
-  - queryRowCount
-  - restartQuery
-- [IModelDb]($backend)
-  - query
-  - queryRowCount
-  - restartQuery
-- [ECDb]($backend)
-  - query
-  - queryRowCount
-  - restartQuery
+- The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
-One of the important change is related to row/instance format. There was no way to control this before but now it can be controlled and default is not what it use to be.
+- The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
-## Row format (QueryRowFormat)
+### Binding parameters using QueryBinder
 
-The is new parameter determine what row format will be returned by `query()` or `restartQuery()` method. The default format of row has changed from `object` to `array`.
+[QueryBinder]($common) is a more type-safe way to bind parameters to an ECSql statement. It allows mixing indexed and named parameters in a single statement. For example:
 
 ```ts
-enum QueryRowFormat {
-  /** Return ecsql name as defined in query
-  * This format does not include null and undefined values.
-  */
-  UseECSqlPropertyNames,
-  /** Backward compatible format. It use Js base name as 2.x
-   * This format does not include null and undefined values.
-  */
-  UseJsPropertyNames,
-  /** Return array of values and can be accessed using index. This is default and preferred way.
-   * This format include nulls. Trailing null are not present and return undefine
-  */
-  UseArrayIndexes,
-  /** Default is set to be array. */
-  Default = Array,
-}
-```
-
-Given internally all result-set are communicated using arrays which take less space than objects and therefore more efficient in term of size and speed.
-
-When using `Array` row access would look like following. This is **preferred way** in most cases.
-
-```ts
-  for await(const row of query("SELECT ECInstanceId, Name FROM meta.ECClassDef", undefined, QueryRowFormat.Array) {
-    const col0 = row[0];
-    const col1 = row[1];
-    const myObj = {id: row[0], name: row[1]};
-    ...
-  }
-```
-
-When using `QueryRowFormat.UseECSqlPropertyNames` row access would look like following
-
-```ts
-  for await(const row of query("SELECT ECInstanceId, Name FROM meta.ECClassDef", undefined, QueryRowFormat.UseECSqlPropertyNames) {
-    const col0 = row.ECInstanceId;
-    const col1 = row.Name;
-    const myObj = {id: row:ECInstanceId, name: row.Name};
-    ...
-  }
-```
-
-When using `QueryRowFormat.UseJsPropertyNames` row access is **backward compilable**. When casting row as another type define in typescript following row format can be helpful.
-
-```ts
-  for await(const row of query("SELECT ECInstanceId, Name FROM meta.ECClassDef", undefined, QueryRowFormat.UseJsPropertyNames) {
-    const col0 = row.id;
-    const col1 = row.name;
-    const myObj = row as MyClass;
-    ...
-  }
-```
-
-The other parameter changed is `QueryOptions` which use to be multiple parameter but now compounded into one as following
-
-```ts
-/**
- * Options for all request made to concurrent query engine.
- * @beta
- * */
-export interface BaseReaderOptions {
-  /** Determine priority of this query default to 0, used as hint and can be overriden by backend. */
-  priority?: number;
-  /** If specified cancel last query (if any) with same restart token and queue the new query */
-  restartToken?: string;
-  /** For editing apps this can be set to true and all query will run on primary connection
-  *  his may cause slow queries execution but the most recent data changes will be visitable via query
-  */
-  usePrimaryConn?: boolean;
-  /** Restrict time or memory for query but use as hint and may be changed base on backend settings */
-  quota?: Quota;
-}
-/**
- * ECSql query config
- * @beta
- * */
-export interface QueryOptions extends BaseReaderOptions {
-  /**
-   * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
-   * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
-   * */
-  abbreviateBlobs?: boolean;
-  /**
-   * default to false. It will suppress error and will not log it. Useful in cases where we expect query
-   * can fail.
-   */
-  suppressLogErrors?: boolean;
-  /** This is used internally by ECSqlReader. If true it query will return meta data about query. */
-  includeMetaData?: boolean;
-  /** Limit range of rows returned by query*/
-  limit?: QueryLimit;
-}
-```
-
-The new method signature look like following
-
-## Changes to `query()` method
-
-The signature of the method have change to following
-
-```ts
-query(ecsql: string, params?: QueryBinding, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
-```
-
-The `rowFormat` parameter defaults to `QueryRowFormat.Array` which is more efficient and performant. When using default use `row[0]` instead of `row.id`
-
-To make it simple to use the new method you can simply change the call as following. This will make sure row format in the iterator stay same as before.
-
-```typescript
-  con.query("select * from bis.element where ecinstanceid = ?", ["0x1"]);
-```
-
-can be changed to following to get exactly same behavior.
-
-```js
-  con.query("select * from bis.element where ecinstanceid = ?", QueryBinding.from(["0x1"], QueryRowFormat.UseJsPropertyNames));
-```
-
-In case of object as parameter
-
-```ts
-  con.query("select * from bis.element where ecinstanceid = :id", {id: "0x1"});
-```
-
-can be changed to following to get exactly same behavior.
-
-```typescript
-  con.query("select * from bis.element where ecinstanceid = ?", QueryBinding.from({id: "0x1"}, QueryRowFormat.UseJsPropertyNames));
-```
-
-## Changes to `restartQuery()` method
-
-It has similar changes as `query()` and implemented using `query()` method internally.
-
-```ts
-restartQuery(token: string, ecsql: string, params?: QueryBinding, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>
-```
-
-## Changes to `queryRowCount()` method
-
-This method behave as before except the params are provided differently. This method is implemented using `query()` method.
-
-```ts
-queryRowCount(ecsql: string, params?: QueryBinding): Promise<number>
-```
-
-## Using `QueryBinding` to bind parameters to ecsql
-
-`QueryBinding` is new class and help strong type parameter bindings. It can be used directly as below. It allow binding of `Id64Set`as well.
-
-```ts
-  const params = new QueryBinding()
+  const params = new QueryBinder()
     .bindString("name", "hello")
-    .bindId(1, "id");
+    .bindId(1, "0x123");
 
-  con.query("select ecinstanceid,name from bis.element where ecinstanceid = ? and Name=:name", params) {
-    // ... row[0]
+  for await (const row of db.query("SELECT ECInstanceId, Name from bis.Element WHERE ECInstanceId=? AND Name=:name", params)) {
+    const obj = { id: row[0], name: row[1] };
+    // ...
   }
-
 ```
+
+### Id64Set parameter bindings
+
+It is now possible to efficiently bind a large set of ECInstanceIds to a query parameter. This can be very useful for `IN` clauses. For example, imagine you wanted to select some properties of all of the [SpatialModel]($backend)s belonging to a [ModelSelector]($backend). Previously you would need to write something like this:
+
+```ts
+  const ids = Array.from(modelSelector.models).join(",");
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN (" + ids + ")");
+```
+
+The list of comma-separated Ids could be extremely long - in some cases, it might be so long that it would need to be split up into multiple queries!
+
+Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will be serialized in a compact string format.
+
+```ts
+  const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN :modelIds", params);
+```
+
+### Upgrading existing code to use the new `query` methods:
+
+The signature of the method has changed to:
+
+```ts
+query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
+```
+
+The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
+
+```ts
+  // Replace this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
+  // With this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), QueryRowFormat.UseJsPropertyNames);
+  // The code that accesses the properties of each row can remain unchanged.
+```
+
+Similarly, if your existing code passes an object instead of an array as the query parameter, change it as follows:
+```ts
+  // Replace this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
+  // With this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), QueryRowFormat.UseJsPropertyNames);
+  // The code that accesses the properties of each row can remain unchanged.
+```
+
+### Upgrading existing code to use the new `restartQuery` methods:
+
+The parameters have changed in the same way as `query`, so they can be changed as described for `query` above.
+
+### Upgrading existing code to use the new `queryRowCount` methods:
+
+The behavior of this method has not changed, but the parameters must be provided as a [QueryBinder]($common) object instead of an array or object. Upgrade your existing code as described for `query` above.
 
 ## New `ECSqlReader` API (beta)
 
-This is new api that is what `query()` method use internally. There is case fo this api as well when you need meta information.
+[ECSqlReader]($common) is a flexible API that is used internally by methods like [IModelDb.query]($backend). It is also useful when you want the result to include metadata. For example:
 
 ```ts
-  const params = new QueryBinding()
-    .bindString("name", "CompositeUnitRefersToUnit");
+  const params = new QueryBinder().bindString("name", "CompositeUnitRefersToUnit");
   const reader = conn.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE Name=:name");
-  // After first time step is called meta data is populated.
 
-  while(await reader.step()) {
-        if (needMetaData) {
-          setupColumns(reader.getMetaData());
-        }
-        // access using any property using ECSQL or JS name in case insensitive fashion.
-        assert.equal(reader.current.id, "0x32");
-        assert.equal(reader.current.ecinstanceid, "0x32");
-        assert.equal(reader.current.name, "CompositeUnitRefersToUnit");
-        assert.equal(reader.current.ID, "0x32");
-        assert.equal(reader.current.ECINSTANCEID, "0x32");
-        assert.equal(reader.current[0], "0x32");
-        assert.equal(reader.current[1], "CompositeUnitRefersToUnit");
+  // The first time step is called, the metadata is populated.
+  while (await reader.step()) {
+    if (needMetaData)
+      setupColumns(reader.getMetaData());
 
-        // render row with UseECSqlPropertyNames as object
-        const row0 = reader.current.toRow();
-        assert.equal(row0.ECInstanceId, "0x32");
-        assert.equal(row0.Name, "CompositeUnitRefersToUnit");
+    // access using any property using ECSQL or JS name in case insensitive fashion.
+    assert.equal(reader.current.id, "0x32");
+    assert.equal(reader.current.ecinstanceid, "0x32");
+    assert.equal(reader.current.name, "CompositeUnitRefersToUnit");
+    assert.equal(reader.current.ID, "0x32");
+    assert.equal(reader.current.ECINSTANCEID, "0x32");
+    assert.equal(reader.current[0], "0x32");
+    assert.equal(reader.current[1], "CompositeUnitRefersToUnit");
 
-        // render row with UseECSqlPropertyNames as object
-        const row1 = reader.current.toJsRow();
-        assert.equal(row1.id, "0x32");
-        assert.equal(row1.name, "CompositeUnitRefersToUnit");
+    // render row with UseECSqlPropertyNames as object
+    const row0 = reader.current.toRow();
+    assert.equal(row0.ECInstanceId, "0x32");
+    assert.equal(row0.Name, "CompositeUnitRefersToUnit");
+
+    // render row with UseECSqlPropertyNames as object
+    const row1 = reader.current.toJsRow();
+    assert.equal(row1.id, "0x32");
+    assert.equal(row1.name, "CompositeUnitRefersToUnit");
   }
 ```
