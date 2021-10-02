@@ -6,23 +6,25 @@ import { BentleyError, CompressedId64Set, DbResult, Id64Set, Id64String } from "
 import { Point2d, Point3d } from "@itwin/core-geometry";
 
 /**
- * Specify row format for the row returned by query() and restartQuery() methods
+ * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
+ * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
+ *
  * @public
  * */
 export enum QueryRowFormat {
-  /** Return ecsql name as defined in query
-   * This format does not include null and undefined values.
-  */
+  /** Each row is an object in which each non-null column value can be accessed by its name as defined in the EC schema.
+   * Null values are omitted.
+   */
   UseECSqlPropertyNames,
-  /** Backward compatible format. It use Js base name as 2.x
-   * This format does not include null and undefined values.
-  */
+  /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
+   * This format is backwards-compatible with the format produced by iModel.js version 2.x. Null values are omitted.
+   */
   UseJsPropertyNames,
-  /** Return array of values and can be accessed using index. This is default and preferred way.
-   * This format include nulls. Trailing null are not present and return undefine
-  */
+  /** Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement.
+   * Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
+   */
   UseArrayIndexes,
-  /** Default is set to be array. */
+  /** The default format if none is specified by the caller. */
   Default = UseArrayIndexes,
 }
 /**
