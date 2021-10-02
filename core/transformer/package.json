@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-transformer",
-  "version": "3.0.0-dev.73",
+  "version": "3.0.0-dev.74",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
   "main": "lib/core-transformer.js",
   "typings": "lib/core-transformer",
@@ -38,12 +38,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.73",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.73",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.73",
-    "@itwin/core-common": "workspace:^3.0.0-dev.73",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.73"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.74",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.74",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.74",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.74",
+    "@itwin/core-common": "workspace:^3.0.0-dev.74",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.74"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
