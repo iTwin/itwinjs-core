@@ -92,30 +92,29 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangesets(requestContext: AccessToken, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(accessToken: AccessToken, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
-    if (changeSets.length === 0)
-      return changeSets;
-    const latestIndex = changeSets.length - 1;
+    const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
+    if (changesets.length === 0)
+      return changesets;
+    const latestIndex = changesets.length - 1;
     let earliestIndex = 0; // Earliest index that doesn't exist
     while (earliestIndex <= latestIndex) {
-      const pathname = path.join(changeSetsPath, changeSets[earliestIndex].fileName!);
+      const pathname = path.join(changeSetsPath, changesets[earliestIndex].fileName!);
       if (!IModelJsFs.existsSync(pathname))
         break;
       ++earliestIndex;
     }
     if (earliestIndex > latestIndex) // All change sets have already been downloaded
-      return changeSets;
+      return changesets;
 
-    const earliestChangeSetId = earliestIndex > 0 ? changeSets[earliestIndex - 1].id! : undefined; // Query results exclude earliest specified change set
-    const latestChangeSetId = changeSets[latestIndex].id!; // Query results include latest specified change set
-    const query = earliestChangeSetId ? new ChangeSetQuery().betweenChangeSets(earliestChangeSetId, latestChangeSetId) : new ChangeSetQuery();
+    const earliestChangeSetId = earliestIndex > 0 ? changesets[earliestIndex - 1].id : undefined; // Query results exclude earliest specified change set
+    const latestChangeSetId = changesets[latestIndex].id; // Query results include latest specified change set
 
     const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
-    await IModelHubBackend.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
+    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangeSetId, end: latestChangeSetId } , targetDir: changeSetsPath });
     perfLogger.dispose();
-    return changeSets;
+    return changesets;
   }
 
   /** Download all named versions of the specified iModel */
@@ -124,7 +123,7 @@ export class HubUtility {
     query.orderBy("createdDate");
 
     const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
-    const versions = await IModelHubBackend.iModelClient.versions.get(requestContext, iModelId, query);
+    const versions = await IModelHost.hubAccess. IModelHubBackend.iModelClient.versions.get(requestContext, iModelId, query);
     perfLogger.dispose();
     if (versions.length === 0)
       return new Array<ChangeSet>();

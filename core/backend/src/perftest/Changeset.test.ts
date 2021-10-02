@@ -7,13 +7,11 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { AccessToken, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { ChangesetProps, ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
-import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools/lib/Reporter";
-import {
-  BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
-} from "../core-backend";
+import { BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -326,46 +324,46 @@ describe("ImodelChangesetPerformance big datasets", () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
   });
-  function getChangesetSummary(changeSets: ChangeSet[]): {} {
-    const schemaChanges = changeSets.filter((obj) => obj.changesType === ChangesType.Schema);
-    const dataChanges = changeSets.filter((obj) => obj.changesType !== ChangesType.Schema);
+  function getChangesetSummary(changesets: ChangesetProps[]): {} {
+    const schemaChanges = changesets.filter((obj) => obj.changesType === ChangesetType.Schema);
+    const dataChanges = changesets.filter((obj) => obj.changesType !== ChangesetType.Schema);
     const csSummary = {
-      count: changeSets.length,
-      fileSizeKB: Math.round(changeSets.reduce((prev, cs) => prev + Number(cs.fileSize), 0) / 1024),
+      count: changesets.length,
+      fileSizeKB: Math.round(changesets.reduce((prev, cs: ChangesetProps) => prev + Number(cs.size), 0) / 1024),
       schemaChanges: {
         count: schemaChanges.length,
-        fileSizeKB: Math.round(schemaChanges.reduce((prev, cs) => prev + Number(cs.fileSize), 0) / 1024),
+        fileSizeKB: Math.round(schemaChanges.reduce((prev, cs) => prev + Number(cs.size), 0) / 1024),
       },
       nonSchemaChanges: {
         count: dataChanges.length,
-        fileSizeKB: Math.round(dataChanges.reduce((prev, cs) => prev + Number(cs.fileSize), 0) / 1024),
+        fileSizeKB: Math.round(dataChanges.reduce((prev, cs) => prev + Number(cs.size), 0) / 1024),
       },
     };
     return csSummary;
   }
 
-  async function downloadChangesets(requestContext: AccessToken, imodelId: string, changeSets: ChangeSet[], downloadDir: string) {
+  async function downloadChangesets(accessToken: AccessToken, imodelId: string, changeSets: ChangesetProps[], downloadDir: string) {
     if (fs.existsSync(downloadDir))
       fs.removeSync(downloadDir);
     // get first changeset as betweenChangeSets skips the first entry
     const csQuery1 = new ChangeSetQuery();
-    csQuery1.byId(changeSets[0].id!);
+    csQuery1.byId(changeSets[0].id);
     await IModelHost.hubAccess.downloadChangesets({
       iModelId: imodelId,
       targetDir: downloadDir,
-      user: requestContext,
+      accessToken,
     });
-    await IModelHubBackend.iModelClient.changeSets.download(requestContext, imodelId, csQuery1, downloadDir);
+    await IModelHubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery1, downloadDir);
     const incr: number = 100;
     for (let j = 0; j <= changeSets.length; j = j + incr) {
       const csQuery = new ChangeSetQuery();
       if ((j + incr) < changeSets.length)
-        csQuery.betweenChangeSets(changeSets[j].id!, changeSets[j + incr].id);
+        csQuery.betweenChangeSets(changeSets[j].id, changeSets[j + incr].id);
       else
-        csQuery.betweenChangeSets(changeSets[j].id!, changeSets[changeSets.length - 1].id);
+        csQuery.betweenChangeSets(changeSets[j].id, changeSets[changeSets.length - 1].id);
       csQuery.selectDownloadUrl();
 
-      await IModelHubBackend.iModelClient.changeSets.download(requestContext, imodelId, csQuery, downloadDir);
+      await IModelHubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery, downloadDir);
     }
   }
   async function setupIModel(modelInfo: any) {
@@ -606,14 +604,14 @@ describe("ImodelChangesetPerformance own data", () => {
     nativeDb.closeIModel();
   }
 
-  async function lastChangesetToken(modelId: string): Promise<IModelJsNative.ChangesetFileProps> {
+  async function lastChangesetToken(iModelId: string): Promise<IModelJsNative.ChangesetFileProps> {
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: modelId});
-    const changeSet = changeSets[changeSets.length - 1];
-    const downloadDir = BriefcaseManager.getChangeSetsPath(modelId);
-    const props = await IModelHost.hubAccess.downloadChangeset({ accessToken, iModelId: modelId, targetDir: downloadDir, changeset: { id: changeSet.id }});
-    const pathname = path.join(downloadDir, changeSet.fileName!);
-    return { id: changeSet.id, parentId: changeSet.parentId, pathname, changesType: changeSet.changesType, index: +changeSet.index, pushDate: "", userCreated: "", briefcaseId: 0, description: "" };
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId});
+    const changeset = changesets[changesets.length - 1];
+    const downloadDir = BriefcaseManager.getChangeSetsPath(iModelId);
+    await IModelHost.hubAccess.downloadChangeset({ accessToken, iModelId, targetDir: downloadDir, changeset: { id: changeset.id }});
+    const pathname = path.join(downloadDir, changeset.fileName!);
+    return { id: changeset.id, parentId: changeset.parentId, pathname, changesType: changeset.changesType, index: +changeset.index, pushDate: "", userCreated: "", briefcaseId: 0, description: "" };
   }
 
   before(async () => {

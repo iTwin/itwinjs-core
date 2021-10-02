@@ -9,7 +9,7 @@
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run -s build",
+    "compile": "tsc 1>&2",
     "build": "tsc 1>&2 && npm run -s copy:assets && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson",

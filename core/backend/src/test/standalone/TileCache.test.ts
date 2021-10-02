@@ -8,11 +8,12 @@ import { BlobDaemon } from "@bentley/imodeljs-native";
 import { DbResult, Guid } from "@itwin/core-bentley";
 import { IModelTileRpcInterface, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
-import { IModelHost, IModelHostConfiguration } from "../../core-backend";
+import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { SnapshotDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";
+import { IModelJsFs } from "../../IModelJsFs";
 
 import sinon = require("sinon");
 const fakeRpc: RpcActivity = {

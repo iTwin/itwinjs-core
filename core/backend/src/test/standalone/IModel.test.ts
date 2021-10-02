@@ -11,7 +11,6 @@ import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
