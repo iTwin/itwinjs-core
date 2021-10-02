@@ -15,7 +15,7 @@ describe("UiCore", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiCore.i18n).to.throw(Error);
+    expect(() => UiCore.localization).to.throw(Error);
   });
 
   it("terminate should run even if no i18n to unregister", () => {
@@ -23,7 +23,7 @@ describe("UiCore", () => {
   });
 
   it("i18nNamespace should return UiCore", () => {
-    expect(UiCore.i18nNamespace).to.eq("UiCore");
+    expect(UiCore.localizationNamespace).to.eq("UiCore");
   });
 
   it("packageName should return core-react", () => {

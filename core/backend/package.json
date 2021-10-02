@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.73",
   "description": "iTwin.js backend components",
   "main": "lib/core-backend.js",
   "typings": "lib/core-backend",
@@ -55,12 +55,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.72",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
-    "@itwin/core-common": "workspace:^3.0.0-dev.72",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.72",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.72"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.73",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.73",
+    "@itwin/core-common": "workspace:^3.0.0-dev.73",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.73",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.73"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

@@ -15,6 +15,7 @@ import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { I18N } from "@itwin/core-i18n";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
@@ -22,8 +23,11 @@ describe("HyperModeling (#integration)", () => {
 
   before(async () => {
     await IModelApp.shutdown();
+    await IModelApp.startup({
+      ...TestUtility.iModelAppOptions,
+      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+    });
     await TestUtility.initialize(TestUsers.regular);
-    await IModelApp.startup(TestUtility.iModelAppOptions);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);

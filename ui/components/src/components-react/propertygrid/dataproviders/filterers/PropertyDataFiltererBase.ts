@@ -6,13 +6,13 @@
  * @module PropertyGrid
  */
 
-import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@itwin/appui-abstract";
+import { BeEvent } from "@itwin/core-bentley";
 import { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Enumeration of possible component filtered types
- * @beta
+ * @public
  */
 export enum FilteredType {
   Category,
@@ -21,8 +21,8 @@ export enum FilteredType {
 }
 
 /**
- * Data structure for storing IPropertyDataFilterer matching results
- * @beta
+ * Data structure for storing [[IPropertyDataFilterer]] matching results
+ * @public
  */
 export interface PropertyDataFilterResult {
   /** Indicates whether provided item matched filter */
@@ -53,19 +53,20 @@ export interface PropertyDataFilterResult {
 
 /**
  * A signature for property data change listeners
- * @beta
+ * @public
  */
 export declare type PropertyFilterChangesListener = () => void;
 
 /**
  * An event broadcasted when property filter changes
- * @beta
+ * @public
  */
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> { }
 
 /**
- * Interface to be implemented by Property Data Filter classes
- * @beta
+ * An interface for a filterer that filters [[PropertyData]] based on content of [[PropertyRecord]]
+ * and [[PropertyCategory]] objects.
+ * @public
  */
 export interface IPropertyDataFilterer {
   readonly isActive: boolean;
@@ -75,8 +76,8 @@ export interface IPropertyDataFilterer {
 }
 
 /**
- * PropertyDataFilter base which helps implement common logic between all IPropertyDataFilterer
- * @beta
+ * An abstract implementation of [[IPropertyDataFilterer]] to share common behavior between different implementations.
+ * @public
  */
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
   public onFilterChanged: PropertyFilterChangeEvent = new PropertyFilterChangeEvent();
@@ -84,18 +85,22 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
   public abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
   public abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
 }
+
 /**
- * PropertyDataFilter base which is suited for only Category filtering
- * @beta
+ * An abstract implementation of [[IPropertyDataFilterer]] that can be used as base for all
+ * filterers that filter based on [[PropertyCategory]] content.
+ * @public
  */
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
   public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
     return { matchesFilter: !this.isActive };
   }
 }
+
 /**
- * PropertyDataFilter base which is suited for only Record filtering
- * @beta
+ * An abstract implementation of [[IPropertyDataFilterer]] that can be used as base for all
+ * filterers that filter based on [[PropertyRecord]] content.
+ * @public
  */
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
   public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {

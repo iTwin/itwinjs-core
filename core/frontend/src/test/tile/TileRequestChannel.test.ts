@@ -220,9 +220,9 @@ class LoggingChannel extends TileRequestChannel {
     return false;
   }
 
-  public override recordCompletion(tile: Tile): void {
+  public override recordCompletion(tile: Tile, content: TileContent): void {
     this.log("recordCompletion");
-    super.recordCompletion(tile);
+    super.recordCompletion(tile, content);
   }
 
   public override recordTimeout() {

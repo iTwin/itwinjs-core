@@ -38,8 +38,8 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@itwin/electron-manager": "workspace:*",
-    "@itwin/mobile-manager": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
+    "@itwin/core-mobile": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
@@ -52,6 +52,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
+    "@bentley/reality-data-client": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

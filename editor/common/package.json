@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-common",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.73",
   "description": "iModel.js editing properties common to frontend and backend",
   "main": "lib/editor-common.js",
   "typings": "lib/editor-common",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
-    "@itwin/core-common": "workspace:^3.0.0-dev.72"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.73",
+    "@itwin/core-common": "workspace:^3.0.0-dev.73"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

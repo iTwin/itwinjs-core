@@ -37,7 +37,6 @@ import { ByteStream } from '@itwin/core-bentley';
 import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
-import { CartographicRange } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
@@ -124,9 +123,6 @@ import { GroundPlane } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
-import { I18N } from '@itwin/core-i18n';
-import { I18NNamespace } from '@itwin/core-i18n';
-import { I18NOptions } from '@itwin/core-i18n';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -155,6 +151,7 @@ import { IpcSocketFrontend } from '@itwin/core-common';
 import { LightSettings } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
+import { Localization } from '@itwin/core-common';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { Loop } from '@itwin/core-geometry';
@@ -4261,9 +4258,13 @@ export class IModelApp {
     static get hasRenderSystem(): boolean;
     // @internal
     static get hubAccess(): FrontendHubAccess | undefined;
+<<<<<<< HEAD
     static get i18n(): I18N;
+=======
+>>>>>>> master
     // @internal (undocumented)
     static get initialized(): boolean;
+    static get localization(): Localization;
     // @internal (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
@@ -4293,6 +4294,8 @@ export class IModelApp {
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
+    // @beta
+    static get realityDataAccess(): RealityDataAccess | undefined;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal
@@ -4331,7 +4334,11 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
     hubAccess?: FrontendHubAccess;
+<<<<<<< HEAD
     i18n?: I18N | I18NOptions;
+=======
+    localization?: Localization;
+>>>>>>> master
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     // @beta
@@ -4339,6 +4346,8 @@ export interface IModelAppOptions {
     notifications?: NotificationManager;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
+    // @beta (undocumented)
+    realityDataAccess?: RealityDataAccess;
     // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
     // (undocumented)
@@ -4529,7 +4538,6 @@ export class IModelTile extends Tile {
     constructor(params: IModelTileParams, tree: IModelTileTree);
     // (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
-    cacheMiss: boolean;
     // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
@@ -4550,6 +4558,7 @@ export class IModelTile extends Tile {
     protected get rangeGraphicColor(): ColorDef;
     // (undocumented)
     readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent>;
+    requestChannel?: TileRequestChannel;
     // (undocumented)
     requestContent(): Promise<TileRequest.Response>;
     // (undocumented)
@@ -4574,6 +4583,28 @@ export interface IModelTileParams extends TileParams {
 
 // @internal (undocumented)
 export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams;
+
+// @internal
+export class IModelTileRequestChannels {
+    // (undocumented)
+    [Symbol.iterator](): Iterator<TileRequestChannel>;
+    constructor(args: {
+        concurrency: number;
+        usesHttp: boolean;
+        cacheMetadata: boolean;
+    });
+    // (undocumented)
+    get cloudStorage(): TileRequestChannel | undefined;
+    // (undocumented)
+    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    getCachedContent(tile: IModelTile): IModelTileContent | undefined;
+    // (undocumented)
+    getChannelForTile(tile: IModelTile): TileRequestChannel;
+    // (undocumented)
+    readonly rpc: TileRequestChannel;
+    // (undocumented)
+    setRpcConcurrency(concurrency: number): void;
+}
 
 // @internal
 export class IModelTileTree extends TileTree {
@@ -7299,9 +7330,6 @@ export interface QuantityTypeDefinition {
 // @beta
 export type QuantityTypeKey = string;
 
-// @public
-export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
-
 // @beta
 export interface QueryScreenFeaturesOptions {
     includeNonLocatable?: boolean;
@@ -7335,13 +7363,6 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
-
-// @public
-export interface RealityDataQueryCriteria {
-    filterIModel?: IModelConnection;
-    iTwinId: GuidString;
-    range?: CartographicRange;
-}
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
@@ -10031,6 +10052,8 @@ export namespace TileAdmin {
         alwaysRequestEdges?: boolean;
         // @internal
         alwaysSubdivideIncompleteTiles?: boolean;
+        // @internal
+        cacheTileMetadata?: boolean;
         cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
@@ -10267,7 +10290,9 @@ export class TileRequest {
 
 // @public (undocumented)
 export namespace TileRequest {
-    export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+    export type Response = Uint8Array | ArrayBuffer | string | ImageSource | {
+        content: TileContent;
+    } | undefined;
     export type ResponseData = Uint8Array | ImageSource;
     export enum State {
         Completed = 3,
@@ -10292,6 +10317,8 @@ export class TileRequestChannel {
     get concurrency(): number;
     set concurrency(max: number);
     // @internal
+    contentCallback?: (tile: Tile, content: TileContent) => void;
+    // @internal
     protected dispatch(request: TileRequest): void;
     // @internal
     protected dropActiveRequest(request: TileRequest): void;
@@ -10305,7 +10332,7 @@ export class TileRequestChannel {
     process(): void;
     processCancellations(): void;
     // @internal
-    recordCompletion(tile: Tile): void;
+    recordCompletion(tile: Tile, content: TileContent): void;
     // @internal
     recordFailure(): void;
     // @internal
@@ -10324,20 +10351,20 @@ export class TileRequestChannel {
 export class TileRequestChannels {
     [Symbol.iterator](): Iterator<TileRequestChannel>;
     // @internal
-    constructor(rpcConcurrency: number | undefined);
+    constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
-    // @internal
-    get cloudStorageCache(): TileRequestChannel | undefined;
     readonly elementGraphicsRpc: TileRequestChannel;
     // @internal
     enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
+    // @internal (undocumented)
+    getIModelTileChannel(tile: IModelTile): TileRequestChannel;
     static getNameFromUrl(url: URL | string): string;
     has(channel: TileRequestChannel): boolean;
     readonly httpConcurrency = 6;
     // @internal (undocumented)
-    readonly iModelTileRpc: TileRequestChannel;
+    readonly iModelChannels: IModelTileRequestChannels;
     // @internal
     onIModelClosed(iModel: IModelConnection): void;
     // @internal
@@ -10559,16 +10586,16 @@ export class Tool {
     static get flyover(): string;
     get flyover(): string;
     static hidden: boolean;
-    static i18n: I18N;
     static iconSpec: string;
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
+    static localization: Localization;
     static get maxArgs(): number | undefined;
     static get minArgs(): number;
-    static namespace: I18NNamespace;
+    static namespace: string;
     parseAndRun(..._args: string[]): Promise<boolean>;
-    static register(namespace?: I18NNamespace, i18n?: I18N): void;
+    static register(namespace?: string, localization?: Localization): void;
     run(..._args: any[]): Promise<boolean>;
     static toolId: string;
     get toolId(): string;
@@ -10831,8 +10858,8 @@ export class ToolRegistry {
     getToolList(): ToolList;
     parseAndRun(keyin: string): Promise<ParseAndRunResult>;
     parseKeyin(keyin: string): ParseKeyinResult;
-    register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
-    registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
+    register(toolClass: ToolType, namespace?: string, localization?: Localization): void;
+    registerModule(moduleObj: any, namespace?: string, localization?: Localization): void;
     run(toolId: string, ...args: any[]): Promise<boolean>;
     // (undocumented)
     readonly tools: Map<string, typeof Tool>;

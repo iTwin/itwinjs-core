@@ -15,11 +15,11 @@ describe("UiComponents", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiComponents.i18n).to.throw(Error);
+    expect(() => UiComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return UiComponents", () => {
-    expect(UiComponents.i18nNamespace).to.eq("UiComponents");
+    expect(UiComponents.localizationNamespace).to.eq("UiComponents");
   });
 
   it("packageName should return components-react", () => {

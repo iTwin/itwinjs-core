@@ -30,10 +30,9 @@
     "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-markup": "workspace:*",
-    "@itwin/electron-manager": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
     "electron": "^14.0.0"

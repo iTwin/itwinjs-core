@@ -22,7 +22,6 @@ import { GlobalContextMenuProps } from '@itwin/core-react';
 import { GlobalDialogProps } from '@itwin/core-react';
 import { GroupButton } from '@itwin/appui-abstract';
 import { HorizontalAlignment } from '@itwin/core-react';
-import { I18N } from '@itwin/core-i18n';
 import { IconDefinition } from '@itwin/appui-abstract';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -30,6 +29,7 @@ import { immerable } from 'immer';
 import * as Inspire from 'inspire-tree';
 import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@itwin/appui-abstract';
+import { Localization } from '@itwin/core-common';
 import { MessageSeverity } from '@itwin/appui-abstract';
 import { NoChildrenProps } from '@itwin/core-react';
 import { NodeCheckboxRenderer } from '@itwin/core-react';
@@ -489,7 +489,6 @@ export interface ColumnFilterDescriptor extends FilterDescriptor {
 
 // @public
 export interface CommonPropertyGridProps extends CommonProps {
-    // @beta
     actionButtonRenderers?: ActionButtonRenderer[];
     actionButtonWidth?: number;
     // @beta
@@ -544,7 +543,7 @@ export interface CompositeFilterDescriptorCollection {
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @beta
+// @public
 export enum CompositeFilterType {
     // (undocumented)
     And = 0,
@@ -552,7 +551,7 @@ export enum CompositeFilterType {
     Or = 1
 }
 
-// @beta
+// @public
 export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
     constructor(_leftFilterer: IPropertyDataFilterer, _operator: CompositeFilterType, _rightFilterer: IPropertyDataFilterer);
     // (undocumented)
@@ -602,7 +601,7 @@ export interface ControlledTreeProps extends CommonProps {
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
-    // @alpha
+    // @beta
     onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
@@ -838,7 +837,7 @@ export class DirectionHelpers {
     static readonly TOP_CLASS_NAME = "components-direction-top";
 }
 
-// @beta
+// @public
 export class DisplayValuePropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -985,14 +984,6 @@ export interface ErrorObserver<T> {
     next?: (value: T) => void;
 }
 
-// @beta
-export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
-    checkboxRenderer?: NodeCheckboxRenderer;
-    descriptionEnabled?: boolean;
-    imageLoader?: ITreeImageLoader;
-    nodeEditorRenderer?: TreeNodeEditorRenderer;
-}
-
 // @public
 export class FavoritePropertiesRenderer {
     // (undocumented)
@@ -1077,9 +1068,8 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     remove(item: TDescriptor): boolean;
 }
 
-// @beta
+// @public
 export interface FilteredPropertyData extends PropertyData {
-    // (undocumented)
     filteredTypes?: FilteredType[];
     // (undocumented)
     getMatchByIndex?: (index: number) => HighlightInfo | undefined;
@@ -1087,7 +1077,7 @@ export interface FilteredPropertyData extends PropertyData {
     matchesCount?: number;
 }
 
-// @beta
+// @public
 export enum FilteredType {
     // (undocumented)
     Category = 0,
@@ -1123,7 +1113,7 @@ export enum FilteringInputStatus {
     ReadyToFilter = 0
 }
 
-// @beta
+// @public
 export class FilteringPropertyDataProvider implements IPropertyDataProvider, IDisposable {
     constructor(_dataProvider: IPropertyDataProvider, _filterer: IPropertyDataFilterer);
     // (undocumented)
@@ -1595,7 +1585,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Int): string;
 }
 
-// @beta
+// @public
 export interface IPropertyDataFilterer {
     // (undocumented)
     categoryMatchesFilter: (node: PropertyCategory, parents: PropertyCategory[]) => Promise<PropertyDataFilterResult>;
@@ -1719,7 +1709,7 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
     readonly dataProvider: TDataProvider;
 }
 
-// @beta
+// @public
 export class LabelPropertyDataFilterer extends PropertyRecordDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -2311,7 +2301,7 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 
 // @public
 export interface PropertyCategory {
-    // @beta (undocumented)
+    // (undocumented)
     childCategories?: PropertyCategory[];
     // (undocumented)
     expand: boolean;
@@ -2319,7 +2309,7 @@ export interface PropertyCategory {
     label: string;
     // (undocumented)
     name: string;
-    // @beta (undocumented)
+    // (undocumented)
     renderer?: {
         name: string;
     };
@@ -2335,18 +2325,17 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
 // @public
 export interface PropertyCategoryBlockProps extends CommonProps {
     category: PropertyCategory;
-    // @beta
     highlight?: HighlightingComponentProps;
     onExpansionToggled?: (categoryName: string) => void;
 }
 
-// @beta
+// @public
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     recordMatchesFilter(): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export class PropertyCategoryLabelFilterer extends PropertyCategoryDataFiltererBase {
     constructor(filterText?: string);
     // (undocumented)
@@ -2410,7 +2399,7 @@ export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener
 // @public
 export type PropertyDataChangesListener = () => void;
 
-// @beta
+// @public
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
     // (undocumented)
     abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
@@ -2422,7 +2411,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
     abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
 }
 
-// @beta
+// @public
 export interface PropertyDataFilterResult {
     filteredTypes?: FilteredType[];
     matchesCount?: number;
@@ -2492,11 +2481,11 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
-// @beta
+// @public
 export class PropertyFilterChangeEvent extends BeEvent<PropertyFilterChangesListener> {
 }
 
-// @beta
+// @public
 export type PropertyFilterChangesListener = () => void;
 
 // @public
@@ -2673,7 +2662,7 @@ export interface PropertyPopupState {
     };
 }
 
-// @beta
+// @public
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
     // (undocumented)
     categoryMatchesFilter(): Promise<PropertyDataFilterResult>;
@@ -2766,7 +2755,7 @@ export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     icon?: boolean;
 }
 
-// @alpha
+// @beta
 export interface RenderedItemsRange {
     // (undocumented)
     overscanStartIndex: number;
@@ -3982,10 +3971,10 @@ export class TreeModelSource {
     onModelChanged: BeUiEvent<[TreeModel, TreeModelChanges]>;
 }
 
-// @beta
+// @public
 export function TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element;
 
-// @beta
+// @public
 export interface TreeNodeEditorProps {
     // @internal (undocumented)
     ignoreEditorBlur?: boolean;
@@ -3995,7 +3984,7 @@ export interface TreeNodeEditorProps {
     style?: React.CSSProperties;
 }
 
-// @beta
+// @public
 export type TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode;
 
 // @public
@@ -4048,21 +4037,23 @@ export interface TreeNodeLoadResult {
     loadedNodes: TreeNodeItem[];
 }
 
-// @beta
-export const TreeNodeRenderer: React.MemoExoticComponent<(props: ExtendedTreeNodeRendererProps) => JSX.Element>;
+// @public
+export const TreeNodeRenderer: React.MemoExoticComponent<(props: TreeNodeRendererProps) => JSX.Element>;
 
 // @public
 export interface TreeNodeRendererProps extends CommonProps {
-    // (undocumented)
+    checkboxRenderer?: NodeCheckboxRenderer;
+    descriptionEnabled?: boolean;
+    imageLoader?: ITreeImageLoader;
     node: TreeModelNode;
+    nodeEditorRenderer?: TreeNodeEditorRenderer;
     nodeHighlightProps?: HighlightableTreeNodeProps;
     // @internal
     onLabelRendered?: (node: TreeModelNode) => void;
-    // (undocumented)
     treeActions: TreeActions;
 }
 
-// @beta
+// @public
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
     // (undocumented)
     render(): JSX.Element;
@@ -4075,39 +4066,6 @@ export interface TreeRendererAttributes {
     scrollToNode(nodeId: string, alignment?: Alignment): void;
 }
 
-// @beta
-export interface TreeRendererContext {
-    highlightingEngine?: HighlightingEngine;
-    // (undocumented)
-    nodeLoader: ITreeNodeLoader;
-    nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
-    // @internal
-    onLabelRendered?: (node: TreeModelNode) => void;
-    // @internal
-    onNodeEditorClosed?: () => void;
-    // @internal
-    onNodeWidthMeasured?: (width: number) => void;
-    // (undocumented)
-    treeActions: TreeActions;
-    visibleNodes: VisibleTreeNodes;
-}
-
-// @beta
-export const
-/**
- * Context of [[TreeRenderer]] provider.
- * @beta
- */
-TreeRendererContextConsumer: React.ExoticComponent<React.ConsumerProps<TreeRendererContext>>;
-
-// @beta
-export const
-/**
- * Context of [[TreeRenderer]] provider.
- * @beta
- */
-TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<TreeRendererContext>>;
-
 // @public
 export interface TreeRendererProps {
     height: number;
@@ -4116,7 +4074,7 @@ export interface TreeRendererProps {
     // (undocumented)
     nodeLoader: ITreeNodeLoader;
     nodeRenderer?: (props: TreeNodeRendererProps) => React.ReactNode;
-    // @alpha
+    // @beta
     onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
     // @internal
     onNodeEditorClosed?: () => void;
@@ -4189,10 +4147,10 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n: I18N): Promise<void>;
+    static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
+    static get localization(): Localization;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
@@ -4223,10 +4181,10 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
     inProgress: boolean;
 };
 
-// @beta
+// @public
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
-// @beta
+// @public
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
 }): {
@@ -4275,14 +4233,6 @@ export function useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSou
 
 // @public
 export function useTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;
-
-// @beta
-export const
-/**
- * Context of [[TreeRenderer]] provider.
- * @beta
- */
-useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
 
 // @beta
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {

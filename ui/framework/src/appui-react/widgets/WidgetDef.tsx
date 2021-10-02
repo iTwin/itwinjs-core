@@ -199,7 +199,7 @@ export class WidgetDef {
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)
-      me._label = UiFramework.i18n.translate(widgetProps.labelKey);
+      me._label = UiFramework.localization.getLocalizedString(widgetProps.labelKey);
 
     me.setCanPopout(widgetProps.canPopout);
     me.setFloatingContainerId(widgetProps.floatingContainerId);
@@ -211,7 +211,7 @@ export class WidgetDef {
     if (widgetProps.tooltip)
       me.setTooltip(widgetProps.tooltip);
     else if (widgetProps.tooltipKey)
-      me._tooltip = UiFramework.i18n.translate(widgetProps.tooltipKey);
+      me._tooltip = UiFramework.localization.getLocalizedString(widgetProps.tooltipKey);
 
     if (widgetProps.control !== undefined)
       me._classId = widgetProps.control;

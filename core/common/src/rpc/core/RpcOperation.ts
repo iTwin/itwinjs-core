@@ -11,7 +11,6 @@ import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocationCallback } from "./RpcInvocation";
 import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
 import {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
@@ -32,9 +31,6 @@ export class RpcOperationPolicy {
 
   /** Called after every operation request on the frontend is sent. */
   public sentCallback: RpcRequestCallback_T = (_request) => { };
-
-  /** Called for every operation invocation on the backend. */
-  public invocationCallback: RpcInvocationCallback = (_invocation) => { };
 
   /**
    * Determines if caching is permitted for an operation response.

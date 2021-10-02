@@ -5,7 +5,7 @@
 // cspell:words buddi urlps
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";

@@ -91,7 +91,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
     if (ProcessDetector.isElectronAppFrontend) {
       disableSignInOnClick = false;
       const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
-      signingInMessage = UiFramework.i18n.translate(signingInMessageStringId);
+      signingInMessage = UiFramework.localization.getLocalizedString(signingInMessageStringId);
     }
 
     return <SignInBase className={this.props.className} style={this.props.style}

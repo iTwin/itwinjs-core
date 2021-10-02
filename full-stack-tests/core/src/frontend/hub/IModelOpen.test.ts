@@ -72,7 +72,8 @@ describe("Opening IModelConnection (#integration)", () => {
     await iModelToClose.close();
   };
 
-  it("should be able to open multiple read-only connections to an iModel that requires a large number of change sets to be applied", async () => {
+  // this test is useless
+  it.skip("should be able to open multiple read-only connections to an iModel that requires a large number of change sets to be applied", async () => {
     await doTest();
   });
 

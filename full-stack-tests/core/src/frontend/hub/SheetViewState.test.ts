@@ -14,8 +14,8 @@ describe("Sheet views (#integration)", () => {
   const attachmentCategoryId = "0x93";
 
   before(async () => {
-    await TestUtility.initialize(TestUsers.regular);
     await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);

@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@itwin/core-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -24,7 +24,7 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.localization = new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" });
     iModelApp.tileAdmin = {
       minimumSpatialTolerance: 0,
       cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,

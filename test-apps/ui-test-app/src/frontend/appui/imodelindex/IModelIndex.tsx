@@ -92,7 +92,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* retrieves the iModel thumbnail. */
   private async startRetrieveThumbnail(iTwinId: string, iModelId: string) {
     const hubFrontend = new IModelHubFrontend();
-    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.authorizationClient?.getAccessToken())!, iModelId, { contextId: iTwinId, size: "Small" });
+    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken()), iModelId, { contextId: iTwinId, size: "Small" });
     this.setState({ thumbnail: _thumbnail });
   }
 
@@ -101,7 +101,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     const hubClient: IModelClient = new IModelHubClient();
     const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+    const accessToken = await IModelApp.getAccessToken();
 
     /* get the iModel name */
     const imodels = await hubClient.iModels.get(accessToken, iTwinId, new IModelQuery().byId(iModelId));

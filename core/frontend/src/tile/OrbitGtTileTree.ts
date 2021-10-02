@@ -17,7 +17,6 @@ import {
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
-import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -416,10 +415,11 @@ export namespace OrbitGtTileTree {
           return false;
     }
 
-    // If there's no rdsUrl, request one from RealityDataClient
+    // If there's no rdsUrl, request one from RealityDataAccessClient
     if (!props.rdsUrl) {
-      const rdClient: RealityDataClient = new RealityDataClient();
-      props.rdsUrl = await rdClient.getRealityDataUrl(iModel.iTwinId, props.containerName);
+      if (undefined === IModelApp.realityDataAccess)
+        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access orbit tiles. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+      props.rdsUrl = await IModelApp.realityDataAccess.getRealityDataUrl(iModel.iTwinId, props.containerName);
     }
 
     // If props are now valid, return OK
@@ -521,10 +521,10 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const strings = [];
-    strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
+    strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
 
     if (this._name)
-      strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

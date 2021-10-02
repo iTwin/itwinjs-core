@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost, ElectronHostOptions } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";

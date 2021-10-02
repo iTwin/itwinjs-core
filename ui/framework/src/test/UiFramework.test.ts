@@ -48,12 +48,12 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(() => UiFramework.store).to.throw(Error);
     });
 
-    it("i18n should throw Error without initialize", () => {
-      expect(() => UiFramework.i18n).to.throw(Error);
+    it("localization should throw Error without initialize", () => {
+      expect(() => UiFramework.localization).to.throw(Error);
     });
 
-    it("i18nNamespace should return UiFramework", () => {
-      expect(UiFramework.i18nNamespace).to.eq("UiFramework");
+    it("localizationNamespace should return UiFramework", () => {
+      expect(UiFramework.localizationNamespace).to.eq("UiFramework");
     });
 
     it("packageName should return appui-react", () => {
@@ -108,9 +108,9 @@ describe("UiFramework localStorage Wrapper", () => {
     it("calling initialize twice should log", async () => {
       const spyLogger = sinon.spy(Logger, "logInfo");
       expect(UiFramework.initialized).to.be.false;
-      await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
       expect(UiFramework.initialized).to.be.true;
-      await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
       spyLogger.calledOnce.should.true;
     });
 
@@ -118,7 +118,7 @@ describe("UiFramework localStorage Wrapper", () => {
       await MockRender.App.startup();
 
       await UiFramework.initialize(TestUtils.store);
-      expect(UiFramework.i18n).to.eq(IModelApp.i18n);
+      expect(UiFramework.localization).to.eq(IModelApp.localization);
 
       await MockRender.App.shutdown();
     });

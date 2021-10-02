@@ -21,7 +21,7 @@ import { ProjectDropdown } from "./ProjectDropdown";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
-  getAccessToken?: () => Promise<AccessToken | undefined>;
+  getAccessToken: () => Promise<AccessToken>;
   onIModelSelected?: (iModelInfo: { iTwinId: string, id: string, name: string }) => void;
   initialIModels?: IModelInfo[];
 }
@@ -67,14 +67,11 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       });
     }
 
-    if (undefined === this.props.getAccessToken)
-      return;
-
     const token = await this.props.getAccessToken();
-    if (undefined === token)
+    if ("" === token)
       return;
 
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+    const accessToken = await IModelApp.getAccessToken();
     const client = new ITwinAccessClient();
     const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
     this.setState({
@@ -88,7 +85,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
 
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const accessToken = await IModelApp.getAccessToken();
     const hubAccess = new IModelHubFrontend();
 
     const iModelInfos: IModelInfo[] = [];
