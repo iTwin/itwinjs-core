@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.0.0-dev.74",
+  "version": "3.0.0-dev.75",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/appui-layout-react.js",
   "typings": "lib/appui-layout-react",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.74",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.74",
-    "@itwin/core-react": "workspace:^3.0.0-dev.74",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.75",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.75",
+    "@itwin/core-react": "workspace:^3.0.0-dev.75",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
