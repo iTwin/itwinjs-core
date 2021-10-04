@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@bentley/imodeljs-common";
+import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";

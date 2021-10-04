@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone";
+import { fireEvent } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../appui-layout-react";
 import { setRefValue, TestNineZoneProvider } from "../Providers";
 
 describe("usePanelsAutoCollapse", () => {

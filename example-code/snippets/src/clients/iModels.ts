@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 import { IModelHubClient } from "@bentley/imodelhub-client";
 
 // __PUBLISH_EXTRACT_START__ IModelHandler.getIModels.example-code

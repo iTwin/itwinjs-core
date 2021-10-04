@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   addPanelWidget, addTab, createNineZoneState, PanelSideContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTabs", () => {

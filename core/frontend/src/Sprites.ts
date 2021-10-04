@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
-import { ImageSource } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
+import { ImageSource } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
 import { CanvasDecoration } from "./render/CanvasDecoration";

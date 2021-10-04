@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
   PanelStateContext, PanelWidget, PanelWidgetDragStartAction, Widget, WidgetIdContext, WidgetStateContext,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
+} from "../../appui-layout-react";
+import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";
 import { defaultProps } from "./PanelWidget.test";
 

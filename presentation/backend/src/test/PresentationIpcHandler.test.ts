@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
-import {
-  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams,
-  UpdateHierarchyStateParams, VariableValueTypes,
-} from "@bentley/presentation-common";
-import { createRandomBaseNodeKey } from "@bentley/presentation-common/lib/cjs/test";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { IModelDb, IModelJsNative } from "@itwin/core-backend";
+import {
+  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
+  VariableValueTypes,
+} from "@itwin/presentation-common";
+import { createRandomBaseNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";

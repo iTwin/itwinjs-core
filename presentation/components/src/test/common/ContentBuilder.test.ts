@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {  EnumerationInfo, FieldHierarchy, traverseContentItem } from "@bentley/presentation-common";
+import { expect } from "chai";
+import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/cjs/test";
-import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
-import { expect } from "chai";
+} from "@itwin/presentation-common/lib/cjs/test";
+import { ArrayValue, PropertyRecord, StructValue } from "@itwin/appui-abstract";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
 class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {

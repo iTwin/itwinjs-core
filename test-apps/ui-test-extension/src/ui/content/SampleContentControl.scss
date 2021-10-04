@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-core/lib/ui-core/index.scss";
- @import "@bentley/ui-ninezone/lib/cjs/ui-ninezone/_scrollbar";
+@import "@itwin/core-react/lib/core-react/index.scss";
+@import "@itwin/appui-layout-react/lib/appui-layout-react/_scrollbar";
 
- .ninezone-plugin-content-container {
-   height: 100%;
-   width: 100%;
-   user-select: none;
- }
+.ninezone-plugin-content-container {
+  height: 100%;
+  width: 100%;
+  user-select: none;
+}

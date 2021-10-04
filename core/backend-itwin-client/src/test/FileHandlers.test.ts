@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMutex, BeEvent } from "@bentley/bentleyjs-core";
-import { CancelRequest, ProgressInfo } from "@bentley/itwin-client";
 import { assert } from "chai";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
-import nock from "nock";
+import * as nock from "nock";
 import * as path from "path";
+import { AsyncMutex, BeEvent } from "@itwin/core-bentley";
+import { CancelRequest, ProgressInfo } from "@bentley/itwin-client";
 import { AzureFileHandler } from "../imodelhub/AzureFileHandler";
 
 const testValidUrl = "https://example.com/";

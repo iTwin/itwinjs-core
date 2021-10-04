@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/presentation-components",
-  "version": "3.0.0-dev.70",
+  "name": "@itwin/presentation-components",
+  "version": "3.0.0-dev.72",
   "description": "React components based on iModel.js Presentation library",
   "main": "lib/cjs/presentation-components.js",
   "module": "lib/esm/presentation-components.js",
@@ -25,22 +25,22 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "npm run extract && npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run copy:cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run copy:esm",
+    "compile": "npm run -s build",
+    "build": "npm run -s extract && npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run -s copy:esm",
     "copy:cjs": "cpx \"../common/assets/**/*\" ./lib/cjs/public && cpx \"./public/**/*\" ./lib/cjs/public && cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
     "copy:esm": "cpx \"../common/assets/**/*\" ./lib/esm/public && cpx \"./public/**/*\" ./lib/esm/public && cpx \"./src/**/*.{scss,json}\" ./lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
+    "cover": "nyc npm -s test",
+    "docs": "npm run -s docs:reference && npm run -s extract && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-components",
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson --excludeGlob=**/presentation-components.ts",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
     "fast-deep-equal": "^3.1.3",
@@ -49,32 +49,32 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.70",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.70",
-    "@bentley/presentation-frontend": "workspace:^3.0.0-dev.70",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.70",
-    "@bentley/ui-components": "workspace:^3.0.0-dev.70",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.70",
-    "@bentley/ui-imodel-components": "workspace:^3.0.0-dev.70",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
+    "@itwin/core-common": "workspace:^3.0.0-dev.72",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.72",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.72",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.72",
+    "@itwin/presentation-frontend": "workspace:^3.0.0-dev.72",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.72",
+    "@itwin/components-react": "workspace:^3.0.0-dev.72",
+    "@itwin/core-react": "workspace:^3.0.0-dev.72",
+    "@itwin/imodel-components-react": "workspace:^3.0.0-dev.72",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
-    "@bentley/presentation-frontend": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-components": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
-    "@bentley/ui-imodel-components": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@itwin/presentation-frontend": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/components-react": "workspace:*",
+    "@itwin/core-react": "workspace:*",
+    "@itwin/imodel-components-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -115,7 +115,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 100,
     "functions": 100,
@@ -135,8 +135,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/ui"
+    "extends": "plugin:@itwin/ui"
   }
 }

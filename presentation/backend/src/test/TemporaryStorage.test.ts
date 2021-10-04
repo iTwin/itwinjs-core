@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { using } from "@bentley/bentleyjs-core";
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { using } from "@itwin/core-bentley";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {

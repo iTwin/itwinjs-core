@@ -4,9 +4,9 @@
   "description": "Example extension to exercise adding UI components and stages",
   "main": "index.js",
   "scripts": {
-    "compile": "npm run build",
-    "prebuild": "npm run pseudolocalize && npm run copy:assets",
-    "build": "npm run prebuild && tsc 1>&2",
+    "compile": "npm run -s build",
+    "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets",
+    "build": "npm run -s prebuild && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public/",
     "cover": "",
@@ -27,8 +27,8 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/react": "^17.0.0",
     "@types/react-select": "3.0.26",
     "@bentley/react-scripts": "4.0.3",
@@ -39,21 +39,21 @@
     "svg-sprite-loader": "4.2.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-components": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
-    "@bentley/ui-framework": "workspace:*",
-    "@bentley/ui-ninezone": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
-    "@bentley/presentation-frontend": "workspace:*",
-    "@bentley/presentation-components": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/components-react": "workspace:*",
+    "@itwin/core-react": "workspace:*",
+    "@itwin/appui-react": "workspace:*",
+    "@itwin/appui-layout-react": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@itwin/presentation-frontend": "workspace:*",
+    "@itwin/presentation-components": "workspace:*",
     "classnames": "^2.3.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
@@ -61,8 +61,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

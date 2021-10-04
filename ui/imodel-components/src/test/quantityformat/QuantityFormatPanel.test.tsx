@@ -7,13 +7,13 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
-import { FormatProps, FormatType, ShowSignOption } from "@bentley/imodeljs-quantity";
+import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
+import { FormatProps, FormatType, ShowSignOption } from "@itwin/core-quantity";
 import { BearingQuantityType } from "./BearingQuantityType";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { TestUtils } from "../TestUtils";
 import { handleError, selectChangeValueByIndex, selectChangeValueByText, stubScrollIntoView } from "../test-helpers/misc";
-import { QuantityFormatPanel } from "../../ui-imodel-components/quantityformat/QuantityFormatPanel";
+import { QuantityFormatPanel } from "../../imodel-components-react/quantityformat/QuantityFormatPanel";
 
 describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;

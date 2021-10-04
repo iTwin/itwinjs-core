@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { WidgetDef, ZoneDef, ZoneLocation, ZoneState } from "../../ui-framework";
+import { WidgetDef, ZoneDef, ZoneLocation, ZoneState } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("ZoneDef", () => {

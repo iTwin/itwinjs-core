@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import * as chai from "chai";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
 import { ConnectSettingsClient } from "../SettingsClient";
 import { TestConfig } from "./TestConfig";

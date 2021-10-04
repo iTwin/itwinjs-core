@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../../scrollbar";
+@import "../variables";
+@import "variables";
+
+.nz-footer-messageCenter-dialog {
+  min-width: $nz-footer-popup-min-width;
+
+  >div:last-child {
+    >.nz-tabs {
+      min-width: 100%;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+    }
+
+    >.nz-messages {
+      max-height: 280px;
+      max-width: 480px;
+      min-height: $nz-message-horizontal-padding;
+      overflow: auto;
+
+      @include nz-scrollbar();
+    }
+
+    >.nz-gradient {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      padding-right: $nz-scrollbar-width;
+      box-sizing: border-box;
+
+      &:after {
+        content: '';
+        display: block;
+        background: linear-gradient(rgba(var(--buic-background-2-rgb), 0), rgba(var(--buic-background-2-rgb), 1));
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    >.nz-message-prompt {
+      display: none;
+      text-align: center;
+      margin: 30px 15px;
+      font-style: italic;
+      color: $buic-text-color-disabled;
+    }
+
+    & .nz-messages:empty~.nz-message-prompt {
+      display: block;
+    }
+  }
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { TitleBarButton } from "../../../ui-ninezone";
+import { TitleBarButton } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<TitleBarButton />", () => {

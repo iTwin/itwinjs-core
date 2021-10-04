@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { AccessToken } from "@bentley/bentleyjs-core";
-import { executeBackendCallback, registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { AccessToken } from "@itwin/core-bentley";
+import { executeBackendCallback, registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 
 const getEnvCallbackName = "getEnv";
 const getClientAccessTokenCallbackName = "getClientAccessToken";

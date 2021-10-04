@@ -15,7 +15,7 @@
     "lib/cjs/test/coverage/**/*"
   ],
   "reporter": [
-    "node_modules/@bentley/build-tools/mocha-reporter"
+    "node_modules/@itwin/build-tools/mocha-reporter"
   ],
   "reporterOptions": [
     "mochaFile=lib/cjs/test/junit_results.xml"

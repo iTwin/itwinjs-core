@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { act, fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
+import { act, fireEvent, render } from "@testing-library/react";
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {

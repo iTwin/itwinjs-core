@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { useOnOutsideClick } from "../../../ui-core";
+import { useOnOutsideClick } from "../../../core-react";
 
 /* eslint-disable @typescript-eslint/no-floating-promises */
 

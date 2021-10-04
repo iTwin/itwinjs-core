@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 // import * as sinon from "sinon";
 import { Provider } from "react-redux";
-import { WidgetState } from "@bentley/ui-abstract";
+import { WidgetState } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SelectionInfoField, SessionStateActionId, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, UiFramework, WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("SelectionInfoField", () => {

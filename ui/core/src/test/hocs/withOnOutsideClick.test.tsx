@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { withOnOutsideClick } from "../../ui-core";
+import { withOnOutsideClick } from "../../core-react";
 
 describe("WithOnOutsideClick", () => {
 

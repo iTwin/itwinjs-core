@@ -6,7 +6,7 @@
  * @module Hierarchies
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { InstanceKey, InstanceKeyJSON } from "../EC";
 
 /**

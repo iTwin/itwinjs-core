@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+.components-color-swatch {
+  font-size: $iui-font-size;
+  height: 1em * 1.2;
+  width: 1em * 1.2;
+  border-width: 1px;
+  border-radius: 3px;
+  border-style: solid;
+  border-color: $buic-inputs-border;
+
+  &.round {
+    border-radius: 50%;
+  }
+
+  &[disabled] {
+    opacity: .2;
+  }
+}

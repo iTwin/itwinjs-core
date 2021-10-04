@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { Transform } from "@bentley/geometry-core";
-import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 import * as path from "path";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { BriefcaseConnection } from "@itwin/core-frontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 describe("BriefcaseTxns", () => {

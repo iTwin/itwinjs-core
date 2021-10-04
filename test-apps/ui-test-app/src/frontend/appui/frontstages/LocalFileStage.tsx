@@ -2,23 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
+import * as React from "react";
+import { Id64String } from "@itwin/core-bentley";
+import { ViewDefinitionProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { OpenDialogOptions } from "electron";
+
+import { FillCentered } from "@itwin/core-react";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
-import { Button, Headline } from "@itwin/itwinui-react";
-import { OpenDialogOptions } from "electron";
-import * as React from "react";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
+import { Button, Headline } from "@itwin/itwinui-react";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { hasSavedViewLayoutProps } from "../../tools/UiProviderTool";
 import { ViewsFrontstage } from "./ViewsFrontstage";
 

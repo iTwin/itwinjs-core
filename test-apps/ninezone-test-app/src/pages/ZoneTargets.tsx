@@ -9,7 +9,7 @@ import {
   MergeTarget,
   SplitterTarget,
   StagePanelTarget,
-} from "@bentley/ui-ninezone";
+} from "@itwin/appui-layout-react";
 
 const col: React.CSSProperties = {
   gridRow: "1",

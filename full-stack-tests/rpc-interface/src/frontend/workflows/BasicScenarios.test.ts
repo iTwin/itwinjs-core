@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CheckpointConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;

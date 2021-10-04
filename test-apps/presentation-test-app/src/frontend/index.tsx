@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-// __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
-// __PUBLISH_EXTRACT_END__
-import { UiComponents } from "@bentley/ui-components";
+import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
+// __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
+// __PUBLISH_EXTRACT_END__
+import { UiComponents } from "@itwin/components-react";
 import rpcInterfaces from "../common/Rpcs";
 import App from "./components/app/App";
-import "./index.css";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -32,7 +32,7 @@ export class SampleApp {
       // __PUBLISH_EXTRACT_START__ Presentation.Frontend.IModelAppStartup
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
-    } else if (ProcessDetector.isBrowserProcess){
+    } else if (ProcessDetector.isBrowserProcess) {
       const rpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       await IModelApp.startup(iModelAppOpts);
       BentleyCloudRpcManager.initializeClient(rpcParams, iModelAppOpts.rpcInterfaces ?? []);

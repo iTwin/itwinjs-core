@@ -1,4 +1,4 @@
-# Change Log - @bentley/imodeljs-common
+# Change Log - @itwin/core-common
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 
@@ -686,7 +686,7 @@ Fri, 19 Jun 2020 14:10:03 GMT
 - Add support for cel-shaded views; promote many APIs, particularly display-related ones.
 - Map GeoCoordStatus to GeoServiceStatus so that it can be returned as error code in a RPC without colliding with existing codes.
 - Add Props interface
-- Move linear referencing domain types out to new @bentley/linear-referencing-common package.
+- Move linear referencing domain types out to new @itwin/linear-referencing-common package.
 - Add support for applying different clip volumes to groups of models in a spatial view.
 - Add PhysicalElementProps
 - Add PhysicalTypeProps

@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
-import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import {
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+} from "@itwin/core-common";
+import { Reporter } from "@itwin/perf-tools";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { PerfTestUtility } from "./PerfTestUtils";

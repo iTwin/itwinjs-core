@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import { ChangeSet, IModelHubClient, Version, VersionQuery } from "@bentley/imodelhub-client";
 
 const imodelHubClient: IModelHubClient = new IModelHubClient();

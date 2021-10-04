@@ -3,22 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { Code, ElementProps } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAllAsyncs } from "@bentley/presentation-common/lib/cjs/test";
-import {
-  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
-} from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
-import { ViewportComponent } from "@bentley/ui-imodel-components";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { Code, ElementProps } from "@itwin/core-common";
+import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAllAsyncs } from "@itwin/presentation-common/lib/cjs/test";
+import {
+  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
+} from "@itwin/presentation-frontend";
+import { ViewportComponent } from "@itwin/imodel-components-react";
 import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
 import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 

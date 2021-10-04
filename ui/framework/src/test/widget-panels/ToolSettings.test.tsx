@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Rectangle } from "@bentley/ui-core";
-import { createNineZoneState, DragManager, DragManagerContext, NineZoneProvider, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { Rectangle } from "@itwin/core-react";
+import { createNineZoneState, DragManager, DragManagerContext, NineZoneProvider, ToolSettingsStateContext } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
@@ -12,7 +12,7 @@ import * as sinon from "sinon";
 import {
   ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
   ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 
 describe("WidgetPanelsToolSettings", () => {
   it("should not render w/o tool settings top center zone", () => {

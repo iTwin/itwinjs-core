@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DraggedWidgetIdContext, DragManager, WidgetIdContext, WidgetTabTarget } from "../../ui-ninezone";
+import { fireEvent, render } from "@testing-library/react";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, DraggedWidgetIdContext, DragManager, WidgetIdContext, WidgetTabTarget } from "../../appui-layout-react";
 import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTabTarget ", () => {

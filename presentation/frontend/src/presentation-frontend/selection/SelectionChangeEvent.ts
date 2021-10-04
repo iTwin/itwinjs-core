@@ -6,9 +6,9 @@
  * @module UnifiedSelection
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { BeEvent } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 
 /**

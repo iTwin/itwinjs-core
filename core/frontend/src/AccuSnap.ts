@@ -6,9 +6,9 @@
  * @module LocatingElements
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { SnapRequestProps } from "@bentley/imodeljs-common";
+import { BeDuration } from "@itwin/core-bentley";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
+import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";

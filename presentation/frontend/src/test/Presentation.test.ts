@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { PresentationError } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
+import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";

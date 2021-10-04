@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../ui-ninezone";
+import { fireEvent, render } from "@testing-library/react";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("PinToggle", () => {

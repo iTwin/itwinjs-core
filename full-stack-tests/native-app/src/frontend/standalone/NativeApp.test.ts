@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { NativeApp } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { NativeApp } from "@itwin/core-frontend";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";
 

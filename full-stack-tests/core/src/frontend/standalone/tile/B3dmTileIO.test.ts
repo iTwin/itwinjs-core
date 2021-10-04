@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { GltfDataType, RenderTexture } from "@bentley/imodeljs-common";
-import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ByteStream } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { GltfDataType, RenderTexture } from "@itwin/core-common";
+import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 

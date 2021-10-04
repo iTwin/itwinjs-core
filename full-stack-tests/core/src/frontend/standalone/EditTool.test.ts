@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { EditTools } from "@itwin/editor-frontend";
+import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
 
 const expect = chai.expect;
 const assert = chai.assert;

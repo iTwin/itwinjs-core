@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 
 /** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations) that is drawn onto the

@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@bentley/imodeljs-common";
+import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
 import { request, RequestOptions } from "@bentley/itwin-client";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
@@ -47,7 +47,7 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
     if (undefined === requestKey)
-      return { };
+      return {};
   }
 
   const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;

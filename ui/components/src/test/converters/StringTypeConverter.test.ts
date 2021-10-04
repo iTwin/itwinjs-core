@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { StringTypeConverter } from "../../ui-components";
+import { StringTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 describe("StringTypeConverter", () => {

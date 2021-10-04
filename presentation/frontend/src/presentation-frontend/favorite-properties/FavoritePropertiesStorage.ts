@@ -6,10 +6,10 @@
  * @module Core
  */
 
-import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
-import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { InternetConnectivityStatus } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 

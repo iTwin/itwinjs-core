@@ -13,7 +13,7 @@ import * as path from "path";
 import { URL } from "url";
 import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { downloadFileAtomic } from "./downloadFileAtomic";
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 
 /**
  * Provides methods to upload and download files from the Internet

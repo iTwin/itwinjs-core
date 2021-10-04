@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@bentley/geometry-core";
-import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
+import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../GraphicBranch";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";

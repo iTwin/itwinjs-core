@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Dialog } from "../../../ui-ninezone";
+import { Dialog } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<Dialog />", () => {

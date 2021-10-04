@@ -6,19 +6,19 @@
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
-import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
   ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
   PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   IModelExporter,
   IModelTransformer, TransformerLoggerCategory,
-} from "../../imodeljs-transformer";
-import { ExtensiveTestScenario, HubMock, HubUtility, IModelTestUtils, KnownTestLocations, TestUserType } from "@bentley/imodeljs-backend/lib/cjs/test";
+} from "../../core-transformer";
+import { ExtensiveTestScenario, HubMock, HubUtility, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
 
 describe("IModelTransformerHub (#integration)", () => {

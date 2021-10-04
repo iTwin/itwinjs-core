@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelIndex.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { LoadingSpinner } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { LoadingSpinner } from "@itwin/core-react";
+import { UiFramework } from "@itwin/appui-react";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";

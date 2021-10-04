@@ -2,15 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { configureForPromiseResult, ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
-import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
+
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { InternetConnectivityStatus } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { configureForPromiseResult, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {

@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { TestBrowserAuthorizationClient } from "@bentley/oidc-signin-tool/lib/cjs/TestBrowserAuthorizationClient";
-import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
-} from "@bentley/presentation-backend";
-import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { I18NOptions } from "@itwin/core-i18n";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestBrowserAuthorizationClient";
+import {
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
+} from "@itwin/presentation-backend";
+import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -40,10 +40,10 @@ chai.use(chaiSubset);
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
-const copyBentleyBackendAssets = (outputDir: string) => {
-  const bentleyPackagesPath = "node_modules/@bentley";
-  fs.readdirSync(bentleyPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(bentleyPackagesPath, packageName);
+const copyITwinBackendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
+    const packagePath = path.resolve(iTwinPackagesPath, packageName);
     return path.join(packagePath, "lib", "cjs", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
@@ -52,10 +52,10 @@ const copyBentleyBackendAssets = (outputDir: string) => {
   });
 };
 
-const copyBentleyFrontendAssets = (outputDir: string) => {
-  const bentleyPackagesPath = "node_modules/@bentley";
-  fs.readdirSync(bentleyPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(bentleyPackagesPath, packageName);
+const copyITwinFrontendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
+    const packagePath = path.resolve(iTwinPackagesPath, packageName);
     return path.join(packagePath, "lib", "cjs", "public");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
@@ -73,8 +73,8 @@ class IntegrationTestsApp extends NoRenderApp {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
-    copyBentleyBackendAssets("lib/assets");
-    copyBentleyFrontendAssets("lib/public");
+    copyITwinBackendAssets("lib/assets");
+    copyITwinFrontendAssets("lib/public");
   }
 }
 

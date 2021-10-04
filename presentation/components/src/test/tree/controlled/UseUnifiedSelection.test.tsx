@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
-import {
-  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
-} from "@bentley/presentation-frontend";
-import {
-  AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
-  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
-import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
 import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { ObservableInput } from "rxjs/internal/types";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { BeUiEvent } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import {
+  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
+} from "@itwin/presentation-frontend";
+import {
+  AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
+  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
+import { renderHook } from "@testing-library/react-hooks";
 import {
   IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
 } from "../../../presentation-components";

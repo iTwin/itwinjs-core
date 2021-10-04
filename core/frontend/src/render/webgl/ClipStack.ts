@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { RgbColor } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { FloatRgba } from "./FloatRGBA";
@@ -54,7 +54,7 @@ export class ClipStack {
   /** The number of rows in the texture actually required to encode the current contents of the stack. */
   protected _numRowsInUse: number;
   /** The first entry always represents the view clip. The rest are pushed and popped with GraphicBranches. */
-  protected readonly _stack: Clip[] = [ emptyClip ];
+  protected readonly _stack: Clip[] = [emptyClip];
   /** True if we need to recompute the texture. */
   protected _isStackDirty = false;
   /** Obtain the transform to be applied to the clips - i.e., the view matrix. */

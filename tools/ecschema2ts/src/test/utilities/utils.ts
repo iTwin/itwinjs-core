@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
-import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@bentley/ecschema-metadata";
-import { DOMParser } from "@xmldom/xmldom";
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaToTs } from "../../ecschema2ts";
 
 declare const __dirname: string; // eslint-disable-line @typescript-eslint/naming-convention
@@ -150,7 +150,7 @@ export function createExpectedSchemaTsString(schemaName: string): string {
 
 export function createExpectedSchemaImportTs(schemaName: string): RegExp[] {
   const importTs: RegExp[] = [
-    new RegExp(`import { (?=.*\\b(ClassRegistry)\\b)(?=.*\\b(Schema)\\b)(?=.*\\b(Schemas)\\b).* } from "@bentley/imodeljs-backend";`),
+    new RegExp(`import { (?=.*\\b(ClassRegistry)\\b)(?=.*\\b(Schema)\\b)(?=.*\\b(Schemas)\\b).* } from "@itwin/core-backend";`),
     new RegExp(`import \\* as elementsModule from "./${schemaName}Elements";`),
   ];
 

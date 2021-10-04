@@ -2,27 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
-import { createRandomId, deepEquals } from "@bentley/presentation-common/lib/cjs/test";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/cjs/test";
-import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
-import {
-  HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
-} from "@bentley/presentation-testing";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { SelectionMode, TreeNodeItem } from "@bentley/ui-components";
-import { fireEvent, render, waitFor } from "@testing-library/react";
 import { expect } from "chai";
 import * as path from "path";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
-import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
-import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { BeEvent } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
+import { createRandomId, deepEquals } from "@itwin/presentation-common/lib/cjs/test";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
+import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
+import {
+  HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
+} from "@itwin/presentation-testing";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../appui-react/imodel-components/models-tree/ModelsTree";
+import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "../Common";
 
@@ -283,7 +283,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
 
           const result = render(<ModelsTree {...sizeProps} iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await  result.findByText("grouping");
+          await result.findByText("grouping");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);

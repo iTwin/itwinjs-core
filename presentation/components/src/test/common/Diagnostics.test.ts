@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as PresentationFrontendDiagnostics from "@bentley/presentation-frontend/lib/cjs/presentation-frontend/Diagnostics";
+
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as PresentationFrontendDiagnostics from "@itwin/presentation-frontend/lib/cjs/presentation-frontend/Diagnostics";
 import { createDiagnosticsOptions } from "../../presentation-components/common/Diagnostics";
 
 describe("createDiagnosticsOptions", () => {

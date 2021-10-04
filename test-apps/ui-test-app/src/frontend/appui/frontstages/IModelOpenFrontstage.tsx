@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { AccessToken } from "@bentley/bentleyjs-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { AccessToken } from "@itwin/core-bentley";
+import { IModelApp } from "@itwin/core-frontend";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema2ts",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema2ts"
+}

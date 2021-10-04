@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
-import { ColumnResizingPropertyListPropsSupplier } from "../../../ui-components/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
-import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/core-react";
+import { ColumnResizingPropertyListPropsSupplier } from "../../../components-react/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
+import { PropertyList } from "../../../components-react/propertygrid/component/PropertyList";
 import TestUtils from "../../TestUtils";
 
 describe("ColumnResizingPropertyListPropsSupplier", () => {

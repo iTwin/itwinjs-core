@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import "./PropertiesWidget.css";
+import * as React from "react";
+import { useResizeDetector } from "react-resize-detector";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
   usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
   FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
   PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
-} from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@bentley/ui-core";
+} from "@itwin/components-react";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
-import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
-import "./PropertiesWidget.css";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 

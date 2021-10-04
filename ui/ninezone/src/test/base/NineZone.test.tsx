@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Rectangle } from "@bentley/ui-core";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/cjs/ui-core/utils/hooks/ResizeObserverPolyfill";
-import { render } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
+import { Rectangle } from "@itwin/core-react";
+import * as ResizeObserverModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/ResizeObserverPolyfill";
+import { render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 import { createRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 

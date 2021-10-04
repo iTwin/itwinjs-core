@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { FlexWrapContainer } from "../../ui-core";
+import { FlexWrapContainer } from "../../core-react";
 
 describe("<FlexWrapContainer />", () => {
   it("should render", () => {

@@ -9,37 +9,37 @@
   },
   "private": true,
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "npm run extract",
+    "docs": "npm run -s extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "cross-env NODE_ENV=development mocha --no-config --grep \"#with-services\" --invert",
     "test:integration": "mocha --no-config --grep \"#with-services\"",
     "copy:config": "internal-tools copy-config",
-    "cover": "npm run test"
+    "cover": "npm run -s test"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
-    "@bentley/presentation-backend": "workspace:*",
-    "@bentley/presentation-frontend": "workspace:*",
-    "@bentley/presentation-components": "workspace:*",
-    "@bentley/presentation-testing": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@itwin/presentation-backend": "workspace:*",
+    "@itwin/presentation-frontend": "workspace:*",
+    "@itwin/presentation-components": "workspace:*",
+    "@itwin/presentation-testing": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
-    "@bentley/ui-components": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
+    "@itwin/core-react": "workspace:*",
+    "@itwin/components-react": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -72,8 +72,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/testing-library__react-hooks": "^3.1.0",
@@ -89,9 +89,9 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   },
   "mocha": {
     "require": [
@@ -106,7 +106,7 @@
       "lib/setup.js"
     ],
     "reporter": [
-      "node_modules/@bentley/build-tools/mocha-reporter"
+      "node_modules/@itwin/build-tools/mocha-reporter"
     ],
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"

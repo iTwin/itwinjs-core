@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { using } from "@bentley/bentleyjs-core";
-import { IModelDb, IpcHost } from "@bentley/imodeljs-backend";
-import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { using } from "@itwin/core-bentley";
+import { IModelDb, IpcHost } from "@itwin/core-backend";
+import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 

@@ -1,4 +1,4 @@
-# Change Log - @bentley/oidc-signin-tool
+# Change Log - @itwin/oidc-signin-tool
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 

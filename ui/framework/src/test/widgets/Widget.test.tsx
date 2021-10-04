@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
-import { Widget } from "../../ui-framework";
+import { WidgetState } from "@itwin/appui-abstract";
+import { Widget } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("Widget", () => {

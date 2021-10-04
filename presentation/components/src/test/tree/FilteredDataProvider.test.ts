@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/cjs/test";
-import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { LabelDefinition, NodePathElement } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@itwin/presentation-common/lib/cjs/test";
+import { PageOptions } from "@itwin/components-react";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../presentation-components/tree/Utils";

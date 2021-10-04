@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
+import { render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState,
-  PanelSide, PanelStateContext, PanelWidget, TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
-} from "../../ui-ninezone";
+  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget,
+  TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
+} from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 /* eslint-disable jsdoc/require-jsdoc */

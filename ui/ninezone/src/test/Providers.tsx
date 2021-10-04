@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point, Rectangle, Size } from "@bentley/ui-core";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
@@ -11,7 +10,8 @@ import {
   DragManagerContext,
   NineZoneProvider,
   NineZoneProviderProps,
-} from "../ui-ninezone";
+} from "../appui-layout-react";
+import { Point, Rectangle, Size } from "@itwin/core-react";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

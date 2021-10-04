@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { ITwinAccessClient } from "@bentley/context-registry-client";
-import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
-import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { OpenMode } from "@itwin/core-bentley";
+import { ITwinAccessClient } from "@bentley/context-registry-client";
+import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 

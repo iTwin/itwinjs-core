@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Dialog, FieldDefinitions, FieldValues, Form } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { Dialog, FieldDefinitions, FieldValues, Form } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 
 export class ExampleForm extends React.Component {
   private _title = "Example Form";

@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { CheckBoxState } from "@bentley/ui-core";
+import { CheckBoxState } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
-import { TreeNodeRenderer } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
-import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
-import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
+import { TreeNodeRenderer } from "../../../../components-react/tree/controlled/component/TreeNodeRenderer";
+import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
+import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import { ITreeImageLoader } from "../../../../components-react/tree/ImageLoader";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeNodeRenderer", () => {

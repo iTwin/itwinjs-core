@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
@@ -76,7 +76,7 @@ export namespace ContextRealityModelProps {
       output.planarClipMask = { ...input.planarClipMask };
 
     if (input.classifiers)
-      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ... x.flags } }; });
+      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ...x.flags } }; });
 
     return output;
   }

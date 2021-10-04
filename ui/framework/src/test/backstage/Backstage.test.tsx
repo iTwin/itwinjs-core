@@ -8,8 +8,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
-} from "../../ui-framework";
-import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+} from "../../appui-react";
+import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
 import TestUtils, { mockUserInfo, mount } from "../TestUtils";
 
 describe("Backstage", () => {

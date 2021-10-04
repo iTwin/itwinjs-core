@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { withContextStyle } from "../../../../ui-components/properties/renderers/value/WithContextStyle";
+import { withContextStyle } from "../../../../components-react/properties/renderers/value/WithContextStyle";
 
 describe("withContextStyle", () => {
 

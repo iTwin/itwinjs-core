@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { I18N } from "@bentley/imodeljs-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
-import {
-  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
-  createTestPropertyInfo, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/cjs/test";
-import { Presentation } from "@bentley/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
+import { I18N } from "@itwin/core-i18n";
+import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
+import {
+  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
+  createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation } from "@itwin/presentation-frontend";
+import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {

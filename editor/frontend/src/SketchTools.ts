@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { getErrorMessage, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, BSplineCurve3d, BSplineCurveOps, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@bentley/imodeljs-common";
-import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@bentley/imodeljs-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { BentleyError, Id64String } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Arc3d, BSplineCurve3d, BSplineCurveOps, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@itwin/core-common";
+import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@itwin/core-frontend";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { computeChordToleranceFromPoint, CreateElementTool, DynamicGraphicsProvider } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@bentley/ui-abstract";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
 
 /** @alpha Values for [[CreateOrContinueTool.createCurvePhase] to support join and closure. */
 export enum CreateCurvePhase {
@@ -131,7 +131,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 
       return { props, path: data.path, params: data.params };
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
       return;
     }
   }
@@ -677,7 +677,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
         await CreateOrContinuePathTool.callCommand("updateGeometricElement", elemProps, data);
       await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 
@@ -1271,7 +1271,7 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== methodValue)
       this.methodProperty.dialogItemValue = methodValue;
@@ -1603,7 +1603,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== methodValue)
       this.methodProperty.dialogItemValue = methodValue;
@@ -1905,7 +1905,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const radiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.radiusProperty.name);
     if (undefined !== radiusValue)
       this.radiusProperty.dialogItemValue = radiusValue;
@@ -2130,7 +2130,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== methodValue)
       this.methodProperty.dialogItemValue = methodValue;

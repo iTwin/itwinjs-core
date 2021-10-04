@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
+} from "@itwin/core-common";
+import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
+import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { I18NOptions } from "@itwin/core-i18n";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
 

@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Rectangle } from "@bentley/ui-core";
-import { act, fireEvent, render } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
+import { Rectangle } from "@itwin/core-react";
+import { act, fireEvent, render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import {
   addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
+} from "../../appui-layout-react";
+import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTitleBar", () => {

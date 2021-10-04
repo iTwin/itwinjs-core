@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import * as path from "path";
+import { ElectronHost, ElectronHostOptions } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
+import { RpcInterfaceDefinition } from "@itwin/core-common";
 import { SampleIpcHandler } from "../SampleIpcHandler";
 
 /**

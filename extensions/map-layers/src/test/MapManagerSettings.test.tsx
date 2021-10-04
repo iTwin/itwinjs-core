@@ -7,10 +7,10 @@
 import {
   BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
-} from "@bentley/imodeljs-common";
-import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { NumberInput, Toggle } from "@bentley/ui-core";
+} from "@itwin/core-common";
+import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { NumberInput, Toggle } from "@itwin/core-react";
 import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";

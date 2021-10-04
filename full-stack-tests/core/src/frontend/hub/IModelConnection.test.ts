@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
   ModelSelectorState, OrthographicViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
-import { assert, expect } from "chai";
+} from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
@@ -32,7 +32,7 @@ describe("IModelConnection (#integration)", () => {
     });
 
     Logger.initializeToConsole();
-    Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
+    Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
     const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;

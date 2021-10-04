@@ -9,7 +9,7 @@
 import {
   DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, MixinProps, RelationshipClass,
   SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableMixin } from "./Mutable/MutableMixin";

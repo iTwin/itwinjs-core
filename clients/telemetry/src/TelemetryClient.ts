@@ -6,8 +6,8 @@
  * @module Telemetry
  */
 
-import { getErrorProps, GuidString, Logger } from "@bentley/bentleyjs-core";
-import { RpcActivity } from "@bentley/imodeljs-common";
+import { BentleyError, GuidString, Logger } from "@itwin/core-bentley";
+import { RpcActivity } from "@itwin/core-common";
 import { TelemetryClientLoggerCategory } from "./TelemetryClientLoggerCategory";
 
 /**
@@ -72,7 +72,7 @@ export class TelemetryManager {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);
       } catch (err) {
-        Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => getErrorProps(err));
+        Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => BentleyError.getErrorProps(err));
       }
     };
 

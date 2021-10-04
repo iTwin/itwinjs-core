@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore typemoq, tabid
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@bentley/imodeljs-frontend";
-import { RpcRequestsHandler } from "@bentley/presentation-common";
-import { createRandomSelectionScope } from "@bentley/presentation-common/lib/cjs/test";
-import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
-import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
-import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
+import * as sinon from "sinon";
+import { IModelRpcProps } from "@itwin/core-common";
+import { RpcRequestsHandler } from "@itwin/presentation-common";
+import { createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@itwin/core-frontend";
+import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
+import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
+import { DefaultIModelServices } from "../appui-react/clientservices/DefaultIModelServices";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
+import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
+import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
 
@@ -57,8 +57,8 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(UiFramework.i18nNamespace).to.eq("UiFramework");
     });
 
-    it("packageName should return ui-framework", () => {
-      expect(UiFramework.packageName).to.eq("ui-framework");
+    it("packageName should return appui-react", () => {
+      expect(UiFramework.packageName).to.eq("appui-react");
     });
 
     it("translate should return the key (in test environment)", async () => {

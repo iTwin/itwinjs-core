@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as fs from "fs";
+import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronHost, ElectronHostOptions } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
-import * as editorBuiltInCommands from "@bentley/imodeljs-editor-backend";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/cjs/MobileBackend";
-import * as fs from "fs";
-import * as path from "path";
+} from "@itwin/core-common";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/mobile-manager/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
+import { EditCommandAdmin } from "@itwin/editor-backend";
+import * as editorBuiltInCommands from "@itwin/editor-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

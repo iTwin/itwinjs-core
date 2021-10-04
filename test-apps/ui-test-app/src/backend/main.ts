@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/cjs/MobileBackend";
-import { Presentation } from "@bentley/presentation-backend";
 import * as fs from "fs";
 import * as path from "path";
-import { getSupportedRpcs } from "../common/rpcs";
-import { loggerCategory } from "../common/TestAppConfiguration";
-import { initializeElectron } from "./electron/ElectronMain";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import { Presentation } from "@itwin/presentation-backend";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
+import { initializeElectron } from "./electron/ElectronMain";
+import { loggerCategory } from "../common/TestAppConfiguration";
+import { AndroidHost, IOSHost } from "@itwin/mobile-manager/lib/cjs/MobileBackend";
+import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {

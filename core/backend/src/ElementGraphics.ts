@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { assert, IModelStatus } from "@bentley/bentleyjs-core";
-import { ElementGraphicsRequestProps, IModelError } from "@bentley/imodeljs-common";
+import { assert, IModelStatus } from "@itwin/core-bentley";
+import { ElementGraphicsRequestProps, IModelError } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { IModelDb } from "./IModelDb";
 

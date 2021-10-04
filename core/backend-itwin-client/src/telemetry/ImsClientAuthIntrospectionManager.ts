@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { RpcActivity } from "@bentley/imodeljs-common";
+import { RpcActivity } from "@itwin/core-common";
 import { ImsIntrospectionResponse } from "../oidc";
 import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIntrospectionManager";
 

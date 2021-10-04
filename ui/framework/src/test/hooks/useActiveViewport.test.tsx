@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../ui-framework";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

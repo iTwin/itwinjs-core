@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64 } from "@bentley/bentleyjs-core";
-import { IpcApp } from "@bentley/imodeljs-frontend";
-import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
-import { createRandomId } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { Id64 } from "@itwin/core-bentley";
+import { IpcApp } from "@itwin/core-frontend";
+import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 

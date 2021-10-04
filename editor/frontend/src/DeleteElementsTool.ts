@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { getErrorMessage, IModelStatus } from "@bentley/bentleyjs-core";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
-import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { BentleyError, IModelStatus } from "@itwin/core-bentley";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { EditTools } from "./EditTool";
 
 /** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
@@ -29,7 +29,7 @@ export class DeleteElementsTool extends ElementSetTool {
       if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", this.agenda.compressIds()))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 

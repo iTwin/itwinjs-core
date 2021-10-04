@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { Field, KeySet } from "@bentley/presentation-common";
-import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import {
-  createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
-} from "@bentley/presentation-frontend";
-import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyData } from "@bentley/ui-components";
 import { expect } from "chai";
 import sinon from "sinon";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { Field, KeySet } from "@itwin/presentation-common";
+import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import {
+  createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
+} from "@itwin/presentation-frontend";
+import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/components-react";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 describe("Favorite properties", () => {

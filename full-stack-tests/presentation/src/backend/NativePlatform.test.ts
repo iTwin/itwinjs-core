@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { HierarchyCacheMode, PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
-import { PresentationError } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as path from "path";
+import { SnapshotDb } from "@itwin/core-backend";
+import { HierarchyCacheMode, PresentationManagerMode } from "@itwin/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
+import { PresentationError } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("NativePlatform", () => {

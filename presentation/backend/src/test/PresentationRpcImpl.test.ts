@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
+import * as moq from "typemoq";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
+import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions,
   ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs,
@@ -17,11 +18,10 @@ import {
   FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement,
   Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
   SelectionScopeRequestOptions, VariableValueTypes,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
   createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor,  createTestSelectClassInfo, ResolvablePromise,
-} from "@bentley/presentation-common/lib/cjs/test";
-import * as moq from "typemoq";
+} from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";

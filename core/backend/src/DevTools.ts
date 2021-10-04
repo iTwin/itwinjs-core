@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as os from "os";
 import * as process from "process";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
@@ -204,7 +204,7 @@ export class DevTools {
   public static versions() {
     return {
       application: IModelHost.applicationVersion,
-      iModelJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-var-requires
+      iModelJs: require("../package.json").version, // eslint-disable-line @typescript-eslint/no-var-requires
     };
   }
 }

@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/base/base";
+@import "~@itwin/itwinui-css/scss/style/space";
+
+.components-multi-value-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: $iui-s;
+  margin-top: $iui-s;
+}
+
+.components-multi-value-filter-selectAll {
+  margin-bottom: $iui-xs;
+}
+
+.components-multi-value-filter-searchbox {
+  margin-bottom: $iui-s;
+
+  >.core-searchbox {
+    width: 100%;
+  }
+}
+
+.components-multi-value-filter-distinct-values {
+  @include uicore-scrollview;
+
+  border: 1px solid $buic-background-panel-stroke;
+  border-radius: 2px;
+  box-sizing: border-box;
+
+  max-height: 250px;
+  padding-left: 2px;
+}

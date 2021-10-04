@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
+import { ColorDef, RenderMaterial } from "@itwin/core-common";
 import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable";
 import { FloatRgb } from "./FloatRGBA";
 

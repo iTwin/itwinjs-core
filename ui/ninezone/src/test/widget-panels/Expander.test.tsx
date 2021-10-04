@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import {
   createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanelExpanders", () => {

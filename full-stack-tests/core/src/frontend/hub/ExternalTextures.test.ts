@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { expect } from "chai";
+import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {

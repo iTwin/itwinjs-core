@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { I18N } from "@bentley/imodeljs-i18n";
-import { Content, Item, LabelDefinition } from "@bentley/presentation-common";
-import { createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as moq from "typemoq";
+import { I18N } from "@itwin/core-i18n";
+import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
+import {
+  createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor
+} from "@itwin/presentation-common/lib/cjs/test";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
 import { Presentation } from "../presentation-frontend/Presentation";
 

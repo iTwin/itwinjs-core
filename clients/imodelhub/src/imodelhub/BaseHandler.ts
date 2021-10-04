@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@itwin/core-bentley";
 import { FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";

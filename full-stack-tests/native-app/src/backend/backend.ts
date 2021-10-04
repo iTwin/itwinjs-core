@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyLoggerCategory, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
+// required to get certa to read the .env file - should be reworked
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+import * as fs from "fs";
+import * as nock from "nock";
+import * as path from "path";
+import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
   IpcHandler, NativeHost, NativeLoggerCategory,
-} from "@bentley/imodeljs-backend";
-import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-// required to get certa to read the .env file - should be reworked
-import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/cjs/TestUsers";
-import * as fs from "fs";
-import * as nock from "nock";
-import * as path from "path";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 

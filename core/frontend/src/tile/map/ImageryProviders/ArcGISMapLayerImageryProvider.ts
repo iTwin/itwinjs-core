@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
-import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { Dictionary, IModelStatus } from "@itwin/core-bentley";
+import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";

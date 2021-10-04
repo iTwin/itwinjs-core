@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { GroupColumn } from "../../../../../ui-ninezone";
+import { GroupColumn } from "../../../../../appui-layout-react";
 import { mount } from "../../../../Utils";
 
 describe("<GroupColumn />", () => {

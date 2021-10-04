@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { FloatRgb, FloatRgba } from "../../../render/webgl/FloatRGBA";
 
 interface Rgb {

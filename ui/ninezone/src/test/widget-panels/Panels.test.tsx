@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render } from "@testing-library/react";
 import * as React from "react";
-import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../ui-ninezone";
+import { render } from "@testing-library/react";
+import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanels", () => {

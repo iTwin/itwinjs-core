@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { Briefcase, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, IModelHubClientError, Version } from "@bentley/imodelhub-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
 import * as chai from "chai";
-import deepAssign from "deep-assign";
+import * as deepAssign from "deep-assign";
 import * as fs from "fs";
 import * as path from "path";
+import { AccessToken, GuidString, IModelHubStatus } from "@itwin/core-bentley";
+import { Briefcase, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, IModelHubClientError, Version } from "@bentley/imodelhub-client";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { createFileHandler } from "./FileHandler";
-import { workDir } from "./TestConstants";
 import * as utils from "./TestUtils";
+import { workDir } from "./TestConstants";
+import { createFileHandler } from "./FileHandler";
 
 chai.should();
 

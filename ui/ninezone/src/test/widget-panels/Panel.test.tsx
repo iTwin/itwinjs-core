@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Size } from "@bentley/ui-core";
-import { fireEvent, render } from "@testing-library/react";
-import { act, renderHook } from "@testing-library/react-hooks";
 import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
+import { Size } from "@itwin/core-react";
+import { fireEvent, render } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, setRefValue, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanelProvider", () => {

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { MultiValueFilter } from "../../../../ui-components/table/columnfiltering/multi-value-filter/MultiValueFilter";
-import { ReactDataGridColumn, TableColumn } from "../../../../ui-components/table/component/TableColumn";
-import { FilterableColumn, TableDistinctValue } from "../../../../ui-components/table/columnfiltering/ColumnFiltering";
-import { ColumnDescription } from "../../../../ui-components/table/TableDataProvider";
+import { MultiValueFilter } from "../../../../components-react/table/columnfiltering/multi-value-filter/MultiValueFilter";
+import { ReactDataGridColumn, TableColumn } from "../../../../components-react/table/component/TableColumn";
+import { FilterableColumn, TableDistinctValue } from "../../../../components-react/table/columnfiltering/ColumnFiltering";
+import { ColumnDescription } from "../../../../components-react/table/TableDataProvider";
 import { TestFilterableTable } from "../../../TestUtils";
 
 // cSpell:ignore columnfiltering

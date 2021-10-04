@@ -6,9 +6,9 @@
  * @module OIDC
  */
 
-import { AccessToken, assert } from "@bentley/bentleyjs-core";
-import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, assert } from "@itwin/core-bentley";
+import { NativeAppAuthorizationBackend } from "@itwin/core-backend";
+import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
 import * as child_process from "child_process";
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
+import { UrlFileHandler } from "@bentley/backend-itwin-client";
+import { Logger } from "@itwin/core-bentley";
+import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
 
 export const assetsPath = `${__dirname}/../../../lib/test/assets/`;
 export const workDir = `${__dirname}/../../../lib/test/output/`;

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodePathElement } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
-import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@bentley/ui-components";
-import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodePathElement } from "@itwin/presentation-common";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@itwin/components-react";
+import { renderHook } from "@testing-library/react-hooks";
 import {
   ControlledPresentationTreeFilteringProps, IPresentationTreeDataProvider, useControlledPresentationTreeFiltering,
 } from "../../../presentation-components";

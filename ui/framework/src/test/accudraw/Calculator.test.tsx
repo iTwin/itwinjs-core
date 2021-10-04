@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Icon } from "@bentley/ui-core";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { CalculatorEngine, CalculatorOperator } from "../../ui-framework/accudraw/CalculatorEngine";
+import { Icon } from "@itwin/core-react";
+import { Calculator } from "../../appui-react/accudraw/Calculator";
+import { CalculatorEngine, CalculatorOperator } from "../../appui-react/accudraw/CalculatorEngine";
 import { mount } from "../TestUtils";
 
 describe("Calculator", () => {

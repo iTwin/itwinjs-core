@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "create new imodel-transformer package separate from backend package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}

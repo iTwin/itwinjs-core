@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { createDragItemInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {

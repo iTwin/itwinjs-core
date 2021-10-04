@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
-import { ProgressInfo } from "@bentley/itwin-client";
 import { assert } from "chai";
+import { GuidString } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { IModelVersion, SyncMode } from "@itwin/core-common";
+import { BriefcaseConnection, NativeApp } from "@itwin/core-frontend";
+import { ProgressInfo } from "@bentley/itwin-client";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";
 

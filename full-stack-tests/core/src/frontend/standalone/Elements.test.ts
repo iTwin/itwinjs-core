@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@bentley/imodeljs-common";
-import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@itwin/core-common";
+import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 
 describe("Elements", () => {
   let imodel: SnapshotConnection;

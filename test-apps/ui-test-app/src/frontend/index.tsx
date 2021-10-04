@@ -2,39 +2,42 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./index.scss";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { connect, Provider } from "react-redux";
+import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import {
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { FrontendDevTools } from "@itwin/frontend-devtools";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
+import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool,
   SnapMode, ToolAdmin, ViewClipByPlaneTool,
-} from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MarkupApp } from "@bentley/imodeljs-markup";
-import { MapLayersUI } from "@bentley/map-layers";
-import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/cjs/MobileFrontend";
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
-import { getClassName } from "@bentley/ui-abstract";
-import { BeDragDropContext } from "@bentley/ui-components";
-import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
+} from "@itwin/core-frontend";
+import { I18NNamespace } from "@itwin/core-i18n";
+import { MarkupApp } from "@itwin/core-markup";
+import { MapLayersUI } from "@itwin/map-layers";
+import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/cjs/MobileFrontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
+import { getClassName } from "@itwin/appui-abstract";
+import { BeDragDropContext } from "@itwin/components-react";
+import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
-} from "@bentley/ui-framework";
-import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { connect, Provider } from "react-redux";
-import { Store } from "redux"; // createStore,
+} from "@itwin/appui-react";
+import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -48,7 +51,6 @@ import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { AppSettingsTabsProvider } from "./appui/uiproviders/AppSettingsTabsProvider";
 import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
-import "./index.scss";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { EditingScopeTool } from "./tools/editing/EditingTools";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
@@ -192,7 +194,7 @@ export class SampleAppIModelApp {
 
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_GP_BACKEND ?
-          { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3000" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 

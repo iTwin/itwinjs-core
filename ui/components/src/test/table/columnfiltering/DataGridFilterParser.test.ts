@@ -5,16 +5,16 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   DataGridFilterParser, FieldFilterData, FILTER_PARSER_TIMER_TIMEOUT, MultiValueFilterData, NumericExactMatchData, NumericFilterData,
   NumericFilterType, NumericGreaterThanData, NumericLessThanData, NumericRangeData, ReactDataGridFilter,
-} from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
-import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { ColumnDescription, FilterRenderer, RowItem } from "../../../ui-components/table/TableDataProvider";
+} from "../../../components-react/table/columnfiltering/DataGridFilterParser";
+import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
+import { ColumnDescription, FilterRenderer, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
-import { FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
+import { FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "../../../components-react/table/columnfiltering/ColumnFiltering";
 
 const columns: ColumnDescription[] = [
   {
@@ -678,7 +678,7 @@ describe("DataGridFilterParser", () => {
     const multiValueData: MultiValueFilterData = {
       distinctValues: [],
       fieldValues: [
-        {fieldValue: "Multi-Value 1", operator: FilterOperator.IsEqualTo },
+        { fieldValue: "Multi-Value 1", operator: FilterOperator.IsEqualTo },
         { fieldValue: "Multi-Value 100", operator: FilterOperator.IsEqualTo },
         { fieldValue: "Multi-Value 1000", operator: FilterOperator.IsEqualTo },
       ],

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Annulus, Circle, Line } from "../../ui-core/radialmenu/Annulus";
-import { Point } from "../../ui-core/utils/Point";
+import { Annulus, Circle, Line } from "../../core-react/radialmenu/Annulus";
+import { Point } from "../../core-react/utils/Point";
 
 describe("Annulus", () => {
 

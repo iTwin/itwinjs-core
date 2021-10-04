@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Icon } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { Icon } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@itwin/appui-react";
 import { Input, Slider } from "@itwin/itwinui-react";
 
 function showSliderValues(values: ReadonlyArray<number>) {

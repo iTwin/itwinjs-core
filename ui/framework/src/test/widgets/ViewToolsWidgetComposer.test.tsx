@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ViewToolWidgetComposer } from "../../ui-framework/widgets/ViewToolWidgetComposer";
+import { ViewToolWidgetComposer } from "../../appui-react/widgets/ViewToolWidgetComposer";
 
 describe("ViewToolWidgetComposer", () => {
 

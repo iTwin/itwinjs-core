@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
-import {
-  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
+import {
+  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import {
   createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
 } from "../../presentation-frontend";

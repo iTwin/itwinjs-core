@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem, EditorPosition, PropertyDescriptionHelper } from "../../ui-abstract";
+import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem, EditorPosition, PropertyDescriptionHelper } from "../../appui-abstract";
 
 describe("DialogProperty", () => {
   const colorProperty = new DialogProperty<string>(PropertyDescriptionHelper.buildTextEditorDescription("color", "Color"), "blue", undefined);

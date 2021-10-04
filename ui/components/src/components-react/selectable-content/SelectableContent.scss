@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/select/select";
+
+.components-selectable-content {
+  display: flex;
+  flex-direction: column;
+
+  .components-selectable-content-header {
+    .components-selectable-content-selector {
+      width: 100%;
+    }
+  }
+
+  .components-selectable-content-wrapper {
+    flex-grow: 1;
+  }
+}

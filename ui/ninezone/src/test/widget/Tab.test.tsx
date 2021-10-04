@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { act, fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
+import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
   WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTab", () => {

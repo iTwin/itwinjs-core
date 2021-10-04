@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { Rule } from "./rules/Rule";
 import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 import { VariablesGroup } from "./rules/Variables";

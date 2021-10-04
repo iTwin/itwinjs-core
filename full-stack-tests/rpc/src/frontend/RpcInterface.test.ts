@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError } from "@bentley/bentleyjs-core";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { assert } from "chai";
+import * as semver from "semver";
+import { BentleyError } from "@itwin/core-bentley";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
   RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
   SerializedRpcActivity, WipRpcInterface,
-} from "@bentley/imodeljs-common";
-import { assert } from "chai";
-import * as semver from "semver";
+} from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,

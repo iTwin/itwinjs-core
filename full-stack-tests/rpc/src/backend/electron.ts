@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
+import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
+import { ElectronHost } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
 
 async function init() {
   await commonSetup();

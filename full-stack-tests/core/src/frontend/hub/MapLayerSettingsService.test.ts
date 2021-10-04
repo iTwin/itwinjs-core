@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
-import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import * as chai from "chai";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { TestFrontendAuthorizationClient, TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+
 import { TestUtility } from "./TestUtility";
+import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
+import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { UiDataProvidedDialog } from "../../ui-framework";
+import { fireEvent, render } from "@testing-library/react";
+import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
+import { UiDataProvidedDialog } from "../../appui-react";
 import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 
 const spyCancel = sinon.spy();

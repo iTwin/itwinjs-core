@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStringsOrUndefined, GuidString } from "@bentley/bentleyjs-core";
-import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@bentley/frontend-devtools";
+import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
+import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
   CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 
