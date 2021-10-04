@@ -28,12 +28,12 @@ import { UiError } from "@itwin/appui-abstract";
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** Viewport that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
- * @beta
+ * @public
  */
 export const IModelConnectedViewport = connectIModelConnectionAndViewState(null, null)(UnifiedSelectionViewport); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** [[IModelViewportControl]] options. These options are set in the applicationData property of the [[ContentProps]].
- * @beta
+ * @public
  */
 export interface IModelViewportControlOptions {
   /** ViewState or a function to return a ViewState */
@@ -53,7 +53,7 @@ export interface IModelViewportControlOptions {
 }
 
 /** iModel Viewport Control
- * @beta
+ * @public
  */
 // istanbul ignore next
 export class IModelViewportControl extends ViewportContentControl {

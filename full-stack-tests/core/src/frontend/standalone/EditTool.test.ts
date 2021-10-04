@@ -8,7 +8,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { EditTools } from "@itwin/editor-frontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -39,8 +39,9 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     before(async () => {
       await ElectronApp.startup();
-      const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
-      IModelApp.tools.register(TestEditTool1, testNamespace);
+      const namespace = "TestApp";
+      await IModelApp.localization.registerNamespace(namespace);
+      IModelApp.tools.register(TestEditTool1, namespace);
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });

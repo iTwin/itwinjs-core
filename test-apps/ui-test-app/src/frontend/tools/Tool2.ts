@@ -36,7 +36,7 @@ export class Tool2 extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.Tool2.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.Tool2.Prompts.GetPoint"));
 
     const instruction1 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Click on something", true);
     const instruction2 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "Click then drag", true);

@@ -14,12 +14,12 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { WebFontIcon } from "../../icons/WebFontIcon";
 
 /** Step function prototype for [[NumberInput]] component
- * @beta
+ * @public
  */
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 /** Properties for the [[NumberInput]] component
- * @beta
+ * @public
  */
 export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step" | "onChange"> {
   /** Numeric value, set to `undefined` to show placeholder text */
@@ -211,6 +211,6 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
 );
 
 /** Input component for numbers with up and down buttons to increment and decrement the value.
- * @beta
+ * @public
  */
 export const NumberInput: (props: NumberInputProps) => JSX.Element | null = ForwardRefNumberInput;

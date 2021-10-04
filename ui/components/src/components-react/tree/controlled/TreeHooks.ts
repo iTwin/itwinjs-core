@@ -46,10 +46,9 @@ export function useTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataPr
 }
 
 /**
- * Custom hook which creates a paging nodes' loader using the supplied data provider and model source. The
- * loader pulls nodes from the data provider and puts them into the model source.
- *
- * @beta
+ * Custom hook which creates a paging nodes' loader using the supplied data provider and model source. The loader pulls
+ * nodes from the data provider and puts them into the model source.
+ * @public
  */
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource) {
   const createLoader = useCallback(() => new PagedTreeNodeLoader(dataProvider, modelSource, pageSize), [dataProvider, modelSource, pageSize]);

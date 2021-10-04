@@ -41,7 +41,7 @@ export interface HighlightableTreeNodeProps {
 
 /**
  * Tree highlighting engine
- * @beta
+ * @public
  */
 export class HighlightingEngine {
   private _searchText: string;

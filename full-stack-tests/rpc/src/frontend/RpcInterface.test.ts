@@ -224,7 +224,7 @@ describe("RpcInterface", () => {
 
     const endpoints = await RpcManager.describeAvailableEndpoints();
     assert.equal(endpoints[0].interfaceName, "IModelReadRpcInterface");
-    assert.equal(endpoints[0].operationNames[0], "openForRead");
+    assert.equal(endpoints[0].operationNames[0], "getConnectionProps");
     assert(typeof (endpoints[0].interfaceVersion) === "string");
     assert.isTrue(endpoints[0].compatible);
 

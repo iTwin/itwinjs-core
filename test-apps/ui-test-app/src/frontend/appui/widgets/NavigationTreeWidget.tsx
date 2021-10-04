@@ -41,35 +41,35 @@ class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
               <td>{this.props.iModelConnection ? this.props.iModelConnection.name : ""}</td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-month">{IModelApp.i18n.translate("SampleApp:zone6.month")}</label></td>
+              <td><label htmlFor="demo-month">{IModelApp.localization.getLocalizedString("SampleApp:zone6.month")}</label></td>
               <td> <Input type="month" id="demo-month" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-number">{IModelApp.i18n.translate("SampleApp:zone6.number")}</label></td>
+              <td><label htmlFor="demo-number">{IModelApp.localization.getLocalizedString("SampleApp:zone6.number")}</label></td>
               <td> <Input type="number" id="demo-number" min="10" max="20" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-password">{IModelApp.i18n.translate("SampleApp:zone6.password")}</label></td>
+              <td><label htmlFor="demo-password">{IModelApp.localization.getLocalizedString("SampleApp:zone6.password")}</label></td>
               <td> <Input type="password" id="demo-password" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-radio">{IModelApp.i18n.translate("SampleApp:zone6.radio")}</label></td>
+              <td><label htmlFor="demo-radio">{IModelApp.localization.getLocalizedString("SampleApp:zone6.radio")}</label></td>
               <td> <Input type="radio" id="demo-radio" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-range">{IModelApp.i18n.translate("SampleApp:zone6.range")}</label></td>
+              <td><label htmlFor="demo-range">{IModelApp.localization.getLocalizedString("SampleApp:zone6.range")}</label></td>
               <td> <Input type="range" id="demo-range" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-search">{IModelApp.i18n.translate("SampleApp:zone6.search")}</label></td>
+              <td><label htmlFor="demo-search">{IModelApp.localization.getLocalizedString("SampleApp:zone6.search")}</label></td>
               <td> <Input type="search" id="demo-search" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-tel">{IModelApp.i18n.translate("SampleApp:zone6.Tel")}</label></td>
+              <td><label htmlFor="demo-tel">{IModelApp.localization.getLocalizedString("SampleApp:zone6.Tel")}</label></td>
               <td> <Input type="tel" id="demo-tel" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-text">{IModelApp.i18n.translate("SampleApp:zone6.Text")}</label></td>
+              <td><label htmlFor="demo-text">{IModelApp.localization.getLocalizedString("SampleApp:zone6.Text")}</label></td>
               <td> <Input type="text" id="demo-text" /> </td>
             </tr>
           </tbody>

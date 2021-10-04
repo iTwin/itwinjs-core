@@ -8,8 +8,8 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
@@ -31,9 +31,8 @@ import {
 } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
-  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  getKeysForContentRequest, HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
@@ -354,8 +353,6 @@ describe("PresentationManager", () => {
 
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
-        sinon.stub(PresentationIpcHandler, "register").returns(() => { });
-
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
         using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
@@ -546,16 +543,6 @@ describe("PresentationManager", () => {
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
       manager.dispose();
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
-    });
-
-    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
-      sinon.stub(IpcHost, "isValid").get(() => true);
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const unregisterSpy = sinon.spy();
-      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
-      manager.dispose();
-      expect(unregisterSpy).to.be.calledOnce;
     });
 
   });
@@ -1207,7 +1194,7 @@ describe("PresentationManager", () => {
           requestId: NativePlatformRequestTypes.GetContentDescriptor,
           params: {
             displayType: testData.displayType,
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
@@ -1376,7 +1363,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSetSize,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
@@ -1404,7 +1391,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSetSize,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: {
               displayType: descriptor.displayType,
             },
@@ -1446,7 +1433,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
@@ -1492,7 +1479,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([concreteClassKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([concreteClassKey])),
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
@@ -1545,7 +1532,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([baseClassKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([baseClassKey])),
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
@@ -1598,7 +1585,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: {
               displayType: descriptor.displayType,
             },
@@ -1659,7 +1646,7 @@ describe("PresentationManager", () => {
           requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
           params: {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             fieldDescriptor,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
             paging: pageOpts,
@@ -1701,7 +1688,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([elementKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.PropertyPane,
               contentFlags: ContentFlags.ShowLabels,
@@ -1801,7 +1788,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: getKeysForContentRequest(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1855,7 +1842,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([concreteClassKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([concreteClassKey])),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1905,7 +1892,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: getKeysForContentRequest(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1944,7 +1931,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: getKeysForContentRequest(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,

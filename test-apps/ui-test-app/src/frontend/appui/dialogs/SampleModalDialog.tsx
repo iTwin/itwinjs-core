@@ -18,7 +18,7 @@ export interface SampleModalDialogState {
 
 export class SampleModalDialog extends React.Component<SampleModalDialogProps, SampleModalDialogState> {
   public override readonly state: Readonly<SampleModalDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModalDialog");
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.sampleModalDialog");
 
   constructor(props: SampleModalDialogProps) {
     super(props);

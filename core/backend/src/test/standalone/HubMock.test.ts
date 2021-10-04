@@ -20,11 +20,11 @@ describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
-  let user: AccessToken;
+  let accessToken: AccessToken;
 
   before(async () => {
     HubMock.startup("HubMockTest");
-    user = await IModelTestUtils.getAccessToken(TestUserType.Regular);
+    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Regular);
   });
   after(() => {
     HubMock.shutdown();
@@ -265,7 +265,7 @@ describe("HubMock", () => {
 
   it("use HubMock with BriefcaseManager", async () => {
     const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
-    const briefcase = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
+    const briefcase = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);

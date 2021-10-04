@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
 import { SectionType } from "@itwin/core-common";
 import {
-  CheckpointConnection, IModelApp, IModelConnection, IModelHubFrontend, ParseAndRunResult, SnapshotConnection,
+  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
 } from "@itwin/core-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
@@ -15,15 +15,19 @@ import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { I18N } from "@itwin/core-i18n";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
-    await IModelApp.startup();
-    IModelApp.authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
-    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
+    await IModelApp.shutdown();
+    await IModelApp.startup({
+      ...TestUtility.iModelAppOptions,
+      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+    });
+    await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);

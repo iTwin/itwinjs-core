@@ -27,7 +27,7 @@ export class AppNotificationManager extends NotificationManager {
   /** Output a prompt, given an i18n key.
    */
   public override outputPromptByKey(key: string): void {
-    this.outputPrompt(UiFramework.i18n.translate(key));
+    this.outputPrompt(UiFramework.localization.getLocalizedString(key));
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed.

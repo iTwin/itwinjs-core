@@ -12,16 +12,16 @@ const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 /** @internal */
 export class LocalizationHelper {
   public static async registerNamespaces() {
-    const localizationPromises = NAMESPACES.map(async (namespace) => Presentation.i18n.registerNamespace(namespace).readFinished);
+    const localizationPromises = NAMESPACES.map(async (namespace) => Presentation.localization.registerNamespace(namespace));
     await Promise.all(localizationPromises);
   }
 
   public static unregisterNamespaces() {
-    NAMESPACES.map((namespace) => Presentation.i18n.unregisterNamespace(namespace));
+    NAMESPACES.map((namespace) => Presentation.localization.unregisterNamespace(namespace));
   }
 
-  public translate(text: string) {
-    return text.replace(KEY_PATTERN, (key) => Presentation.i18n.translate(key.replace(/^@|@$/g, ""), { defaultValue: key }));
+  public getLocalizedString(text: string) {
+    return text.replace(KEY_PATTERN, (key) => Presentation.localization.getLocalizedString(key.replace(/^@|@$/g, ""), { defaultValue: key }));
   }
 
   public getLocalizedNodes(nodes: Node[]): Node[] {
@@ -61,7 +61,7 @@ export class LocalizationHelper {
     if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME)
       translateComposite(labelDefinition.rawValue as LabelCompositeValue);
     else if (labelDefinition.typeName === "string")
-      labelDefinition.rawValue = this.translate(labelDefinition.rawValue as string);
+      labelDefinition.rawValue = this.getLocalizedString(labelDefinition.rawValue as string);
   }
 
 }

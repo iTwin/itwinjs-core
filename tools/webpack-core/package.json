@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-webpack-tools",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -13,13 +13,13 @@
   },
   "main": "lib/plugins/index.js",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha \"./lib/test/**/*.test.js\"",
-    "cover": "nyc npm test"
+    "cover": "nyc npm -s test"
   },
   "dependencies": {
     "chalk": "^3.0.0",

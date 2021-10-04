@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -12,7 +12,7 @@
     "certa": "./bin/certa.js"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

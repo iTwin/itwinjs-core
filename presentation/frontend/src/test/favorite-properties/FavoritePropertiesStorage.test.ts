@@ -93,7 +93,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
@@ -113,7 +113,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
     });
 
@@ -153,7 +153,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.loadPropertiesOrder("projectId", "imodelId")).to.eventually.be.rejected;
     });
 
@@ -179,7 +179,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.savePropertiesOrder([], "projectId", "imodelId")).to.eventually.be.rejected;
     });
 

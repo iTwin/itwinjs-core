@@ -56,5 +56,6 @@ export interface BackstageItemState {
  */
 // istanbul ignore next
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // eslint-disable-line deprecation/deprecation
+  // eslint-disable-next-line deprecation/deprecation
   return BackstageItemUtilities.getBackstageItemStateFromProps(props);
 };

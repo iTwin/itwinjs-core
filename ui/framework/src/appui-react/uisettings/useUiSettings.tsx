@@ -9,7 +9,7 @@
 import * as React from "react";
 import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
 
-/** @beta */
+/** @public */
 export function useUiSettingsStorageContext(): UiSettingsStorage {
   return React.useContext(UiSettingsContext);
 }
@@ -19,7 +19,7 @@ export const UiSettingsContext = React.createContext<UiSettingsStorage>(new Loca
 UiSettingsContext.displayName = "uifw:UiSettingsContext";
 
 /** Properties for the [[UiSettingsProvider]] component.
- * @beta
+ * @public
  */
 export interface UiSettingsProviderProps {
   children?: React.ReactNode;
@@ -27,7 +27,7 @@ export interface UiSettingsProviderProps {
 }
 
 /** Allows to provide a custom [[UiSettings]] implementation to persist UI settings.
- * @beta
+ * @public
  */
 export function UiSettingsProvider(props: UiSettingsProviderProps) {
   return (

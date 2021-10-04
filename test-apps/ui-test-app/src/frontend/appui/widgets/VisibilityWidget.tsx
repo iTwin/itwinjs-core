@@ -46,14 +46,14 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   const { imodel, activeView, enablePreloading } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
-  const selectLabel = IModelApp.i18n.translate("UiFramework:visibilityWidget.options");
+  const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
   const filteredElementIds = useElementIdsFiltering(props.activeView);
   return (
     <div className="ui-test-app-visibility-widget">
       <SelectableContent defaultSelectedContentId="models-tree" selectAriaLabel={selectLabel}>
         {[{
           id: "models-tree",
-          label: IModelApp.i18n.translate("UiFramework:visibilityWidget.modeltree"),
+          label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.modeltree"),
           render: React.useCallback(
             () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
             [imodel, activeView, enablePreloading, modelsTreeProps, filteredElementIds],
@@ -61,7 +61,7 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
         },
         {
           id: "categories-tree",
-          label: IModelApp.i18n.translate("UiFramework:visibilityWidget.categories"),
+          label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.categories"),
           render: React.useCallback(
             () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...categoriesTreeProps} />,
             [imodel, activeView, enablePreloading, categoriesTreeProps],

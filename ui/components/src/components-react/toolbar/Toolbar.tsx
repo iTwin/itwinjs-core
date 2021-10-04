@@ -18,7 +18,7 @@ import { Direction, OrthogonalDirection, OrthogonalDirectionHelpers } from "./ut
 import { getToolbarDirection, ToolbarItemComponent, ToolbarItemContext, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
 
 /** Properties of [[Toolbar]] component.
- * @beta
+ * @public
  */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the popup panels are expanded. Defaults to: [[Direction.Bottom]] */
@@ -47,7 +47,7 @@ function getItemWrapperClass(child: React.ReactNode) {
 }
 
 /** Component that displays tool settings as a bar across the top of the content view.
- * @beta
+ * @public
  */
 export function Toolbar(props: ToolbarProps) {
   const expandsTo = props.expandsTo ? props.expandsTo : Direction.Bottom;

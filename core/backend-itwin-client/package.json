@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -12,18 +12,18 @@
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
+    "cover": "nyc npm -s test",
+    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run -s test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "npm run copy:test-assets",
+    "pretest": "npm run -s copy:test-assets",
     "test": "mocha --grep=\"#integration\" --invert",
-    "test:integration": "npm run pretest && mocha --grep=\"#integration\"",
+    "test:integration": "npm run -s pretest && mocha --grep=\"#integration\"",
     "copy:config": "internal-tools copy-config"
   },
   "repository": {
@@ -38,12 +38,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.72",
-    "@itwin/core-common": "workspace:^3.0.0-dev.72",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.72",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.72"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.76",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.76",
+    "@itwin/core-common": "workspace:^3.0.0-dev.76",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.76",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.76"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

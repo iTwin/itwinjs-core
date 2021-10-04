@@ -1301,7 +1301,7 @@ Mon, 07 Jan 2019 21:49:21 GMT
 
 ### Updates
 
-- Moved electron utilities into a separate "@itwin/electron-manager" package.
+- Moved electron utilities into a separate "@itwin/core-electron" package.
 
 ## 0.182.0
 Mon, 07 Jan 2019 13:31:34 GMT

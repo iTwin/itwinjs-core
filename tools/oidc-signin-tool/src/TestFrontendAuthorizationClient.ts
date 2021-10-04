@@ -11,13 +11,13 @@ import { AuthorizationClient } from "@bentley/itwin-client";
  * @internal
  */
 export class TestFrontendAuthorizationClient implements AuthorizationClient {
-  private _activeToken?: AccessToken;
+  private _activeToken: AccessToken = "";
 
-  constructor(private _accessToken?: AccessToken) {
+  constructor(private _accessToken: AccessToken) {
     this._activeToken = this._accessToken;
     if (!this._activeToken?.toLowerCase().includes("bearer"))
       this._activeToken = `Bearer ${this._accessToken}`;
-    this.onUserStateChanged.raiseEvent(this._activeToken);
+    this.onAccessTokenChanged.raiseEvent(this._activeToken);
   }
 
   public get isAuthorized(): boolean {
@@ -34,12 +34,12 @@ export class TestFrontendAuthorizationClient implements AuthorizationClient {
 
   public async signIn(): Promise<void> {
     this._activeToken = this._accessToken;
-    this.onUserStateChanged.raiseEvent(this._activeToken);
+    this.onAccessTokenChanged.raiseEvent(this._activeToken);
   }
 
   public async signOut(): Promise<void> {
-    this._activeToken = undefined;
-    this.onUserStateChanged.raiseEvent(this._activeToken);
+    this._activeToken = "";
+    this.onAccessTokenChanged.raiseEvent(this._activeToken);
   }
 
   public async getAccessToken(): Promise<AccessToken> {
@@ -48,5 +48,5 @@ export class TestFrontendAuthorizationClient implements AuthorizationClient {
     return this._activeToken;
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 }

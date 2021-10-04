@@ -54,8 +54,8 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/ecschema-rpcinterface-tests/           @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                          @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                           @calebmshafer @ColinKerr @wgoehrig
-/common/**/electron-manager.*                     @wgoehrig @ramanujam-raman
-/common/**/electron-manager/                      @wgoehrig @ramanujam-raman
+/common/**/core-electron.*                        @wgoehrig @ramanujam-raman
+/common/**/core-electron/                         @wgoehrig @ramanujam-raman
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
@@ -113,7 +113,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-editing          @calebmshafer @ColinKerr @wgoehrig
-/core/electron-manager          @wgoehrig @ramanujam-raman
+/core/electron                  @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @kabentley @bbastings @imodeljs/display
 /core/frontend/src/oidc         @calebmshafer @ramanujam-raman

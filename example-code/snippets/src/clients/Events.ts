@@ -25,7 +25,7 @@ const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: GuidString = Guid.createValue();
 
 // __PUBLISH_EXTRACT_START__ EventHandler.createListener.authenticate.example-code
-async function authenticate(): Promise<AccessToken | undefined> {
+async function authenticate(): Promise<AccessToken> {
   return authorizationClient.getAccessToken();
 }
 // __PUBLISH_EXTRACT_END__

@@ -1,13 +1,13 @@
 {
   "name": "@itwin/editor-common",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "description": "iModel.js editing properties common to frontend and backend",
   "main": "lib/editor-common.js",
   "typings": "lib/editor-common",
   "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-common/file.json --tsIndexFile=./editor-common.ts --onlyJson",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.72",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.72",
-    "@itwin/core-common": "workspace:^3.0.0-dev.72"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.76",
+    "@itwin/core-common": "workspace:^3.0.0-dev.76"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

@@ -14,7 +14,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 describe("Example Code", () => {
   let iModel: StandaloneDb;
 
-  const user: AccessToken = "";
+  const accessToken: AccessToken = "";
 
   before(async () => {
     iModel = IModelTestUtils.openIModelForWrite("test.bim");
@@ -57,7 +57,7 @@ describe("Example Code", () => {
       briefcaseDb.saveChanges("inserted generic objects");
 
       // When all local changes are saved in the briefcase, we push them to the iModel server.
-      await briefcaseDb.pushChanges({ user, description: "comment" });
+      await briefcaseDb.pushChanges({ accessToken, description: "comment" });
     }
 
     // assertions to ensure example code is working properly

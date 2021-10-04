@@ -21,7 +21,7 @@ interface ToggleEditorState {
 }
 
 /** ToggleEditor React component that is a property editor with checkbox input
- * @beta
+ * @public
  */
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -149,7 +149,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
 /** Toggle Property Editor registered for the "bool" and "boolean" type names and "toggle" editor name.
  * It uses the [[ToggleEditor]] React component.
- * @beta
+ * @public
  */
 export class TogglePropertyEditor extends PropertyEditorBase {
   // istanbul ignore next

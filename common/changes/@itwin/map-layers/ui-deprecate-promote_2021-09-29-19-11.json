@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Ignore lint warning for deprecated class",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

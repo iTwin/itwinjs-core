@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -10,16 +10,16 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
-    "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
+    "cover": "nyc npm -s test",
+    "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
   "keywords": [
     "Bentley",
@@ -55,7 +55,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.72"
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.76"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

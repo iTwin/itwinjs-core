@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -11,8 +11,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run webpack:frontend",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",

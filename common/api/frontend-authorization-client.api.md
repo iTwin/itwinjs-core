@@ -43,7 +43,7 @@ export interface BrowserAuthorizationCallbackHandlerConfiguration {
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements AuthorizationClient, IDisposable {
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
-    protected _accessToken?: AccessToken;
+    protected _accessToken: AccessToken;
     checkSessionStatus(): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
@@ -63,13 +63,13 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     get isAuthorized(): boolean;
     protected loadUser(): Promise<User | undefined>;
     protected nonInteractiveSignIn(args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
+    // (undocumented)
+    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     protected _onAccessTokenExpired: () => void;
     protected _onAccessTokenExpiring: () => Promise<void>;
     protected _onSilentRenewError: () => void;
     protected _onUserLoaded: (user: User) => void;
     protected _onUserSignedOut: () => void;
-    // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;

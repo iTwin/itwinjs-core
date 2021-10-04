@@ -10,7 +10,7 @@ import { AuthorizationClient } from "@bentley/itwin-client";
  * @internal
  */
 export class IModelBankDummyAuthorizationClient implements AuthorizationClient {
-  private _token?: AccessToken;
+  private _token: AccessToken = "";
 
   public constructor(private _userCredentials: any) {
   }
@@ -31,29 +31,26 @@ export class IModelBankDummyAuthorizationClient implements AuthorizationClient {
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper.ForeignProjectAccessToken = { userInfo };
     this._token = JSON.stringify(foreignAccessTokenWrapper);
-    this.onUserStateChanged.raiseEvent(this._token);
+    this.onAccessTokenChanged.raiseEvent(this._token);
   }
 
   public async signOut(): Promise<void> {
-    this._token = undefined;
-    this.onUserStateChanged.raiseEvent(this._token);
+    this._token = "";
+    this.onAccessTokenChanged.raiseEvent(this._token);
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
   public get isAuthorized(): boolean {
-    return !!this._token;
+    return this._token !== "";
   }
   public get hasExpired(): boolean {
-    return !this._token;
+    return false;
   }
   public get hasSignedIn(): boolean {
-    return !!this._token;
+    return this._token !== "";
   }
 
   public async getAccessToken(): Promise<AccessToken> {
-    if (!this._token) {
-      throw new Error("User is not signed in.");
-    }
     return this._token;
   }
 }

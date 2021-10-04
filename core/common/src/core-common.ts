@@ -68,6 +68,7 @@ export * from "./ipc/IpcWebSocket";
 export * from "./IpcAppProps";
 export * from "./LightSettings";
 export * from "./LinePixels";
+export * from "./Localization";
 export * from "./MapImagerySettings";
 export * from "./MapLayerSettings";
 export * from "./MassProperties";
@@ -217,4 +218,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description NativeApp
  * [Native applications]($docs/learning/NativeApps.md)
+ */
+/**
+ * @docs-group-description Localization
+ * Classes for internationalization and localization of your app.
  */

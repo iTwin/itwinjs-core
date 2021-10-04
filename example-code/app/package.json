@@ -4,17 +4,17 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
-    "docs": "npm run extract && npm run extract-assets",
+    "docs": "npm run -s extract && npm run -s extract-assets",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && mocha --no-config",
-    "cover": "npm test"
+    "test": "npm run -s copy:test-backend-assets && npm run -s copy:backend-assets && mocha --no-config",
+    "cover": "npm -s test"
   },
   "repository": {},
   "dependencies": {
@@ -26,7 +26,7 @@
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/electron-manager": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "^14.0.0",

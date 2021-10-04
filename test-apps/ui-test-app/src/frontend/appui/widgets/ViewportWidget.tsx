@@ -33,7 +33,7 @@ interface ViewportWidgetState {
 
 /** Widget that displays a ViewportComponent or Loading message */
 export class ViewportWidget extends React.Component<ViewportWidgetProps, ViewportWidgetState> {
-  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _loading = IModelApp.localization.getLocalizedString("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
   public override readonly state: Readonly<ViewportWidgetState> = {
@@ -92,7 +92,7 @@ export class ViewportWidget extends React.Component<ViewportWidgetProps, Viewpor
 
 /** Widget that displays a ViewportComponent or Loading message */
 export class IModelViewport extends React.Component<ViewportWidgetProps, ViewportWidgetState> {
-  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _loading = IModelApp.localization.getLocalizedString("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
   public override readonly state: Readonly<ViewportWidgetState> = {
