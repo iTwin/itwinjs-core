@@ -6,7 +6,7 @@
  * @module ITwinRegistry
  */
 import * as deepAssign from "deep-assign";
-import { AccessToken, assert } from "@itwin/core-bentley";
+import { AccessToken } from "@itwin/core-bentley";
 import { RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";

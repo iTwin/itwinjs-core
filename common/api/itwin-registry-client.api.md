@@ -29,10 +29,6 @@ export interface ITwinAccess {
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     constructor();
     getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]>;
-    // @internal (undocumented)
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }

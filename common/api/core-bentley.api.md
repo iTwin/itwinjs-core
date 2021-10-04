@@ -846,8 +846,6 @@ export enum IModelStatus {
     // (undocumented)
     NoMultiTxnOperation = 65571,
     // (undocumented)
-    NotDgnMarkupProject = 65572,
-    // (undocumented)
     NotEnabled = 65573,
     // (undocumented)
     NotFound = 65574,
