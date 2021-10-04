@@ -139,12 +139,13 @@ export interface TextureParams {
   type: RenderTexture.Type;
   ownership?: TextureOwnership;
   // ###TODO transparency: TextureTransparency;
+  marker: "marker"; // ###TODO Temporary to force compiler to catch cases where we pass RenderTexture.Params as TextureParams.
 }
 
 export namespace TextureParams {
   // ###TODO: This is temporary until we remove RenderTexture.Params.
   export function create(params: RenderTexture.Params, iModel?: IModelConnection): TextureParams {
-    const result: TextureParams = { type: params.type };
+    const result: TextureParams = { type: params.type, marker: "marker" };
     if (params.isOwned)
       result.ownership = "external";
     else if (iModel && params.key)

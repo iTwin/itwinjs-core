@@ -59,7 +59,7 @@ import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpac
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
-import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
+import { ExternalTextureLoader, Texture, TextureHandle, TextureParams } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { PlanarGridGeometry } from "./PlanarGrid";
 
@@ -145,21 +145,22 @@ class WebGL2Extensions extends WebGLExtensions {
   }
 }
 
-function createTextureFromGradient(grad: Gradient.Symb): RenderTexture | undefined {
+function createTextureFromGradient(grad: Gradient.Symb, iModel: IModelConnection | undefined): RenderTexture | undefined {
   const image: ImageBuffer = grad.getImage(0x100, 0x100);
 
   const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
   if (!textureHandle)
     return undefined;
 
-  const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
-  return new Texture(params, textureHandle);
+  const ownership = iModel ? { key: grad, iModel } : undefined;
+  return new Texture({ ownership, marker: "marker", type: Texture.Type.Normal }, textureHandle);
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
 export class IdMap implements WebGLDisposable {
+  private readonly _iModel: IModelConnection;
   /** Mapping of materials by their key values. */
   public readonly materials = new Map<string, RenderMaterial>();
   /** Mapping of textures by their key values. */
@@ -168,6 +169,10 @@ export class IdMap implements WebGLDisposable {
   public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
   /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
   public readonly texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
+
+  public constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+  }
 
   public get isDisposed(): boolean {
     return 0 === this.textures.size && 0 === this.gradients.size;
@@ -233,7 +238,7 @@ export class IdMap implements WebGLDisposable {
     if (undefined === handle)
       return undefined;
 
-    const texture = new Texture(params, handle);
+    const texture = new Texture(TextureParams.create(params, this._iModel), handle);
     this.addTexture(texture);
     return texture;
   }
@@ -319,7 +324,7 @@ export class IdMap implements WebGLDisposable {
     if (existingGrad)
       return existingGrad;
 
-    const texture = createTextureFromGradient(grad);
+    const texture = createTextureFromGradient(grad, this._iModel);
     if (texture)
       this.addGradient(grad, texture);
 
@@ -644,7 +649,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createIModelMap(imodel: IModelConnection): IdMap {
     let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
-      idMap = new IdMap();
+      idMap = new IdMap(imodel);
       this.resourceCache.set(imodel, idMap);
     }
     return idMap;
@@ -691,7 +696,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
     if (undefined === imodel) {
       const textureHandle = TextureHandle.createForImage(image, hasAlpha, params.type);
-      return undefined !== textureHandle ? new Texture(params, textureHandle) : undefined;
+      return undefined !== textureHandle ? new Texture(TextureParams.create(params), textureHandle) : undefined;
     }
 
     return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
@@ -709,7 +714,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   /** Attempt to create a texture using gradient symbology. */
   public override getGradientTexture(symb: Gradient.Symb, imodel?: IModelConnection): RenderTexture | undefined {
     if (!imodel)
-      return createTextureFromGradient(symb);
+      return createTextureFromGradient(symb, undefined);
 
     const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
