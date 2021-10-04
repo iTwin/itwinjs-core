@@ -330,7 +330,7 @@ Adjusting code to pass the [RenderTexture.Type]($common):
   // Replace this:
   system.createTextureFromImageBuffer(imageBuffer, iModel, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
   // With this:
-  system.createTextureFromImageBuffer({
+  system.createTexture({
     type: RenderTexture.Type.TileSection,
     image: { source: imageBuffer },
   });
@@ -342,7 +342,7 @@ Adjusting code that specifies `RenderTexture.Params.isOwned`:
   const isOwned = true;
   system.createTextureFromImageBuffer(imageBuffer, iModel, new RenderTexture.Params(undefined, undefined, isOwned);
   // With this:
-  system.createTextureFromImageBuffer({
+  system.createTexture({
     ownership: "external",
     image: { source: imageBuffer },
   });
@@ -353,7 +353,7 @@ Adjusting code that specifies `RenderTexture.Params.key`:
   // Replace this:
   system.createTextureFromImageBuffer(imageBuffer, iModel, new RenderTexture.Params(myKey);
   // With this:
-  system.createTextureFromImageBuffer({
+  system.createTexture({
     ownership: { iModel: myIModel, key: myKey },
     image: { source: imageBuffer },
   });
@@ -364,7 +364,7 @@ Adjusting callers of [RenderSystem.createTextureFromImage]($frontend):
   // Replace this:
   system.createTextureFromImage(image, hasAlpha, iModel, params);
   // With this:
-  system.createTextureFromImage({
+  system.createTexture({
     image: {
       source: image,
       // If you know the texture contains only opaque or only translucent pixels, specify TextureTransparency.Opaque or TextureTransparency.Translucent;
@@ -380,7 +380,7 @@ Adjusting callers of [RenderSystem.createTextureFromImageBuffer]($frontend):
   // Replace this:
   system.createTextureFromImageBuffer(buffer, iModel, params);
   // With this:
-  system.createTextureFromImageBuffer({
+  system.createTexture({
     image: {
       source: buffer,
       // If the buffer's type is not RGBA, pass TextureTransparency.Opaque. Otherwise, if you don't know the transparency, omit it.
