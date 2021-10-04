@@ -29,7 +29,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { TextureCacheKey } from "../RenderTexture";
+import { CreateTextureArgs, TextureCacheKey } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
@@ -235,7 +235,7 @@ export class IdMap implements WebGLDisposable {
     return material;
   }
 
-  private createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
+  public createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
     if (undefined === handle)
       return undefined;
 
@@ -685,6 +685,23 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (!idMap)
       return undefined;
     return idMap.findMaterial(key);
+  }
+
+  public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
+    return super.createTexture(args); // ###TODO
+    // const owner = undefined !== args.ownership && args.ownership !== "external" ? args.ownership : undefined;
+    // if (owner) {
+    //   const existing = this.findTexture(owner.key, owner.iModel);
+    //   if (existing)
+    //     ret
+    //   const idMap = this.resourceCache.get(owner.iModel);
+    //   return idMap.createTextureFromArgs(args, owner,
+    // const iModel = owner?.iModel;
+    // const params = new RenderTexture.Params(owner?.key, args.type, "external" === args.ownership);
+    // if (args.image.source instanceof ImageBuffer) {
+    // } else {
+
+    // }
   }
 
   /** Attempt to create a texture for the given iModel using an ImageBuffer. */

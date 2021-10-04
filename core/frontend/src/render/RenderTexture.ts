@@ -25,7 +25,7 @@ export interface TextureCacheOwnership {
 
 export type TextureOwnership = TextureCacheOwnership | "external";
 
-export type TextureImageSource = HTMLImageElement | HTMLCanvasElement | ImageBuffer;
+export type TextureImageSource = HTMLImageElement | ImageBuffer; // ###TODO | HTMLCanvasElement etc
 
 export interface TextureImage {
   source: TextureImageSource;
