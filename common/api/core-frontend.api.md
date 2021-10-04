@@ -9851,8 +9851,7 @@ export type TextureOwnership = TextureCacheOwnership | "external";
 export enum TextureTransparency {
     Mixed = 2,
     Opaque = 0,
-    Translucent = 1,
-    Unknown = 2
+    Translucent = 1
 }
 
 // @internal (undocumented)

@@ -23,8 +23,6 @@ export enum TextureTransparency {
   Translucent,
   /** Both opaque and semi-transparent pixels are present. Rendering this type of transparency is somewhat more expensive. */
   Mixed,
-  /** The default if transparency information is not available. */
-  Unknown = Mixed,
 }
 
 /** A key that uniquely identifies a [RenderTexture]($common) in the context of an [[IModelConnection]], used for caching.
