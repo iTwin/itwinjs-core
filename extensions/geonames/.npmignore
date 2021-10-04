@@ -5,4 +5,4 @@
 !lib/**/*.js
 !lib/**/*.js.map
 !lib/extension/**/*
-test
+lib/**/test/**

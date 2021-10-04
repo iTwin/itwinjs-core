@@ -7,4 +7,4 @@
 !lib/**/*.js
 !lib/**/*.js.map
 
-test
+lib/**/test/**

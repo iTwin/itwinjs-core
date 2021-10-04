@@ -10,4 +10,4 @@
 !lib/**/assets/**/*
 
 # then ignore some stuff again
-test
+lib/**/test/**

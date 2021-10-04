@@ -8,4 +8,4 @@
 !lib/**/*.js.map
 !lib/**/public/**/*
 
-test/
+lib/**/test/**

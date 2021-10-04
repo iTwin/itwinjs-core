@@ -10,4 +10,4 @@
 !lib/**/*.svg
 !lib/**/public/**/*
 
-test/
+lib/**/test/**

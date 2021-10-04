@@ -9,4 +9,4 @@
 
 !public/**
 
-test
+lib/**/test/**

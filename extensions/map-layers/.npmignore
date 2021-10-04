@@ -8,6 +8,6 @@
 !lib/**/*.json
 !lib/**/*.svg
 !lib/**/public/**/*
-lib/test
+lib/**/test/**
 !*.md
 !rulesets/**/*

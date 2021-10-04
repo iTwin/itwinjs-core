@@ -9,4 +9,4 @@
 !lib/**/*.*css
 !lib/**/*.svg
 
-test
+lib/**/test/**

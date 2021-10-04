@@ -8,5 +8,5 @@
 !lib/**/*.js.map
 !lib/**/assets/**
 
-test
+lib/**/test/**
 perftest

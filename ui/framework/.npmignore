@@ -13,4 +13,4 @@
 
 !rulesets/**/*
 
-test
+lib/**/test/**

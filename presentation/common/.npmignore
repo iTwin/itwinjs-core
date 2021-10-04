@@ -14,5 +14,5 @@
 !Ruleset.schema.json
 
 # then ignore some stuff again
-test
+lib/**/test/**
 en-PSEUDO

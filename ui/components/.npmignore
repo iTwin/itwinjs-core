@@ -9,4 +9,4 @@
 !lib/**/*.*css
 !lib/**/public/**/*
 
-test/
+lib/**/test/**
