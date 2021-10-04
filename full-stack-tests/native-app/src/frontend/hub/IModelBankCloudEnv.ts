@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
 import { ITwin } from "@bentley/context-registry-client";
 import { AccessToken } from "@itwin/core-bentley";
 

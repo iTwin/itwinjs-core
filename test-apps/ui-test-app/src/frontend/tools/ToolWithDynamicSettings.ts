@@ -43,11 +43,11 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
   // ------------- State List ---------------
   private static _statePropertyName = "state";
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithDynamicSettings.State.${str}`); }
+  private static enumAsPicklistMessage(str: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.ToolWithDynamicSettings.State.${str}`); }
   private static getStateDescription(): PropertyDescription {
     return {
       name: this._statePropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.State"),
+      displayLabel: IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.State"),
       typename: "enum",
       enum: {
         choices: [
@@ -77,7 +77,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
     return {
       name: this._cityPropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.City"),
+      displayLabel: IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.City"),
       typename: "enum",
       enum: {
         choices: availableCitiesChoices,
@@ -125,7 +125,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.GetPoint"));
     const instructions = ToolAssistance.createInstructions(mainInstruction);
 
     IModelApp.notifications.setToolAssistance(instructions);

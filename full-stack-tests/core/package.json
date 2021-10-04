@@ -24,6 +24,7 @@
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
@@ -35,9 +36,8 @@
     "@itwin/editor-frontend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-markup": "workspace:*",
-    "@itwin/electron-manager": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "fs-extra": "^8.1.0",

@@ -1357,7 +1357,7 @@ export class KeySet {
     add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet;
     clear(): KeySet;
     delete(value: Keys | Key): KeySet;
-    forEach(callback: (key: Key, index: number) => void): void;
+    forEach(callback: (key: InstanceKey | NodeKey, index: number) => void): void;
     forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void): void;
     static fromJSON(json: KeySetJSON): KeySet;
     get guid(): GuidString;
@@ -1376,7 +1376,7 @@ export class KeySet {
 
 // @public
 export interface KeySetJSON {
-    instanceKeys: Array<[string, string[]]>;
+    instanceKeys: Array<[string, string]>;
     nodeKeys: NodeKeyJSON[];
 }
 

@@ -261,7 +261,7 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="app">
         <div className="app-header">
-          <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
+          <h2>{IModelApp.localization.getLocalizedString("Sample:welcome-message")}</h2>
         </div>
         <div className="app-pickers">
           <IModelSelector onIModelSelected={this.onIModelSelected} activeIModelPath={this.state.imodelPath} />

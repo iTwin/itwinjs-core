@@ -16,9 +16,9 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/co
  */
 export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
-    if (!(await this.isSignedIn()))
+    const accessToken = await IModelApp.getAccessToken();
+    if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
     const result = await IModelApp.settings.getUserSetting(accessToken, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
     return {
@@ -28,9 +28,9 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
-    if (!(await this.isSignedIn()))
+    const accessToken = await IModelApp.getAccessToken();
+    if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
     const result = await IModelApp.settings.saveUserSetting(accessToken, setting, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
     return {
@@ -40,19 +40,15 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
-    if (!(await this.isSignedIn()))
+    const accessToken = await IModelApp.getAccessToken();
+    if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
     const result = await IModelApp.settings.deleteUserSetting(accessToken, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
     return {
       status,
       setting: result.setting,
     };
-  }
-
-  private async isSignedIn(): Promise<boolean> {
-    return await IModelApp.authorizationClient?.getAccessToken() !== undefined;
   }
 }
 

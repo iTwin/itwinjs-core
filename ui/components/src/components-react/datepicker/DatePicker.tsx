@@ -41,41 +41,41 @@ export interface DatePickerProps {
  * @alpha
  */
 export function DatePicker(props: DatePickerProps) {
-  const previousMonthLabel = React.useRef(UiComponents.i18n.translate("UiComponents:datepicker.previousMonth"));
-  const nextMonthLabel = React.useRef(UiComponents.i18n.translate("UiComponents:datepicker.nextMonth"));
+  const previousMonthLabel = React.useRef(UiComponents.localization.getLocalizedString("UiComponents:datepicker.previousMonth"));
+  const nextMonthLabel = React.useRef(UiComponents.localization.getLocalizedString("UiComponents:datepicker.nextMonth"));
   const monthsLong = React.useRef([
-    UiComponents.i18n.translate("UiComponents:month.long.january"),
-    UiComponents.i18n.translate("UiComponents:month.long.february"),
-    UiComponents.i18n.translate("UiComponents:month.long.march"),
-    UiComponents.i18n.translate("UiComponents:month.long.april"),
-    UiComponents.i18n.translate("UiComponents:month.long.may"),
-    UiComponents.i18n.translate("UiComponents:month.long.june"),
-    UiComponents.i18n.translate("UiComponents:month.long.july"),
-    UiComponents.i18n.translate("UiComponents:month.long.august"),
-    UiComponents.i18n.translate("UiComponents:month.long.september"),
-    UiComponents.i18n.translate("UiComponents:month.long.october"),
-    UiComponents.i18n.translate("UiComponents:month.long.november"),
-    UiComponents.i18n.translate("UiComponents:month.long.december"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.january"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.february"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.march"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.april"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.may"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.june"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.july"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.august"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.september"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.october"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.november"),
+    UiComponents.localization.getLocalizedString("UiComponents:month.long.december"),
   ]);
 
   const daysLong = React.useRef([
-    UiComponents.i18n.translate("UiComponents:days.long.sunday"),
-    UiComponents.i18n.translate("UiComponents:days.long.monday"),
-    UiComponents.i18n.translate("UiComponents:days.long.tuesday"),
-    UiComponents.i18n.translate("UiComponents:days.long.wednesday"),
-    UiComponents.i18n.translate("UiComponents:days.long.thursday"),
-    UiComponents.i18n.translate("UiComponents:days.long.friday"),
-    UiComponents.i18n.translate("UiComponents:days.long.saturday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.sunday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.monday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.tuesday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.wednesday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.thursday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.friday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.long.saturday"),
   ]);
 
   const daysShort = React.useRef([
-    UiComponents.i18n.translate("UiComponents:days.short.sunday"),
-    UiComponents.i18n.translate("UiComponents:days.short.monday"),
-    UiComponents.i18n.translate("UiComponents:days.short.tuesday"),
-    UiComponents.i18n.translate("UiComponents:days.short.wednesday"),
-    UiComponents.i18n.translate("UiComponents:days.short.thursday"),
-    UiComponents.i18n.translate("UiComponents:days.short.friday"),
-    UiComponents.i18n.translate("UiComponents:days.short.saturday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.sunday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.monday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.tuesday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.wednesday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.thursday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.friday"),
+    UiComponents.localization.getLocalizedString("UiComponents:days.short.saturday"),
   ]);
 
   const [selectedDay, setSelectedDay] = React.useState(new Date(props.selected.getTime()));

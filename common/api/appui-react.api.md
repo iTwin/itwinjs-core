@@ -55,7 +55,6 @@ import { FunctionKey } from '@itwin/appui-abstract';
 import { GroupButton as GroupButton_2 } from '@itwin/appui-abstract';
 import { GuidString } from '@itwin/core-bentley';
 import { HorizontalAnchor } from '@itwin/appui-layout-react';
-import { I18N } from '@itwin/core-i18n';
 import { IconProps } from '@itwin/core-react';
 import { IconSpec } from '@itwin/core-react';
 import { Id64Array } from '@itwin/core-bentley';
@@ -69,6 +68,7 @@ import { InteractiveTool } from '@itwin/core-frontend';
 import { IPresentationTreeDataProvider } from '@itwin/presentation-components';
 import { ItemField } from '@itwin/core-frontend';
 import { LayoutFragmentProps } from '@itwin/appui-abstract';
+import { Localization } from '@itwin/core-common';
 import { MessageBoxIconType } from '@itwin/core-frontend';
 import { MessageBoxType } from '@itwin/core-frontend';
 import { MessageBoxValue } from '@itwin/core-frontend';
@@ -957,24 +957,6 @@ export interface CategoryTreeProps {
     // @internal
     viewManager?: ViewManager;
     width: number;
-}
-
-// @internal
-export interface ChangeSetInfo {
-    // (undocumented)
-    changeSetId?: string;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    largeThumbnail?: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    pushDate: Date;
-    // (undocumented)
-    smallThumbnail?: string;
-    // (undocumented)
-    userCreated?: string;
 }
 
 // @public (undocumented)
@@ -3081,57 +3063,6 @@ export const IModelConnectedViewport: import("react-redux").ConnectedComponent<R
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
-
-// @internal
-export interface IModelInfo {
-    // (undocumented)
-    createdDate: Date;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    iTwinId: GuidString;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    status: string;
-    // (undocumented)
-    thumbnail?: string;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @internal
-export enum IModelScope {
-    // (undocumented)
-    All = 2,
-    // (undocumented)
-    Favorites = 0,
-    // (undocumented)
-    MostRecentlyUsed = 1
-}
-
-// @internal
-export interface IModelServices {
-    getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]>;
-    getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
-    getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
-    getUsers(iModelId: string): Promise<IModelUserInfo[]>;
-    getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(iTwinId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
-}
-
-// @internal
-export interface IModelUserInfo {
-    // (undocumented)
-    email: string;
-    // (undocumented)
-    firstName: string;
-    // (undocumented)
-    id?: string;
-    // (undocumented)
-    lastName: string;
-}
 
 // @public
 export class IModelViewportControl extends ViewportContentControl {
@@ -6619,18 +6550,16 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    // @internal (undocumented)
-    static get iModelServices(): IModelServices;
-    static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
+    static get localization(): Localization;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal
@@ -6970,24 +6899,6 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
     // @internal (undocumented)
     render(): React.ReactNode;
     }
-
-// @internal
-export interface VersionInfo {
-    // (undocumented)
-    changeSetId?: string;
-    // (undocumented)
-    createdDate: Date;
-    // (undocumented)
-    description: string;
-    // (undocumented)
-    largeThumbnail?: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    smallThumbnail?: string;
-    // (undocumented)
-    userCreated?: string;
-}
 
 // @beta
 export class ViewAttributesStatusField extends React.Component<StatusFieldProps, ViewAttributesStatusFieldState> {

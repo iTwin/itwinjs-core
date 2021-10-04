@@ -13,6 +13,7 @@ import {
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
 
 declare const PACKAGE_VERSION: string;
 
@@ -83,6 +84,7 @@ export class TestContext {
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      hubAccess: new IModelHubFrontend(),
     });
 
     this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);

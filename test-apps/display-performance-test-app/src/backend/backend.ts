@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";

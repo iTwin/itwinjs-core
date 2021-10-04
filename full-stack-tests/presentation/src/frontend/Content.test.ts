@@ -125,7 +125,13 @@ describe("Content", () => {
           specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
         }],
       };
-      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x61" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x6a" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x3c" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x71" },
+      ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
 
       let field = getFieldByLabel(descriptor.fields, "User Label");
@@ -189,7 +195,13 @@ describe("Content", () => {
           }],
         }],
       };
-      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x61" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x6a" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x3c" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x71" },
+      ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
       const field = getFieldByLabel(descriptor.fields, "Model Label");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
@@ -206,7 +218,13 @@ describe("Content", () => {
           specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
         }],
       };
-      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x61" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x6a" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x3c" },
+        { className: "PCJ_TestSchema:TestClass", id: "0x71" },
+      ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
       const field = getFieldByLabel(descriptor.fields, "Name")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{

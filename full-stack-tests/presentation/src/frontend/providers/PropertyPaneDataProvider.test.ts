@@ -167,7 +167,11 @@ describe("PropertyDataProvider", async () => {
 
     // re-initialize
     Presentation.terminate();
-    await Presentation.initialize();
+    await Presentation.initialize({
+      presentation: {
+        activeLocale: "en-pseudo",
+      },
+    });
 
     // repeat request
     await checkDataProvider();

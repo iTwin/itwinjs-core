@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModel, IModelError } from "@itwin/core-common";
 import { BriefcaseConnection } from "@itwin/core-frontend";
 

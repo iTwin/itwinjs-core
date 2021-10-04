@@ -8,25 +8,25 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
+import { I18N } from "@itwin/core-i18n";
 import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient,
 } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool,
   SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { I18NNamespace } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { MapLayersUI } from "@itwin/map-layers";
-import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/cjs/MobileFrontend";
+import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { getClassName } from "@itwin/appui-abstract";
 import { BeDragDropContext } from "@itwin/components-react";
@@ -34,10 +34,11 @@ import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
+  ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@itwin/appui-react";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -62,6 +63,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import { ExternalIModel } from "./appui/ExternalIModel";
 import { ProgressInfo } from "@bentley/itwin-client";
 
 // Initialize my application gateway configuration for the frontend
@@ -154,7 +156,7 @@ interface SampleIModelParams {
 }
 
 export class SampleAppIModelApp {
-  public static sampleAppNamespace: I18NNamespace;
+  public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
@@ -177,8 +179,14 @@ export class SampleAppIModelApp {
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
+
+    const iModelAppOpts = {
+      ...opts.iModelApp,
+      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+    };
+
     if (ProcessDetector.isElectronAppFrontend) {
-      await ElectronApp.startup(opts);
+      await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
@@ -195,10 +203,10 @@ export class SampleAppIModelApp {
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_GP_BACKEND ?
           { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
-          : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3000" };
+          : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
-      await IModelApp.startup(opts.iModelApp);
+      await IModelApp.startup(iModelAppOpts);
     }
 
     window.onerror = function (error) {
@@ -206,7 +214,8 @@ export class SampleAppIModelApp {
       console.log(error);
     };
 
-    this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
+    this.sampleAppNamespace = "SampleApp";
+    await IModelApp.localization.registerNamespace(this.sampleAppNamespace);
 
     // use new state manager that allows dynamic additions from extensions and snippets
     if (!this._appStateManager) {
@@ -233,7 +242,7 @@ export class SampleAppIModelApp {
     // initialize Presentation
     await Presentation.initialize({
       presentation: {
-        activeLocale: IModelApp.i18n.languageList()[0],
+        activeLocale: IModelApp.localization.languageList()[0],
       },
       favorites: {
         storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
@@ -332,7 +341,9 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
+      const iModel = new ExternalIModel(projectId, iModelId);
+      await iModel.openIModel();
+      iModelConnection = iModel.iModelConnection!;
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -419,7 +430,9 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
+        const iModel = new ExternalIModel(iTwinId, iModelId);
+        await iModel.openIModel();
+        iModelConnection = iModel.iModelConnection!;
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -431,7 +444,7 @@ export class SampleAppIModelApp {
     await SampleAppIModelApp.showFrontstage("IModelIndex");
   }
 
-  public static async showIModelOpen(_iModels: IModelInfo[] | undefined) {
+  public static async showIModelOpen() {
     await SampleAppIModelApp.showFrontstage("IModelOpen");
   }
 
@@ -449,7 +462,7 @@ export class SampleAppIModelApp {
       const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
-      const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+      const accessToken = await IModelApp.getAccessToken();
       const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
         search: {
           searchString: projectName,
@@ -487,7 +500,7 @@ export class SampleAppIModelApp {
       await LocalFileOpenFrontstage.open();
     } else {
       // open to the IModelOpen frontstage
-      await SampleAppIModelApp.showIModelOpen(undefined);
+      await SampleAppIModelApp.showIModelOpen();
     }
   }
 
@@ -615,13 +628,12 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
       } catch (err) { }
 
       authorized = auth.isAuthorized;
-      if (authorized)
-        IModelApp.authorizationClient = auth;
+      IModelApp.authorizationClient = auth;
     }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
-  private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
+  private _onAccessTokenChanged = async (_accessToken: AccessToken) => {
     const authorized = !!IModelApp.authorizationClient;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
@@ -640,7 +652,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
-      oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+      oidcClient.onAccessTokenChanged.addListener(this._onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
   }
@@ -648,7 +660,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
   public override componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
-      oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+      oidcClient.onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
   }
@@ -725,8 +737,10 @@ async function main() {
       uiAdmin: new FrameworkUiAdmin(),
       accuDraw: new FrameworkAccuDraw(),
       viewManager: new AppViewManager(true),  // Favorite Properties Support
+      realityDataAccess: new RealityDataAccessClient(),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
+      hubAccess: new IModelHubFrontend(),
       mapLayerOptions: mapLayerOpts,
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },

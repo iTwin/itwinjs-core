@@ -2,7 +2,7 @@
   "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "3.0.0-dev.72",
+  "version": "3.0.0-dev.76",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -57,12 +57,9 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@xmldom/xmldom": "^0.7.0",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",

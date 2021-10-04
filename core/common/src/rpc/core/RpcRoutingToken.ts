@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-/** @public */
+/** @internal */
 export class RpcRoutingToken {
   private static _next = -1;
 

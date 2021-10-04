@@ -364,15 +364,15 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/electron-manager",
-      "projectFolder": "core/electron-manager",
+      "packageName": "@itwin/core-electron",
+      "projectFolder": "core/electron",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/mobile-manager",
-      "projectFolder": "core/mobile-manager",
+      "packageName": "@itwin/core-mobile",
+      "projectFolder": "core/mobile",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

@@ -22,7 +22,7 @@ export function GridWidget(props: GridWidgetProps) {
   const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
   return (
     <div className="gridwidget">
-      <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
+      <h3>{IModelApp.localization.getLocalizedString("Sample:controls.grid")}</h3>
       <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
       <div className="gridwidget-content">
         {props.rulesetId

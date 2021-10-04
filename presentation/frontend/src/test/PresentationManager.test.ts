@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { I18N, I18NNamespace } from "@itwin/core-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
@@ -67,10 +67,10 @@ describe("PresentationManager", () => {
 
   const mockI18N = () => {
     i18nMock.reset();
-    Presentation.setI18nManager(i18nMock.object);
+    Presentation.setLocalization(i18nMock.object);
     const resolvedPromise = new Promise<void>((resolve) => resolve());
-    i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
-    i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
+    i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => resolvedPromise);
+    i18nMock.setup((x) => x.getLocalizedString(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
   };
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey }>(requestOptions: TOptions) => {

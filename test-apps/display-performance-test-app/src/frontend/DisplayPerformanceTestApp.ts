@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@itwin/core-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { TestRunner, TestSetsProps } from "./TestRunner";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -24,7 +24,7 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.localization = new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" });
     iModelApp.tileAdmin = {
       minimumSpatialTolerance: 0,
       cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
@@ -88,8 +88,8 @@ async function signIn(): Promise<boolean> {
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onUserStateChanged.addListener((token) => {
-      resolve(token !== undefined);
+    oidcClient.onAccessTokenChanged.addListener((token) => {
+      resolve(token !== "");
     });
   });
 

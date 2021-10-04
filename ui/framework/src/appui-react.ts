@@ -33,8 +33,6 @@ export * from "./appui-react/backstage/useDefaultBackstageItems";
 export * from "./appui-react/backstage/TaskLaunch";
 export * from "./appui-react/backstage/useUiItemsProviderBackstageItems";
 
-export * from "./appui-react/clientservices/IModelServices";
-
 export * from "./appui-react/configurableui/ConfigurableUiContent";
 export * from "./appui-react/configurableui/ConfigurableUiControl";
 export * from "./appui-react/configurableui/ConfigurableUiManager";

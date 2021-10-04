@@ -29,13 +29,14 @@ describe("IModelConnection (#integration)", () => {
     await IModelApp.shutdown();
     await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
+      hubAccess: TestUtility.itwinPlatformEnv.hubAccess,
     });
 
     Logger.initializeToConsole();
     Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
-    IModelApp.authorizationClient = authorizationClient;
+    await TestUtility.initialize(TestUsers.regular);
+    IModelApp.authorizationClient = TestUtility.itwinPlatformEnv.authClient;
 
     // Setup a model with a large number of change sets
     const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);

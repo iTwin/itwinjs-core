@@ -11,7 +11,7 @@ import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/electron-manager/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 
 const expect = chai.expect;

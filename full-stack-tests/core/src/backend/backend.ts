@@ -8,7 +8,7 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/electron-manager/lib/cjs/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,

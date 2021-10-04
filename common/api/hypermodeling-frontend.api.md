@@ -12,7 +12,6 @@ import { Cluster } from '@itwin/core-frontend';
 import { DecorateContext } from '@itwin/core-frontend';
 import { Decorator } from '@itwin/core-frontend';
 import { DrawingViewState } from '@itwin/core-frontend';
-import { I18NNamespace } from '@itwin/core-i18n';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { Marker } from '@itwin/core-frontend';
@@ -43,7 +42,7 @@ export class HyperModeling {
     static get markerConfig(): SectionMarkerConfig;
     static get markerHandler(): SectionMarkerHandler;
     // @internal (undocumented)
-    static get namespace(): I18NNamespace;
+    static get namespace(): string | undefined;
     static replaceConfiguration(config?: HyperModelingConfig): void;
     // @internal (undocumented)
     static resources?: Resources;
