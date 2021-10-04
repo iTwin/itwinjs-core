@@ -136,7 +136,7 @@ export class BackgroundMapDrape extends TextureDrape {
         return;
       }
 
-      this._texture = new Texture({ ownership: "external", marker: "marker", type: RenderTexture.Type.TileSection }, colorTextureHandle);
+      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle });
       this._fbo = FrameBuffer.create([colorTextureHandle]);
     }
     if (undefined === this._fbo) {

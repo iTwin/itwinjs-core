@@ -146,17 +146,6 @@ class WebGL2Extensions extends WebGLExtensions {
   }
 }
 
-function createTextureFromGradient(grad: Gradient.Symb, iModel: IModelConnection | undefined): RenderTexture | undefined {
-  const image: ImageBuffer = grad.getImage(0x100, 0x100);
-
-  const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
-  if (!textureHandle)
-    return undefined;
-
-  const ownership = iModel ? { key: grad, iModel } : undefined;
-  return new Texture({ ownership, marker: "marker", type: Texture.Type.Normal }, textureHandle);
-}
-
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
@@ -235,27 +224,6 @@ export class IdMap implements WebGLDisposable {
     return material;
   }
 
-  public createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
-    if (undefined === handle)
-      return undefined;
-
-    const texture = new Texture(TextureParams.create(params, this._iModel), handle);
-    this.addTexture(texture);
-    return texture;
-  }
-
-  private createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
-  }
-
-  private createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params) {
-    return this.createTexture(params, TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ));
-  }
-
-  private createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
-  }
-
   public findTexture(key?: string | Gradient.Symb): RenderTexture | undefined {
     if (undefined === key)
       return undefined;
@@ -265,14 +233,18 @@ export class IdMap implements WebGLDisposable {
       return this.findGradient(key);
   }
 
-  public getTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromElement(id, imodel, params, format);
-  }
+  public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    let tex = this.findTexture(params.key);
+    if (tex)
+      return tex;
 
-  public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
+    const handle = TextureHandle.createForElement(key, iModel, params.type, format);
+    if (!handle)
+      return undefined;
+
+    tex = new Texture({ handle, type: params.type, ownership: { key, iModel } });
+    this.addTexture(tex);
+    return tex;
   }
 
   public async getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
@@ -299,7 +271,7 @@ export class IdMap implements WebGLDisposable {
   public async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     try {
       const image = await imageElementFromImageSource(source);
-      return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
+      return IModelApp.hasRenderSystem ? IModelApp.renderSystem.createTextureFromImage(image, ImageSourceFormat.Png === source.format, this._iModel, params) : undefined;
     } catch (_) {
       // Caller is uninterested in the details of the exception.
       return undefined;
@@ -312,7 +284,18 @@ export class IdMap implements WebGLDisposable {
   }
 
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
+    let tex = this.findTexture(params.key);
+    if (tex)
+      return tex;
+
+    const handle = TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
+    if (!handle)
+      return undefined;
+
+    const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
+    tex = new Texture({ handle, ownership, type: params.type });
+    this.addTexture(tex);
+    return tex;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -683,8 +666,20 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (existing)
       return existing;
 
-    // ###TODO Don't call super
-    const texture = super.createTexture(args);
+    const type = args.type ?? RenderTexture.Type.Normal;
+    const source = args.image.source;
+
+    // ###TODO createForImageBuffer should take args.transparency.
+    let handle;
+    if (source instanceof ImageBuffer)
+      handle = TextureHandle.createForImageBuffer(source, type); // ###TODO use transparency from args
+    else
+      handle = TextureHandle.createForImage(source, TextureTransparency.Opaque !== args.image.transparency, type);
+
+    if (!handle)
+      return undefined;
+
+    const texture = new Texture({ handle, type, ownership: args.ownership });
     if (texture && info)
       info.idMap.addTexture(texture);
 
@@ -696,17 +691,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       return super.createTextureFromImageSource(source, imodel, params);
 
     return this.getIdMap(imodel).getTextureFromImageSource(source, params);
-  }
-
-  /** Attempt to create a texture for the given iModel using an HTML image element. */
-  public override createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
-    if (undefined === imodel) {
-      const textureHandle = TextureHandle.createForImage(image, hasAlpha, params.type);
-      return undefined !== textureHandle ? new Texture(TextureParams.create(params), textureHandle) : undefined;
-    }
-
-    return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
   }
 
   public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {

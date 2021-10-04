@@ -139,20 +139,7 @@ export interface TextureParams {
   type: RenderTexture.Type;
   ownership?: TextureOwnership;
   // ###TODO transparency: TextureTransparency;
-  marker: "marker"; // ###TODO Temporary to force compiler to catch cases where we pass RenderTexture.Params as TextureParams.
-}
-
-export namespace TextureParams {
-  // ###TODO: This is temporary until we remove RenderTexture.Params.
-  export function create(params: RenderTexture.Params, iModel?: IModelConnection): TextureParams {
-    const result: TextureParams = { type: params.type, marker: "marker" };
-    if (params.isOwned)
-      result.ownership = "external";
-    else if (iModel && params.key)
-      result.ownership = { key: params.key, iModel };
-
-    return result;
-  }
+  handle: TextureHandle;
 }
 
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
@@ -168,10 +155,10 @@ export class Texture extends RenderTexture implements WebGLDisposable {
     return typeof this.ownership !== "string" && typeof this.ownership?.key === "string" ? this.ownership.key : undefined;
   }
 
-  public constructor(params: TextureParams, texture: TextureHandle) {
+  public constructor(params: TextureParams) {
     super(params.type);
     this.ownership = params.ownership;
-    this.texture = texture;
+    this.texture = params.handle;
   }
 
   public get isDisposed(): boolean { return this.texture.isDisposed; }

@@ -42,10 +42,10 @@ export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2
 
 function createTexture(handle: TextureHandle): Texture {
   return new Texture({
+    handle,
     ownership: "external",
     type: RenderTexture.Type.TileSection,
-    marker: "marker",
-  }, handle);
+  });
 }
 
 function createTextureHandle(width: number, height: number, heightMult = 1.0) { return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte); }
@@ -240,7 +240,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     if (!hTexture)
       return undefined;
 
-    const texture = new Texture({ marker: "marker", type: RenderTexture.Type.TileSection, ownership: "external" }, hTexture);
+    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture });
     if (!texture)
       return undefined;
 

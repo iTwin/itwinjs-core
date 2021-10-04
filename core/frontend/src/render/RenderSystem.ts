@@ -559,8 +559,16 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]] */
-  public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined {
-    return undefined;
+  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+    const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
+    return this.createTexture({
+      type: params.type,
+      ownership,
+      image: {
+        source: image,
+        transparency: hasAlpha ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+      },
+    });
   }
 
   /** Create a new texture from an [[ImageSource]]. */
