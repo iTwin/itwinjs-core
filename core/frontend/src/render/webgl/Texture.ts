@@ -134,6 +134,26 @@ interface TextureImageProperties {
   anisotropicFilter: TextureAnisotropicFilter;
 }
 
+/** @internal */
+export interface TextureParams {
+  type: RenderTexture.Type;
+  ownership?: TextureOwnership;
+  // ###TODO transparency: TextureTransparency;
+}
+
+export namespace TextureParams {
+  // ###TODO: This is temporary until we remove RenderTexture.Params.
+  export function create(params: RenderTexture.Params, iModel?: IModelConnection): TextureParams {
+    const result: TextureParams = { type: params.type };
+    if (params.isOwned)
+      result.ownership = "external";
+    else if (iModel && params.key)
+      result.ownership = { key: params.key, iModel };
+
+    return result;
+  }
+}
+
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
@@ -147,8 +167,9 @@ export class Texture extends RenderTexture implements WebGLDisposable {
     return typeof this.ownership !== "string" && typeof this.ownership?.key === "string" ? this.ownership.key : undefined;
   }
 
-  public constructor(params: RenderTexture.Params, texture: TextureHandle) {
+  public constructor(params: TextureParams, texture: TextureHandle) {
     super(params.type);
+    this.ownership = params.ownership;
     this.texture = texture;
   }
 

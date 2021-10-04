@@ -36,9 +36,6 @@ export abstract class RenderTexture implements IDisposable {
 
 /** @public */
 export namespace RenderTexture { // eslint-disable-line no-redeclare
-  /** @deprecated use RenderTexture.Type
-   * @public
-   */
   /** Enumerates the types of [[RenderTexture]]s. */
   export enum Type {
     /** An image applied to a surface, with support for mip-mapping and repeating. */
