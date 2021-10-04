@@ -6632,25 +6632,23 @@ export namespace RenderSchedule {
 
 // @public
 export abstract class RenderTexture implements IDisposable {
-    protected constructor(params: RenderTexture.Params);
+    protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
-    readonly isOwned: boolean;
     // (undocumented)
     get isSkyBox(): boolean;
     // (undocumented)
     get isTileSection(): boolean;
-    readonly key: string | undefined;
     readonly type: RenderTexture.Type;
 }
 
 // @public (undocumented)
 export namespace RenderTexture {
     export class Params {
-        constructor(key?: string, type?: Type, isOwned?: boolean);
+        constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
         static readonly defaults: Params;
         // (undocumented)
         get isGlyph(): boolean;
@@ -6660,7 +6658,7 @@ export namespace RenderTexture {
         // (undocumented)
         get isTileSection(): boolean;
         readonly key?: string;
-        readonly type: Type;
+        readonly type: RenderTexture.Type;
     }
     export enum Type {
         FilteredTileSection = 4,
