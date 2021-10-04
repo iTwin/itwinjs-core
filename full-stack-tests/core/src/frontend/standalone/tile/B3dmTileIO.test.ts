@@ -294,7 +294,7 @@ describe("B3dmReader", () => {
   it("should locate texture for mesh", async () => {
     class Texture extends RenderTexture {
       public constructor(params: RenderTexture.Params) {
-        super(params);
+        super(params.type);
       }
 
       public dispose() { }

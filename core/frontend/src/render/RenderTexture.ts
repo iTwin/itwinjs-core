@@ -13,6 +13,7 @@ export enum TextureTransparency {
   Opaque,
   Translucent,
   Mixed,
+  Unknown = Mixed,
 }
 
 export interface TextureCacheKey {
@@ -26,7 +27,7 @@ export type TextureImageSource = HTMLImageElement | HTMLCanvasElement | ImageBuf
 
 export interface TextureImage {
   source: TextureImageSource;
-  transparency?: TextureTransparency;
+  transparency: TextureTransparency;
 }
 
 export interface CreateTextureArgs {
