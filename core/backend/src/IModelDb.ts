@@ -2332,7 +2332,7 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
-  private _reattachDueTimestamp: number | undefined;
+  private _reattachTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
@@ -2462,25 +2462,32 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot.setReattachDueTimestamp(expiryTimestamp);
+    snapshot.setReattachTimestamp(expiryTimestamp);
     return snapshot;
   }
 
   /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
-   * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
   public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
-    if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
-      this.setReattachDueTimestamp(expiryTimestamp);
-    }
+    if (undefined === this._reattachTimestamp || this._reattachTimestamp > Date.now())
+      return;
+
+    // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's
+    // storage account. Since we do this in plenty of time before the current token expires, there's no need to wait for it to complete.
+    // The current token will be fine for this and all future requests until the re-attach completes.
+    this._reattachTimestamp = undefined;  // so other requests won't attempt to reattach while this one is waiting
+    V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset })
+      .then((response) => this.setReattachTimestamp(response.expiryTimestamp))
+      .catch((e) => e);
+
+    return Promise.resolve(); // caller should not wait
   }
 
-  private setReattachDueTimestamp(expiryTimestamp: number) {
+  private setReattachTimestamp(expiryTimestamp: number) {
     const now = Date.now();
     const expiresIn = expiryTimestamp - now;
-    this._reattachDueTimestamp = now + (expiresIn / 2);
+    this._reattachTimestamp = now + (expiresIn / 2);
   }
 
   /** @internal */
