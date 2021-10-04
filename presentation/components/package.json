@@ -27,10 +27,8 @@
   "scripts": {
     "compile": "npm run -s build",
     "build": "npm run -s extract && npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run -s copy:esm",
-    "copy:cjs": "cpx \"../common/assets/**/*\" ./lib/cjs/public && cpx \"./public/**/*\" ./lib/cjs/public && cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
-    "copy:esm": "cpx \"../common/assets/**/*\" ./lib/esm/public && cpx \"./public/**/*\" ./lib/esm/public && cpx \"./src/**/*.{scss,json}\" ./lib/esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s extract && npm run -s docs:changelog",

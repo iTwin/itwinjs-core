@@ -8,8 +8,7 @@
 import { using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Omit, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
-import { PresentationTreeDataProvider } from "@itwin/presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "@itwin/presentation-components/lib/cjs/test";
+import { PRESENTATION_TREE_NODE_KEY, PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TreeNodeItem } from "@itwin/components-react";
 

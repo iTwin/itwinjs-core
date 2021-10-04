@@ -4,5 +4,3 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./_helpers/Properties";
 export * from "./_helpers/UiComponents";
-import { PRESENTATION_TREE_NODE_KEY } from "../presentation-components/tree/Utils";
-export { PRESENTATION_TREE_NODE_KEY };

@@ -2,7 +2,7 @@
   "name": "@itwin/presentation-common",
   "version": "3.0.0-dev.76",
   "description": "Common pieces for iModel.js presentation packages",
-  "imodeljsSharedcjsrary": true,
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
