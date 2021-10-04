@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 /** @packageDocumentation
  * @module iModelBankClient
  */

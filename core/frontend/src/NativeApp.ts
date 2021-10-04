@@ -8,11 +8,11 @@
 
 import { AccessToken, AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  AuthorizationClient, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RequestNewBriefcaseProps, SessionProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";

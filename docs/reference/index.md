@@ -33,7 +33,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 ## iTwin.js Client Packages
 
 - ($context-registry-client)
-- ($frontend-authorization-client)
 - ($imodelhub-client)
 - ($itwin-client)
 - ($product-settings-client)

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@itwin/core-bentley";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.

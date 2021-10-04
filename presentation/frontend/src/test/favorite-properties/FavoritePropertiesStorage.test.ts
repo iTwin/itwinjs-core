@@ -7,7 +7,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { InternetConnectivityStatus } from "@itwin/core-common";
+import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { configureForPromiseResult } from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
@@ -18,7 +18,6 @@ import {
   BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, IModelAppFavoritePropertiesStorage,
   NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { AuthorizationClient } from "@bentley/itwin-client";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 

@@ -23,7 +23,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run -s copy:test-assets",
     "test": "mocha --grep=\"#integration\" --invert",
-    "test:integration": "npm run -s pretest && mocha --grep=\"#integration\"",
+    "test:integration": "",
     "copy:config": "internal-tools copy-config"
   },
   "repository": {

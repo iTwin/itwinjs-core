@@ -8,7 +8,7 @@
 
 import { AccessToken } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { IModelClient } from "./IModelClient";
 
 /** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 
 /** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.

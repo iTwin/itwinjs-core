@@ -33,17 +33,6 @@
       ]
     },
     {
-      "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [
-        "backend",
-        "common",
-        "frontend",
-        "integration-testing",
-        "internal",
-        "tools"
-      ]
-    },
-    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [
         "frontend",

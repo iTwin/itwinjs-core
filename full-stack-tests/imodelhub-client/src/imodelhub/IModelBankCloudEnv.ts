@@ -15,7 +15,7 @@ import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/li
 import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt

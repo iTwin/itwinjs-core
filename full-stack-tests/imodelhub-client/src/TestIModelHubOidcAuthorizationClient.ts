@@ -5,7 +5,7 @@
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { TestUtility } from "@itwin/oidc-signin-tool";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 
 export class TestIModelHubOidcAuthorizationClient implements AuthorizationClient {
   private _token: AccessToken = "";

@@ -7,7 +7,7 @@ import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/li
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { ITwin } from "@bentley/context-registry-client";
 import { AccessToken } from "@itwin/core-bentley";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }

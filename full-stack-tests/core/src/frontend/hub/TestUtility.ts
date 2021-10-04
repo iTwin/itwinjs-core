@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";

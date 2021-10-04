@@ -949,9 +949,15 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/frontend-authorization-client
 
-| Removed                            | Replacement                    |
-| ---------------------------------- | ------------------------------ |
-| `FrontendAuthorizationClient`      | *removed*                      |
+| Removed                                          | Replacement                    |
+| -------------------------------------------------| ------------------------------ |
+| `FrontendAuthorizationClient`                    | *removed*                      |
+| `FrontendAuthorizationClientLoggerCategory`      | *removed*                      |
+| `BrowserAuthorizationCallbackHandler`            | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationBase`                       | *removed*                      |
+| `BrowserAuthorizationClient`                     | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationClientRedirectState`        | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationLogger`                     | Moved to iTwin/auth-clients    |
 
 <!---
 User Interface Changes - section to comment below

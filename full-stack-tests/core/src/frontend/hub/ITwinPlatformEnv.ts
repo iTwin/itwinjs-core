@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/context-registry-client";
-import { AuthorizationClient } from "@bentley/itwin-client";
 import {
   BriefcaseQuery,
   ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemContextClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
+import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { ContextRegistryClientWrapper } from "../../common/ContextRegistryClientWrapper";
 
@@ -94,7 +93,7 @@ export interface ITwinPlatformAbstraction {
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly contextMgr = new ContextRegistryClientWrapper(); // this should be the new ContextRegistryWrapper defined in #2045
   public readonly hubAccess = new IModelHubFrontend();
-  public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
+  public readonly authClient?: AuthorizationClient;
 
   public constructor(authClient?: AuthorizationClient) {
     this.authClient = authClient;
