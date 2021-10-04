@@ -2479,7 +2479,10 @@ export class SnapshotDb extends IModelDb {
     this._reattachTimestamp = undefined;  // so other requests won't attempt to reattach while this one is waiting
     V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset })
       .then((response) => this.setReattachTimestamp(response.expiryTimestamp))
-      .catch((e) => e);
+      .catch((e) => {
+        Logger.logError(BackendLoggerCategory.Authorization, "Reattach checkpoint failed", e);
+        this.setReattachTimestamp(Date.now()); // make the next requester reattempt
+      });
 
     return Promise.resolve(); // caller should not wait
   }
