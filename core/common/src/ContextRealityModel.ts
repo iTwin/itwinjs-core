@@ -22,7 +22,7 @@ export interface OrbitGtBlobProps {
   accountName: string;
 }
 
-/** Identify the Reality Data service provider and storage formats supported by this provider
+/** Identify the Reality Data service provider
  * @alpha
  */
 export enum RealityDataProvider {
@@ -45,37 +45,32 @@ export enum RealityDataProvider {
   CesiumIonAsset = "CesiumIonAsset",
 }
 
-export type RealityDataProviderString = keyof typeof RealityDataProvider;
-
-export enum RealityDataFormat {
+/** Identify the Reality Data storage format
+ * @alpha
+ */export enum RealityDataFormat {
   /**
-   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
-   * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
-   * You should use other mode when possible
-   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * 3dTile supported formats; RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
    * */
   ThreeDTile = "ThreeDTile",
   /**
-   * Will provide access url from realityDataId and iTwinId on contextShare for OPC storage format
-   * This is the mode that support PointCloud OPC storage format (RealityDataType.OPC)
+   * Orbit Point Cloud (OPC) storage format (RealityDataType.OPC)
   */
   OPC = "OPC",
 }
-export type RealityDataFormatString = keyof typeof RealityDataFormat;
 
 // Key used by ContextShare RealityDataProvider
 export interface RealityDataSourceKey {
   /**
    * The provider that supplies the access to reality data source for displaying the reality model
-   * @see [[RealityDataProviderString]] for default supported value;
+   * @see [[RealityDataProvider]] for default supported value;
    *
   */
   provider: string;
   /**
    * The format used by the provider to store the reality data
-   * @see [[RealityDataFormatString]] for default supported value;
+   * @see [[RealityDataFormat]] for default supported value;
   */
-  format: RealityDataFormat;
+  format: string;
   /** The reality data id that identify a reality data for the provider */
   id: string;
   /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
