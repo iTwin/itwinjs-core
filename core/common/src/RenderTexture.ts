@@ -28,7 +28,7 @@ export abstract class RenderTexture implements IDisposable {
   }
 
   /** Releases any WebGL resources owned by this texture.
-   * For a texture created by a [RenderSystem]($frontend) for which [TextureCreateArgs.ownership]($frontend) was specified as "external",
+   * For a texture created by a [RenderSystem]($frontend) for which [CreateTextureArgs.ownership]($frontend) was specified as "external",
    * the caller is responsible for invoking this method when it is finished using the texture; otherwise, the [RenderSystem]($frontend) will handle
    * its disposal.
    */
