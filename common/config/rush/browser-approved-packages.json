@@ -56,7 +56,7 @@
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/telemetry-client",
