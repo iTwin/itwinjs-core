@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-orbitgt",
-  "version": "3.0.0-dev.73",
+  "version": "3.0.0-dev.76",
   "description": "",
   "main": "lib/core-orbitgt.js",
   "typings": "lib/core-orbitgt",
