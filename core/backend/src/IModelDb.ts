@@ -783,7 +783,6 @@ export abstract class IModelDb extends IModel {
    * @returns the computed extents.
    * @note This method does not modify the IModel's stored project extents. @see [[updateProjectExtents]].
    */
-
   public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
     const wantFullExtents = true === options?.reportExtentsWithOutliers;
     const wantOutliers = true === options?.reportOutliers;
