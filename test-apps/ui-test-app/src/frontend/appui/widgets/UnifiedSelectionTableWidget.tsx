@@ -82,8 +82,8 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
       key: "example-menu-item",
       icon: "icon-placeholder",
       onSelect: this._onSampleItem,
-      title: IModelApp.i18n.translate("SampleApp:table.context-menu.sample-item.description"),
-      label: IModelApp.i18n.translate("SampleApp:table.context-menu.sample-item.label"),
+      title: IModelApp.localization.getLocalizedString("SampleApp:table.context-menu.sample-item.description"),
+      label: IModelApp.localization.getLocalizedString("SampleApp:table.context-menu.sample-item.label"),
     });
 
     this.setState({ contextMenu: args, contextMenuItemInfos: items.length > 0 ? items : undefined });

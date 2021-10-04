@@ -61,10 +61,10 @@ export interface IModelTileContent extends TileContent {
 export class IModelTile extends Tile {
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
-  /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
-   * See CloudStorageCacheChannel.onNoContent and IModelTile.channel
+  /** If an initial attempt to obtain this tile's content (e.g., from cloud storage cache) failed,
+   * the next channel to try.
    */
-  public cacheMiss = false;
+  public requestChannel?: TileRequestChannel;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);
@@ -89,9 +89,7 @@ export class IModelTile extends Tile {
   }
 
   public get channel(): TileRequestChannel {
-    const channels = IModelApp.tileAdmin.channels;
-    const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
-    return cloud ?? channels.iModelTileRpc;
+    return IModelApp.tileAdmin.channels.getIModelTileChannel(this);
   }
 
   public async requestContent(): Promise<TileRequest.Response> {

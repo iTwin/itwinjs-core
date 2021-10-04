@@ -18,7 +18,7 @@ export interface ComponentExampleCategory {
 /** Modal frontstage displaying component examples.
  */
 export class ComponentExamplesModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.examples");
+  public title: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.examples");
   public categories: ComponentExampleCategory[] = [...ComponentExamplesProvider.categories, ...ITwinUIExamplesProvider.categories];
   public get content(): React.ReactNode {
     MessageManager.maxDisplayedStickyMessages = 6;
@@ -34,8 +34,8 @@ interface ComponentExamplesPageProps {
 /** ComponentExamplesPage displaying the component examples.
  */
 export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: ComponentExamplesPageProps) => {
-  const themeTitle: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeTitle");
-  const themeDescription: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeDescription");
+  const themeTitle: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.themeTitle");
+  const themeDescription: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.themeDescription");
   const showThemeOption = !(!!props.hideThemeOption);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [colorTheme, setColorTheme] = React.useState(() => UiFramework.getColorTheme());
@@ -51,8 +51,8 @@ export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (prop
   };
 
   const isChecked = isLightTheme();
-  const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
-  const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
+  const darkLabel = UiFramework.localization.getLocalizedString("SampleApp:settingsStage.dark");
+  const lightLabel = UiFramework.localization.getLocalizedString("SampleApp:settingsStage.light");
 
   const handleActivateTab = (index: number) => {
     setActiveIndex(index);

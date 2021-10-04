@@ -19,7 +19,7 @@ export interface SampleModelessDialogState {
 
 export class SampleModelessDialog extends React.Component<SampleModelessDialogProps, SampleModelessDialogState> {
   public override readonly state: Readonly<SampleModelessDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModelessDialog");
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.sampleModelessDialog");
 
   constructor(props: SampleModelessDialogProps) {
     super(props);

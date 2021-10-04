@@ -70,16 +70,16 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return undefined;
   }, [props.layerRequiringCredentials, props.mapLayerSourceToEdit]);
 
-  const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate(props.layerRequiringCredentials || props.mapLayerSourceToEdit ? "mapLayers:CustomAttach.EditCustomLayer" : "mapLayers:CustomAttach.AttachCustomLayer"));
-  const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
-  const [nameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Name"));
-  const [nameInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NameInputPlaceHolder"));
-  const [urlLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.URL"));
-  const [urlInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.UrlInputPlaceHolder"));
-  const [iTwinSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnITwinSettings"));
-  const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
-  const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MissingCredentials"));
-  const [invalidCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.InvalidCredentials"));
+  const [dialogTitle] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString(props.layerRequiringCredentials || props.mapLayerSourceToEdit ? "mapLayers:CustomAttach.EditCustomLayer" : "mapLayers:CustomAttach.AttachCustomLayer"));
+  const [typeLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.Type"));
+  const [nameLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.Name"));
+  const [nameInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.NameInputPlaceHolder"));
+  const [urlLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.URL"));
+  const [urlInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.UrlInputPlaceHolder"));
+  const [iTwinSettingsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnITwinSettings"));
+  const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnModelSettings"));
+  const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.MissingCredentials"));
+  const [invalidCredentialsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCredentials"));
   const [serverRequireCredentials, setServerRequireCredentials] = React.useState(props.layerRequiringCredentials ?? false);
   const [invalidCredentialsProvided, setInvalidCredentialsProvided] = React.useState(false);
   const [layerAttachPending, setLayerAttachPending] = React.useState(false);
@@ -88,13 +88,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [mapName, setMapName] = React.useState(getMapNameFromProps());
   const [userName, setUserName] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [noSaveSettingsWarning] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NoSaveSettingsWarning"));
-  const [passwordLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Password"));
-  const [passwordRequiredLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.PasswordRequired"));
-  const [userNameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Username"));
-  const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.UsernameRequired"));
-  // SWB What should be done about this change?
-  const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
+  const [noSaveSettingsWarning] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.NoSaveSettingsWarning"));
+  const [passwordLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.Password"));
+  const [passwordRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.PasswordRequired"));
+  const [userNameLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
+  const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
+  const [settingsStorage, setSettingsStorageRadio] = React.useState("ITwin");
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -232,11 +231,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               if (layerSettings) {
                 vp.displayStyle.attachMapLayerSettings(layerSettings, isOverlay, undefined);
 
-                const msg = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+                const msg = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
               } else {
-                const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSettingsConversionError");
-                const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: source.url });
+                const msgError = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.MapLayerLayerSettingsConversionError");
+                const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: source.url });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
               }
             }
@@ -251,13 +250,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           }
 
         } else {
-          const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ValidationError");
+          const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.ValidationError");
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} ${source.url}`));
           resolve(true);
         }
         resolve(false);
       }).catch((error) => {
-        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error, sourceUrl: source.url });
+        const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.MapLayerAttachError", { error, sourceUrl: source.url });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         resolve(true);
       });
@@ -293,8 +292,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
         if (source === undefined) {
           // Close the dialog and inform end user something went wrong.
-          const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSourceCreationFailed");
-          const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: mapUrl });
+          const msgError = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.MapLayerLayerSourceCreationFailed");
+          const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: mapUrl });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
           return;
         }
@@ -305,7 +304,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           void (async () => {
             if (isSettingsStorageAvailable && vp) {
               if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.iTwinId!, vp.iModel.iModelId!))) {
-                const errorMessage = IModelApp.i18n.translate("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
+                const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
                 return;
               }

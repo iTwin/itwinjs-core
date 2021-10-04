@@ -11,9 +11,8 @@
 import { Store } from "redux";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { RpcActivity } from "@itwin/core-common";
+import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
@@ -83,12 +82,12 @@ export interface TrackingTime {
 }
 
 /**
- * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
+ * Manages the Redux store, localization service and iModel, Project and Login services for the ui-framework package.
  * @public
  */
 export class UiFramework {
   private static _initialized = false;
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
@@ -133,22 +132,22 @@ export class UiFramework {
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
+   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void> {
-    return this.initializeEx(store, i18n, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void> {
+    return this.initializeEx(store, localization, frameworkStateKey);
   }
 
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
+   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -156,21 +155,19 @@ export class UiFramework {
 
     // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
     UiFramework._store = store;
-    UiFramework._i18n = i18n || IModelApp.i18n;
+    UiFramework._localization = localization || IModelApp.localization;
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     // set up namespace and register all tools from package
-    const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
+    const frameworkNamespace = UiFramework._localization.registerNamespace(UiFramework.localizationNamespace);
     [
       restoreLayoutTools,
       keyinPaletteTools,
       openSettingTools,
       toolSettingTools,
-    ].forEach((tool) => IModelApp.tools.registerModule(tool, frameworkNamespace));
-
-    const readFinishedPromise = frameworkNamespace.readFinished;
+    ].forEach((tool) => IModelApp.tools.registerModule(tool, this.localizationNamespace));
 
     UiFramework._backstageManager = new BackstageManager();
     UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
@@ -185,7 +182,7 @@ export class UiFramework {
     }
 
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
-    await UiIModelComponents.initialize(UiFramework._i18n);
+    await UiIModelComponents.initialize(UiFramework._localization);
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
@@ -201,7 +198,7 @@ export class UiFramework {
 
     ConfigurableUiManager.initialize();
 
-    return readFinishedPromise;
+    return frameworkNamespace;
   }
 
   /** Un-registers the UiFramework internationalization service namespace */
@@ -209,9 +206,9 @@ export class UiFramework {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
 
-    if (UiFramework._i18n)
-      UiFramework._i18n.unregisterNamespace(UiFramework.i18nNamespace);
-    UiFramework._i18n = undefined;
+    if (UiFramework._localization)
+      UiFramework._localization.unregisterNamespace(UiFramework.localizationNamespace);
+    UiFramework._localization = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;
@@ -265,14 +262,14 @@ export class UiFramework {
   }
 
   /** The internationalization service created by the app. */
-  public static get i18n(): I18N {
-    if (!UiFramework._i18n)
+  public static get localization(): Localization {
+    if (!UiFramework._localization)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._i18n;
+    return UiFramework._localization;
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
+  public static get localizationNamespace(): string {
     return "UiFramework";
   }
 
@@ -309,11 +306,11 @@ export class UiFramework {
     return UiFramework._widgetManager;
   }
 
-  /** Calls i18n.translateWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
+  /** Calls localization.getLocalizedStringWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return UiFramework.i18n.translateWithNamespace(UiFramework.i18nNamespace, key);
+    return UiFramework.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
   /** @internal */

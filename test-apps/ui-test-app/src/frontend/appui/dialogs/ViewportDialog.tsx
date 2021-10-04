@@ -25,7 +25,7 @@ export interface ViewportDialogState {
 }
 
 export class ViewportDialog extends React.Component<ViewportDialogProps, ViewportDialogState> {
-  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _loading = IModelApp.localization.getLocalizedString("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
   public override readonly state: Readonly<ViewportDialogState>;

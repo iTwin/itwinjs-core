@@ -753,19 +753,19 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       // Case insensitive
       switch (type.toUpperCase()) {
         case DefaultSupportedTypes.RealityMesh3dTiles.toUpperCase():
-          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
+          strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
           break;
         case DefaultSupportedTypes.Terrain3dTiles.toUpperCase():
-          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
+          strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.Terrain3DTiles"));
           break;
         case DefaultSupportedTypes.Cesium3dTiles.toUpperCase():
-          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
+          strings.push(IModelApp.localization.getLocalizedString("iModelJs:RealityModelTypes.Cesium3DTiles"));
           break;
       }
     }
 
     if (this._name) {
-      strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
     } else {
       const cesiumAsset = parseCesiumUrl(this._url);
       strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : this._url);
@@ -783,7 +783,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
     if (this._url === getCesiumOSMBuildingsUrl()) {
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.i18n.translate("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }
   }
 }
@@ -836,18 +836,6 @@ export class RealityModelTileClient {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (iTwinId && this.rdsProps)
       this.rdsProps.iTwinId = iTwinId;
-  }
-
-  private async getAccessToken(): Promise<AccessToken | undefined> {
-    if (!IModelApp.authorizationClient)
-      return undefined;
-    let accessToken: AccessToken | undefined;
-    try {
-      accessToken = await IModelApp.authorizationClient.getAccessToken();
-    } catch (error) {
-      return undefined;
-    }
-    return accessToken;
   }
 
   private async initializeRDSRealityData(accessToken: AccessToken): Promise<void> {
@@ -910,7 +898,7 @@ export class RealityModelTileClient {
 
   // Get blob URL information from RDS
   public async getBlobAccessData(): Promise<URL | undefined> {
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     if (this.rdsProps && token) {
       await this.initializeRDSRealityData(token);
       return this._realityData!.getBlobUrl(token);
@@ -923,7 +911,7 @@ export class RealityModelTileClient {
   // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at
   // the construction of the instance.
   public async getRootDocument(url: string): Promise<any> {
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     if (this.rdsProps && token) {
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
       const realityData: RealityData = this.getInitializedRealityData();
@@ -954,7 +942,7 @@ export class RealityModelTileClient {
    */
   public async getTileContent(url: string): Promise<any> {
     assert(url !== undefined);
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     const useRds = this.rdsProps !== undefined && token !== undefined;
     if (useRds) {
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
@@ -972,7 +960,7 @@ export class RealityModelTileClient {
    */
   public async getTileJson(url: string): Promise<any> {
     assert(url !== undefined);
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
 
     if (this.rdsProps && token)
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data ... return immediately otherwise.
@@ -989,7 +977,7 @@ export class RealityModelTileClient {
    * Returns Reality Data type if available
    */
   public async getRealityDataType(): Promise<string | undefined> {
-    const token = await this.getAccessToken();
+    const token = await IModelApp.getAccessToken();
     if (this.rdsProps && token) {
 
       await this.initializeRDSRealityData(token); // Only needed for PW Context Share data

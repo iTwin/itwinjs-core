@@ -116,22 +116,22 @@ export class MapLayerSettingsService {
   private static async deleteOldSettings(accessToken: AccessToken, url: string, name: string, iTwinId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
     const settingFromName = await IModelApp.settings.getSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, name, true, iTwinId, undefined);
     if (settingFromName.setting && storeOnIModel) {
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsITwinSetting", { layer: settingFromName.setting.name });
+      const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsAsITwinSetting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromName.setting) {
-      const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingFromName.setting.name });
+      const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, settingFromName.setting.name, true, iTwinId, undefined);
     }
 
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(accessToken, url, iTwinId, undefined); // check if setting with url already exists, if it does, delete it
     if (settingFromUrl && storeOnIModel) {
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsITwinSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
+      const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsAsITwinSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromUrl) {
-      const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
+      const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, settingFromUrl.name, true, iTwinId, undefined);
     }
@@ -140,12 +140,12 @@ export class MapLayerSettingsService {
       const settingOnIModelFromName = await IModelApp.settings.getSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, name, true, iTwinId, iModelId);
       const settingFromUrlOnIModel = await MapLayerSettingsService.getSettingFromUrl(accessToken, url, iTwinId, iModelId);
       if (settingOnIModelFromName.setting) {
-        const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.setting.name });
+        const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.setting.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, settingOnIModelFromName.setting.name, true, iTwinId, iModelId);
       }
       if (settingFromUrlOnIModel) {
-        const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
+        const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.settings.deleteSharedSetting(accessToken, MapLayerSettingsService.SourceNamespace, settingFromUrlOnIModel.name, true, iTwinId, iModelId);
       }
@@ -200,17 +200,17 @@ export class MapLayerSettingsService {
     const sharedResultByImodel = settingsMapArray[2];
     const sharedResultByITwin = settingsMapArray[3];
     if (userResultByITwin.status !== SettingsStatus.Success || !userResultByITwin.settingsMap) {
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserITwin", { errorMessage: userResultByITwin.errorMessage }));
+      throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserITwin", { errorMessage: userResultByITwin.errorMessage }));
     }
     if (userResultByImodel.status !== SettingsStatus.Success || !userResultByImodel.settingsMap) {
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserModel", { errorMessage: userResultByImodel.errorMessage }));
+      throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserModel", { errorMessage: userResultByImodel.errorMessage }));
     }
 
     if (sharedResultByImodel.status !== SettingsStatus.Success || !sharedResultByImodel.settingsMap) {
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
+      throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
     }
     if (sharedResultByITwin.status !== SettingsStatus.Success || !sharedResultByITwin.settingsMap) {
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedITwin", { errorMessage: sharedResultByITwin.errorMessage }));
+      throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveSharedITwin", { errorMessage: sharedResultByITwin.errorMessage }));
     }
 
     const savedMapLayerSources: MapLayerSource[] = [];

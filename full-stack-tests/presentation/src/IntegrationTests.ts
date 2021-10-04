@@ -11,7 +11,7 @@ import * as path from "path";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
-import { I18NOptions } from "@itwin/core-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@itwin/oidc-signin-tool/lib/TestUtility";
 import {
@@ -66,13 +66,12 @@ const copyITwinFrontendAssets = (outputDir: string) => {
 };
 
 class IntegrationTestsApp extends NoRenderApp {
-  protected static supplyI18NOptions(): I18NOptions {
-    const urlTemplate = `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
-    return { urlTemplate };
+  protected static supplyUrlTemplate(): string {
+    return `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
+    await NoRenderApp.startup({ ...opts, localization: new I18N("iModelJs", { urlTemplate: this.supplyUrlTemplate() }) });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyITwinBackendAssets("lib/assets");
     copyITwinFrontendAssets("lib/public");

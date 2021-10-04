@@ -16,7 +16,7 @@ import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 
 function translate(prompt: string) {
-  return IModelApp.i18n.translate(`SampleApp:statusFields.${prompt}`);
+  return IModelApp.localization.getLocalizedString(`SampleApp:statusFields.${prompt}`);
 }
 
 interface PushPullState {
@@ -48,7 +48,7 @@ class SyncManager {
     if (this.briefcaseConnection) {
       const iModelId = this.briefcaseConnection.iModelId;
       try {
-        const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+        const accessToken = await IModelApp.getAccessToken();
         // Bootstrap the process by finding out if there are newer changesets on the server already.
         this.state.parentChangesetId = this.briefcaseConnection.changeset.id;
 

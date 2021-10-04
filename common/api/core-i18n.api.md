@@ -5,43 +5,26 @@
 ```ts
 
 import { Callback } from 'i18next';
-import { I18NextXhrBackend } from 'i18next-xhr-backend';
+import { Localization } from '@itwin/core-common';
 import { TranslationOptions } from 'i18next';
 
 // @public
-export class I18N {
-    constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: Callback);
+export class I18N implements Localization {
+    constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback);
     // @internal
-    getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string;
-    getNamespace(name: string): I18NNamespace | undefined;
+    getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getLocalizedKeys(line: string): string;
+    getLocalizedString(key: string | string[], options?: TranslationOptions): string;
+    // @internal
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getNamespace(name: string): Promise<void> | undefined;
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)
     loadNamespace(name: string, i18nCallback: any): void;
-    registerNamespace(name: string): I18NNamespace;
-    translate(key: string | string[], options?: TranslationOptions): string;
-    translateKeys(line: string): string;
-    // @internal
-    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    registerNamespace(name: string): Promise<void>;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
-    // @internal
-    waitForAllRead(): Promise<void[]>;
-}
-
-// @public
-export class I18NNamespace {
-    constructor(name: string, readFinished: Promise<void>);
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    readFinished: Promise<void>;
-}
-
-// @public (undocumented)
-export interface I18NOptions {
-    // (undocumented)
-    urlTemplate?: I18NextXhrBackend.LoadPathOption;
 }
 
 

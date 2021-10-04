@@ -43,7 +43,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
   private async getRecentITwins() {
     this.setState({ isLoading: true, iTwins: undefined });
     const client = new ITwinAccessClient();
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+    const accessToken = await IModelApp.getAccessToken();
     const iTwins = await client.getAll(accessToken, {
       pagination: {
         top: 40,
@@ -78,7 +78,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
     } else {
       this.setState({ isLoading: true, iTwins: undefined });
 
-      const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+      const accessToken = await IModelApp.getAccessToken();
       const client = new ITwinAccessClient();
       client.getAll(accessToken, { // eslint-disable-line @typescript-eslint/no-floating-promises
         pagination: {

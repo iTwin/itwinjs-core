@@ -22,7 +22,6 @@ import { GlobalContextMenuProps } from '@itwin/core-react';
 import { GlobalDialogProps } from '@itwin/core-react';
 import { GroupButton } from '@itwin/appui-abstract';
 import { HorizontalAlignment } from '@itwin/core-react';
-import { I18N } from '@itwin/core-i18n';
 import { IconDefinition } from '@itwin/appui-abstract';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -30,6 +29,7 @@ import { immerable } from 'immer';
 import * as Inspire from 'inspire-tree';
 import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@itwin/appui-abstract';
+import { Localization } from '@itwin/core-common';
 import { MessageSeverity } from '@itwin/appui-abstract';
 import { NoChildrenProps } from '@itwin/core-react';
 import { NodeCheckboxRenderer } from '@itwin/core-react';
@@ -4147,10 +4147,10 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n: I18N): Promise<void>;
+    static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
+    static get localization(): Localization;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)

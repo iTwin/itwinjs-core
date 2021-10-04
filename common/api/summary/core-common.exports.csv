@@ -184,6 +184,7 @@ public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
 public;EmphasizeElementsProps
+public;EmptyLocalization 
 public;EntityIdAndClassId
 public;EntityIdAndClassIdIterable = Iterable
 beta;EntityMetaData 
@@ -369,6 +370,7 @@ public;LocalAlignedBox3d = Range3d
 public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
+public;Localization
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey

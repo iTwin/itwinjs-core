@@ -25,7 +25,6 @@ import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentatio
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
-import { I18N } from '@itwin/core-i18n';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -36,6 +35,7 @@ import { Key } from '@itwin/presentation-common';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
+import { Localization } from '@itwin/core-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
@@ -258,8 +258,8 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
 // @public
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
-    static get i18n(): I18N;
     static initialize(props?: PresentationProps): Promise<void>;
+    static get localization(): Localization;
     static get presentation(): PresentationManager;
     // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
@@ -267,7 +267,7 @@ export class Presentation {
     // @internal (undocumented)
     static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
     // @internal (undocumented)
-    static setI18nManager(value: I18N): void;
+    static setLocalization(value: Localization): void;
     // @internal (undocumented)
     static setPresentationManager(value: PresentationManager): void;
     // @internal (undocumented)

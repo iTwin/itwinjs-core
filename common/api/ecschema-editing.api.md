@@ -24,12 +24,12 @@ import { EnumerationProps } from '@itwin/ecschema-metadata';
 import { Format } from '@itwin/ecschema-metadata';
 import { FormatProps } from '@itwin/ecschema-metadata';
 import { FormatType } from '@itwin/ecschema-metadata';
-import { I18N } from '@itwin/core-i18n';
 import { InvertedUnit } from '@itwin/ecschema-metadata';
 import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';
 import { KindOfQuantity } from '@itwin/ecschema-metadata';
 import { KindOfQuantityProps } from '@itwin/ecschema-metadata';
+import { Localization } from '@itwin/core-common';
 import { Mixin } from '@itwin/ecschema-metadata';
 import { MixinProps } from '@itwin/ecschema-metadata';
 import { OverrideFormat } from '@itwin/ecschema-metadata';
@@ -623,9 +623,9 @@ export class FormatChanges extends SchemaItemChanges {
 
 // @beta
 export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
-    constructor(suppressions?: Map<string, string[]>, i18n?: I18N);
+    constructor(suppressions?: Map<string, string[]>, localization?: Localization);
     protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex?: number): string;
-    i18N?: I18N;
+    localization?: Localization;
     protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
     reportInternal(diagnostic: AnyDiagnostic): void;
     }
@@ -658,7 +658,7 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
 
 // @beta
 export interface IDiagnosticReporter {
-    i18N?: I18N;
+    localization?: Localization;
     report(diagnostic: AnyDiagnostic): void;
     suppressions?: Map<string, string[]>;
 }
