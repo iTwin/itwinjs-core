@@ -52,6 +52,7 @@ export abstract class RenderTextureDrape implements IDisposable {
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** Describes a texture loaded from an HTMLImageElement
+ * ###TODO Replace with TextureImage from RenderTexture.ts
  * @internal
  */
 export interface OldTextureImage {
@@ -484,7 +485,9 @@ export abstract class RenderSystem implements IDisposable {
    * @param _imodel The IModelConnection with which the texture is associated.
    * @returns A previously-created texture matching the specified key, or undefined if no such texture exists.
    */
-  public findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+  public findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined {
+    return undefined;
+  }
 
   /** Find or create a [[RenderTexture]] from a persistent texture element.
    * @param id The ID of the texture element.
@@ -537,15 +540,17 @@ export abstract class RenderSystem implements IDisposable {
    * @param _symb The description of the gradient.
    * @param _imodel The IModelConnection with which the texture is associated.
    * @returns A texture created from the gradient image, or undefined if the texture could not be created.
-   * @note If a texture matching the specified gradient already exists, it will be returned.
-   * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
-   * return the previously-created texture.
+   * @note If a texture matching the specified gradient is already cached on the iModel, it will be returned.
+   * Otherwise, if an iModel is supplied, the newly-created texture will be cached on the iModel such that subsequent calls with an equivalent gradient and the
+   * same iModel will return the cached texture instead of creating a new one.
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined {
     return undefined;
   }
 
-  /** Create a new texture from an [[ImageBuffer]]. */
+  /** Create a new texture from an [[ImageBuffer]].
+   * @deprecated Use [[createTexture]].
+   */
   public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
     return this.createTexture({
@@ -558,7 +563,9 @@ export abstract class RenderSystem implements IDisposable {
     });
   }
 
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]] */
+  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
+   * @deprecated Use [[createTexture]].
+   */
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
     return this.createTexture({

@@ -28,17 +28,18 @@ export abstract class RenderTexture implements IDisposable {
   }
 
   /** Releases any WebGL resources owned by this texture.
-   * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is responsible for disposing of it when it is no longer needed.
-   * Otherwise, the [RenderSystem]($frontend) will handle its disposal.
+   * For a texture created by a [RenderSystem]($frontend) for which [TextureCreateArgs.ownership]($frontend) was specified as "external",
+   * the caller is responsible for invoking this method when it is finished using the texture; otherwise, the [RenderSystem]($frontend) will handle
+   * its disposal.
    */
   public abstract dispose(): void;
 }
 
 /** @public */
 export namespace RenderTexture { // eslint-disable-line no-redeclare
-  /** Enumerates the types of [[RenderTexture]]s. */
+  /** The types of [[RenderTexture]]s that can be created by a [RenderSystem]($frontend). */
   export enum Type {
-    /** An image applied to a surface, with support for mip-mapping and repeating. */
+    /** An image applied to a surface, with support for mip-mapping and repetition. */
     Normal,
     /** An image containing any number of text glyphs, used for efficiently rendering readable small text. */
     Glyph,
@@ -48,11 +49,12 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
     SkyBox,
     /** A non-repeating image with mip-maps and and anisotropic filtering, used for map tiles when draped on terrain. */
     FilteredTileSection,
-    /** A thematic gradient image used for thematic display. */
+    /** A gradient image used for thematic display. */
     ThematicGradient,
   }
 
   /** Parameters used to construct a [[RenderTexture]].
+   * @deprecated use RenderSystem.createTexture and TextureCreateArgs.
    * @public
    */
   export class Params {
