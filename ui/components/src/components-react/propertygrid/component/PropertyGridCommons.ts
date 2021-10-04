@@ -85,8 +85,6 @@ export interface CommonPropertyGridProps extends CommonProps {
   /**
    * Array of action button renderers. Each renderer is called for each property and can decide
    * to render an action button for the property or not.
-   *
-   * @beta
    */
   actionButtonRenderers?: ActionButtonRenderer[];
 }

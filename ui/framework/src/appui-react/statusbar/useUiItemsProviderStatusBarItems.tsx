@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module StatusBar
  */
@@ -17,7 +18,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 // cspell:ignore setxxx
 
 /** Hook that returns items from [[StatusBarItemsManager]].
- * @beta
+ * @public
  */
 export const useUiItemsProviderStatusBarItems = (manager: StatusBarItemsManager): readonly CommonStatusBarItem[] => {
   const uiItemProviderIds = useAvailableUiItemsProviders();

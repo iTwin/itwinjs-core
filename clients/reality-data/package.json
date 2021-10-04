@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "iModel.js Reality Data Client",
   "main": "lib/reality-data-client.js",
   "typings": "lib/reality-data-client",
@@ -11,7 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/reality-data"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=reality-data-client",
@@ -19,7 +19,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",
-    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
+    "test:integration": "npm run -s webpackTests && npm run -s test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "copy:config": "internal-tools copy-config",
@@ -41,7 +41,10 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.71"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.76",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.76",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.76",
+    "@itwin/core-common": "workspace:^3.0.0-dev.76"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -51,6 +54,8 @@
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/jsonpath": "^0.2.0",

@@ -21,7 +21,6 @@ public;BeTimePoint
 public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
-internal;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
@@ -48,10 +47,6 @@ public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 public;GeoServiceStatus
-public;getErrorMessage(error: unknown): string
-public;getErrorMetadata(error: unknown): object | undefined
-public;getErrorProps(error: unknown): ErrorProps
-public;getErrorStack(error: unknown): string | undefined
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
@@ -70,11 +65,11 @@ public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
-public;LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void
+public;LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void
 public;Logger
 public;LoggerCategoryAndLevel
 public;LoggerLevelsConfig
-internal;LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean
+public;LoggingMetaData = GetMetaDataFunction | object | undefined
 public;LogLevel
 public;lowerBound
 public;LRUCache

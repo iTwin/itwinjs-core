@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/presentation-frontend.js",
   "typings": "lib/presentation-frontend",
@@ -22,14 +22,14 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "copy:locale": "cpx \"../common/assets/**/*.json\" ./lib/public",
     "copy:assets": "cpx \"./src/**/*.json\" ./lib",
-    "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
+    "build": "npm run -s copy:assets && npm run -s copy:locale && npm run -s pseudolocalize && npm run -s extract && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "docs": "npm run docs:reference && npm run docs:changelog",
+    "cover": "nyc npm -s test",
+    "docs": "npm run -s docs:reference && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
@@ -37,15 +37,15 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
-    "@itwin/core-common": "workspace:^3.0.0-dev.71",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.71",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.71",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.71",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
+    "@itwin/core-common": "workspace:^3.0.0-dev.76",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.76",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.76",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.76",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.76"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

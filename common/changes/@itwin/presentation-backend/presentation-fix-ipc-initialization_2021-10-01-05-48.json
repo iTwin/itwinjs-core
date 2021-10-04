@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Fix Presentation IPC handler not being registered until the first Presentation request is made.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

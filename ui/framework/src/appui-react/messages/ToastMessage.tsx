@@ -15,7 +15,7 @@ import { MessageLabel } from "./MessageLabel";
 import { getToastCategory } from "./getToastCategory";
 
 /** Properties for a [[ToastMessage]]
- * @beta
+ * @public
  */
 export interface ToastMessageProps {
   id: string;
@@ -26,7 +26,7 @@ export interface ToastMessageProps {
 }
 
 /** Toast Message React component
- * @beta
+ * @public
  */
 export function ToastMessage(props: ToastMessageProps) {
   const { id, messageDetails, severity, toastTarget, closeMessage } = props;

@@ -40,7 +40,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     if (props.label)
       this._label = props.label;
     else if (props.labelKey)
-      this._label = UiFramework.i18n.translate(props.labelKey);
+      this._label = UiFramework.localization.getLocalizedString(props.labelKey);
 
     this.state = {
       isVisible: undefined !== props.isVisible ? props.isVisible : true, // eslint-disable-line deprecation/deprecation

@@ -63,7 +63,7 @@ export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValue
  *
  * Default matcher matches all URLs using regex.
  * Default onClick opens window or sets location.href with found URL.
- * @beta
+ * @public
  */
 export const DEFAULT_LINKS_HANDLER: LinkElementsInfo = {
   matcher: PropertyGridCommons.getLinks,

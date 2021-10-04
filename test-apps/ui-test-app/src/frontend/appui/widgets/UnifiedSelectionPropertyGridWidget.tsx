@@ -81,16 +81,16 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
           key: "remove-favorite",
           icon: "icon-remove-2",
           onSelect: async () => this._onRemoveFavorite(field),
-          title: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.description"),
-          label: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.remove-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.remove-favorite.label"),
         });
       } else {
         items.push({
           key: "add-favorite",
           icon: "icon-add",
           onSelect: async () => this._onAddFavorite(field),
-          title: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.description"),
-          label: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.add-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.add-favorite.label"),
         });
       }
     }
@@ -187,7 +187,7 @@ function UnifiedSelectionPropertyGrid(props: VirtualizedPropertyGridWithDataProv
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
 
   if (isOverLimit) {
-    return (<FillCentered>{IModelApp.i18n.translate("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
+    return (<FillCentered>{IModelApp.localization.getLocalizedString("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
   }
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }

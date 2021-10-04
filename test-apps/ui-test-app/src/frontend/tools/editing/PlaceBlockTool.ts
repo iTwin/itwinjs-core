@@ -44,7 +44,7 @@ export class PlaceBlockTool extends CreateElementTool {
   }
   public override async onUnsuspend() { this.showPrompt(); }
 
-  protected translate(prompt: string) { return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlock.${prompt}`); }
+  protected translate(prompt: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.PlaceBlock.${prompt}`); }
   protected showPrompt(): void {
     const mainMsg = (0 === this._points.length) ? "prompts.firstPoint" : (1 === this._points.length) ? "prompts.nextPoint" : "prompts.additionalPoint";
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, this.translate(mainMsg));

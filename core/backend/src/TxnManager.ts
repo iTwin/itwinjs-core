@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, getErrorMessage, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
 import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -187,7 +187,7 @@ class ChangedEntitiesProc {
 
       changes.sendEvent(iModel, changedEvent, evtName);
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, getErrorMessage(err));
+      Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
     }
   }
 }

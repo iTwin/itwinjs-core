@@ -59,8 +59,8 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/imodeljs-quantity             | @itwin/core-quantity                 |
 | @bentley/imodeljs-i18n                 | @itwin/core-i18n                     |
 | @bentley/hypermodeling-frontend        | @itwin/hypermodeling-frontend        |
-| @bentley/electron-manager              | @itwin/electron-manager              |
-| @bentley/mobile-manager                | @itwin/mobile-manager                |
+| @bentley/electron-manager              | @itwin/core-electron              |
+| @bentley/mobile-manager                | @itwin/core-mobile                |
 | @bentley/express-server                | @itwin/express-server                |
 | @bentley/ecschema-rpcinterface-common  | @itwin/ecschema-rpcinterface-common  |
 | @bentley/ecschema-rpcinterface-impl    | @itwin/ecschema-rpcinterface-impl    |
@@ -81,9 +81,13 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 ## BentleyError constructor no longer logs
 
-In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about _why_ the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught _somewhere_, logging should be done when exceptions are caught, not when they're thrown.
+In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
 
-The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
+The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`metaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two. Also, the previous version of the constructor required the metaData argument to be a function that returns an object. It may now also just be an object.
+
+## Logger functions
+
+The optional `metaData` argument for the [Logger]($core-bentley) functions was previously a function returning an object or undefined. That was to permit cases where it may be expensive to create the metadata to be elided when logging is turned off. However, there are many cases where the metaData object is directly available, so creating a function to return it created overhead whether or not logging is enabled. It may now also be just an object so you don't have to make a function.
 
 ## ClientRequestContext and AuthorizedClientRequestContext have been removed
 
@@ -455,6 +459,10 @@ The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute w
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
+## `KeySetJSON` in `@itwin/presentation-common`
+
+The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
+
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
 - [PresentationManagerProps]($presentation-backend) have been restructured to make attributes' purpose clearer. This affects calls to constructor of [PresentationManager]($presentation-backend) and [Presentation.initialize]($presentation-backend). Typical migration:
@@ -710,16 +718,21 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                                                    | Replacement                                                                                                                   |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                          |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                             |
 | `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                |
 | `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
 | `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
-| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                             |
+| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                                |
 | `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
 | `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                           |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                              |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `TreeRendererContext`                                      | _eliminated_                                                                                                                  |
+| `TreeRendererContextProvider`                              | _eliminated_                                                                                                                  |
+| `TreeRendererContextConsumer`                              | _eliminated_                                                                                                                  |
+| `useTreeRendererContext`                                   | _eliminated_                                                                                                                  |
+| `ExtendedTreeNodeRendererProps`                            | `TreeNodeRendererProps`                                                                                                       |
 | `SignIn`                                                   | _eliminated_                                                                                                                  |
 | All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |

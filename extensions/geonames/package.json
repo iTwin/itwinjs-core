@@ -1,11 +1,11 @@
 {
   "name": "@itwin/geonames-extension",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",

@@ -86,13 +86,18 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, metaData?: LoggingMetaData);
     // (undocumented)
     errorNumber: number;
+    static getErrorMessage(error: unknown): string;
+    static getErrorMetadata(error: unknown): object | undefined;
+    static getErrorProps(error: unknown): ErrorProps;
+    static getErrorStack(error: unknown): string | undefined;
     getMetaData(): object | undefined;
+    static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
-}
+    }
 
 // @public
 export enum BentleyLoggerCategory {
@@ -175,14 +180,6 @@ export class ByteStream {
     reset(): void;
     rewind(numBytes: number): boolean;
     }
-
-// @internal (undocumented)
-export enum ChangeSetApplyOption {
-    // (undocumented)
-    Merge = 1,
-    // (undocumented)
-    Reverse = 2
-}
 
 // @beta
 export enum ChangeSetStatus {
@@ -533,18 +530,6 @@ export enum GeoServiceStatus {
     // (undocumented)
     VerticalDatumConvertError = 147460
 }
-
-// @public
-export function getErrorMessage(error: unknown): string;
-
-// @public
-export function getErrorMetadata(error: unknown): object | undefined;
-
-// @public
-export function getErrorProps(error: unknown): ErrorProps;
-
-// @public
-export function getErrorStack(error: unknown): string | undefined;
 
 // @public
 export type GetMetaDataFunction = () => object | undefined;
@@ -986,34 +971,35 @@ export namespace JsonUtils {
 export type Listener = (...arg: any[]) => void;
 
 // @public
-export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
+export type LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void;
 
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static getLevel(category: string): LogLevel | undefined;
-    static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
+    static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
-    static logError(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    static logException(category: string, err: any, log?: LogFunction, metaData?: GetMetaDataFunction): void;
-    static set logExceptionCallstacks(b: boolean);
-    static get logExceptionCallstacks(): boolean;
-    static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    // @internal
-    static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void;
-    static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    static makeMetaData(getMetaData?: GetMetaDataFunction): any;
+    static logError(category: string, message: string, metaData?: LoggingMetaData): void;
+    // (undocumented)
+    protected static _logError: LogFunction | undefined;
+    static logException(category: string, err: any, log?: LogFunction): void;
+    static logExceptionCallstacks: boolean;
+    static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
+    // (undocumented)
+    protected static _logInfo: LogFunction | undefined;
+    static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
+    // (undocumented)
+    protected static _logTrace: LogFunction | undefined;
+    static logWarning(category: string, message: string, metaData?: LoggingMetaData): void;
+    // (undocumented)
+    protected static _logWarning: LogFunction | undefined;
     static parseLogLevel(str: string): LogLevel;
-    // @beta
-    static registerMetaDataSource(callback: (metadata: any) => void): boolean;
-    // @beta
-    static removeMetaDataSource(callback: (md: any) => void): boolean;
-    // @internal
-    static setIntercept(logIntercept?: LogIntercept): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
+    // @internal
+    static staticMetaData: Map<string, LoggingMetaData>;
+    static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
     static validateProps(config: any): void;
@@ -1035,8 +1021,8 @@ export interface LoggerLevelsConfig {
     defaultLevel?: string;
 }
 
-// @internal
-export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
+// @public
+export type LoggingMetaData = GetMetaDataFunction | object | undefined;
 
 // @public
 export enum LogLevel {
@@ -1188,7 +1174,7 @@ export function partitionArray<T>(array: T[], criterion: (element: T) => boolean
 
 // @public
 export class PerfLogger implements IDisposable {
-    constructor(operation: string, metaData?: GetMetaDataFunction);
+    constructor(operation: string, metaData?: LoggingMetaData);
     // (undocumented)
     dispose(): void;
     }

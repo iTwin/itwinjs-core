@@ -15,7 +15,7 @@ import { CommonProps } from "../utils/Props";
 import { UiCore } from "../UiCore";
 
 /** Data for the [[AutoSuggest]] options
- * @beta
+ * @public
  */
 export interface AutoSuggestData {
   /** Value of [[AutoSuggest]] option. */
@@ -25,17 +25,17 @@ export interface AutoSuggestData {
 }
 
 /** Prototype for function returning AutoSuggestData
- * @beta
+ * @public
  */
 export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 /** Prototype for async function returning AutoSuggestData
- * @beta
+ * @public
  */
 export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
 
 /** Properties for the [[AutoSuggest]] component.
- * @beta
+ * @public
  */
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
   /** Optional input value override. */
@@ -81,7 +81,7 @@ interface AutoSuggestState {
 }
 
 /** Auto Suggest React component. Uses the react-autosuggest component internally.
- * @beta
+ * @public
  */
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
   private _isMounted = false;

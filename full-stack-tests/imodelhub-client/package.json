@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodelhub-client-tests",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -9,21 +9,21 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/imodelhub-client"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/assets/**/*\" ./lib/assets",
-    "cover": "npm run cover:imodelhub-client && npm run cover:backend-itwin-client && npm run cover:itwin-client",
-    "cover:imodelhub-client": "nyc --nycrc-path=imodelhub-client.nycrc npm test",
-    "cover:backend-itwin-client": "nyc --nycrc-path=backend-itwin-client.nycrc npm test",
-    "cover:itwin-client": "nyc --nycrc-path=itwin-client.nycrc npm test",
+    "cover": "npm run -s cover:imodelhub-client && npm run -s cover:backend-itwin-client && npm run -s cover:itwin-client",
+    "cover:imodelhub-client": "nyc --nycrc-path=imodelhub-client.nycrc npm -s test",
+    "cover:backend-itwin-client": "nyc --nycrc-path=backend-itwin-client.nycrc npm -s test",
+    "cover:itwin-client": "nyc --nycrc-path=itwin-client.nycrc npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "npm run copy:test-assets",
-    "test": "npm run pretest && mocha --no-config --enableMocks --grep=\"#integration\" --invert",
-    "test:integration": "npm run pretest && mocha --no-config --grep=\"#unit\" --invert",
-    "test:imodel-bank": "npm run pretest && npm run copy:config && mocha --no-config --grep=\"#iModelBank\""
+    "pretest": "npm run -s copy:test-assets",
+    "test": "npm run -s pretest && mocha --no-config --enableMocks --grep=\"#integration\" --invert",
+    "test:integration": "npm run -s pretest && mocha --no-config --grep=\"#unit\" --invert",
+    "test:imodel-bank": "npm run -s pretest && npm run -s copy:config && mocha --no-config --grep=\"#iModelBank\""
   },
   "keywords": [
     "Bentley",

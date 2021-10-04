@@ -19,7 +19,7 @@ export class AngleDescription extends FormattedQuantityDescription {
     const defaultName = "angle";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.i18n.translate("iModelJs:Properties.Angle"),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Angle"),
       iconSpec,
     );
   }
@@ -27,5 +27,5 @@ export class AngleDescription extends FormattedQuantityDescription {
   public get formatterQuantityType(): QuantityType { return QuantityType.Angle; }
   public get quantityType(): string { return "Angle"; }
 
-  public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseAngle"); }
+  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle"); }
 }

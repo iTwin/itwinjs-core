@@ -1,19 +1,19 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "npm test -- --cover",
+    "cover": "npm -s test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run webpackTests && certa -r chrome",
+    "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "repository": {
@@ -33,7 +33,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

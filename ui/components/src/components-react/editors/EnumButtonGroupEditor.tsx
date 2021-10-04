@@ -27,7 +27,7 @@ interface EnumButtonGroupEditorState {
 }
 
 /** EnumButtonGroupEditor React component that is a property editor with select input
- * @beta
+ * @public
  */
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
   private _btnRefs = new Map<string | number, HTMLButtonElement>();
@@ -192,7 +192,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
 
 /** Enum Property Button Group Editor registered for the "enum" type name and the "enum-buttongroup" editor name.
  * It uses the [[EnumButtonGroupEditor]] React component.
- * @beta
+ * @public
  */
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {  // istanbul ignore next
   public get reactNode(): React.ReactNode {

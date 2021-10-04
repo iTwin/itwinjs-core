@@ -27,6 +27,13 @@ export const createTestRelatedClassInfo = (props?: Partial<ec.RelatedClassInfo>)
   ...props,
 });
 
+export const createTestRelatedClassInfoWithOptionalRelationship = (props?: Partial<ec.RelatedClassInfoWithOptionalRelationship>) => ({
+  sourceClassInfo: createTestECClassInfo({ id: "0x1", name: "source:class", label: "Source" }),
+  targetClassInfo: createTestECClassInfo({ id: "0x2", name: "target:class", label: "Target" }),
+  isPolymorphicTargetClass: false,
+  ...props,
+});
+
 export const createTestRelationshipPath = (length: number = 2) => {
   const path = new Array<ec.RelatedClassInfo>();
   while (length--)

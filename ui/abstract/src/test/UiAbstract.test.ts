@@ -17,15 +17,15 @@ describe("UiAbstract", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiAbstract.i18n).to.throw(Error);
+    expect(() => UiAbstract.localization).to.throw(Error);
   });
 
-  it("terminate should run even if no i18n to unregister", () => {
+  it("terminate should run even if no localization to unregister", () => {
     expect(() => UiAbstract.terminate()).to.not.throw(Error);
   });
 
   it("i18nNamespace should return UiAbstract", () => {
-    expect(UiAbstract.i18nNamespace).to.eq("UiAbstract");
+    expect(UiAbstract.localizationNamespace).to.eq("UiAbstract");
   });
 
   it("packageName should return appui-abstract", () => {

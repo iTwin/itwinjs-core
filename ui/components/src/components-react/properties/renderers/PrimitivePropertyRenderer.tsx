@@ -26,7 +26,6 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
   /** Properties used for highlighting
-   * @beta
   */
   highlight?: HighlightingComponentProps;
 }

@@ -14,7 +14,7 @@ import { isPromiseLike, useEffectSkipFirst } from "@itwin/core-react";
 
 /**
  * Custom hook for working with possibly async values.
- * @beta
+ * @public
  */
 export const useAsyncValue = <T extends any>(value: T | PromiseLike<T>): T | undefined => {
   const cancelled = React.useMemo(() => new Subject<void>(), []);

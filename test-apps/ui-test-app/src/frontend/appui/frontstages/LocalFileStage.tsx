@@ -7,7 +7,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { ViewDefinitionProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
 import { FillCentered } from "@itwin/core-react";
@@ -199,7 +199,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
     }
 
     if (!this.state.iModelConnection) {
-      const title = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
+      const title = UiFramework.localization.getLocalizedString("SampleApp:localFileStage.localFile");
 
       return (
         <>
@@ -213,7 +213,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
                 style={{ display: "none" }} />
             }
             <Button size="large" styleType="cta" onClick={this._handleButtonClick}>
-              {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
+              {UiFramework.localization.getLocalizedString("SampleApp:localFileStage.selectFile")}
             </Button>
           </FillCentered >
         </>

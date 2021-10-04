@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -11,7 +11,7 @@
     "betools": "bin/betools.js"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",

@@ -26,7 +26,7 @@ import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHe
 import { UiComponents } from "../UiComponents";
 
 /** Describes the data needed to insert a custom framework-specific button into an ToolbarWithOverflow.
- * @beta
+ * @public
  */
 export interface CustomToolbarItem extends CustomButtonDefinition {
   buttonNode?: React.ReactNode;
@@ -34,7 +34,7 @@ export interface CustomToolbarItem extends CustomButtonDefinition {
 }
 
 /** Describes toolbar item.
- * @beta
+ * @public
  */
 export type ToolbarItem = ActionButton | GroupButton | CustomToolbarItem;
 
@@ -52,7 +52,7 @@ export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection =
 };
 
 /** Available alignment modes of [[ToolbarWithOverflow]] panels.
- * @beta
+ * @public
  */
 export enum ToolbarPanelAlignment {
   Start,
@@ -60,7 +60,7 @@ export enum ToolbarPanelAlignment {
 }
 
 /** Enumeration of Toolbar Opacity setting.
- * @beta
+ * @public
  */
 export enum ToolbarOpacitySetting {
   /** Use the default background, box-shadow opacity and backdrop-filter blur */
@@ -244,7 +244,7 @@ function getItemWrapperClass(child: React.ReactNode) {
 }
 
 /** Properties of [[ToolbarWithOverflow]] component.
- * @beta
+ * @public
  */
 export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the popup panels are expanded. Defaults to: [[Direction.Bottom]] */
@@ -266,7 +266,7 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 }
 
 /** Component that displays tool settings as a bar across the top of the content view.
- * @beta
+ * @public
  */
 export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const expandsTo = props.expandsTo ? props.expandsTo : Direction.Bottom;

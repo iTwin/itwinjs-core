@@ -11,6 +11,7 @@ import {
 import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { Centered } from "@itwin/core-react";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -20,7 +21,7 @@ class SignInControl extends ContentControl {
     if (isFrontendAuthorizationClient(client))
       this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
-      this.reactNode = null;
+      this.reactNode =  <Centered>{"No authorization client available"}</Centered>;
   }
 
   // user chose to work offline from the sign in page

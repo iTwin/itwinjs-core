@@ -20,6 +20,7 @@ import { SourceMapContext } from "../ui/widget/MapLayerManager";
 import { NumberInput, Toggle } from "@itwin/core-react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { Select } from "@itwin/itwinui-react";
+import { I18N } from "@itwin/core-i18n";
 
 describe("MapManagerSettings", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
@@ -66,7 +67,7 @@ describe("MapManagerSettings", () => {
 
   before(async () => {
     await TestUtils.initialize();
-    await MockRender.App.startup({});
+    await MockRender.App.startup({ localization: new I18N("iModelJs") });
   });
 
   after(async () => {

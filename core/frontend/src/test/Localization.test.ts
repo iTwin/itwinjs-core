@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { I18N } from "@itwin/core-i18n";
 
 describe("Localization tests", () => {
-  it("registers I18N namespaces", () => {
+  it("registers I18N namespaces", async () => {
     const i18n = new I18N(["namespace1", "namespace2"]);
     assert.strictEqual((i18n as any)._namespaceRegistry.size, 2);
     assert.isDefined(i18n.getNamespace("namespace1"));
@@ -17,7 +17,7 @@ describe("Localization tests", () => {
     assert.isDefined(i18n.getNamespace("namespace1"));
     assert.isUndefined(i18n.getNamespace("namespace2"));
 
-    i18n.registerNamespace("namespace2");
+    await i18n.registerNamespace("namespace2");
     assert.isDefined(i18n.getNamespace("namespace1"));
     assert.isDefined(i18n.getNamespace("namespace2"));
   });

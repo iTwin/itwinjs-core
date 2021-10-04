@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -11,7 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/imodelhub"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=imodelhub-client",
@@ -39,12 +39,14 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.71",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.76",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.76"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",

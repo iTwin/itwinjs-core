@@ -81,7 +81,7 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected provideToolAssistance(mainInstrKey: string, singlePoint: boolean = false): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainInstrKey));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 

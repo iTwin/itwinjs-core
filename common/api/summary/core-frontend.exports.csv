@@ -79,7 +79,6 @@ public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Po
 public;CategorySelectorState 
 internal;ChangeFlag
 public;ChangeFlags
-internal;ChangeSetId = string
 public;ChangeViewedModel2dOptions
 beta;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
@@ -167,7 +166,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 alpha;FrameStats
 internal;FrameStatsCollector
-internal;FrontendHubAccess
+public;FrontendHubAccess
 public;FrontendLoggerCategory
 public;FrontendSecurityOptions
 public;Frustum2d
@@ -258,13 +257,13 @@ public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
-internal;IModelHubFrontend
-internal;IModelIdArg
+public;IModelIdArg
 public;IModelRoutingContext
 internal;IModelTile 
 internal;IModelTileContent 
 internal;IModelTileParams 
 internal;iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams
+internal;IModelTileRequestChannels
 internal;IModelTileTree 
 internal;IModelTileTreeOptions
 internal;IModelTileTreeParams 
@@ -412,7 +411,6 @@ beta;QuantityType
 beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
-public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
 beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 beta;QueryTileFeaturesOptions
@@ -422,7 +420,6 @@ beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeature
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
-public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree 

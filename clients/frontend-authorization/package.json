@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-authorization-client",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.76",
   "description": "iModel.js Frontend Authorization Client",
   "main": "lib/frontend-authorization-client.js",
   "typings": "lib/frontend-authorization-client",
@@ -11,7 +11,7 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/frontend-authorization"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=frontend-authorization-client",
@@ -34,8 +34,8 @@
     "oidc-client": "^1.9.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.76"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
