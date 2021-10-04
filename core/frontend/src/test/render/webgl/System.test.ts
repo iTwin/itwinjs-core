@@ -257,7 +257,7 @@ describe("RenderSystem", () => {
       const p1 = requestTexture(undefined);
       const p2 = requestTexture(undefined);
       expectPendingRequests(0);
-      expectRequestedIds([undefined, undefined]);
+      expectRequestedIds([]);
 
       const t1 = await p1;
       const t2 = await p2;
