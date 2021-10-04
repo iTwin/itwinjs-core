@@ -154,11 +154,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       // Create rdSourceKey if not provided
       let rdSourceKeyOGT: RealityDataSourceKey;
       if (orbitGtBlob.rdsUrl) {
-        rdSourceKeyOGT = RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare);
+        rdSourceKeyOGT = RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
       } else if (orbitGtBlob.containerName && Guid.isGuid(orbitGtBlob.containerName)) {
         rdSourceKeyOGT = {provider: RealityDataProvider.ContextShare, format: RealityDataFormat.OPC, id: orbitGtBlob.containerName };
       } else {
-        rdSourceKeyOGT = RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShare);
+        rdSourceKeyOGT = RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
       }
 
       return createOrbitGtTileTreeReference({

@@ -36,10 +36,6 @@ class RealityDataConnection implements IRealityDataConnection {
 
     return (tilesetUrl !== undefined) ? rdConnection : undefined;
   }
-  public static async createFromUrl(url: string, iTwinId: GuidString): Promise<RealityDataConnection | undefined>  {
-    const sourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(url);
-    return RealityDataConnection.createFromSourceKey(sourceKey, iTwinId);
-  }
 
   public async queryRealityData(iTwinId: GuidString | undefined) {
     if (this._rdSource.isContextShare && !this._rd) {

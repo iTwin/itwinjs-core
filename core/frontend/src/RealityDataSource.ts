@@ -28,10 +28,11 @@ export class RealityDataSource {
     this.rdSourceKey = props.sourceKey;
     this.isUrlResolved=false;
   }
-  public static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider): RealityDataSourceKey {
+  public static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+    let format = inputFormat ? inputFormat : RealityDataFormat.ThreeDTile;
     if (tilesetUrl.includes("$CesiumIonAsset=")) {
       const provider = inputProvider ? inputProvider : RealityDataProvider.CesiumIonAsset;
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format:RealityDataFormat.ThreeDTile, id: tilesetUrl };
+      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: tilesetUrl };
       return cesiumIonAssetKey;
     }
 
@@ -41,7 +42,7 @@ export class RealityDataSource {
       attUrl = new URL(tilesetUrl);
     } catch (e) {
       // Not a valid URL and not equal, probably $cesiumAsset
-      const invalidUrlKey: RealityDataSourceKey = { provider: RealityDataProvider.TilesetUrl,  format: RealityDataFormat.ThreeDTile, id: tilesetUrl };
+      const invalidUrlKey: RealityDataSourceKey = { provider: RealityDataProvider.TilesetUrl,  format, id: tilesetUrl };
       return invalidUrlKey;
     }
     // detect if it is a RDS url
@@ -64,22 +65,23 @@ export class RealityDataSource {
       const guid1 = urlParts1.find(Guid.isGuid);
       if (guid1 !== undefined) {
         const provider = inputProvider ? inputProvider : RealityDataProvider.ContextShare;
-        const format = isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
+        format = inputFormat ? inputFormat : isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
         const contextShareKey: RealityDataSourceKey = { provider, format, id: guid1, iTwinId: projectId };
         return contextShareKey;
       }
     }
     // default to tileSetUrl
     const provider2 = inputProvider ? inputProvider : RealityDataProvider.TilesetUrl;
-    const urlKey: RealityDataSourceKey = { provider: provider2, format: RealityDataFormat.ThreeDTile, id: tilesetUrl };
+    const urlKey: RealityDataSourceKey = { provider: provider2, format, id: tilesetUrl };
     return urlKey;
   }
-  public static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider): RealityDataSourceKey {
+  public static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+    let format = inputFormat ? inputFormat : RealityDataFormat.ThreeDTile;
     const url = new URL(blobUrl);
 
     // If we cannot interpret that url pass in parameter we just fallback to old implementation
     if(!url.pathname)
-      return { provider: RealityDataProvider.TilesetUrl, format: RealityDataFormat.ThreeDTile, id: blobUrl };
+      return { provider: RealityDataProvider.TilesetUrl, format, id: blobUrl };
 
     // const accountName   = url.hostname.split(".")[0];
     const pathSplit     = url.pathname.split("/");
@@ -88,7 +90,7 @@ export class RealityDataSource {
     // const sasToken      = url.search.substr(1);
     const isOPC = url.pathname.match(".opc*") !== null;
     const provider = inputProvider ? inputProvider : RealityDataProvider.ContextShare;
-    const format = isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
+    format = isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
     const contextShareKey: RealityDataSourceKey = { provider, format, id: containerName };
     return contextShareKey;
   }
@@ -96,16 +98,6 @@ export class RealityDataSource {
    * @param props JSON representation of the reality data source
    */
   public static fromProps(props: RealityDataSourceProps): RealityDataSource {
-    return new RealityDataSource(props);
-  }
-  /** Construct a new reality data source.
-   * @param props JSON representation of the reality data source
-   */
-  public static fromUrl(url: string): RealityDataSource {
-    const sourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(url);
-    const props: RealityDataSourceProps = {
-      sourceKey,
-    };
     return new RealityDataSource(props);
   }
   public get isContextShare() {
