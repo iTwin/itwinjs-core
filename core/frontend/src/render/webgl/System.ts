@@ -29,7 +29,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
@@ -247,39 +247,41 @@ export class IdMap implements WebGLDisposable {
     return tex;
   }
 
-  public async getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    // Do we already have this texture?
-    const texture = this.findTexture(params.key);
+  public async getTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
+    const texture = this.findTexture(key);
     if (texture)
-      return Promise.resolve(texture);
+      return texture;
 
-    // Are we already in the process of creating this texture?
-    let promise = params.key ? this.texturesFromImageSources.get(params.key) : undefined;
+    // Are we already in the process of decoding this image?
+    let promise = this.texturesFromImageSources.get(key);
     if (promise)
       return promise;
 
-    promise = this.createTextureFromImageSource(source, params);
-    if (params.key) {
-      // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
-      // instead of redundantly decoding the same image.
-      this.texturesFromImageSources.set(params.key, promise);
-    }
-
+    promise = this.createTextureFromImageSource(args, key);
+    this.texturesFromImageSources.set(key, promise);
     return promise;
   }
 
-  public async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+  public async createTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
+    // JPEGs don't support transparency.
+    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
     try {
-      const image = await imageElementFromImageSource(source);
-      return IModelApp.hasRenderSystem ? IModelApp.renderSystem.createTextureFromImage(image, ImageSourceFormat.Png === source.format, this._iModel, params) : undefined;
+      const image = await imageElementFromImageSource(args.source);
+      if (!IModelApp.hasRenderSystem)
+        return undefined;
+
+      return IModelApp.renderSystem.createTexture({
+        type: args.type,
+        ownership: args.ownership,
+        image: {
+          source: image,
+          transparency,
+        },
+      });
     } catch (_) {
-      // Caller is uninterested in the details of the exception.
       return undefined;
     } finally {
-      if (params.key) {
-        // The promise has resolved or rejected - remove from pending set.
-        this.texturesFromImageSources.delete(params.key);
-      }
+      this.texturesFromImageSources.delete(key);
     }
   }
 
@@ -656,10 +658,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return owner ? { idMap: this.getIdMap(owner.iModel), key: owner.key } : undefined;
   }
 
-  private getTextureCacheInfoFromKey(key: string | undefined, iModel: IModelConnection | undefined): TextureCacheInfo | undefined {
-    return key && iModel ? { key, idMap: this.getIdMap(iModel) } : undefined;
-  }
-
   public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
     const info = this.getTextureCacheInfo(args);
     const existing = info?.idMap.findTexture(info?.key);
@@ -686,11 +684,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return texture;
   }
 
-  public override async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    if (!imodel)
-      return super.createTextureFromImageSource(source, imodel, params);
+  public override async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
+    if (typeof args.ownership !== "object")
+      return super.createTextureFromSource(args);
 
-    return this.getIdMap(imodel).getTextureFromImageSource(source, params);
+    return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
   public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {

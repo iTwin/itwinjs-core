@@ -170,9 +170,11 @@ describe("RenderSystem", () => {
         const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        map.createTextureFromImageSource = async (source: ImageSource, params: RenderTexture.Params) => {
-          TestSystem.requestedIds.push(params.key);
-          return createTextureFromImageSource(source, params);
+        map.createTextureFromImageSource = async (args) => {
+          expect(typeof args.ownership).to.equal("object");
+          const key = (args.ownership as any).key;
+          TestSystem.requestedIds.push(key);
+          return createTextureFromImageSource(args, key);
         };
       }
     }

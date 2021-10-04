@@ -32,7 +32,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -585,12 +585,39 @@ export abstract class RenderSystem implements IDisposable {
     });
   }
 
-  /** Create a new texture from an [[ImageSource]]. */
-  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const promise = imageElementFromImageSource(source);
-    return promise.then((image: HTMLImageElement) => {
-      return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
+  /** Create a new texture from an ImageSource.
+   * @deprecated Use RenderSystem.createTextureFromSource.
+   */
+  public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
+    return this.createTextureFromSource({
+      type: params.type,
+      source,
+      ownership,
+      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Translucent,
     });
+  }
+
+  /** Create a texture from an ImageSource. */
+  public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
+    try {
+      // JPEGs don't support transparency.
+      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+      const image = await imageElementFromImageSource(args.source);
+      if (!IModelApp.hasRenderSystem)
+        return undefined;
+
+      return this.createTexture({
+        type: args.type,
+        ownership: args.ownership,
+        image: {
+          source: image,
+          transparency,
+        },
+      });
+    } catch (_) {
+      return undefined;
+    }
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
