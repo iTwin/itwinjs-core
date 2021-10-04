@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as moq from "typemoq"
+import * as moq from "typemoq";
 import { fireEvent, render } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@itwin/core-frontend";
 import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";

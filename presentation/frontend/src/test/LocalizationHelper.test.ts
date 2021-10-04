@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { I18N } from "@itwin/core-i18n";
 import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
 import {
-  createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor
+  createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
 import { Presentation } from "../presentation-frontend/Presentation";

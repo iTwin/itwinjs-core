@@ -5,7 +5,7 @@
 import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "typemoq"
+import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE } from "@itwin/presentation-common";
 import { createRandomECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
