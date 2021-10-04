@@ -2718,6 +2718,7 @@ importers:
       faker: ^4.1.0
       json-schema-faker: 0.5.0-rc16
       mocha: ^8.3.2
+      npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -2753,6 +2754,7 @@ importers:
       faker: 4.1.0
       json-schema-faker: 0.5.0-rc16
       mocha: 8.4.0
+      npm-run-all: 4.1.5
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -2807,6 +2809,7 @@ importers:
       jsdom-global: 3.0.2
       micro-memoize: ^4.0.9
       mocha: ^8.3.2
+      npm-run-all: ^4.1.5
       nyc: ^15.1.0
       react: ^17.0.0
       react-dom: ^17.0.0
@@ -2864,6 +2867,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom-global: 3.0.2
       mocha: 8.4.0
+      npm-run-all: 4.1.5
       nyc: 15.1.0
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -2907,6 +2911,7 @@ importers:
       faker: ^4.1.0
       jsdom-global: 3.0.2
       mocha: ^8.3.2
+      npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -2945,6 +2950,7 @@ importers:
       faker: 4.1.0
       jsdom-global: 3.0.2
       mocha: 8.4.0
+      npm-run-all: 4.1.5
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -2989,6 +2995,7 @@ importers:
       jsdom-global: 3.0.2
       make-dir: ^1.3.0
       mocha: ^8.3.2
+      npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -3029,6 +3036,7 @@ importers:
       jsdom-global: 3.0.2
       make-dir: 1.3.0
       mocha: 8.4.0
+      npm-run-all: 4.1.5
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
@@ -4612,6 +4620,7 @@ importers:
       jsdom-global: 3.0.2
       lodash: ^4.17.10
       mocha: ^8.3.2
+      npm-run-all: ^4.1.5
       nyc: ^15.1.0
       raf: ^3.4.0
       react: ^17.0.0
@@ -4696,6 +4705,7 @@ importers:
       ignore-styles: 5.0.1
       jsdom-global: 3.0.2
       mocha: 8.4.0
+      npm-run-all: 4.1.5
       nyc: 15.1.0
       raf: 3.4.1
       react: 17.0.2
@@ -17337,7 +17347,6 @@ packages:
   /memorystream/0.3.1:
     resolution: {integrity: sha1-htcJCzDORV1j+64S3aUaR93K+bI=}
     engines: {node: '>= 0.10.0'}
-    dev: true
 
   /merge-descriptors/1.0.1:
     resolution: {integrity: sha1-sAqqVW3YtEVoFQ7J0blT8/kMu2E=}
@@ -18055,7 +18064,6 @@ packages:
       read-pkg: 3.0.0
       shell-quote: 1.7.2
       string.prototype.padend: 3.1.2
-    dev: true
 
   /npm-run-path/2.0.2:
     resolution: {integrity: sha1-NakjLfo11wZ7TLLd8jV7GHFTbF8=}
@@ -18694,7 +18702,6 @@ packages:
     resolution: {integrity: sha512-qQbW94hLHEqCg7nhby4yRC7G2+jYHY4Rguc2bjw7Uug4GIJuu1tvf2uHaZv5Q8zdt+WKJ6qK1FOI6amaWUo5FA==}
     engines: {node: '>=0.10'}
     hasBin: true
-    dev: true
 
   /pify/2.3.0:
     resolution: {integrity: sha1-7RQaasBDqEnqWISY59yosVMw6Qw=}
@@ -21740,7 +21747,6 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.1.3
       es-abstract: 1.18.5
-    dev: true
 
   /string.prototype.trim/1.2.4:
     resolution: {integrity: sha512-hWCk/iqf7lp0/AgTF7/ddO1IWtSNPASjlzCicV5irAVdE1grjsneK26YG6xACMBEdCvO8fUST0UzDMh/2Qy+9Q==}

@@ -668,7 +668,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "null-loader",
