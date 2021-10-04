@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
-import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -36,6 +36,7 @@ import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
+import { logger } from "@azure/storage-blob";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -558,7 +559,7 @@ describe("iModel", () => {
 
   it("should create display styles", () => {
     const defaultViewFlags = new ViewFlags().toJSON();
-    const defaultMapImagery = new DisplayStyleSettings({ }).toJSON().mapImagery;
+    const defaultMapImagery = new DisplayStyleSettings({}).toJSON().mapImagery;
 
     const viewFlags = new ViewFlags({ patterns: false, visibleEdges: true });
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
@@ -1869,6 +1870,9 @@ describe("iModel", () => {
     snapshot.saveChanges();
     snapshot.close();
 
+    const erroLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
+    const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
+
     // Mock iModelHub
     const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
@@ -1898,14 +1902,24 @@ describe("iModel", () => {
     assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
+    assert.equal(erroLogStub.callCount, 1);
+    assert.include(erroLogStub.args[0][1], "attached with timestamp that expires before");
 
+    erroLogStub.resetHistory();
     await checkpoint.reattachDaemon(accessToken);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
+    assert.equal(erroLogStub.callCount, 1);
+    assert.include(erroLogStub.args[0][1], "attached with timestamp that expires before");
+    assert.equal(infoLogStub.callCount, 2);
+    assert.include(infoLogStub.args[0][1], "attempting to reattach");
+    assert.include(infoLogStub.args[1][1], "reattached checkpoint");
 
+    erroLogStub.resetHistory();
     commandStub.callsFake(async () => daemonErrorResult);
-    const error = await getIModelError(checkpoint.reattachDaemon(accessToken));
-    expectIModelError(DbResult.BE_SQLITE_ERROR, error);
+    await checkpoint.reattachDaemon(accessToken);
+    assert.equal(erroLogStub.callCount, 1);
+    assert.include(erroLogStub.args[0][1], "reattach checkpoint failed");
 
     checkpoint.close();
   });

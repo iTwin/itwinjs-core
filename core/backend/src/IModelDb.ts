@@ -8,7 +8,7 @@
 
 import { join } from "path";
 import {
-  AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
+  AccessToken, BeDuration, BeEvent, BentleyError, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
   JsonUtils, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
@@ -2332,6 +2332,7 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
+  private _reattachSafetySeconds = 60 * 60; // one hour
   private _reattachTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
 
@@ -2462,6 +2463,9 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
+    if (checkpoint.reattachSafetySeconds)
+      snapshot._reattachSafetySeconds = checkpoint.reattachSafetySeconds;
+
     snapshot.setReattachTimestamp(expiryTimestamp);
     return snapshot;
   }
@@ -2476,21 +2480,24 @@ export class SnapshotDb extends IModelDb {
     // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's
     // storage account. Since we do this in plenty of time before the current token expires, there's no need to wait for it to complete.
     // The current token will be fine for this and all future requests until the re-attach completes.
-    this._reattachTimestamp = undefined;  // so other requests won't attempt to reattach while this one is waiting
-    V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset })
-      .then((response) => this.setReattachTimestamp(response.expiryTimestamp))
-      .catch((e) => {
-        Logger.logError(BackendLoggerCategory.Authorization, "Reattach checkpoint failed", e);
-        this.setReattachTimestamp(Date.now()); // make the next requester reattempt
-      });
 
-    return Promise.resolve(); // caller should not wait
+    this._reattachTimestamp = undefined;  // so other requests won't attempt to reattach while this one is pending
+
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
+    try {
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset })
+      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
+      this.setReattachTimestamp(response.expiryTimestamp);
+    } catch (e: unknown) {
+      Logger.logError(BackendLoggerCategory.Authorization, "reattach checkpoint failed", BentleyError.getErrorProps(e));
+      this._reattachTimestamp = Date.now(); // make the next requester reattempt
+    }
   }
 
   private setReattachTimestamp(expiryTimestamp: number) {
-    const now = Date.now();
-    const expiresIn = expiryTimestamp - now;
-    this._reattachTimestamp = now + (expiresIn / 2);
+    this._reattachTimestamp = expiryTimestamp - (this._reattachSafetySeconds * 1000);
+    if (this._reattachTimestamp < Date.now())
+      Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
   }
 
   /** @internal */
