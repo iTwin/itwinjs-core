@@ -7,13 +7,13 @@ import { assert } from "chai";
 import * as path from "path";
 import { AccessToken, BentleyStatus, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
-import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
+import { ChangesetProps } from "@itwin/core-common";
 
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
@@ -92,15 +92,15 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangesets(accessToken: AccessToken, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(accessToken: AccessToken, changesetsPath: string, iModelId: GuidString): Promise<ChangesetProps[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
+    const changesets: ChangesetProps[] = await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
     if (changesets.length === 0)
       return changesets;
     const latestIndex = changesets.length - 1;
     let earliestIndex = 0; // Earliest index that doesn't exist
     while (earliestIndex <= latestIndex) {
-      const pathname = path.join(changeSetsPath, changesets[earliestIndex].fileName!);
+      const pathname = path.join(changesetsPath, changesets[earliestIndex].fileName!);
       if (!IModelJsFs.existsSync(pathname))
         break;
       ++earliestIndex;
@@ -112,13 +112,13 @@ export class HubUtility {
     const latestChangeSetId = changesets[latestIndex].id; // Query results include latest specified change set
 
     const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
-    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangeSetId, end: latestChangeSetId } , targetDir: changeSetsPath });
+    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangeSetId, end: latestChangeSetId } , targetDir: changesetsPath });
     perfLogger.dispose();
     return changesets;
   }
 
   /** Download all named versions of the specified iModel */
-  private static async downloadNamedVersions(requestContext: AccessToken, _projectId: string, iModelId: GuidString): Promise<Version[]> {
+  private static async downloadNamedVersions(requestContext: AccessToken, iModelId: GuidString): Promise<Version[]> {
     const query = new VersionQuery();
     query.orderBy("createdDate");
 
@@ -589,7 +589,7 @@ class TestIModelHubProject {
   public terminate(): void { }
 
   public get iModelHubClient(): IModelHubClient {
-    return IModelHubBackend.iModelClient as IModelHubClient;
+    return IModelHubBackend.iModelClient ;
   }
 
   private static _iTwinAccessClient?: ITwinAccessClient;
