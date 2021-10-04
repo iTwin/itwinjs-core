@@ -32,7 +32,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs } from "./RenderTexture";
+import { CreateTextureArgs, TextureCacheKey } from "./RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -479,12 +479,12 @@ export abstract class RenderSystem implements IDisposable {
    */
   public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number, _elevation: number): RenderGraphic { return graphic; }
 
-  /** Find a previously-created [[RenderTexture]] by its ID.
-   * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.
+  /** Find a previously-created [[RenderTexture]] by its key.
+   * @param _key The unique key of the texture within the context of the IModelConnection. Typically an element Id.
    * @param _imodel The IModelConnection with which the texture is associated.
-   * @returns A previously-created texture matching the specified ID, or undefined if no such texture exists.
+   * @returns A previously-created texture matching the specified key, or undefined if no such texture exists.
    */
-  public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+  public findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
   /** Find or create a [[RenderTexture]] from a persistent texture element.
    * @param id The ID of the texture element.
@@ -558,7 +558,9 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
+  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
+    return undefined;
+  }
 
   public createTexture(_args: CreateTextureArgs): RenderTexture | undefined {
     return undefined;

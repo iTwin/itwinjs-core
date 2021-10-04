@@ -29,6 +29,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
+import { TextureCacheKey } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
@@ -260,7 +261,14 @@ export class IdMap implements WebGLDisposable {
     return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
   }
 
-  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
+  public findTexture(key?: string | Gradient.Symb): RenderTexture | undefined {
+    if (undefined === key)
+      return undefined;
+    else if (typeof key === "string")
+      return this.textures.get(key);
+    else
+      return this.findGradient(key);
+  }
 
   /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
   public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
@@ -722,10 +730,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Using its key, search for an existing texture of an open iModel. */
-  public override findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
+  public override findTexture(key: TextureCacheKey, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
       return undefined;
+
     return idMap.findTexture(key);
   }
 

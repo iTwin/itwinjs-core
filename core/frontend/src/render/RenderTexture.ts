@@ -16,12 +16,14 @@ export enum TextureTransparency {
   Unknown = Mixed,
 }
 
-export interface TextureCacheKey {
+export type TextureCacheKey = string | Gradient.Symb;
+
+export interface TextureCacheOwnership {
   iModel: IModelConnection;
   key: string | Gradient.Symb;
 }
 
-export type TextureOwnership = TextureCacheKey | "external";
+export type TextureOwnership = TextureCacheOwnership | "external";
 
 export type TextureImageSource = HTMLImageElement | HTMLCanvasElement | ImageBuffer;
 
