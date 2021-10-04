@@ -36,7 +36,7 @@ export interface CheckpointProps extends TokenArg {
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
 
-  /** The number of seconds before the current token expires to attempt to reacquire a new token */
+  /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
   readonly reattachSafetySeconds?: number;
 }
 
