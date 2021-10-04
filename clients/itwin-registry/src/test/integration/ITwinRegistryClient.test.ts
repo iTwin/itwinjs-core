@@ -9,7 +9,7 @@ import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
-describe("ContextRegistryClient (#integration)", () => {
+describe("ITwinRegistryClient (#integration)", () => {
   const iTwinAccessClient: ITwinAccessClient = new ITwinAccessClient();
   let accessToken: AccessToken;
 

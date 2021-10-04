@@ -770,7 +770,6 @@ export abstract class IModelDb extends IModel {
    * [[include:IModelDb.updateProjectExtents]]
    * ```
    */
-
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this.projectExtents = newExtents;
     this.updateIModelProps();

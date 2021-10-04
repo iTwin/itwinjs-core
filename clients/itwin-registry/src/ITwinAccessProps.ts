@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ContextRegistry
+ * @module ITwinRegistry
  */
 
 import { AccessToken } from "@itwin/core-bentley";
