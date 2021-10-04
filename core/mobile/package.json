@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "3.0.0-dev.75",
+  "version": "3.0.0-dev.76",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -31,13 +31,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.75",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.75",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.75",
-    "@itwin/core-common": "workspace:^3.0.0-dev.75",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.75",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.75",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.75",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.76",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.76",
+    "@itwin/core-common": "workspace:^3.0.0-dev.76",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.76",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.76",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.76",
     "js-base64": "^3.6.1",
     "ws": "^7.5.3"
   },

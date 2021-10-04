@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "3.0.0-dev.75",
+  "version": "3.0.0-dev.76",
   "description": "iModel.js express utilities",
   "main": "lib/ExpressServer.js",
   "typings": "lib/ExpressServer",
