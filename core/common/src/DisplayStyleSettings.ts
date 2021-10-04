@@ -215,7 +215,6 @@ export interface DisplayStyleOverridesOptions {
   includeIModelSpecific?: true;
   /** Serialize iTwin-specific settings. These settings are only meaningful within the context of a specific iTwin. These settings are always included if `includeIModelSpecific` is `true`.
    * The following are iTwin-specific settings:
-// SWB What does context mean here?
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
@@ -851,8 +850,7 @@ export class DisplayStyleSettings {
   }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
-// SWB What does project/context mean here?
-   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
+   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or iTwin (e.g., context reality models)
    * are omitted, as are drawing aids (e.g., ACS triad and grid).
    * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
    * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..

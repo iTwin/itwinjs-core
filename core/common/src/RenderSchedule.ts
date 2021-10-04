@@ -141,7 +141,6 @@ export namespace RenderSchedule {
     /** The Id of the [GeometricModelState]($frontend) to which the timeline applies. */
     modelId: Id64String;
     /** @alpha */
-    // SWB What does context mean here>
     realityModelUrl?: string; // defined only for "context" reality models (attached through display style)
     /** Timelines affecting groups of elements. */
     elementTimelines: ElementTimelineProps[];

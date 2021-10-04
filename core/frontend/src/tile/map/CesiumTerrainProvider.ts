@@ -42,7 +42,6 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
 }
 
 /** @internal */
-// SWB What does asset mean here?
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
 
   if (undefined === requestKey) {

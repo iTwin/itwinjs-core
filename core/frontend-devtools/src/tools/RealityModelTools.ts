@@ -266,7 +266,6 @@ export class AttachCesiumAssetTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  // SWB What does asset mean here?
   public override async run(assetId: number, requestKey: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)

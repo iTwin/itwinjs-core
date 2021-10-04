@@ -408,9 +408,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             {/* Store settings options, not shown when editing a layer */}
             {isSettingsStorageAvailable && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
               <Radio disabled={settingsStorageDisabled}
-                // SWB What should be done about this change?
                 name="settingsStorage" value="iTwin"
-                // SWB What should be done about this change?
                 label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
                 onChange={onRadioChange} />
               <Radio disabled={settingsStorageDisabled}

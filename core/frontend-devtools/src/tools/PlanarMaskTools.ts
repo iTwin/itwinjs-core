@@ -74,7 +74,6 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   private setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.iModel.selectionSet.isActive);
     this.initLocateElements(!this._useSelection || (this.targetModelRequired() && !this._targetMaskModel));
-    // SWB What does context mean here?
     IModelApp.locateManager.options.allowDecorations = true;    // So we can select "contextual" reality models.
     this.showPrompt();
   }

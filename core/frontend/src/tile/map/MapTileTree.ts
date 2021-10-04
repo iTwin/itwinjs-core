@@ -181,7 +181,6 @@ export class MapTileTree extends RealityTileTree {
     if (childDepth < MapTileTree.maxGlobeDisplayDepth)     // If the depth is too low (tile is too large) display as globe.
       return true;
 
-    // SWB What does project mean here?
     return false;  // Display as globe if more than 100 KM from project.
   }
   public override doReprojectChildren(tile: Tile): boolean {

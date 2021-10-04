@@ -99,7 +99,6 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
-    // SWB Change .env vars?
     if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
       throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 

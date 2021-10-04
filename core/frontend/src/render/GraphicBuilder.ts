@@ -102,7 +102,6 @@ export interface BatchOptions {
  */
 export interface PickableGraphicOptions extends BatchOptions {
   /** Unique identifier for the graphic.
-   // SWB What does context mean here?
    * @see [[IModelConnection.transientIds]] to obtain a unique Id in the context of an iModel.
    */
   id: Id64String;

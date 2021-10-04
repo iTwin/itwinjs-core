@@ -127,7 +127,6 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
-    // SWB Should .env vars be renamed?
     if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
       throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
@@ -149,7 +148,6 @@ export class Settings {
 
     // If write rpc interface is defined expect a separate iModel to be used.
     if (this.runiModelWriteRpcTests) {
-      // SWB Change .env var names?
       if (!process.env.IMODEL_WRITE_PROJECTID && !process.env.IMODEL_WRITE_PROJECTNAME)
         throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' or 'IMODEL_WRITE_PROJECTNAME' setting.");
 

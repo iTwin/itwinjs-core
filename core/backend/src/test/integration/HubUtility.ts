@@ -561,8 +561,7 @@ export class HubUtility {
     return `${baseName} - ${Guid.createValue()}`;
   }
 
-  // SWB What does context mean here?
-  /** Deletes and re-creates an iModel with the provided name in the Context.
+  /** Deletes and re-creates an iModel with the provided name in the iTwin.
    * @returns the iModelId of the newly created iModel.
   */
   public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
