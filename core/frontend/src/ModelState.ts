@@ -9,7 +9,7 @@
 import { Guid, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataProvider, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
@@ -119,7 +119,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const rdSourceKey = this.jsonProperties.rdSourceKey;
 
     if (rdSourceKey) {
-      const useOrbitGtTileTreeReference = rdSourceKey.provider === RealityDataProvider.ContextShareOrbitGt;
+      const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
       const treeRef = (!useOrbitGtTileTreeReference) ?
         createRealityTileTreeReference({
           rdSourceKey,
@@ -154,11 +154,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       // Create rdSourceKey if not provided
       let rdSourceKeyOGT: RealityDataSourceKey;
       if (orbitGtBlob.rdsUrl) {
-        rdSourceKeyOGT = RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShareOrbitGt);
+        rdSourceKeyOGT = RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare);
       } else if (orbitGtBlob.containerName && Guid.isGuid(orbitGtBlob.containerName)) {
-        rdSourceKeyOGT = {provider: RealityDataProvider.ContextShareOrbitGt, realityDataId: orbitGtBlob.containerName };
+        rdSourceKeyOGT = {provider: RealityDataProvider.ContextShare, format: RealityDataFormat.OPC, id: orbitGtBlob.containerName };
       } else {
-        rdSourceKeyOGT = RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShareOrbitGt);
+        rdSourceKeyOGT = RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShare);
       }
 
       return createOrbitGtTileTreeReference({

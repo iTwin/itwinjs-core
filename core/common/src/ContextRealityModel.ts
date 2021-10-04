@@ -32,40 +32,55 @@ export enum RealityDataProvider {
    * You should use other mode when possible
    * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
    * */
-  TilesetUrl = "TilesetUrl:3dtile",
+  TilesetUrl = "TilesetUrl",
   /**
-   * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format
-   * This provider support all type of 3dTile storage fomat: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles,
+   * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format or  OPC storage format
+   * This provider support all type of 3dTile storage fomat and OrbitPointCloud: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles, OPC
+   * @see [[RealityDataFormat]].
   */
-  ContextShare = "ContextShare:3dtile",
+  ContextShare = "ContextShare",
+  /**
+   * Will provide Open Street Map Building (OCM) from Cesium Ion (in 3dTile format)
+  */
+  CesiumIonAsset = "CesiumIonAsset",
+}
+
+export type RealityDataProviderString = keyof typeof RealityDataProvider;
+
+export enum RealityDataFormat {
+  /**
+   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
+   * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
+   * You should use other mode when possible
+   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * */
+  ThreeDTile = "ThreeDTile",
   /**
    * Will provide access url from realityDataId and iTwinId on contextShare for OPC storage format
    * This is the mode that support PointCloud OPC storage format (RealityDataType.OPC)
   */
-  ContextShareOrbitGt = "ContextShare:OPC",
-  /**
-   * Will provide Open Street Map Building (OCM) from Cesium Ion
-  */
-  CesiumIonAsset = "CesiumIonAsset:OCM"
+  OPC = "OPC",
 }
+export type RealityDataFormatString = keyof typeof RealityDataFormat;
 
 // Key used by ContextShare RealityDataProvider
-export interface RealityDataSourceContextShareKey {
-  /** The provider that supplies the 3d tiles for displaying the reality model. */
-  provider: RealityDataProvider;
-  /** The reality data id that identify a reality data for the provider. */
-  realityDataId: string;
+export interface RealityDataSourceKey {
+  /**
+   * The provider that supplies the access to reality data source for displaying the reality model
+   * @see [[RealityDataProviderString]] for default supported value;
+   *
+  */
+  provider: string;
+  /**
+   * The format used by the provider to store the reality data
+   * @see [[RealityDataFormatString]] for default supported value;
+  */
+  format: RealityDataFormat;
+  /** The reality data id that identify a reality data for the provider */
+  id: string;
+  /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
+  iTwinId?: string;
 }
-
-// Key used by TilesetUrl RealityDataProvider
-export interface RealityDataSourceURLKey {
-  /** The provider that supplies the 3d tiles for displaying the reality model. */
-  provider: RealityDataProvider;
-  /** The URL that supplies the 3d tiles for displaying the reality model*/
-  tilesetUrl: string;
-}
-
-export type RealityDataSourceKey = RealityDataSourceContextShareKey | RealityDataSourceURLKey;
 
 /** JSON representation of the reality data reference attachment properties.
  * @alpha

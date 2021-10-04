@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
-  Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings, RealityDataProvider, RealityDataSourceContextShareKey, RealityDataSourceKey, RealityDataSourceURLKey, SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
+  Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings, RealityDataProvider, RealityDataSourceKey, SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData } from "@bentley/reality-data-client";
@@ -93,17 +93,11 @@ class RealityTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    const lhsSourceKey = lhs.rdSourceKey as RealityDataSourceContextShareKey;
-    const rhsSourceKey = rhs.rdSourceKey as RealityDataSourceContextShareKey;
-    const lhsSourceURLKey = lhs.rdSourceKey as RealityDataSourceURLKey;
-    const rhsSourceURLKey = rhs.rdSourceKey as RealityDataSourceURLKey;
-    let cmp: number = 0;
-    if (lhsSourceKey && rhsSourceKey) {
-      cmp = compareStringsOrUndefined(lhsSourceKey.realityDataId, rhsSourceKey.realityDataId);
-    } else if (lhsSourceURLKey && rhsSourceURLKey) {
-      cmp = compareStringsOrUndefined(lhsSourceURLKey.tilesetUrl, rhsSourceURLKey.tilesetUrl);
-    }
-
+    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
 
@@ -787,9 +781,8 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (this._name) {
       strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
     } else {
-      const rdSourceKey: RealityDataSourceURLKey = this._rdSourceKey as RealityDataSourceURLKey;
-      const cesiumAsset = rdSourceKey && rdSourceKey.provider === RealityDataProvider.CesiumIonAsset ? parseCesiumUrl(rdSourceKey.tilesetUrl) : undefined;
-      strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : rdSourceKey.tilesetUrl);
+      const cesiumAsset = this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset ? parseCesiumUrl(this._rdSourceKey.id) : undefined;
+      strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : this._rdSourceKey.id);
     }
 
     if (batch !== undefined)
@@ -803,8 +796,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
-    const rdSourceKey: RealityDataSourceURLKey = this._rdSourceKey as RealityDataSourceURLKey;
-    if (rdSourceKey && rdSourceKey.tilesetUrl === getCesiumOSMBuildingsUrl()) {
+    if (this._rdSourceKey.id === getCesiumOSMBuildingsUrl()) {
       cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.i18n.translate("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }
   }
@@ -850,7 +842,6 @@ export class RealityModelTileClient {
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
   constructor(rdConnection: IRealityDataConnection, contextId?: string) {
     this._rdConnection = rdConnection;
-    this._rdConnection.getSource().isContextShare;
     const rdSource = this._rdConnection.getSource();
     if (rdSource.isContextShare)
       this.rdsProps = this.getRDSClientPropsFromSource(rdSource); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
@@ -908,9 +899,10 @@ export class RealityModelTileClient {
   private getRDSClientPropsFromSource(rdSource: RealityDataSource, contextId?: string): RDSClientProps | undefined {
     // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
     const tilesId = rdSource.realityDataId;
+    const itwinId = rdSource.iTwinId;
     let props: RDSClientProps | undefined;
     if (undefined !== tilesId) {
-      const projectId = contextId ? contextId : "server";
+      const projectId = itwinId ? itwinId : contextId ? contextId : "server";
 
       props = { projectId, tilesId };
     }

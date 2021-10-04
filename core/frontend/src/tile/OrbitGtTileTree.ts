@@ -11,7 +11,7 @@ import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature,
   FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
-  Quantization, RealityDataProvider, RealityDataSourceContextShareKey, RealityDataSourceKey, RealityDataSourceURLKey, ViewFlagOverrides,
+  Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import {
@@ -24,8 +24,8 @@ import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityDataSource } from "../RealityDataSource";
 import { RealityDataConnectionManager } from "../RealityDataConnection";
+import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -35,7 +35,7 @@ import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
   RealityModelTileTree, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
+  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
 
@@ -57,17 +57,11 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
-    const lhsSourceKey = lhs.rdSourceKey as RealityDataSourceContextShareKey;
-    const rhsSourceKey = rhs.rdSourceKey as RealityDataSourceContextShareKey;
-    const lhsSourceURLKey = lhs.rdSourceKey as RealityDataSourceURLKey;
-    const rhsSourceURLKey = rhs.rdSourceKey as RealityDataSourceURLKey;
-    let cmp: number = 0;
-    if (lhsSourceKey && rhsSourceKey) {
-      cmp = compareStringsOrUndefined(lhsSourceKey.realityDataId, rhsSourceKey.realityDataId);
-    } else if (lhsSourceURLKey && rhsSourceURLKey) {
-      cmp = compareStringsOrUndefined(lhsSourceURLKey.tilesetUrl, rhsSourceURLKey.tilesetUrl);
-    }
-
+    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
 
@@ -124,8 +118,8 @@ class OrbitGtTileTreeParams implements TileTreeParams {
   public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
 
   public constructor(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, public location: Transform) {
-    const key = rdSourceKey as RealityDataSourceContextShareKey;
-    this.id = `${key.provider}:${key.realityDataId}`;
+    const key = rdSourceKey;
+    this.id = `${key.provider}:${key.format}:${key.id}:${key.iTwinId}`;
     this.modelId = modelId;
     this.iModel = iModel;
   }
@@ -460,14 +454,14 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     if (props.rdSourceKey) {
       this._rdSourceKey = props.rdSourceKey;
     } else if (props.orbitGtBlob && props.orbitGtBlob.rdsUrl) {
-      this._rdSourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl, RealityDataProvider.ContextShareOrbitGt);
+      this._rdSourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare);
     } else if (props.orbitGtBlob && props.orbitGtBlob.containerName && Guid.isGuid(props.orbitGtBlob.containerName)) {
-      this._rdSourceKey = {provider: RealityDataProvider.ContextShareOrbitGt, realityDataId: props.orbitGtBlob.containerName };
+      this._rdSourceKey = {provider: RealityDataProvider.ContextShare, format: RealityDataFormat.OPC, id: props.orbitGtBlob.containerName };
     } else if (props.orbitGtBlob) {
-      this._rdSourceKey = RealityDataSource.createFromBlobUrl(props.orbitGtBlob.blobFileName, RealityDataProvider.ContextShareOrbitGt);
+      this._rdSourceKey = RealityDataSource.createFromBlobUrl(props.orbitGtBlob.blobFileName, RealityDataProvider.ContextShare);
     } else {
       // TODO: Maybe we should throw an exception
-      this._rdSourceKey = RealityDataSource.createFromBlobUrl("", RealityDataProvider.ContextShareOrbitGt);
+      this._rdSourceKey = RealityDataSource.createFromBlobUrl("", RealityDataProvider.ContextShare);
     }
 
     const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };
