@@ -61,8 +61,6 @@ export enum IModelStatus {
   MissingId = IMODEL_ERROR_BASE + 33,
   NoGeometry = IMODEL_ERROR_BASE + 34,
   NoMultiTxnOperation = IMODEL_ERROR_BASE + 35,
-  // SWB What does project mean here?
-  NotDgnMarkupProject = IMODEL_ERROR_BASE + 36,
   NotEnabled = IMODEL_ERROR_BASE + 37,
   NotFound = IMODEL_ERROR_BASE + 38,
   NotOpen = IMODEL_ERROR_BASE + 39,
@@ -435,8 +433,6 @@ export class BentleyError extends Error {
       case IModelStatus.MissingId: return "Missing Id";
       case IModelStatus.NoGeometry: return "No Geometry";
       case IModelStatus.NoMultiTxnOperation: return "NoMultiTxnOperation";
-      // SWB What does project mean here?
-      case IModelStatus.NotDgnMarkupProject: return "NotDgnMarkupProject";
       case IModelStatus.NotEnabled: return "Not Enabled";
       case IModelStatus.NotFound: return "Not Found";
       case IModelStatus.NotOpen: return "Not Open";

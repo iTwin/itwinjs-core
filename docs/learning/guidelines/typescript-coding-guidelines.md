@@ -13,7 +13,8 @@ Where possible, these guidelines are enforced through our ESLint configuration (
 6. Use `_` as a prefix for private properties.
 7. Use whole words in names when possible. Only use abbreviations where their use is common and obvious.
 8. We use "Id", "3d", "2d" rather than capital D.
-9. Capitalize i in "iModel" and "iTwin" to match PascalCase or camelCase. Always use capital M and T.
+9. Always capitalize the M and T in "iModel" and "iTwin".
+10. Capitalize the i in "iModel" and "iTwin" according to the other naming conventions.
 
 ## Files
 
