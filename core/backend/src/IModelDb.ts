@@ -7,11 +7,11 @@
  */
 
 import { join } from "path";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BeEvent, BentleyError, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  AccessToken, BeEvent, BentleyError, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
   ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
@@ -24,7 +24,7 @@ import {
   SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions,
   ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -2485,7 +2485,7 @@ export class SnapshotDb extends IModelDb {
 
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
     try {
-      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset })
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
       Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
       this.setReattachTimestamp(response.expiryTimestamp);
     } catch (e: unknown) {

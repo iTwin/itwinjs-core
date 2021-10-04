@@ -7,36 +7,35 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
+import { CheckpointV2 } from "@bentley/imodelhub-client";
+import { BlobDaemon } from "@bentley/imodeljs-native";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
+import {
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
+  GeographicCRS, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError,
+  IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
+  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+} from "@itwin/core-common";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { CheckpointV2 } from "@bentley/imodelhub-client";
-import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
-  GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
-  MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
-  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
-} from "@itwin/core-common";
-import { BlobDaemon } from "@bentley/imodeljs-native";
 import { V2CheckpointManager } from "../../CheckpointManager";
+import {
+  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
+  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
+  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+} from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import {
-  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
-  DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions,
-  DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
-  InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
-  RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
-  ViewDefinition,
-} from "../../core-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-import { logger } from "@azure/storage-blob";
+
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -1870,7 +1869,7 @@ describe("iModel", () => {
     snapshot.saveChanges();
     snapshot.close();
 
-    const erroLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
+    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
     const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
 
     // Mock iModelHub
@@ -1902,24 +1901,24 @@ describe("iModel", () => {
     assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
-    assert.equal(erroLogStub.callCount, 1);
-    assert.include(erroLogStub.args[0][1], "attached with timestamp that expires before");
+    assert.equal(errorLogStub.callCount, 1);
+    assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
 
-    erroLogStub.resetHistory();
+    errorLogStub.resetHistory();
     await checkpoint.reattachDaemon(accessToken);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
-    assert.equal(erroLogStub.callCount, 1);
-    assert.include(erroLogStub.args[0][1], "attached with timestamp that expires before");
+    assert.equal(errorLogStub.callCount, 1);
+    assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
     assert.equal(infoLogStub.callCount, 2);
     assert.include(infoLogStub.args[0][1], "attempting to reattach");
     assert.include(infoLogStub.args[1][1], "reattached checkpoint");
 
-    erroLogStub.resetHistory();
+    errorLogStub.resetHistory();
     commandStub.callsFake(async () => daemonErrorResult);
     await checkpoint.reattachDaemon(accessToken);
-    assert.equal(erroLogStub.callCount, 1);
-    assert.include(erroLogStub.args[0][1], "reattach checkpoint failed");
+    assert.equal(errorLogStub.callCount, 1);
+    assert.include(errorLogStub.args[0][1], "reattach checkpoint failed");
 
     checkpoint.close();
   });
