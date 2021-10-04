@@ -305,7 +305,7 @@ describe("B3dmReader", () => {
     IModelApp.renderSystem.createTextureFromImage = () => {
       expect(textureCreated).to.be.false;
       textureCreated = true;
-      return new Texture(RenderTexture.Params.defaults);
+      return new Texture(new RenderTexture.Params());
     };
 
     let texturedMeshCreated = false;

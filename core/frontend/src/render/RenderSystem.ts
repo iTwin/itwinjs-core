@@ -558,6 +558,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an [[ImageBuffer]].
    * @deprecated Use [[createTexture]].
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
     return this.createTexture({
@@ -573,6 +574,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
    * @deprecated Use [[createTexture]].
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
     const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
     return this.createTexture({
@@ -588,6 +590,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an ImageSource.
    * @deprecated Use RenderSystem.createTextureFromSource.
    */
+  // eslint-disable-next-line deprecation/deprecation
   public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
     const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
     return this.createTextureFromSource({
@@ -621,6 +624,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
+  // eslint-disable-next-line deprecation/deprecation
   public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
     return undefined;
   }
@@ -632,6 +636,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
     return undefined;
   }

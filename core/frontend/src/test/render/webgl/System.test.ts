@@ -9,6 +9,7 @@ import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
+import { TextureTransparency } from "../../../render/RenderTexture";
 import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
 
@@ -203,8 +204,11 @@ describe("RenderSystem", () => {
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
-      const params = new RenderTexture.Params(key, RenderTexture.Type.Normal);
-      return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
+      return IModelApp.renderSystem.createTextureFromSource({
+        source: source ?? imageSource,
+        transparency: TextureTransparency.Translucent,
+        ownership: key ? { iModel: imodel, key } : undefined,
+      });
     }
 
     function expectPendingRequests(expectedCount: number): void {

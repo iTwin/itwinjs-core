@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
@@ -60,7 +60,7 @@ import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpac
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
-import { ExternalTextureLoader, Texture, TextureHandle, TextureParams } from "./Texture";
+import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { PlanarGridGeometry } from "./PlanarGrid";
 
@@ -233,6 +233,7 @@ export class IdMap implements WebGLDisposable {
       return this.findGradient(key);
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
@@ -285,6 +286,7 @@ export class IdMap implements WebGLDisposable {
     }
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
@@ -691,11 +693,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
-  /** Attempt to create a texture from a cube of HTML images. */
+  // eslint-disable-next-line deprecation/deprecation
   public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }

@@ -101,7 +101,7 @@ export interface CreateTextureFromSourceArgs {
   /** The image from which to create the texture. */
   source: ImageSource;
   /** Describes the transparency of the image. If this information can be supplied, it can improve performance.
-   * If this information is not available at the call site, pass [[TextureTransparency.Unknown]].
+   * If not supplied, PNGs will default to [[TextureTransparency.Mixed]] and JPEGs (which do not support transparency) to [[TextureTransparency.Opaque]].
    */
   transparency?: TextureTransparency;
   /** The ownership of the texture. If `undefined`, the texture's lifetime will be controlled by the first [[RenderGraphic]] with which it

@@ -78,8 +78,5 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
     public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
     public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
     public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
-
-    /** Obtain a RenderTexture params object with default values. */
-    public static readonly defaults = new Params();
   }
 }
