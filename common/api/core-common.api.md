@@ -6647,9 +6647,9 @@ export abstract class RenderTexture implements IDisposable {
 
 // @public (undocumented)
 export namespace RenderTexture {
+    // @deprecated
     export class Params {
         constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
-        static readonly defaults: Params;
         // (undocumented)
         get isGlyph(): boolean;
         readonly isOwned: boolean;
