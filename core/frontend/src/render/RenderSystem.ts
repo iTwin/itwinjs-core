@@ -52,7 +52,7 @@ export abstract class RenderTextureDrape implements IDisposable {
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** Describes a texture loaded from an HTMLImageElement
- * ###TODO Replace with TextureImage from RenderTexture.ts
+ * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
  * @internal
  */
 export interface OldTextureImage {
@@ -503,7 +503,14 @@ export abstract class RenderSystem implements IDisposable {
       const image = await this.loadTextureImage(id, iModel);
       if (undefined !== image) {
         // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
-        texture = this.createTextureFromImage(image.image, ImageSourceFormat.Png === image.format, iModel, new RenderTexture.Params(id.toString()));
+        texture = this.createTexture({
+          type: RenderTexture.Type.Normal,
+          ownership: { key: id, iModel },
+          image: {
+            source: image.image,
+            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+          },
+        });
       }
     }
 

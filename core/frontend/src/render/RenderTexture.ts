@@ -83,6 +83,11 @@ export interface CreateTextureArgs {
   type?: RenderTexture.Type;
   /** The image from which to create the texture. */
   image: TextureImage;
-  /** The ownership of the texture. If `undefined`, the texture will be disposed of by any [[RenderGraphic]] with which it is later associated. */
+  /** The ownership of the texture. If `undefined`, the texture's lifetime will be controlled by the first [[RenderGraphic]] with which it
+   * becomes associated, such that disposing of the graphic will also dispose of the texture.
+   * Applications typically create textures for use with [[Decorator]]s, which recreate their graphics quite frequently.
+   * Ideally, the decorator will take ownership of the texture by specifying "external" and disposing of the texture when it is no longer needed,
+   * rather than recreating the texture every time it creates its decoration graphics.
+   */
   ownership?: TextureOwnership;
 }
