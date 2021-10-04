@@ -370,7 +370,7 @@ export abstract class IModel implements IModelProps {
 
   public abstract get isOpen(): boolean;
 
-  /*
+  /**
    * The volume, in spatial coordinates, inside which the entire project is contained.
    * @note The object returned from this method is frozen. You *must* make a copy before you do anything that might attempt to modify it.
    */
