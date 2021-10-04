@@ -244,11 +244,6 @@ export class IdMap implements WebGLDisposable {
     return texture;
   }
 
-  /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
-  private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForImageBuffer(img, params.type));
-  }
-
   private createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
     return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
   }
@@ -268,12 +263,6 @@ export class IdMap implements WebGLDisposable {
       return this.textures.get(key);
     else
       return this.findGradient(key);
-  }
-
-  /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
-  public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
   }
 
   public getTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
@@ -684,6 +673,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return owner ? { idMap: this.getIdMap(owner.iModel), key: owner.key } : undefined;
   }
 
+  private getTextureCacheInfoFromKey(key: string | undefined, iModel: IModelConnection | undefined): TextureCacheInfo | undefined {
+    return key && iModel ? { key, idMap: this.getIdMap(iModel) } : undefined;
+  }
+
   public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
     const info = this.getTextureCacheInfo(args);
     const existing = info?.idMap.findTexture(info?.key);
@@ -696,11 +689,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       info.idMap.addTexture(texture);
 
     return texture;
-  }
-
-  /** Attempt to create a texture for the given iModel using an ImageBuffer. */
-  public override createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.getIdMap(imodel).getTexture(image, params);
   }
 
   public override async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
