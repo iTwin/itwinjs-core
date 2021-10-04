@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/telemetry-client",
@@ -103,6 +103,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/core-electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -117,6 +121,10 @@
     {
       "name": "@itwin/core-markup",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-mobile",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/core-orbitgt",
@@ -163,10 +171,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/core-electron",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/eslint-plugin",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -200,10 +204,6 @@
     },
     {
       "name": "@itwin/map-layers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@itwin/core-mobile",
       "allowedCategories": [ "internal" ]
     },
     {
