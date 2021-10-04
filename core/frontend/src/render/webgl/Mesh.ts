@@ -97,7 +97,7 @@ export class MeshData implements WebGLDisposable {
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
-    return !this.texture?.hasOwner;
+    return undefined !== this.texture && !this.texture?.hasOwner;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
