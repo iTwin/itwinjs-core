@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
@@ -29,7 +29,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, TextureCacheKey } from "../RenderTexture";
+import { CreateTextureArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
@@ -326,19 +326,6 @@ export class IdMap implements WebGLDisposable {
     return this.createTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 
-  /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
-  public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
-    const existingGrad = this.gradients.get(grad);
-    if (existingGrad)
-      return existingGrad;
-
-    const texture = createTextureFromGradient(grad, this._iModel);
-    if (texture)
-      this.addGradient(grad, texture);
-
-    return texture;
-  }
-
   public collectStatistics(stats: RenderMemory.Statistics): void {
     for (const texture of this.textures.values())
       if (texture instanceof Texture)
@@ -357,6 +344,11 @@ const enum VertexAttribState {
   Enabled = 1 << 0,
   Instanced = 1 << 2,
   InstancedEnabled = Instanced | Enabled,
+}
+
+interface TextureCacheInfo {
+  idMap: IdMap;
+  key: TextureCacheKey;
 }
 
 /** @internal */
@@ -687,21 +679,23 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return idMap.findMaterial(key);
   }
 
-  public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
-    return super.createTexture(args); // ###TODO
-    // const owner = undefined !== args.ownership && args.ownership !== "external" ? args.ownership : undefined;
-    // if (owner) {
-    //   const existing = this.findTexture(owner.key, owner.iModel);
-    //   if (existing)
-    //     ret
-    //   const idMap = this.resourceCache.get(owner.iModel);
-    //   return idMap.createTextureFromArgs(args, owner,
-    // const iModel = owner?.iModel;
-    // const params = new RenderTexture.Params(owner?.key, args.type, "external" === args.ownership);
-    // if (args.image.source instanceof ImageBuffer) {
-    // } else {
+  private getTextureCacheInfo(args: CreateTextureArgs): TextureCacheInfo | undefined {
+    const owner = undefined !== args.ownership && args.ownership !== "external" ? args.ownership : undefined;
+    return owner ? { idMap: this.getIdMap(owner.iModel), key: owner.key } : undefined;
+  }
 
-    // }
+  public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
+    const info = this.getTextureCacheInfo(args);
+    const existing = info?.idMap.findTexture(info?.key);
+    if (existing)
+      return existing;
+
+    // ###TODO Don't call super
+    const texture = super.createTexture(args);
+    if (texture && info)
+      info.idMap.addTexture(texture);
+
+    return texture;
   }
 
   /** Attempt to create a texture for the given iModel using an ImageBuffer. */
@@ -737,13 +731,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a texture using gradient symbology. */
-  public override getGradientTexture(symb: Gradient.Symb, imodel?: IModelConnection): RenderTexture | undefined {
-    if (!imodel)
-      return createTextureFromGradient(symb, undefined);
-
-    const idMap = this.getIdMap(imodel);
-    const texture = idMap.getGradient(symb);
-    return texture;
+  public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
+    const source = symb.getImage(0x100, 0x100);
+    return this.createTexture({
+      image: {
+        source,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+      },
+      ownership: iModel ? { iModel, key: symb } : undefined,
+      type: RenderTexture.Type.Normal,
+    });
   }
 
   /** Using its key, search for an existing texture of an open iModel. */
