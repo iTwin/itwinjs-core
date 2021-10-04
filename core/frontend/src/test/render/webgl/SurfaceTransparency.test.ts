@@ -253,6 +253,7 @@ describe("Surface transparency", () => {
   it("always applies to glyph text unless reading pixels", () => {
     const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
     const tx = IModelApp.renderSystem.createTexture({
+      type: RenderTexture.Type.Glyph,
       ownership: { iModel: imodel, key: imodel.transientIds.next },
       image: { source: img, transparency: TextureTransparency.Translucent },
     });
