@@ -12,7 +12,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { AccessToken, assert, AuthStatus, BentleyError, Logger } from "@itwin/core-bentley";
-import { NativeAppAuthorizationBackend, NativeHost } from "@itwin/core-backend";
 import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
@@ -31,7 +30,11 @@ const loggerCategory = "electron-auth";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @beta
  */
-export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend {
+export class ElectronAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+  protected _accessToken?: AccessToken;
+  public config?: NativeAppAuthorizationConfiguration;
+  public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
+  public issuerUrl?: string;
   public static defaultRedirectUri = "http://localhost:3000/signin-callback";
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
@@ -39,19 +42,34 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private _expiresAt?: Date;
   public get tokenStore() { return this._tokenStore!; }
 
+  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+
   public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super(config);
+    super();
+    this.config = config;
   }
 
   public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
+
+  public setAccessToken(token?: AccessToken) {
+    if (token === this._accessToken)
+      return;
+    this._accessToken = token;
+  }
 
   /**
    * Used to initialize the client - must be awaited before any other methods are called.
    * The call attempts a silent sign-if possible.
    */
-  public override async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
-    await super.initialize(config);
-    assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
+  public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
+    this.config = config ?? this.config;
+    if (!this.config)
+      throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
+    if (this.config.expiryBuffer)
+      this.expireSafety = this.config.expiryBuffer;
+    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl();
+    if (!this.issuerUrl)
+      throw new IModelError(AuthStatus.Error, "The URL of the authorization provider was not initialized");
 
     this._tokenStore = new ElectronTokenStore(this.config.clientId);
 
@@ -63,9 +81,10 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     await this.loadAccessToken();
   }
 
+  /** Forces a refresh of the user's access token regardless if the current token has expired. */
   public async refreshToken(): Promise<AccessToken> {
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
-      return "";
+      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()");
 
     const token = `Bearer ${this._tokenResponse.refreshToken}`;
     return this.refreshAccessToken(token);
@@ -74,38 +93,24 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
-  private async loadAccessToken(): Promise<AccessToken> {
+  private async loadAccessToken(): Promise<AccessToken | undefined> {
     const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
-      return "";
+      return undefined;
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
-      return "";
+      Logger.logError(loggerCategory, `Error refreshing access token`, () => getErrorProps(err));
+      return undefined;
     }
   }
 
-  /**
-   * Sign-in completely.
-   * This is a wrapper around [[signIn]] - the only difference is that the promise resolves
-   * with the access token after sign in is complete and successful.
-   */
-  public async signInComplete(): Promise<AccessToken> {
-    return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onAccessTokenChanged.addOnce((token) => {
-        if (token !== "") {
-          resolve(token);
-        } else {
-          reject(new Error("Failed to sign in"));
-        }
-      });
-      this.signIn().catch((err) => reject(err));
-    });
-  }
-
-  /**
-   * Start the sign-in process
-   * - calls the onAccessTokenChanged() call back after the authorization completes
+  /** Initializes and completes the sign-in process for the user.
+   *
+   * Once the promise is returned, use [[ElectronAuthorizationBackend.getAccessToken]] to retrieve the token.
+   *
+   * The following actions happen upon completion of the promise:
+   * - calls the onUserStateChanged() call back after the authorization completes
    * or if there is an error.
    * - will attempt in order:
    *   (i) load any existing authorized user from storage,
@@ -186,9 +191,11 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     return tokenResponse;
   }
 
-  /**
-   * Start the sign-out process
-   * - calls the onAccessTokenChanged() call back after the authorization completes
+  /** Signs out the current user.
+   *
+   * The following actions happen upon completion:
+   *
+   * - calls the onUserStateChanged() call back after the authorization completes
    *   or if there is an error.
    * - redirects application to the postSignoutRedirectUri specified in the configuration when the sign out is
    *   complete
@@ -197,28 +204,10 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     await this.makeRevokeTokenRequest();
   }
 
-  /**
-   * Sign out completely
-   * This is a wrapper around [[signOut]] - the only difference is that the promise resolves
-   * after the sign out is complete.
-   */
-  public async signOutComplete(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      NativeHost.onAccessTokenChanged.addOnce((token) => {
-        if (token === "") {
-          resolve();
-        } else {
-          reject(new Error("Failed to sign out"));
-        }
-      });
-      this.signOut().catch((err) => reject(err));
-    });
-  }
-
   private async clearTokenResponse() {
     this._tokenResponse = undefined;
     await this.tokenStore.delete();
-    this.setAccessToken("");
+    this.setAccessToken(undefined);
   }
 
   private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
@@ -239,7 +228,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
   }
 
-  public override async getAccessToken(): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken | undefined> {
     if (this._hasExpired || !this._accessToken)
       this.setAccessToken(await this.refreshToken());
     return this._accessToken;

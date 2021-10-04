@@ -43,7 +43,6 @@ export enum OverriddenBy {
  */
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
-  notifyAccessTokenChanged(accessToken: AccessToken): void;
 }
 
 /**
@@ -82,18 +81,9 @@ export interface NativeAppAuthorizationConfiguration {
  * @internal
  */
 export interface NativeAppFunctions {
-  setAccessToken(token: AccessToken): Promise<void>;
 
-  /** returns expirySafety, in seconds */
-  initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
-
-  /** Called to start the sign-in process. Subscribe to onAccessTokenChanged to be notified when sign-in completes */
-  signIn(): Promise<void>;
-
-  /** Called to start the sign-out process. Subscribe to onAccessTokenChanged to be notified when sign-out completes */
-  signOut(): Promise<void>;
-
-  getAccessToken: () => Promise<AccessToken>;
+  /** If the user is signed in a valid access token will be returned. */
+  getAccessToken: () => Promise<AccessToken | undefined>;
 
   /** Check if the internet is reachable. */
   checkInternetConnectivity(): Promise<InternetConnectivityStatus>;

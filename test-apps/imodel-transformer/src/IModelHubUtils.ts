@@ -7,7 +7,7 @@
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 
 export namespace IModelHubUtils {
@@ -24,8 +24,8 @@ export namespace IModelHubUtils {
       scope: "openid email profile organization itwinjs",
     });
     return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onAccessTokenChanged.addListener((token) => {
-        if (token !== "") {
+      ElectronAuthorizationBackend.onUserStateChanged.addListener((token) => {
+        if (token !== undefined) {
           resolve(token);
         } else {
           reject(new Error("Failed to sign in"));
