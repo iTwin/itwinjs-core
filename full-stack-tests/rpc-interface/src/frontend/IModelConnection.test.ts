@@ -58,7 +58,7 @@ describe("IModel Connection", () => {
   });
 });
 
-describe("IModel Connection with client credentials", () => {
+describe.skip("IModel Connection with client credentials", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
