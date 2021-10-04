@@ -39,6 +39,7 @@
     "@bentley/itwin-client": "workspace:*"
   },
   "devDependencies": {
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
