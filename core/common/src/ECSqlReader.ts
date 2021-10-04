@@ -111,16 +111,16 @@ export class ECSqlReader {
       return keys;
     },
   });
-  private _config: QueryOptions = new QueryOptionsBuilder().config;
+  private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
   /** @internal */
-  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, config?: QueryOptions) {
+  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
     if (param) {
       this._param = param.serialize();
     }
-    this.reset(config);
+    this.reset(options);
   }
   private static replaceBase64WithUint8Array(row: any) {
     for (const key of Object.keys(row)) {
@@ -140,20 +140,20 @@ export class ECSqlReader {
     }
     this._param = param.serialize();
   }
-  public reset(config?: QueryOptions) {
-    if (config) {
-      this._config = config;
+  public reset(options?: QueryOptions) {
+    if (options) {
+      this._options = options;
     }
     this._props = new PropertyMetaDataMap([]);
     this._localRows = [];
     this._globalDone = false;
     this._globalOffset = 0;
     this._globalCount = -1;
-    if (this._config.limit) {
-      if (typeof this._config.limit.offset === "number" && this._config.limit.offset > 0)
-        this._globalOffset = this._config.limit.offset;
-      if (typeof this._config.limit.count === "number" && this._config.limit.count > 0)
-        this._globalCount = this._config.limit.count;
+    if (this._options.limit) {
+      if (typeof this._options.limit.offset === "number" && this._options.limit.offset > 0)
+        this._globalOffset = this._options.limit.offset;
+      if (typeof this._options.limit.count === "number" && this._options.limit.count > 0)
+        this._globalCount = this._options.limit.count;
     }
     this._done = false;
   }
@@ -182,7 +182,7 @@ export class ECSqlReader {
       kind: DbRequestKind.ECSql,
       query: this.query,
       args: this._param,
-      ... this._config,
+      ... this._options,
     };
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };

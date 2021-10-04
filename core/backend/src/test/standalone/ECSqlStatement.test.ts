@@ -13,7 +13,7 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).config;
+const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).getOptions();
 async function query(ecdb: ECDb, ecsql: string, params?: QueryBinder, config?: QueryOptions, callback?: (row: any) => void) {
   ecdb.saveChanges();
   let rowCount: number = 0;
@@ -117,7 +117,7 @@ describe("ECSqlStatement", () => {
       const EXPECTED_ROW_COUNT = [5, 5, 5, 5, 5, 2];
       const ready = [];
       for (let i = 0; i < EXPECTED_ROW_COUNT.length; i++) {
-        ready.push(queryRows(ecdb, QUERY, undefined, new QueryOptionsBuilder().setLimit({ offset: i * PAGE_SIZE, count: PAGE_SIZE }).config));
+        ready.push(queryRows(ecdb, QUERY, undefined, new QueryOptionsBuilder().setLimit({ offset: i * PAGE_SIZE, count: PAGE_SIZE }).getOptions()));
       }
       // verify if each page has right count of rows
       const results = await Promise.all(ready);
@@ -181,7 +181,7 @@ describe("ECSqlStatement", () => {
       const cb = async () => {
         return new Promise<void>(async (resolve, reject) => {
           try {
-            for await (const _row of ecdb.query("SELECT * FROM ts.Foo", undefined, QueryRowFormat.UseJsPropertyNames, new QueryOptionsBuilder().setRestartToken("tag").config)) {
+            for await (const _row of ecdb.query("SELECT * FROM ts.Foo", undefined, QueryRowFormat.UseJsPropertyNames, new QueryOptionsBuilder().setRestartToken("tag").getOptions())) {
               rowCount++;
             }
             successful++;
@@ -403,7 +403,7 @@ describe("ECSqlStatement", () => {
           assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
           assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
         });
-        assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", new QueryBinder().bindString(1, expectedId), new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).config, (row) => {
+        assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", new QueryBinder().bindString(1, expectedId), new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).getOptions(), (row) => {
           assert.equal(row.id, expectedECInstanceId);
           assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
           assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);

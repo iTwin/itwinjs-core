@@ -155,7 +155,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.Default);
+        const rs = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
         assert.equal(rs.length, rowPerPage[k]);
       }
     }

@@ -33,22 +33,22 @@ export class Uint8Chunks implements Iterable<Uint8Array> {
 export class BlobReader {
   private _chunks = new Uint8Chunks();
   private _lengthToRead: number = -1;
-  private _config = new BlobOptionsBuilder().config;
+  private _options = new BlobOptionsBuilder().getOptions();
   public constructor(private _executor: DbRequestExecutor<DbBlobRequest, DbBlobResponse>,
     public readonly className: string,
     public readonly accessString: string,
     public readonly instanceId: Id64String,
-    config?: BlobOptions) {
-    this.reset(config);
+    options?: BlobOptions) {
+    this.reset(options);
   }
-  public reset(config?: BlobOptions) {
-    if (config) {
-      this._config = config;
+  public reset(options?: BlobOptions) {
+    if (options) {
+      this._options = options;
     }
     this._chunks = new Uint8Chunks();
     this._lengthToRead = this.range.count!;
   }
-  public get range(): BlobRange { return this._config.range!; }
+  public get range(): BlobRange { return this._options.range!; }
   public async step(): Promise<boolean> {
     if (this._lengthToRead === this._chunks.length) {
       return false;
@@ -58,7 +58,7 @@ export class BlobReader {
       className: this.className,
       accessString: this.accessString,
       instanceId: this.instanceId,
-      ...this._config,
+      ...this._options,
     };
     request.range = {offset: this._chunks.length, count: this.range ? this._lengthToRead - this._chunks.length : 0};
     const resp = await this._executor.execute(request);

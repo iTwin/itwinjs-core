@@ -20,7 +20,7 @@ import {
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
@@ -433,15 +433,19 @@ export abstract class IModelDb extends IModel {
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
-   * @param config Allow to specify certain flags which control how query is executed.
+   * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
-    const reader = this.createQueryReader(ecsql, params, config);
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    const builder = new QueryOptionsBuilder(options);
+    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
+      builder.setConvertClassIdsToNames(true);
+    }
+    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
-      yield reader.formatCurrentRow(rowFormat ?? QueryRowFormat.Default);
+      yield reader.formatCurrentRow(rowFormat);
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
@@ -476,18 +480,13 @@ export abstract class IModelDb extends IModel {
    * exception which user code must handle.
    * @param params The values to bind to the parameters (if the ECSQL has any).
    * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
-   * @param config Allow to specify certain flags which control how query is executed.
+   * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any> {
-    if (!config) {
-      config = { restartToken: token };
-    } else {
-      config.restartToken = token;
-    }
-    for await (const row of this.query(`select count(*) from (${ecsql})`, params, rowFormat, config)) {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(`select count(*) from (${ecsql})`, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }

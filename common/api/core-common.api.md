@@ -501,7 +501,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     toJSON(): BaseMapLayerProps;
 }
 
-// @beta
+// @public
 export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
@@ -613,8 +613,9 @@ export interface BlobOptions extends BaseReaderOptions {
 
 // @beta (undocumented)
 export class BlobOptionsBuilder {
+    constructor(_options?: BlobOptions);
     // (undocumented)
-    get config(): BlobOptions;
+    getOptions(): BlobOptions;
     // (undocumented)
     setPriority(val: number): this;
     // (undocumented)
@@ -2365,7 +2366,7 @@ export class ECJsNames {
 // @beta (undocumented)
 export class ECSqlReader {
     // @internal
-    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, config?: QueryOptions);
+    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
     // (undocumented)
     get current(): QueryRowProxy;
     // (undocumented)
@@ -2379,7 +2380,7 @@ export class ECSqlReader {
     // (undocumented)
     readonly query: string;
     // (undocumented)
-    reset(config?: QueryOptions): void;
+    reset(options?: QueryOptions): void;
     // (undocumented)
     resetBindings(): void;
     // (undocumented)
@@ -6360,7 +6361,7 @@ export namespace Quantization {
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export class QueryBinder {
     // (undocumented)
     bindBlob(indexOrName: string | number, val: Uint8Array): this;
@@ -6371,7 +6372,7 @@ export class QueryBinder {
     // (undocumented)
     bindId(indexOrName: string | number, val: Id64String): this;
     // (undocumented)
-    bindIdSet(indexOrName: string | number, val: Id64Set): this;
+    bindIdSet(indexOrName: string | number, val: OrderedId64Iterable): this;
     // (undocumented)
     bindInt(indexOrName: string | number, val: number): this;
     // (undocumented)
@@ -6392,26 +6393,30 @@ export class QueryBinder {
     serialize(): object;
     }
 
-// @beta
+// @public
 export interface QueryLimit {
     count?: number;
     offset?: number;
 }
 
-// @beta
+// @public
 export interface QueryOptions extends BaseReaderOptions {
     abbreviateBlobs?: boolean;
+    convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
     suppressLogErrors?: boolean;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export class QueryOptionsBuilder {
+    constructor(_options?: QueryOptions);
     // (undocumented)
-    get config(): QueryOptions;
+    getOptions(): QueryOptions;
     // (undocumented)
     setAbbreviateBlobs(val: boolean): this;
+    // (undocumented)
+    setConvertClassIdsToNames(val: boolean): this;
     // (undocumented)
     setLimit(val: QueryLimit): this;
     // (undocumented)
@@ -6444,7 +6449,7 @@ export interface QueryPropertyMetaData {
     typeName: string;
 }
 
-// @beta
+// @public
 export interface QueryQuota {
     memory?: number;
     time?: number;
@@ -6452,7 +6457,6 @@ export interface QueryQuota {
 
 // @public
 export enum QueryRowFormat {
-    Default = 2,
     UseArrayIndexes = 2,
     UseECSqlPropertyNames = 0,
     UseJsPropertyNames = 1

@@ -1196,15 +1196,15 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
 
 ```ts
   const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
-  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN :modelIds", params);
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
 ```
 
-### Upgrading existing code to use the new `query` methods:
+### Upgrading existing code to use the new `query` methods
 
 The signature of the method has changed to:
 
 ```ts
-query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, config?: QueryOptions): AsyncIterableIterator<any>;
+query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
 ```
 
 The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
@@ -1218,6 +1218,7 @@ The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is mor
 ```
 
 Similarly, if your existing code passes an object instead of an array as the query parameter, change it as follows:
+
 ```ts
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
@@ -1226,44 +1227,10 @@ Similarly, if your existing code passes an object instead of an array as the que
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
-### Upgrading existing code to use the new `restartQuery` methods:
+### Upgrading existing code to use the new `restartQuery` methods
 
 The parameters have changed in the same way as `query`, so they can be changed as described for `query` above.
 
-### Upgrading existing code to use the new `queryRowCount` methods:
+### Upgrading existing code to use the new `queryRowCount` methods
 
 The behavior of this method has not changed, but the parameters must be provided as a [QueryBinder]($common) object instead of an array or object. Upgrade your existing code as described for `query` above.
-
-## New `ECSqlReader` API (beta)
-
-[ECSqlReader]($common) is a flexible API that is used internally by methods like [IModelDb.query]($backend). It is also useful when you want the result to include metadata. For example:
-
-```ts
-  const params = new QueryBinder().bindString("name", "CompositeUnitRefersToUnit");
-  const reader = conn.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE Name=:name");
-
-  // The first time step is called, the metadata is populated.
-  while (await reader.step()) {
-    if (needMetaData)
-      setupColumns(reader.getMetaData());
-
-    // access using any property using ECSQL or JS name in case insensitive fashion.
-    assert.equal(reader.current.id, "0x32");
-    assert.equal(reader.current.ecinstanceid, "0x32");
-    assert.equal(reader.current.name, "CompositeUnitRefersToUnit");
-    assert.equal(reader.current.ID, "0x32");
-    assert.equal(reader.current.ECINSTANCEID, "0x32");
-    assert.equal(reader.current[0], "0x32");
-    assert.equal(reader.current[1], "CompositeUnitRefersToUnit");
-
-    // render row with UseECSqlPropertyNames as object
-    const row0 = reader.current.toRow();
-    assert.equal(row0.ECInstanceId, "0x32");
-    assert.equal(row0.Name, "CompositeUnitRefersToUnit");
-
-    // render row with UseECSqlPropertyNames as object
-    const row1 = reader.current.toJsRow();
-    assert.equal(row1.id, "0x32");
-    assert.equal(row1.name, "CompositeUnitRefersToUnit");
-  }
-```
