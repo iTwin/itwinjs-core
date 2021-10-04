@@ -6,8 +6,9 @@ import "./IModelList.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SearchBox } from "@itwin/core-react";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
+import { ITwinDialog } from "./ITwinDialog";
 
 export interface IModelInfo {
   id: string;
@@ -24,6 +25,7 @@ export interface IModelListProps {
 
 interface IModelListState {
   showDescriptions: boolean;
+  showITwinDialog: boolean;
   currentIModel?: IModelInfo;
   showDetails: boolean;
   filter: string;
@@ -39,6 +41,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
     this.state = {
       showDescriptions: true, /* show descriptions by default */
+      showITwinDialog: false,
       showDetails: false,
       filter: "",
     };
@@ -50,6 +53,14 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
   private _onShowDetails = () => {
     this.setState({ showDetails: true });
+  };
+
+  private _onShowITwinsSelector = () => {
+    this.setState({ showITwinDialog: true });
+  };
+
+  private _onITwinsSelectorClose = () => {
+    this.setState({ showITwinDialog: false });
   };
 
   private _handleSearchValueChanged = (value: string): void => {
@@ -131,8 +142,10 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       return (
         <div className="cards-empty">
           <div className="fade-in-fast">
-            There are no iModels associated to this iTwin.
+            There are no iModels associated to this ITwin.
+            <Button styleType="cta" onClick={this._onShowITwinsSelector}>Search for active iTwins in your Organization?</Button>
           </div>
+          {this.state.showITwinDialog && <ITwinDialog onClose={this._onITwinsSelectorClose} />}
         </div>
       );
     } else {

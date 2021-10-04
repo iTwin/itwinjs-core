@@ -121,8 +121,6 @@ class Asset extends HiddenContext {
  * @beta
  */
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
-  public static readonly searchKey: string = "CONNECTEDContextService.URL";
-
   public constructor() {
     super("v2.5");
     this.baseUrl = "https://api.bentley.com/contextregistry";
@@ -210,9 +208,6 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
         .slice(assetRange.skip, assetRange.top)
       );
   }
-
-  /** @internal */
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);

@@ -97,7 +97,7 @@ export interface LocalBriefcaseProps {
   /** Full path of local file. */
   readonly fileName: LocalFileName;
 
-  /** iTwin that the iModel belongs to. */
+  /** The iTwin containing the iModel. */
   readonly iTwinId: GuidString;
 
   /** The iModelId. */

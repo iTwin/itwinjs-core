@@ -48,13 +48,13 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      '@bentley/itwin-registry-client': link:../itwin-registry
       deep-assign: 2.0.0
       js-base64: 3.7.1
       lodash: 4.17.21
     devDependencies:
       '@bentley/frontend-authorization-client': link:../frontend-authorization
       '@bentley/itwin-client': link:../itwin
+      '@bentley/itwin-registry-client': link:../itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -178,7 +178,6 @@ importers:
   ../../clients/product-settings:
     specifiers:
       '@bentley/itwin-client': workspace:*
-      '@bentley/itwin-registry-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -199,7 +198,6 @@ importers:
       webpack: 4.42.0
     devDependencies:
       '@bentley/itwin-client': link:../itwin
-      '@bentley/itwin-registry-client': link:../itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
@@ -1728,7 +1726,6 @@ importers:
     dependencies:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1747,6 +1744,7 @@ importers:
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
@@ -1809,7 +1807,6 @@ importers:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1829,6 +1826,7 @@ importers:
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
@@ -2143,7 +2141,6 @@ importers:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
@@ -2165,6 +2162,7 @@ importers:
       openid-client: 4.8.0
       puppeteer: 5.3.1
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/express-server': link:../../core/express-server
@@ -2219,7 +2217,6 @@ importers:
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       chai: 4.3.4
@@ -2229,6 +2226,7 @@ importers:
       mocha: 8.4.0
       nock: 12.0.3
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
@@ -2290,7 +2288,6 @@ importers:
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2303,6 +2300,7 @@ importers:
       electron: 14.1.0
       fs-extra: 8.1.0
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -2568,7 +2566,6 @@ importers:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -2590,6 +2587,7 @@ importers:
       openid-client: 4.8.0
       puppeteer: 5.3.1
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/express-server': link:../../core/express-server
       '@itwin/presentation-backend': link:../../presentation/backend
@@ -3046,7 +3044,6 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/itwin-registry-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/reality-data-client': workspace:*
       '@itwin/appui-abstract': workspace:*
@@ -3087,7 +3084,6 @@ importers:
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
@@ -3435,7 +3431,6 @@ importers:
     dependencies:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3445,6 +3440,7 @@ importers:
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.2.21
@@ -3678,7 +3674,6 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/appui-layout-react': link:../../ui/ninezone
@@ -3722,6 +3717,7 @@ importers:
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.3.0
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.3
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -4562,7 +4558,6 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/itwin-registry-client': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/telemetry-client': workspace:*
@@ -4643,7 +4638,6 @@ importers:
     dependencies:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.18.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components

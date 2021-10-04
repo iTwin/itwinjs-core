@@ -118,7 +118,7 @@ export interface TestConfigProps {
   /** The name of the iTwin from which to obtain iModels. Currently not supported.
    * Default: "iModel Testing"
    */
-  iModelHubITwin?: string;
+  iModelHubProject?: string;
   /** The format in which to output the timing data. See DisplayPerfRpcImpl.saveCsv - only "original" is treated specially.
    * Default: "original".
    */
@@ -204,7 +204,7 @@ export class TestConfig {
     this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
-    this.iTwin = props.iModelHubITwin ?? prevConfig?.iTwin ?? "iModel Testing";
+    this.iTwin = props.iModelHubProject ?? prevConfig?.iTwin ?? "iModel Testing";
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";
     this.extViewName = props.extViewName;

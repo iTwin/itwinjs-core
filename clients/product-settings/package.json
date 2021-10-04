@@ -39,7 +39,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
