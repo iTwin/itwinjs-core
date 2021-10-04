@@ -13,7 +13,7 @@ import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@it
 import { ActivityMessagePopup } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
-import { IModelInfo } from "../ExternalIModel";
+import { BasicIModelInfo, IModelInfo } from "../ExternalIModel";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
@@ -22,7 +22,7 @@ import { ProjectDropdown } from "./ProjectDropdown";
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
   getAccessToken: () => Promise<AccessToken>;
-  onIModelSelected?: (iModelInfo: { iTwinId: string, id: string, name: string }) => void;
+  onIModelSelected?: (iModelInfo: BasicIModelInfo) => void;
   initialIModels?: IModelInfo[];
 }
 
@@ -122,11 +122,12 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingiModels: true,
       isLoadingProjects: false,
       currentITwin: iTwin,
-    });
-    const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
-    this.setState({
-      isLoadingiModels: false,
-      iModels: iModelInfos,
+    }, async () => {
+      const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
+      this.setState({
+        isLoadingiModels: false,
+        iModels: iModelInfos,
+      });
     });
   };
 
@@ -138,7 +139,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     return this.startRetrieveIModels(iTwin);
   };
 
-  private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
+  private _handleIModelSelected = (iModelInfo: BasicIModelInfo): void => {
     this.setState({
       prompt: `Opening '${iModelInfo.name}'...`,
       isLoadingiModel: true,

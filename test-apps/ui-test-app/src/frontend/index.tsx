@@ -430,9 +430,16 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        const iModel = new ExternalIModel(iTwinId, iModelId);
-        await iModel.openIModel();
-        iModelConnection = iModel.iModelConnection!;
+        try {
+          const iModel = new ExternalIModel(iTwinId, iModelId);
+          await iModel.openIModel();
+          iModelConnection = iModel.iModelConnection!;
+        } catch (_e){
+          alert("Error opening selected iModel");
+          iModelConnection = undefined;
+          await LocalFileOpenFrontstage.open();
+          return;
+        }
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
