@@ -70,9 +70,9 @@ export interface TextureImage {
   /** The object that supplies the texture image. */
   source: TextureImageSource;
   /** Describes the transparency of the image. If this information can be supplied, it can improve performance.
-   * If this information is not available at the call site, pass [[TextureTransparency.Unknown]].
+   * If this information is not available at the call site, omit it - it defaults to "mixed" if it cannot be inferred from the source.
    */
-  transparency: TextureTransparency;
+  transparency?: TextureTransparency;
 }
 
 /** Arguments supplied to [[RenderSystem.createTexture]] to create a [RenderTexture]($common).

@@ -9838,7 +9838,7 @@ export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 // @public
 export interface TextureImage {
     source: TextureImageSource;
-    transparency: TextureTransparency;
+    transparency?: TextureTransparency;
 }
 
 // @public
