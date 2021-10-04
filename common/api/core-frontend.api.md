@@ -9617,7 +9617,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
-    // (undocumented)
     reset(): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;

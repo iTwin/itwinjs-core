@@ -4260,7 +4260,6 @@ export abstract class IModel implements IModelProps {
     get openMode(): OpenMode;
     // (undocumented)
     protected _openMode: OpenMode;
-    // (undocumented)
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;

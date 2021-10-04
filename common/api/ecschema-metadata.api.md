@@ -1128,7 +1128,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1491,7 +1491,7 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty";
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {
@@ -1959,7 +1959,6 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
     constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
-    // (undocumented)
     compareByName(rhs: SchemaKey | string | undefined): boolean;
     compareByVersion(rhs: SchemaKey): number;
     static fromJSON(props: SchemaKeyProps): SchemaKey;
