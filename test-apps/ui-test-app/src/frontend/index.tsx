@@ -452,7 +452,7 @@ export class SampleAppIModelApp {
           const iModel = new ExternalIModel(iTwinId, iModelId);
           await iModel.openIModel();
           iModelConnection = iModel.iModelConnection!;
-        } catch (_e){
+        } catch (_e) {
           alert("Error opening selected iModel");
           iModelConnection = undefined;
           await LocalFileOpenFrontstage.open();
@@ -625,21 +625,9 @@ function mapFrameworkVersionStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-export function useIsMounted() {
-  const isMounted = React.useRef(false);
-  React.useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  return isMounted;
-}
-
-const  SampleAppViewer2 = () => {
+const SampleAppViewer2 = () => {
   const [isAuthorized, setIsAuthorized] = React.useState<boolean>(false);
   const [uiSettingsStorage, setUISettingStore] = React.useState(SampleAppIModelApp.getUiSettingsStorage());
-  const isMounted = useIsMounted();
 
   React.useEffect(() => {
     AppUi.initialize();
@@ -676,18 +664,17 @@ const  SampleAppViewer2 = () => {
   };
 
   React.useEffect(() => {
-    if (isMounted) {
-      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
-        IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
-      FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
-      FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
-    } else {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+      IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
+    FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
+    FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
+    return () => {
       if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
         IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
       FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
-    }
-  }, [isMounted]);
+    };
+  }, []);
 
   return (
     <Provider store={SampleAppIModelApp.store} >
