@@ -10,9 +10,12 @@ import { assert, ClientRequestContext, compareStrings, Dictionary } from "@bentl
 import { getJson} from "@bentley/itwin-client";
 import { QuadId } from "../internal";
 
+const nonVisibleChildren = [false, false, false, false];
 /** @internal */
 export class ArcGISTileMap {
-  private _cache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
+  private _callQueue = Promise.resolve<boolean[]>(nonVisibleChildren);
+  private _levelsCache = new Set<number>();
+  private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
   private _restBaseUrl: string;
   private _requestContext: ClientRequestContext;
   constructor(restBaseUrl: string, context?: ClientRequestContext) {
@@ -21,6 +24,24 @@ export class ArcGISTileMap {
   }
 
   public async getChildrenVisibility(parentQuadId: QuadId): Promise<boolean[]> {
+    // If we never encountered this tile level before, then a tilemap request must to be made to get tile visibility.
+    // However, we dont want several overlapping large tilemap request being made simultaneously for tiles on the same level.
+    // To avoid this from happening, we 'serialize' async calls so that we wait until the first tilemap request has completed
+    // before making another one.
+    // The trade off here is that we slightly slow down the display of the first tiles in order to avoid
+    // flooding the server.
+    if (this._levelsCache.has(parentQuadId.level+1)) {
+      // we already encountered a tile on this level, so there is good chance the tile visibility is already
+      // in cache, so dont serialize calls in that case.
+      return this._getChildrenVisibilityA(parentQuadId);
+    } else {
+      const res = this._callQueue.then(async () => this._getChildrenVisibilityA(parentQuadId));
+      this._callQueue = res.catch(() => {return nonVisibleChildren;});
+      return res;
+    }
+  }
+
+  private async _getChildrenVisibilityA(parentQuadId: QuadId): Promise<boolean[]> {
 
     const row = parentQuadId.row * 2;
     const column = parentQuadId.column * 2;
@@ -33,7 +54,7 @@ export class ArcGISTileMap {
 
     // Check children visibility from cache
     const available = childIds.map((childId) => {
-      const avail = this._cache.get(childId.contentId);
+      const avail = this._tilesCache.get(childId.contentId);
       if (undefined === avail) {
         childrenInCache = false;
       }
@@ -70,7 +91,7 @@ export class ArcGISTileMap {
             const avail = json.data[(j*tileMapWidth)+i] !== 0;
             const curColumn = column + i;
             const curRow = row + j;
-            this._cache.set(QuadId.getTileContentId(level, curColumn, curRow), avail);
+            this._tilesCache.set(QuadId.getTileContentId(level, curColumn, curRow), avail);
 
             // Check if actual tile is among the children we are looking for, if so update the
             // availability array.
@@ -85,7 +106,7 @@ export class ArcGISTileMap {
           }
         }
         console.log("---");
-
+        this._levelsCache.add(level);
       }
     }
 
