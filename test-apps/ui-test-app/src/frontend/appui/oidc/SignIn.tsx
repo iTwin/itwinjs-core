@@ -6,7 +6,7 @@
  * @module OIDC
  */
 
-import "./SignInBase.scss";
+import "./SignIn.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";

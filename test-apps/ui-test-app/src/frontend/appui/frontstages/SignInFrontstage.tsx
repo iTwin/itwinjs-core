@@ -9,7 +9,7 @@ import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Fronts
 import { IModelApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { Centered } from "@itwin/core-react";
 import { SampleAppIModelApp } from "../../index";
-import { SignIn } from "../oidc/SignInBase";
+import { SignIn } from "../oidc/SignIn";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
