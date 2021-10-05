@@ -1946,7 +1946,7 @@ export interface DisplayStyleOverridesOptions {
     includeBackgroundMap?: true;
     includeDrawingAids?: true;
     includeIModelSpecific?: true;
-    includeProjectSpecific?: true;
+    includeITwinSpecific?: true;
 }
 
 // @public

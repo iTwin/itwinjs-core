@@ -1593,7 +1593,7 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1652,7 +1652,7 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1745,7 +1745,7 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1778,7 +1778,7 @@ describe("iModel", () => {
 
   it("presence of a GCS imposes the ecef value", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -2563,7 +2563,6 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid); // should not have changed
   });
 });
-
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
 

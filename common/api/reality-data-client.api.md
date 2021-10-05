@@ -96,6 +96,8 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     id?: string;
     // (undocumented)
+    iTwinId: undefined | string;
+    // (undocumented)
     lastAccessedTimestamp?: string;
     // (undocumented)
     listable?: boolean;
@@ -111,8 +113,6 @@ export class RealityData extends WsgInstance {
     ownedBy?: string;
     // (undocumented)
     ownerId?: string;
-    // (undocumented)
-    projectId: undefined | string;
     // (undocumented)
     referenceElevation?: number;
     // (undocumented)
@@ -144,22 +144,22 @@ export class RealityData extends WsgInstance {
 // @internal
 export class RealityDataAccessClient extends WsgClient {
     constructor();
-    createRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
-    createRealityDataRelationship(accessToken: AccessToken, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
-    deleteRealityData(accessToken: AccessToken, projectId: string | undefined, realityDataId: string): Promise<void>;
-    deleteRealityDataRelationship(accessToken: AccessToken, projectId: string, relationshipId: string): Promise<void>;
+    createRealityData(accessToken: AccessToken, iTwinId: string | undefined, realityData: RealityData): Promise<RealityData>;
+    createRealityDataRelationship(accessToken: AccessToken, iTwinId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
+    deleteRealityData(accessToken: AccessToken, iTwinId: string | undefined, realityDataId: string): Promise<void>;
+    deleteRealityDataRelationship(accessToken: AccessToken, iTwinId: string, relationshipId: string): Promise<void>;
     getDataLocation(accessToken: AccessToken): Promise<DataLocation[]>;
-    getFileAccessKey(accessToken: AccessToken, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
-    getRealityData(accessToken: AccessToken, projectId: string | undefined, tilesId: string): Promise<RealityData>;
+    getFileAccessKey(accessToken: AccessToken, iTwinId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
+    getRealityData(accessToken: AccessToken, iTwinId: string | undefined, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
-    getRealityDataInProject(accessToken: AccessToken, projectId: string, type?: string): Promise<RealityData[]>;
-    getRealityDataInProjectOverlapping(accessToken: AccessToken, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
-    getRealityDataRelationships(accessToken: AccessToken, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
-    getRealityDatas(accessToken: AccessToken, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
-    getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string>;
+    getRealityDataInITwin(accessToken: AccessToken, iTwinId: string, type?: string): Promise<RealityData[]>;
+    getRealityDataInITwinOverlapping(accessToken: AccessToken, iTwinId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
+    getRealityDataRelationships(accessToken: AccessToken, iTwinId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
+    getRealityDatas(accessToken: AccessToken, iTwinId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
+    getRealityDataUrl(iTwinId: string | undefined, tilesId: string): Promise<string>;
     // @public
     queryRealityData(accessToken: AccessToken, criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
-    updateRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+    updateRealityData(accessToken: AccessToken, iTwinId: string | undefined, realityData: RealityData): Promise<RealityData>;
 }
 
 // @public
@@ -186,8 +186,8 @@ export class RealityDataRelationship extends WsgInstance {
 // @internal
 export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     action?: string;
+    iTwin?: string;
     polygon?: string;
-    project?: string;
 }
 
 

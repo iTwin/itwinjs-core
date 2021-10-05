@@ -7,7 +7,7 @@ import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { AccessToken, BeDuration } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/itwin-registry-client";
 import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";
@@ -17,7 +17,7 @@ import { IModelInfo } from "../ExternalIModel";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
-import { ProjectDropdown } from "./ProjectDropdown";
+import { ITwinDropdown } from "./ITwinDropdown";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -27,9 +27,9 @@ export interface IModelOpenProps {
 }
 
 interface IModelOpenState {
-  isLoadingProjects: boolean;
-  isLoadingiModels: boolean;
-  isLoadingiModel: boolean;
+  isLoadingITwins: boolean;
+  isLoadingIModels: boolean;
+  isLoadingIModel: boolean;
   recentITwins?: ITwin[];
   iModels?: IModelInfo[];
   currentITwin?: ITwin;
@@ -38,7 +38,7 @@ interface IModelOpenState {
 }
 
 /**
- * Open component showing projects and iModels
+ * Open component showing iTwins and iModels
  */
 export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState> {
 
@@ -46,20 +46,20 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     super(props, context);
 
     this.state = {
-      isLoadingProjects: true,
-      isLoadingiModels: false,
-      isLoadingiModel: false,
+      isLoadingITwins: true,
+      isLoadingIModels: false,
+      isLoadingIModel: false,
       isNavigationExpanded: false,
-      prompt: "Fetching project information...",
+      prompt: "Fetching iTwin information...",
     };
   }
 
   public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
       this.setState({
-        isLoadingProjects: false,
-        isLoadingiModels: false,
-        isLoadingiModel: false,
+        isLoadingITwins: false,
+        isLoadingIModels: false,
+        isLoadingIModel: false,
         currentITwin: {
           id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @itwin/react-set-state-usage
         },
@@ -75,8 +75,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     const client = new ITwinAccessClient();
     const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
     this.setState({
-      isLoadingProjects: false,
-      isLoadingiModels: true,
+      isLoadingITwins: false,
+      isLoadingIModels: true,
       recentITwins: iTwins,
     });
     if (iTwins.length > 0)
@@ -115,17 +115,17 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     return iModelInfos;
   }
 
-  // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
+  // retrieves the IModels for an iTwin. Called when first mounted and when a new iTwin is selected.
   private startRetrieveIModels = async (iTwin: ITwin) => {
     this.setState({
       prompt: "Fetching iModel information...",
-      isLoadingiModels: true,
-      isLoadingProjects: false,
+      isLoadingIModels: true,
+      isLoadingITwins: false,
       currentITwin: iTwin,
     });
     const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
     this.setState({
-      isLoadingiModels: false,
+      isLoadingIModels: false,
       iModels: iModelInfos,
     });
   };
@@ -141,7 +141,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
     this.setState({
       prompt: `Opening '${iModelInfo.name}'...`,
-      isLoadingiModel: true,
+      isLoadingIModel: true,
     }, () => {
       if (this.props.onIModelSelected)
         this.props.onIModelSelected(iModelInfo);
@@ -149,7 +149,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   };
 
   private renderIModels() {
-    if (this.state.isLoadingProjects || this.state.isLoadingiModels) {
+    if (this.state.isLoadingITwins || this.state.isLoadingIModels) {
       return (
         <BlockingPrompt prompt={this.state.prompt} />
       );
@@ -158,7 +158,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         <>
           <IModelList iModels={this.state.iModels}
             onIModelSelected={this._handleIModelSelected} />
-          {this.state.isLoadingiModel &&
+          {this.state.isLoadingIModel &&
             <BlockingPrompt prompt={this.state.prompt} />
           }
         </>
@@ -196,10 +196,10 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <div className="backstage-icon">
               <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
             </div>
-            <div className="project-picker-content">
-              <span className="projects-label">Projects</span>
-              <div className="project-picker">
-                <ProjectDropdown currentProject={this.state.currentITwin} recentProjects={this.state.recentITwins} onProjectClicked={this._selectITwin.bind(this)} />
+            <div className="itwin-picker-content">
+              <span className="itwins-label">ITwins</span>
+              <div className="itwin-picker">
+                <ITwinDropdown currentITwin={this.state.currentITwin} recentITwins={this.state.recentITwins} onITwinClicked={this._selectITwin.bind(this)} />
               </div>
             </div>
             <Button styleType="cta" style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>
@@ -212,7 +212,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <NavigationItem label="Share" icon="icon-placeholder" />
             <NavigationItem label="Share Point" icon="icon-placeholder" />
             <NavigationItem label="Reality Data" icon="icon-placeholder" />
-            <NavigationItem label="New Project..." icon="icon-placeholder" />
+            <NavigationItem label="New ITwin..." icon="icon-placeholder" />
           </NavigationList>
           <div className={contentStyle}>
             {this.renderIModels()}
