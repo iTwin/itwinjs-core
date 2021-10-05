@@ -893,7 +893,7 @@ export class RealityModelTileClient {
       method: "GET",
       responseType,
       headers: {
-        authroization: authToken,
+        authorization: authToken,
       },
     };
     const data = await request(url, options);
