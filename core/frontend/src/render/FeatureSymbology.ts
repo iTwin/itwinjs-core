@@ -18,7 +18,8 @@ import { ViewState } from "../ViewState";
  */
 export namespace FeatureSymbology {
   /** An object that serves as the source of a [[FeatureSymbology.Overrides]].
-   * Use this if you are drawing the same tiles into a single Viewport and overriding the FeatureSymbology.Overrides defined for the view.
+   * Use this if you are drawing the same tiles into a single Viewport and overriding the FeatureSymbology.Overrides applied to them
+   * by settings [[GraphicBranch.symbologyOverrides]].
    * Each tile will have a separate set of feature overrides per combination of Source and Viewport. This prevents the display system
    * from constantly recomputing the feature overrides for a tile.
    * You must call `onSourceDisposed.raiseEvent()` when the source is no longer being used by the Viewport to allow the feature overrides
