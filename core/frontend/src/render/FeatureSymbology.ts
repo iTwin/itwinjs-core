@@ -77,7 +77,9 @@ export namespace FeatureSymbology {
       }
     }
 
-    /** @alpha */
+    /** Create symbology overrides associated with a [[FeatureSymbology.Source]].
+     * @alpha
+     */
     public static withSource(source: Source, view?: ViewState | Viewport): Overrides {
       const ovrs = new Overrides(view);
       ovrs._source = source;
