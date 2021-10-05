@@ -501,14 +501,6 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     toJSON(): BaseMapLayerProps;
 }
 
-// @beta
-export interface BaseReaderOptions {
-    priority?: number;
-    quota?: QueryQuota;
-    restartToken?: string;
-    usePrimaryConn?: boolean;
-}
-
 // @public
 export interface BaseReaderOptions {
     priority?: number;
@@ -6457,25 +6449,7 @@ export interface QueryPropertyMetaData {
     typeName: string;
 }
 
-// @beta (undocumented)
-export interface QueryPropertyMetaData {
-    // (undocumented)
-    className: string;
-    // (undocumented)
-    generated: boolean;
-    // (undocumented)
-    index: number;
-    // (undocumented)
-    jsonName: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    system: boolean;
-    // (undocumented)
-    typeName: string;
-}
-
-// @beta
+// @public
 export interface QueryQuota {
     memory?: number;
     time?: number;
