@@ -7,16 +7,17 @@
  */
 
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import {
-  Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat,
-  IModel, IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface,
-  IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority,
-  QueryQuota, QueryResponse, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, TextureData, TextureLoadProps,
-  ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
+  EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
+  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
+import { ConcurrentQuery } from "../ConcurrentQuery";
 import { generateGeometrySummaries } from "../GeometrySummary";
 import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
@@ -35,13 +36,16 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async close(_tokenProps: IModelRpcProps): Promise<boolean> {
     return true;
   }
-
-  public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
+  public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
     const user = RpcInvocation.currentActivity;
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
-    return iModelDb.queryRows(user.sessionId, ecsql, bindings, limit, quota, priority, restartToken, abbreviateBlobs);
+    return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
-
+  public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
+    const user = RpcInvocation.currentActivity;
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
+    return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
+  }
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
     const modelIds = new Set(modelIdsList);
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcInvocation.currentActivity.accessToken, tokenProps);
