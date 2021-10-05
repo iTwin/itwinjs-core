@@ -32,7 +32,7 @@ interface TileResult {
 }
 
 interface ConfigData {
-  contextId: string;
+  iTwinId: string;
   iModelName: string;
   changesetId: string;
   genParams: TileGenParams;
@@ -125,10 +125,10 @@ async function generateIModelDbTiles(accessToken: AccessToken, config: ConfigDat
   if (config.localPath) {
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
-    const iModelId = await HubUtility.queryIModelIdByName(accessToken, config.contextId, config.iModelName);
+    const iModelId = await HubUtility.queryIModelIdByName(accessToken, config.iTwinId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
-    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: config.contextId, iModelId, asOf: version.toJSON() });
+    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 
@@ -188,6 +188,7 @@ async function generateIModelDbTiles(accessToken: AccessToken, config: ConfigDat
 describe("TilesGenerationPerformance", () => {
   if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
     throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  // TODO: Update config to use iTwin terminology
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
@@ -196,8 +197,8 @@ describe("TilesGenerationPerformance", () => {
 
   before(async () => {
     assert.isDefined(config.regionId, "No Region defined");
-    assert.isDefined(config.contextId, "No ContextId defined");
-    imodels.forEach((element) => element.contextId = config.contextId);
+    assert.isDefined(config.iTwinId, "No iTwinId defined");
+    imodels.forEach((element) => element.iTwinId = config.iTwinId);
 
     IModelTestUtils.setupLogging();
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);

@@ -76,7 +76,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [nameInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.NameInputPlaceHolder"));
   const [urlLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.URL"));
   const [urlInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.UrlInputPlaceHolder"));
-  const [projectSettingsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnProjectSettings"));
+  const [iTwinSettingsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnITwinSettings"));
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.MissingCredentials"));
   const [invalidCredentialsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCredentials"));
@@ -93,7 +93,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [passwordRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.PasswordRequired"));
   const [userNameLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
-  const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
+  const [settingsStorage, setSettingsStorageRadio] = React.useState("ITwin");
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -408,8 +408,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             {/* Store settings options, not shown when editing a layer */}
             {isSettingsStorageAvailable && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
               <Radio disabled={settingsStorageDisabled}
-                name="settingsStorage" value="Project"
-                label={projectSettingsLabel} checked={settingsStorage === "Project"}
+                name="settingsStorage" value="iTwin"
+                label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
                 onChange={onRadioChange} />
               <Radio disabled={settingsStorageDisabled}
                 name="settingsStorage" value="Model"

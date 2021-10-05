@@ -33,11 +33,11 @@ describe("Schedule script (#integration)", () => {
     await IModelApp.startup(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
-    dbOld = await CheckpointConnection.openRemote(contextId, oldIModelId);
-    const newIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchroNew);
-    dbNew = await CheckpointConnection.openRemote(contextId, newIModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);
+    dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
+    const newIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchroNew);
+    dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 
   after(async () => {

@@ -10,6 +10,7 @@ import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
+import { TextureTransparency } from "../../../render/RenderTexture";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
@@ -57,12 +58,16 @@ function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams)
   return graphic!;
 }
 
-function createTexture(imodel: IModelConnection, persistent: boolean): RenderTexture {
-  const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 255]), ImageBufferFormat.Rgba, 1);
-  const id = persistent ? imodel.transientIds.next : undefined;
-  const tex = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(id))!;
+function createTexture(iModel: IModelConnection, persistent: boolean): RenderTexture {
+  const source = ImageBuffer.create(new Uint8Array([255, 255, 255, 255]), ImageBufferFormat.Rgba, 1);
+  const key = persistent ? iModel.transientIds.next : undefined;
+  const tex = IModelApp.renderSystem.createTexture({
+    ownership: key ? { iModel, key } : undefined,
+    image: { source, transparency: TextureTransparency.Translucent },
+  });
+
   expect(tex).not.to.be.undefined;
-  return tex;
+  return tex!;
 }
 
 function createInstanceParams(count: number): InstancedGraphicParams {

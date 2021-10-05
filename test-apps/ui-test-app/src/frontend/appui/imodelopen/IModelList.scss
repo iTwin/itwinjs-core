@@ -73,9 +73,6 @@
   justify-content: flex-start;
   align-items: flex-start;
   flex-wrap: wrap;
-  // overflow-y: hidden;
-  // overflow-x: hidden;
-  //-webkit-overflow-scrolling: touch;
 }
 
 .cards-empty {
@@ -100,7 +97,7 @@
   }
 }
 
-/* no projects prompt */
+/* no iTwins prompt */
 .cards-noresults {
   position: absolute;
   top: 40%;
@@ -120,7 +117,6 @@
 /* table */
 .cards-content table {
   width: 100%;
-  //margin-top: 1em;
   font-family: arial, sans-serif;
   border-collapse: collapse;
 

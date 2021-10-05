@@ -21,7 +21,7 @@ describe.skip("iModelHub Performance tests", () => {
   async function setup(recreate = false) {
     accessToken = await utils.login();
 
-    iTwinId = await utils.getProjectId(accessToken);
+    iTwinId = await utils.getITwinId(accessToken);
     await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId, true, recreate);
     imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();

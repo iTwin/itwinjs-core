@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
@@ -23,43 +23,42 @@ export class ExternalIModel {
   public viewId: Id64String | undefined;
   public iModelConnection: IModelConnection | undefined;
 
-  constructor(public projectName: string, public imodelName: string) {
+  constructor(public iTwinName: string, public imodelName: string) {
   }
 
   /** Open IModelConnection and get ViewId */
   public async openIModel(): Promise<void> {
     const info = await this.getIModelInfo();
 
-    if (info.projectId && info.imodelId) {
+    if (info.iTwinId && info.iModelId) {
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `openIModel (external): projectId=${info.projectId}&iModelId=${info.imodelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `openIModel (external): iTwinId=${info.iTwinId}&iModelId=${info.iModelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      this.iModelConnection = await CheckpointConnection.openRemote(info.projectId, info.imodelId);
+      this.iModelConnection = await CheckpointConnection.openRemote(info.iTwinId, info.iModelId);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
   }
 
-  /** Finds project and imodel ids using their names */
-  private async getIModelInfo(): Promise<{ projectId: string, imodelId: string }> {
-    const projectName = this.projectName;
+  /** Finds iTwin and iModel ids using their names */
+  private async getIModelInfo(): Promise<{ iTwinId: string, iModelId: string }> {
+    const iTwinName = this.iTwinName;
     const iModelName = this.imodelName;
 
     const accessToken = await IModelApp.getAccessToken();
 
-    const connectClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await connectClient.getAll(accessToken, {
+    const iTwinClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await iTwinClient.getAll(accessToken, {
       search: {
-        searchString: projectName,
+        searchString: iTwinName,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      },
-    });
+      }});
 
     if (iTwinList.length === 0)
-      throw new Error(`ITwin ${projectName} was not found for the user.`);
+      throw new Error(`ITwin ${iTwinName} was not found for the user.`);
     else if (iTwinList.length > 1)
-      throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+      throw new Error(`Multiple iTwins named ${iTwinName} were found for the user.`);
 
     const hubClient = new IModelHubFrontend();
     const iModelId = await hubClient.queryIModelByName({
@@ -68,14 +67,13 @@ export class ExternalIModel {
       accessToken,
     });
     if (undefined === iModelId) {
-      throw new Error(`iModel with name "${iModelName}" does not exist in project "${projectName}"`);
+      throw new Error(`iModel with name "${iModelName}" does not exist in project "${iTwinName}"`);
     }
-    return { projectId: iTwinList[0].id, imodelId: iModelId };
+    return { iTwinId: iTwinList[0].id, iModelId };
   }
 
   /** Handle iModel open event */
   private async onIModelSelected(imodel: IModelConnection | undefined): Promise<Id64String | undefined> {
-
     let viewDefinitionId: Id64String | undefined;
 
     try {

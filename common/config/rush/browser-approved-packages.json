@@ -43,6 +43,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/itwin-registry-client",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+    },
+    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -52,7 +56,7 @@
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/telemetry-client",
@@ -668,7 +672,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",

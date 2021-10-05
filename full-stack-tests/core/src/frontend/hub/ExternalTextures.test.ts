@@ -38,8 +38,8 @@ describe("external texture requests (#integration)", () => {
     await IModelApp.shutdown();
     await IModelApp.startup(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.smallTex);
+    const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 

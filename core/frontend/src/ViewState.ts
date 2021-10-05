@@ -2145,7 +2145,6 @@ export abstract class ViewState3d extends ViewState {
    * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
    * @public
    */
-
   public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;

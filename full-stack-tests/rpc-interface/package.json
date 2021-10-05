@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "3.0.0-dev.76",
+  "version": "3.0.0-dev.77",
   "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -37,7 +37,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
@@ -62,6 +61,7 @@
     "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",

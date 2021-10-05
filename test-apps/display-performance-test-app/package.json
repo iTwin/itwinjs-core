@@ -37,7 +37,6 @@
   "repository": {},
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
