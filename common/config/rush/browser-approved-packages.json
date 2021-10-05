@@ -43,6 +43,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/itwin-registry-client",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+    },
+    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [ "frontend", "internal" ]
     },

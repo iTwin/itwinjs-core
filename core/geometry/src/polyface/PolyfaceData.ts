@@ -509,7 +509,7 @@ export class PolyfaceData {
   }
 }
 
-/*
+/**
  * pack out data entries that are unreferenced.
  * @param data data to pack
  * @param indices indices into the data.

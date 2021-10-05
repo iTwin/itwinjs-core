@@ -789,7 +789,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 }
 
 interface RDSClientProps {
-  projectId: string;
+  iTwinId: string;
   tilesId: string;
 }
 
@@ -830,12 +830,12 @@ export class RealityModelTileClient {
     return this._realityData!;
   }
 
-  // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
+  // ###TODO we should be able to pass the iTwinId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
   constructor(url: string, iTwinId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (iTwinId && this.rdsProps)
-      this.rdsProps.projectId = iTwinId;
+      this.rdsProps.iTwinId = iTwinId;
   }
 
   private async initializeRDSRealityData(accessToken: AccessToken): Promise<void> {
@@ -847,7 +847,7 @@ export class RealityModelTileClient {
 
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
-        this._realityData = await IModelApp.realityDataAccess.getRealityData(accessToken, this.rdsProps.projectId, this.rdsProps.tilesId);
+        this._realityData = await IModelApp.realityDataAccess.getRealityData(accessToken, this.rdsProps.iTwinId, this.rdsProps.tilesId);
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = this._realityData.rootDocument ?? "";
@@ -856,9 +856,9 @@ export class RealityModelTileClient {
     }
   }
 
-  // ###TODO temporary means of extracting the tileId and projectId from the given url
+  // ###TODO temporary means of extracting the tileId and iTwinId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
-  // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
+  // We obtain the iTwinId from URL but it should be used normally. The iModel context should be used everywhere: verify!
   private parseUrl(url: string): RDSClientProps | undefined {
     // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
     const workUrl: string = url.replace(/~2F/g, "/").replace(/\\/g, "/");
@@ -866,9 +866,8 @@ export class RealityModelTileClient {
     const tilesId = urlParts.find(Guid.isGuid);
     let props: RDSClientProps | undefined;
     if (undefined !== tilesId) {
-      const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
-
-      props = { projectId, tilesId };
+      const iTwinId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
+      props = { iTwinId, tilesId };
     }
     return props;
   }

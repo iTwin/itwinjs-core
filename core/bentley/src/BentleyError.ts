@@ -61,7 +61,6 @@ export enum IModelStatus {
   MissingId = IMODEL_ERROR_BASE + 33,
   NoGeometry = IMODEL_ERROR_BASE + 34,
   NoMultiTxnOperation = IMODEL_ERROR_BASE + 35,
-  NotDgnMarkupProject = IMODEL_ERROR_BASE + 36,
   NotEnabled = IMODEL_ERROR_BASE + 37,
   NotFound = IMODEL_ERROR_BASE + 38,
   NotOpen = IMODEL_ERROR_BASE + 39,
@@ -277,21 +276,21 @@ export enum IModelHubStatus {
   EventTypeDoesNotExist = IMODELHUBERROR_BASE + 32,
   EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 33,
   EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
-  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
-  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
-  FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
+  ITwinIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
+  FailedToGetITwinPermissions = IMODELHUBERROR_BASE + 36,
+  FailedToGetITwinMembers = IMODELHUBERROR_BASE + 37,
   ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 38,
   VersionAlreadyExists = IMODELHUBERROR_BASE + 39,
   JobSchedulingFailed = IMODELHUBERROR_BASE + 40,
   ConflictsAggregate = IMODELHUBERROR_BASE + 41,
-  FailedToGetProjectById = IMODELHUBERROR_BASE + 42,
+  FailedToGetITwinById = IMODELHUBERROR_BASE + 42,
 
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
-  ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
+  ITwinDoesNotExist = IMODELHUBERROR_BASE + 47,
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
@@ -434,7 +433,6 @@ export class BentleyError extends Error {
       case IModelStatus.MissingId: return "Missing Id";
       case IModelStatus.NoGeometry: return "No Geometry";
       case IModelStatus.NoMultiTxnOperation: return "NoMultiTxnOperation";
-      case IModelStatus.NotDgnMarkupProject: return "NotDgnMarkupProject";
       case IModelStatus.NotEnabled: return "Not Enabled";
       case IModelStatus.NotFound: return "Not Found";
       case IModelStatus.NotOpen: return "Not Open";
@@ -640,19 +638,19 @@ export class BentleyError extends Error {
       case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
       case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
-      case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
-      case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
-      case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
+      case IModelHubStatus.ITwinIdIsNotSpecified: return "ITwin Id is not specified";
+      case IModelHubStatus.FailedToGetITwinPermissions: return "Failed to get iTwin permissions";
+      case IModelHubStatus.FailedToGetITwinMembers: return "Failed to get iTwin members";
       case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
       case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
-      case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
+      case IModelHubStatus.FailedToGetITwinById: return "Failed to query iTwin by its id";
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
-      case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
+      case IModelHubStatus.ITwinDoesNotExist: return "ITwin does not exist";
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";

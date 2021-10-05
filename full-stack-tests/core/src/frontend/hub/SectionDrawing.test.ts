@@ -15,9 +15,9 @@ describe("Section Drawings (#integration)", () => {
     await IModelApp.startup(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);
-    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
+    imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   after(async () => {
