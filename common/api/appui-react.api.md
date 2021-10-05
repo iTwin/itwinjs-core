@@ -2744,8 +2744,8 @@ export interface FrontstageProps extends CommonProps {
     defaultContentId?: string;
     defaultTool: ToolItemDef;
     id: string;
+    isIModelIndependent?: boolean;
     isInFooterMode?: boolean;
-    isModelIndependent?: boolean;
     leftPanel?: React.ReactElement<StagePanelProps>;
     rightPanel?: React.ReactElement<StagePanelProps>;
     // @internal (undocumented)

@@ -362,12 +362,12 @@ export class FrontstageManager {
 
   private static getFrontstageKey(frontstageId: string) {
     const provider = FrontstageManager._frontstageProviders.get(frontstageId);
-    let isModelIndependent = false;
+    let isIModelIndependent = false;
     if (provider) {
-      isModelIndependent = !!provider.frontstage.props.isModelIndependent;
+      isIModelIndependent = !!provider.frontstage.props.isIModelIndependent;
     }
     const imodelId = UiFramework.getIModelConnection()?.iModelId ?? "noImodel";
-    const key = isModelIndependent ? frontstageId : `[${imodelId}]${frontstageId}`;
+    const key = isIModelIndependent ? frontstageId : `[${imodelId}]${frontstageId}`;
     return key;
   }
 

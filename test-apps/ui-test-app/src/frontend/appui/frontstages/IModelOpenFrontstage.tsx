@@ -52,7 +52,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}
-        isModelIndependent={true}
+        isIModelIndependent={true}
         usage={StageUsage.Private}
       />
     );
