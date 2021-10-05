@@ -170,6 +170,7 @@ alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureSymbology
+alpha;Source
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
