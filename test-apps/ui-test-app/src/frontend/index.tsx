@@ -346,20 +346,18 @@ export class SampleAppIModelApp {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
-    // open the imodel
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
       `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
       const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-        // eslint-disable-next-line no-console
-        console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
+        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
       });
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      const iModel = new ExternalIModel(iTwinId, iModelId);
+      const iModel = await ExternalIModel.create({ iTwinId, iModelId });
       await iModel.openIModel();
       iModelConnection = iModel.iModelConnection!;
     }
@@ -449,11 +447,11 @@ export class SampleAppIModelApp {
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
         try {
-          const iModel = new ExternalIModel(iTwinId, iModelId);
+          const iModel = await ExternalIModel.create({iTwinId, iModelId});
           await iModel.openIModel();
           iModelConnection = iModel.iModelConnection!;
-        } catch (_e) {
-          alert("Error opening selected iModel");
+        } catch (e: any) {
+          alert(`Error opening selected iModel: ${e.message}`);
           iModelConnection = undefined;
           await LocalFileOpenFrontstage.open();
           return;
