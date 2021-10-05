@@ -216,7 +216,7 @@ describe("FrontstageManager", () => {
 
   });
 
-  describe.only("ConfigurableUiContent", () => {
+  describe("ConfigurableUiContent", () => {
     before(() => {
       const imodelConnectionMock = moq.Mock.ofType<IModelConnection>();
       imodelConnectionMock.setup((x) => x.iModelId).returns(() => "dummyImodelId");
