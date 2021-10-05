@@ -1975,7 +1975,7 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createMaskTreeReference(model: GeometricModelState): TileTreeReference;
+export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
 
 // @internal (undocumented)
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
