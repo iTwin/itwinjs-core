@@ -23,7 +23,7 @@ export namespace FeatureSymbology {
    * Each tile will have a separate set of feature overrides per combination of Source and Viewport. This prevents the display system
    * from constantly recomputing the feature overrides for a tile.
    * You must call `onSourceDisposed.raiseEvent()` when the source is no longer being used by the Viewport to allow the feature overrides
-   * and their WebGL resources to be freed.
+   * and their WebGL resources to be freed - failure to do so will result in memory leaks, which may eventually produce WebGL context loss.
    * @alpha
    */
   export interface Source {
