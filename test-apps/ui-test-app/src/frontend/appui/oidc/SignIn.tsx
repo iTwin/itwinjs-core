@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { BrowserAuthorizationClient, isBrowserAuthorizationClient } from "@itwin/browser-authorization";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelApp } from "@itwin/core-frontend";
 import { SignInBase } from "./SignInBase";
 import { CommonProps } from "@itwin/core-react";
@@ -46,8 +46,8 @@ export class SignIn extends React.PureComponent<SignInProps> {
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore if
-    if (isBrowserAuthorizationClient(oidcClient))
-      this._oidcClient = oidcClient;
+    if ((oidcClient as BrowserAuthorizationClient).signIn !== undefined)
+      this._oidcClient = oidcClient as BrowserAuthorizationClient;
 
     // istanbul ignore if
     if (this._oidcClient)

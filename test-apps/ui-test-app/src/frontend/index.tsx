@@ -13,7 +13,7 @@ import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itw
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isBrowserAuthorizationClient,
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient,
 } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -651,16 +651,16 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
-      oidcClient.onAccessTokenChanged.addListener(this._onAccessTokenChanged);
+    if ((oidcClient as BrowserAuthorizationClient).onAccessTokenChanged !== undefined)
+      (oidcClient as BrowserAuthorizationClient).onAccessTokenChanged.addListener(this._onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
   }
 
   public override componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(oidcClient))
-      oidcClient.onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
+    if ((oidcClient as BrowserAuthorizationClient).signIn !== undefined)
+      (oidcClient as BrowserAuthorizationClient).onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
   }

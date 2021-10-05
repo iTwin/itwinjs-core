@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { isBrowserAuthorizationClient } from "@itwin/browser-authorization";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelApp } from "@itwin/core-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
@@ -18,7 +18,7 @@ class SignInControl extends ContentControl {
     super(info, options);
 
     const client = IModelApp.authorizationClient;
-    if (isBrowserAuthorizationClient(client))
+    if ((client as BrowserAuthorizationClient).signIn !== undefined)
       this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
       this.reactNode =  <Centered>{"No authorization client available"}</Centered>;
