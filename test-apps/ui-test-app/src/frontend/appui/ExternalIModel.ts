@@ -14,7 +14,7 @@ export interface BasicIModelInfo {
   iTwinId: string;
   name: string;
 }
-export interface IModelInfo extends BasicIModelInfo{
+export interface IModelInfo extends BasicIModelInfo {
   createdDate: Date;
 }
 
@@ -43,7 +43,7 @@ export class ExternalIModel {
     };
 
     if (!args.iTwinId && !args.iTwinName) {
-      throw new Error ("An iTwin name or id is required to construct an External iModel");
+      throw new Error("An iTwin name or id is required to construct an External iModel");
     } else if (!args.iTwinId && args.iTwinName) {
       const iTwinClient = new ITwinAccessClient();
       const iTwinList: ITwin[] = await iTwinClient.getAll(accessToken, {
@@ -51,7 +51,8 @@ export class ExternalIModel {
           searchString: args.iTwinName,
           propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
-        }});
+        },
+      });
 
       if (iTwinList.length === 0)
         throw new Error(`iTwin ${args.iTwinName} was not found for the user.`);
@@ -63,7 +64,7 @@ export class ExternalIModel {
     }
 
     if (!args.iModelId && !args.iModelName) {
-      throw new Error ("An iModel name or id is required to construct an External iModel");
+      throw new Error("An iModel name or id is required to construct an External iModel");
     } else if (!args.iModelId && args.iModelName) {
       const hubClient = new IModelHubFrontend();
       const iModelId = await hubClient.queryIModelByName({

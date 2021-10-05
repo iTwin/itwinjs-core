@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid } from "@itwin/core-bentley";
+import { DbResult, Guid, Logger } from "@itwin/core-bentley";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import { IModelTileRpcInterface, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
@@ -20,10 +20,10 @@ import { RpcTrace } from "../../RpcBackend";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
-  activityId: "",
-  applicationId: "",
-  applicationVersion: "",
-  sessionId: "",
+  activityId: "activity123",
+  applicationId: "rpc test app",
+  applicationVersion: "1.2.3",
+  sessionId: "session 123",
 };
 
 describe("TileCache open v1", () => {
@@ -107,12 +107,24 @@ describe("TileCache, open v2", async () => {
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const checkpointProps = { accessToken: "dummy", iTwinId, iModelId, changeset };
+
+    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => Logger.stringifyMetaData());
+    const errorStringify = sinon.spy(Logger, "stringifyMetaData");
+
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
+    assert.equal(errorLogStub.callCount, 1); // checkpoint token expiry bad
+    assert.equal(errorStringify.getCall(0).returnValue, ""); // not from RPC, no metadata
 
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
+    errorStringify.resetHistory();
+
     await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
+    assert.equal(errorLogStub.callCount, 2); // checkpoint token expiry bad, should be logged with RPC info
+
+    assert.include(errorStringify.getCall(0).returnValue, `"activityId":"${fakeRpc.activityId}"`); // from rpc, should include RPC activity
+    expect(errorStringify.getCall(0).returnValue).to.not.include("token"); // but token should not appear
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
     const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);
@@ -120,3 +132,4 @@ describe("TileCache, open v2", async () => {
     checkpoint.close();
   });
 });
+
