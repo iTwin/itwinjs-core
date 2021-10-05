@@ -26,6 +26,10 @@ export namespace FeatureSymbology {
    * @alpha
    */
   export interface Source {
+    /** An event raised when this source becomes disassociated with the viewport, indicating any WebGL resources allocated for it
+     * can be freed.
+     * Failure to invoke this event appropriately will result in memory leaks, which may eventually produce WebGL context loss.
+     */
     readonly onSourceDisposed: BeEvent<() => void>;
   }
 
