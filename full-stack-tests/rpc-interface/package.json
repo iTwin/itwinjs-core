@@ -48,7 +48,7 @@
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
-    "@itwin/service-authorization": "^0.1.0",
+    "@itwin/service-authorization": "^0.2.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
