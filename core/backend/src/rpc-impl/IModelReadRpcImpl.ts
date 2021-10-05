@@ -12,7 +12,7 @@ import {
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
+  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
   TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
@@ -34,13 +34,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.currentActivity!, tokenProps, SyncMode.FixedVersion);
   }
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
-    const user = RpcInvocation.currentActivity;
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
-    const user = RpcInvocation.currentActivity;
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
   }
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {

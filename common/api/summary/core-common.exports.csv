@@ -37,7 +37,7 @@ beta;BaseLayerSettings = BaseMapLayerSettings | ColorDef
 beta;BaseLayerSettings
 beta;BaseMapLayerProps 
 beta;BaseMapLayerSettings 
-beta;BaseReaderOptions
+public;BaseReaderOptions
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
 internal;BentleyCloudRpcManager 
@@ -503,12 +503,12 @@ public;Quantization
 internal;isInRange(qpos: number, rangeScale?: number): boolean
 internal;isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean
 internal;isQuantized(qpos: number): boolean
-beta;QueryBinder
-beta;QueryLimit
-beta;QueryOptions 
-beta;QueryOptionsBuilder
+public;QueryBinder
+public;QueryLimit
+public;QueryOptions 
+public;QueryOptionsBuilder
 beta;QueryPropertyMetaData
-beta;QueryQuota
+public;QueryQuota
 public;QueryRowFormat
 beta;QueryRowProxy
 beta;QueryValueType = any
