@@ -14,9 +14,7 @@ import { SignInBase } from "./SignInBase";
 import { CommonProps } from "@itwin/core-react";
 import { UiFramework } from "@itwin/appui-react";
 
-/** Properties for the [[SignIn]] component
- * @public
- */
+/** Properties for the [[SignIn]] component */
 export interface SignInProps extends CommonProps {
   /** Handler called after sign-in has completed */
   onSignedIn?: () => void;
@@ -25,7 +23,6 @@ export interface SignInProps extends CommonProps {
   /** Handler for the Offline link */
   onOffline?: () => void;
 
-  /** @internal */
   onStartSignIn?: () => void;
 }
 
@@ -45,36 +42,35 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
-    // istanbul ignore if
-    if (isFrontendAuthorizationClient(oidcClient))
+    if (isFrontendAuthorizationClient(oidcClient)) {
       this._oidcClient = oidcClient;
+    }
 
-    // istanbul ignore if
-    if (this._oidcClient)
+    if (this._oidcClient) {
       this._oidcClient.onAccessTokenChanged.addListener(this._onUserStateChanged);
+    }
   }
 
   // istanbul ignore next
   private _onUserStateChanged() {
-    // istanbul ignore next
     if (this._oidcClient && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 
   public override componentWillUnmount() {
-    // istanbul ignore next
-    if (this._oidcClient)
+    if (this._oidcClient) {
       this._oidcClient.onAccessTokenChanged.removeListener(this._onUserStateChanged);
+    }
   }
 
   private _onStartSignin = async () => {
-    // istanbul ignore next
-    if (this._oidcClient)
+    if (this._oidcClient) {
       this._oidcClient.signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
 
-    // istanbul ignore else
-    if (this.props.onStartSignIn)
+    if (this.props.onStartSignIn) {
       this.props.onStartSignIn();
+    }
   };
 
   public override render() {

@@ -21,7 +21,7 @@ import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodel
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger, NativeAppOpts, SelectionTool,
   SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -193,6 +193,7 @@ export class SampleAppIModelApp {
     } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
     } else {
+      // if an auth client has not already been configured, use a default Browser client
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
       if (urlObj.pathname === window.location.pathname) {
@@ -200,13 +201,25 @@ export class SampleAppIModelApp {
         return;
       }
 
+      const auth = new BrowserAuthorizationClient({
+        clientId: "imodeljs-spa-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.join(" "),
+      });
+      try {
+        await auth.signInSilent();
+      } catch (err) { }
+
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_GP_BACKEND ?
           { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
-      await IModelApp.startup(iModelAppOpts);
+      await IModelApp.startup({
+        ...iModelAppOpts,
+        authorizationClient: auth,
+      });
     }
 
     window.onerror = function (error) {
@@ -455,7 +468,7 @@ export class SampleAppIModelApp {
     await SampleAppIModelApp.showFrontstage("IModelOpen");
   }
 
-  public static async showSignedOut() {
+  public static async showSignInPage() {
     await SampleAppIModelApp.showFrontstage("SignIn");
   }
 
@@ -607,95 +620,169 @@ function mapFrameworkVersionStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettingsStorage: UiSettings }> {
-  constructor(props: any) {
-    super(props);
-
-    AppUi.initialize();
-    this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
-
-    const authorized = !!IModelApp.authorizationClient;
-    this.state = {
-      authorized,
-      uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
+export function useIsMounted() {
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
     };
-  }
+  }, []);
+  return isMounted;
+}
 
-  private _initializeSignin = async (): Promise<void> => {
-    let authorized = !!IModelApp.authorizationClient;
-    if (!authorized) {
-      const auth = new BrowserAuthorizationClient({
-        clientId: "imodeljs-spa-test",
-        redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.join(" "),
-        responseType: "code",
-      });
-      try {
-        await auth.signInSilent();
-      } catch (err) { }
+const  SampleAppViewer2 = () => {
+  const [isAuthorized, setIsAuthorized] = React.useState<boolean>(false);
+  const [uiSettingsStorage, setUISettingStore] = React.useState(SampleAppIModelApp.getUiSettingsStorage());
+  const isMounted = useIsMounted();
 
-      authorized = auth.isAuthorized;
-      IModelApp.authorizationClient = auth;
+  React.useEffect(() => {
+    AppUi.initialize();
+
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+      setIsAuthorized(IModelApp.authorizationClient.isAuthorized);
     }
-    return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
+  }, []);
+
+  React.useEffect(() => {
+    // Update the UiSettingsStorage based on if you're signed in or out.
+    setUISettingStore(SampleAppIModelApp.getUiSettingsStorage());
+
+    // Load the correct Frontstage based on whether or not you're authorized.
+    isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignInPage(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [isAuthorized]);
+
+  React.useEffect(() => {
+    UiFramework.setUiSettingsStorage(uiSettingsStorage); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [uiSettingsStorage]);
+
+  const _onAccessTokenChanged = () => {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+      setIsAuthorized(IModelApp.authorizationClient.isAuthorized); // forces the effect above to re-run and check the actual client...
+    }
   };
 
-  private _onAccessTokenChanged = async (_accessToken: AccessToken) => {
-    const authorized = !!IModelApp.authorizationClient;
-    const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
-    await UiFramework.setUiSettingsStorage(uiSettingsStorage);
-    this.setState({ authorized, uiSettingsStorage });
-    this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  };
-
-  private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
+  const _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
   };
 
-  private _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
+  const _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
   };
 
-  public override componentDidMount() {
-    const oidcClient = IModelApp.authorizationClient;
-    if (isFrontendAuthorizationClient(oidcClient))
-      oidcClient.onAccessTokenChanged.addListener(this._onAccessTokenChanged);
-    FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
-    FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
-  }
+  React.useEffect(() => {
+    if (isMounted) {
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+        IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
+      FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
+      FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
+    } else {
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+        IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
+      FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
+      FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
+    }
+  }, [isMounted]);
 
-  public override componentWillUnmount() {
-    const oidcClient = IModelApp.authorizationClient;
-    if (isFrontendAuthorizationClient(oidcClient))
-      oidcClient.onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
-    FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
-    FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
-  }
+  return (
+    <Provider store={SampleAppIModelApp.store} >
+      <ThemeManager>
+        {/* eslint-disable-next-line deprecation/deprecation */}
+        <BeDragDropContext>
+          <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+            <AppDragInteraction>
+              <AppFrameworkVersion>
+                {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+                <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+                  <ConfigurableUiContent
+                    appBackstage={<AppBackstageComposer />}
+                  />
+                </UiSettingsProvider>
+              </AppFrameworkVersion>
+            </AppDragInteraction>
+          </SafeAreaContext.Provider>
+        </BeDragDropContext>
+      </ThemeManager>
+    </Provider >
+  );
+};
 
-  public override render(): JSX.Element {
-    return (
-      <Provider store={SampleAppIModelApp.store} >
-        <ThemeManager>
-          {/* eslint-disable-next-line deprecation/deprecation */}
-          <BeDragDropContext>
-            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-              <AppDragInteraction>
-                <AppFrameworkVersion>
-                  {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
-                    <ConfigurableUiContent
-                      appBackstage={<AppBackstageComposer />}
-                    />
-                  </UiSettingsProvider>
-                </AppFrameworkVersion>
-              </AppDragInteraction>
-            </SafeAreaContext.Provider>
-          </BeDragDropContext>
-        </ThemeManager>
-      </Provider >
-    );
-  }
-}
+// class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettingsStorage: UiSettings }> {
+//   constructor(props: any) {
+//     super(props);
+
+//     AppUi.initialize();
+//     this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+//     this.state = {
+//       uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
+//     };
+//   }
+
+//   private _initializeSignin = async (): Promise<void> => {
+//     let isSignedIn = false;
+//     if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+//       isSignedIn = IModelApp.authorizationClient.isAuthorized;
+
+//     return isSignedIn ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
+//   };
+
+//   private _onAccessTokenChanged = async (_accessToken: AccessToken) => {
+//     const authorized = !!IModelApp.authorizationClient;
+//     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
+//     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
+//     this.setState({ authorized, uiSettingsStorage });
+//     this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
+//   };
+
+//   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
+//     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
+//   };
+
+//   private _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
+//     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
+//   };
+
+//   // public override componentDidMount() {
+//   //   const oidcClient = IModelApp.authorizationClient;
+//   //   if (isFrontendAuthorizationClient(oidcClient))
+//   //     oidcClient.onAccessTokenChanged.addListener(this._onAccessTokenChanged);
+//   //   FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
+//   //   FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
+//   // }
+
+//   // public override componentWillUnmount() {
+//   //   const oidcClient = IModelApp.authorizationClient;
+//   //   if (isFrontendAuthorizationClient(oidcClient))
+//   //     oidcClient.onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
+//   //   FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
+//   //   FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
+//   // }
+
+//   public override render(): JSX.Element {
+//     return (
+//       <Provider store={SampleAppIModelApp.store} >
+//         <ThemeManager>
+//           {/* eslint-disable-next-line deprecation/deprecation */}
+//           <BeDragDropContext>
+//             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+//               <AppDragInteraction>
+//                 <AppFrameworkVersion>
+//                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+//                   <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
+//                     <ConfigurableUiContent
+//                       appBackstage={<AppBackstageComposer />}
+//                     />
+//                   </UiSettingsProvider>
+//                 </AppFrameworkVersion>
+//               </AppDragInteraction>
+//             </SafeAreaContext.Provider>
+//           </BeDragDropContext>
+//         </ThemeManager>
+//       </Provider >
+//     );
+//   }
+// }
 
 // If we are using a browser, close the current iModel before leaving
 window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises
@@ -761,7 +848,7 @@ async function main() {
   // register new QuantityType
   await BearingQuantityType.registerQuantityType();
 
-  ReactDOM.render(<SampleAppViewer />, document.getElementById("root") as HTMLElement);
+  ReactDOM.render(<SampleAppViewer2 />, document.getElementById("root") as HTMLElement);
 }
 
 // Entry point - run the main function
