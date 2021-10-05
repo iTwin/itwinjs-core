@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeEvent } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
-import { Feature, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
+import { Feature, FeatureTable, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { ViewRect } from "../../../ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
