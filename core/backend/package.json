@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.0.0-dev.75",
+  "version": "3.0.0-dev.77",
   "description": "iTwin.js backend components",
   "main": "lib/core-backend.js",
   "typings": "lib/core-backend",
@@ -55,14 +55,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.75",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.75",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.75",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.75",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.75",
-    "@itwin/core-common": "workspace:^3.0.0-dev.75",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.75",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.75"
+    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.77",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.77",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.77",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.77",
+    "@itwin/core-common": "workspace:^3.0.0-dev.77",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.77",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.77"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -72,7 +72,7 @@
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",

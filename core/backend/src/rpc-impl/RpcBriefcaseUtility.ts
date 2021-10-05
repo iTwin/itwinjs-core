@@ -112,7 +112,8 @@ export class RpcBriefcaseUtility {
     if (undefined === iModelDb)
       throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
 
-    await iModelDb.reattachDaemon(accessToken); // just in case this is a V2 checkpoint whose accessToken is about to expire.
+    // call reattach, just in case this is a V2 checkpoint whose accessToken is about to expire.
+    await iModelDb.reattachDaemon(accessToken);
     return iModelDb;
   }
 

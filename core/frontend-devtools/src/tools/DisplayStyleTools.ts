@@ -146,7 +146,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  * Arguments:
  *  * `all`: include all settings.
  *  * `imodel`: include iModel-specific settings.
- *  * `project`: include project-specific settings.
+ *  * `project`: include iTwin-specific (formerly known as project) settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
  *  * `copy`: copy result to system clipboarad.
@@ -171,7 +171,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 
     this._options.includeAll = getArg("a");
     this._options.includeIModelSpecific = getArg("i");
-    this._options.includeProjectSpecific = getArg("p");
+    this._options.includeITwinSpecific = getArg("p"); // "p" for backwards compatibility with old "project" terminology
     this._options.includeBackgroundMap = getArg("m");
     this._options.includeDrawingAids = getArg("d");
     this._copyToClipboard = true === getArg("c");

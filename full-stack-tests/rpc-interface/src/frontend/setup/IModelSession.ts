@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
@@ -31,39 +31,38 @@ export class IModelSession {
     let iTwinId;
     let imodelId;
 
-    // Turn the project name into an id
-    if (iModelData.useProjectName) {
-      if (!iModelData.projectName)
-        throw new Error(`The iModel has no project name, so it cannot get the project.`);
+    // Turn the iTwin name into an id
+    if (iModelData.useITwinName) {
+      if (!iModelData.iTwinName)
+        throw new Error(`The iModel has no iTwin name, so it cannot get the iTwin.`);
 
       const client = new ITwinAccessClient();
       const iTwinList: ITwin[] = await client.getAll(requestContext, {
         search: {
-          searchString: iModelData.projectName,
+          searchString: iModelData.iTwinName,
           propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
-        },
-      });
+        }});
 
       if (iTwinList.length === 0)
-        throw new Error(`ITwin ${iModelData.projectName} was not found for the user.`);
+        throw new Error(`ITwin ${iModelData.iTwinName} was not found for the user.`);
       else if (iTwinList.length > 1)
-        throw new Error(`Multiple iTwins named ${iModelData.projectName} were found for the user.`);
+        throw new Error(`Multiple iTwins named ${iModelData.iTwinName} were found for the user.`);
 
       iTwinId = iTwinList[0].id;
     } else
-      iTwinId = iModelData.projectId!;
+      iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
       const imodelClient = new IModelHubClient();
       const imodels = await imodelClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelData.name!));
       if (undefined === imodels || imodels.length === 0)
-        throw new Error(`The iModel ${iModelData.name} does not exist in project ${iTwinId}.`);
+        throw new Error(`The iModel ${iModelData.name} does not exist in iTwin ${iTwinId}.`);
       imodelId = imodels[0].wsgId;
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
+    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, iTwinId:${iModelData.iTwinId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
 
     return new IModelSession(iTwinId, imodelId, iModelData.changeSetId);
   }

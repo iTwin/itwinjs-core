@@ -93,7 +93,7 @@ describe("iModelHub BriefcaseHandler", () => {
     this.timeout(0);
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    iTwinId = await utils.getProjectId(accessToken);
+    iTwinId = await utils.getITwinId(accessToken);
     await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();

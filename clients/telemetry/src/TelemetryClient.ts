@@ -23,8 +23,8 @@ export class TelemetryEvent {
      * This field is required when posting a telemetry event as feature usage to ULAS.
      */
     public readonly eventId?: GuidString,
-    /** iModel project id/sub-context id */
-    public readonly contextId?: GuidString,
+    /** iModel parent iTwin id */
+    public readonly iTwinId?: GuidString,
     public readonly iModelId?: GuidString,
     public readonly changeSetId?: GuidString,
     public readonly time?: {
@@ -43,7 +43,7 @@ export class TelemetryEvent {
     const properties: { [key: string]: any } = {
       eventName: this.eventName,
       eventId: this.eventId,
-      contextId: this.contextId,
+      iTwinId: this.iTwinId,
       iModelId: this.iModelId,
       changeSetId: this.changeSetId,
       time: this.time,

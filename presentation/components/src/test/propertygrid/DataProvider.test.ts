@@ -176,15 +176,14 @@ describe("PropertyDataProvider", () => {
   });
 
   describe("isFieldFavorite", () => {
-
-    let projectId: string;
+    let iTwinId: string;
     let imodelId: string;
 
     before(() => {
-      projectId = "project-id";
+      iTwinId = "itwin-id";
       imodelId = "imodel-id";
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-      imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => iTwinId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });

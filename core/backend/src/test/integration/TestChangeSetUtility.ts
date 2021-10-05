@@ -14,7 +14,7 @@ import { HubUtility } from "./HubUtility";
 export class TestChangeSetUtility {
   private readonly _iModelName: string;
 
-  public projectId!: GuidString;
+  public iTwinId!: GuidString;
   public iModelId!: GuidString;
   private _iModel!: BriefcaseDb;
   private _accessToken: AccessToken;
@@ -28,7 +28,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.projectId, iModelId: this.iModelId });
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     this._iModel.saveChanges("Added test model");
   }
@@ -45,10 +45,10 @@ export class TestChangeSetUtility {
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    this.projectId = await HubUtility.getTestITwinId(this._accessToken);
+    this.iTwinId = await HubUtility.getTestITwinId(this._accessToken);
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel({ accessToken: this._accessToken, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });
+    this.iModelId = await HubUtility.recreateIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();
@@ -71,6 +71,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._accessToken, this._iModel);
-    await IModelHost.hubAccess.deleteIModel({ accessToken: this._accessToken, iTwinId: this.projectId, iModelId: this.iModelId });
+    await IModelHost.hubAccess.deleteIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
   }
 }

@@ -29,7 +29,7 @@ function mockGetiModelPermissions(imodelId: string, webView: boolean, read: bool
 }
 
 describe("iModelHub PermissionsManager", () => {
-  let projectId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let imodelClient: IModelClient;
   let accessToken: AccessToken;
@@ -37,10 +37,10 @@ describe("iModelHub PermissionsManager", () => {
   before(async function () {
     this.timeout(0);
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
-    projectId = await utils.getProjectId(accessToken, "iModelJsTest");
+    iTwinId = await utils.getITwinId(accessToken, "iModelJsTest");
 
-    await utils.createIModel(accessToken, utils.sharedimodelName, projectId);
-    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, projectId);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     imodelClient = utils.getIModelHubClient();
 
     if (!fs.existsSync(workDir)) {
@@ -54,7 +54,7 @@ describe("iModelHub PermissionsManager", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(accessToken, projectId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 

@@ -28,7 +28,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   before(async () => {
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    iTwinId = await utils.getProjectId(accessToken);
+    iTwinId = await utils.getITwinId(accessToken);
     // Does not create an imodel right now, but should in the future
     await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId, true, true);
     imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
