@@ -49,7 +49,11 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
+<<<<<<< HEAD
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+=======
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+>>>>>>> be5cfd8b80 (Allow multiple FeatureOverrides per tile per viewport (#2419))
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -74,7 +78,11 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
+<<<<<<< HEAD
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+=======
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
+>>>>>>> be5cfd8b80 (Allow multiple FeatureOverrides per tile per viewport (#2419))
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);

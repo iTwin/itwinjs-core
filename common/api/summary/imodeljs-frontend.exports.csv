@@ -170,12 +170,16 @@ alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureSymbology
+<<<<<<< HEAD:common/api/summary/imodeljs-frontend.exports.csv
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 deprecated;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 deprecated;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
+=======
+alpha;Source
+>>>>>>> be5cfd8b80 (Allow multiple FeatureOverrides per tile per viewport (#2419)):common/api/summary/core-frontend.exports.csv
 public;FitViewTool 
 internal;Flags
 public;FlashMode
