@@ -594,6 +594,7 @@ importers:
     dependencies:
       '@ungap/url-search-params': 0.1.4
       flatbuffers: 1.12.0
+      js-base64: 3.7.1
       semver: 5.7.1
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
@@ -608,7 +609,6 @@ importers:
       '@types/semver': 5.5.0
       chai: 4.3.4
       eslint: 7.32.0
-      js-base64: 3.7.1
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
