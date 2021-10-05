@@ -18,15 +18,15 @@ before(() => {
 });
 
 before(async () => {
-  const requestContext = await getAccessToken();
-  const contextId = await utils.getProjectId(requestContext);
-  await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+  const accessToken = await getAccessToken();
+  const iTwinId = await utils.getITwinId(accessToken);
+  await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
 });
 
 after(async () => {
-  const requestContext = await getAccessToken();
-  const contextId = await utils.getProjectId(requestContext);
-  await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+  const accessToken = await getAccessToken();
+  const iTwinId = await utils.getITwinId(accessToken);
+  await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
 });
 
 async function getAccessToken(): Promise<AccessToken> {

@@ -17,49 +17,49 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     // (undocumented)
     applicationId: string;
     // (undocumented)
-    deleteSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    deleteSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    deleteSharedSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+    deleteSharedSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    deleteUserSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    deleteUserSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
     formErrorResponse(response: Response): SettingsResult;
     // (undocumented)
-    getSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    getSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    getSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
+    getSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsMapResult>;
     // (undocumented)
-    getSharedSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+    getSharedSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    getSharedSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
+    getSharedSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsMapResult>;
     getUrl(excludeApiVersion?: boolean): Promise<string>;
     // (undocumented)
-    getUserSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    getUserSetting(accessToken: AccessToken, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    getUserSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
+    getUserSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsMapResult>;
     // (undocumented)
-    saveSetting(accessToken: AccessToken, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    saveSetting(accessToken: AccessToken, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    saveSharedSetting(accessToken: AccessToken, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
+    saveSharedSetting(accessToken: AccessToken, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
-    saveUserSetting(accessToken: AccessToken, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    saveUserSetting(accessToken: AccessToken, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 
 // @beta
 export interface SettingsAdmin {
-    deleteSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    deleteSharedSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
-    deleteUserSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    getSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    getSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
-    getSharedSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
-    getSharedSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
-    getUserSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    getUserSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult>;
-    saveSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    saveSharedSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
-    saveUserSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+    deleteSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
+    deleteSharedSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
+    deleteUserSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
+    getSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
+    getSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsMapResult>;
+    getSharedSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
+    getSharedSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsMapResult>;
+    getUserSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
+    getUserSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsMapResult>;
+    saveSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
+    saveSharedSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
+    saveUserSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
 }
 
 // @beta
@@ -90,7 +90,7 @@ export class SettingsResult {
 export enum SettingsStatus {
     AuthorizationError = 110593,
     IModelInvalid = 110596,
-    ProjectInvalid = 110595,
+    ITwinInvalid = 110595,
     ServerError = 110598,
     SettingNotFound = 110597,
     // (undocumented)

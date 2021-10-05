@@ -1071,9 +1071,7 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
 // @public
 export interface FilteredPropertyData extends PropertyData {
     filteredTypes?: FilteredType[];
-    // (undocumented)
     getMatchByIndex?: (index: number) => HighlightInfo | undefined;
-    // (undocumented)
     matchesCount?: number;
 }
 

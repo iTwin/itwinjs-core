@@ -27,13 +27,13 @@ interface FilteredRecords {
  * @public
  */
 export interface FilteredPropertyData extends PropertyData {
-  /*
+  /**
   * Shows how many matches were found when filtering data.
   * `undefined` when filterer is not active
   */
   matchesCount?: number;
 
-  /*
+  /**
   * Function used for getting [[HighlightInfo]] by index from all the filtered matches.
   * `undefined` when filterer is not active
   */

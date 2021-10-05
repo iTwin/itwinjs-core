@@ -27,7 +27,7 @@ export class ClientTelemetryEvent extends TelemetryEvent {
   public readonly clientApplicationVersion?: string;
 
   public constructor(telemetryEvent: TelemetryEvent, requestContext: RpcActivity) {
-    super(telemetryEvent.eventName, telemetryEvent.eventId, telemetryEvent.contextId, telemetryEvent.iModelId, telemetryEvent.changeSetId, telemetryEvent.time, telemetryEvent.additionalProperties);
+    super(telemetryEvent.eventName, telemetryEvent.eventId, telemetryEvent.iTwinId, telemetryEvent.iModelId, telemetryEvent.changeSetId, telemetryEvent.time, telemetryEvent.additionalProperties);
 
     this.activityId = requestContext.activityId;
     this.sessionId = requestContext.sessionId;

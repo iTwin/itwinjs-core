@@ -81,7 +81,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
   };
 
   public override render() {
-    /*
+    /**
      * Note: In the case of electron, the signin happens in a disconnected web browser. We therefore show
      * a message to direc the user to the browser. Also, since we cannot capture the errors in the browser,
      * to clear the state of the signin UI, we instead allow signin button to be clicked multiple times.
@@ -89,7 +89,6 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
      */
     let disableSignInOnClick = true;
     let signingInMessage: string | undefined;
-    // istanbul ignore next
     if (ProcessDetector.isElectronAppFrontend) {
       disableSignInOnClick = false;
       const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
