@@ -5,7 +5,6 @@
 import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
 // Sets up certa to allow a method on the frontend to get an access token
 import * as path from "path";
-import { Settings } from "../common/Settings";
 import { exposeBackendCallbacks } from "../common/SideChannels";
 import * as fs from "fs";
 
