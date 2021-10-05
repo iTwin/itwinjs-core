@@ -10,11 +10,13 @@ import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-f
 import { SampleAppIModelApp } from "../";
 
 /* eslint-disable deprecation/deprecation */
-
-export interface IModelInfo {
+export interface BasicIModelInfo {
   id: string;
   iTwinId: string;
   name: string;
+}
+
+export interface IModelInfo extends BasicIModelInfo {
   createdDate: Date;
 }
 

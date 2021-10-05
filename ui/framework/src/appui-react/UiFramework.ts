@@ -35,6 +35,7 @@ import * as toolSettingTools from "./tools/ToolSettingsTools";
 import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
+import { FrontstageManager } from "./frontstage/FrontstageManager";
 
 // cSpell:ignore Mobi
 
@@ -383,10 +384,13 @@ export class UiFramework {
   public static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync = false) {
     const oldConnection = UiFramework.getIModelConnection();
     if (oldConnection !== iModelConnection) {
+      if (iModelConnection?.iModelId)
+        FrontstageManager.clearFrontstageDefsForIModelId(iModelConnection?.iModelId);
       iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
       oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
     }
+    UiFramework.setActiveIModelId(iModelConnection?.iModelId ?? "");
   }
 
   public static getIModelConnection(): IModelConnection | undefined {
