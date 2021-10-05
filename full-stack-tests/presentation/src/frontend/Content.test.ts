@@ -226,7 +226,7 @@ describe("Content", () => {
         { className: "PCJ_TestSchema:TestClass", id: "0x71" },
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = getFieldByLabel(descriptor.fields, "Name")!;
+      const field = getFieldByLabel(descriptor.fields, "Ñámê");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
