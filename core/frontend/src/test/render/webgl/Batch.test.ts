@@ -12,6 +12,7 @@ import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../render/webgl/Target";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
+import { FeatureOverrides } from "../../../render/webgl/FeatureOverrides";
 
 describe("Batch", () => {
   before(async () => await IModelApp.startup());
@@ -120,9 +121,78 @@ describe("Batch", () => {
     });
 
     it("is recomputed only when the associated symbology overrides change", () => {
-    });
+      interface Overrides {
+        buildLookupTable: () => void;
+        updated: boolean;
+      }
 
-    it("is updated when flash or hilite changes", () => {
+      function reset(ovrs: Overrides[]): void {
+        for (const ovr of ovrs)
+          ovr.updated = false;
+      }
+
+      function hook(ovrs: Overrides[]): void {
+        reset(ovrs);
+        for (const ovr of ovrs)
+          ovr.buildLookupTable = () => ovr.updated = true;
+      }
+
+      const target = makeTarget();
+      const o0 = makeOverrides();
+      target.overrideFeatureSymbology(o0);
+      const br0 = makeBranch();
+      const s1 = makeSource();
+      const o1 = makeOverrides(s1);
+      const br1 = makeBranch(o1);
+      const s2 = makeSource();
+      const o2 = makeOverrides(s2);
+      const br2 = makeBranch(o2);
+
+      const batch = makeBatch();
+
+      function update(): void {
+        target.pushBatch(batch);
+        target.popBatch();
+        for (const branch of [br0, br1, br2]) {
+          target.pushBranch(branch);
+          target.pushBatch(batch);
+          target.popBatch();
+          target.popBranch();
+        }
+      }
+
+      update();
+
+      const ovrs = Array.from(batch.perTargetData.data[0].featureOverrides.values()) as unknown as Overrides[];
+      hook(ovrs);
+
+      expect(ovrs.length).to.equal(3);
+      expect(Array.from(batch.perTargetData.data[0].featureOverrides.keys())).to.deep.equal([undefined, s1, s2]);
+
+      expect(ovrs.some((x) => x.updated)).to.be.false;
+
+      update();
+      expect(ovrs.some((x) => x.updated)).to.be.false;
+
+      target.overrideFeatureSymbology(makeOverrides());
+      update();
+      expect(ovrs[0].updated).to.be.true;
+      expect(ovrs[1].updated).to.be.false;
+      expect(ovrs[2].updated).to.be.false;
+
+      reset(ovrs);
+      br1.branch.symbologyOverrides = makeOverrides(s1);
+      update();
+      expect(ovrs[1].updated).to.be.true;
+      expect(ovrs[0].updated).to.be.false;
+      expect(ovrs[2].updated).to.be.false;
+
+      reset(ovrs);
+      br2.branch.symbologyOverrides = makeOverrides(s2);
+      update();
+      expect(ovrs[2].updated).to.be.true;
+      expect(ovrs[0].updated).to.be.false;
+      expect(ovrs[1].updated).to.be.false;
     });
 
     it("is disposed when batch, target, or source is disposed", () => {

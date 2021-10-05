@@ -357,9 +357,9 @@ export class FeatureOverrides implements WebGLDisposable {
     const hilite = this.target.hilites;
     if (ovrsUpdated || hiliteUpdated || flashedId !== this._lastFlashId) {
       // _lut can be undefined if context was lost, (gl.createTexture returns null)
-      if (this._lut) {
+      if (this._lut)
         this._update(features, this._lut, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
-      }
+
       this._lastFlashId = flashedId;
     }
   }
