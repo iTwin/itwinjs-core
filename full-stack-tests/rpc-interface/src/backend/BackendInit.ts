@@ -29,10 +29,5 @@ function loadEnv(envFile: string) {
 module.exports = (async () => {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
-  // Need to create a new one on the backend to properly setup dotenv
-  const settings = new Settings(process.env);
-
-  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
-
   exposeBackendCallbacks();
 })();

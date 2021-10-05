@@ -61,9 +61,6 @@ export class TestContext {
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
-    // Setup environment
-    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(this.settings.env);
-
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
         email: this.settings.users[0].email,

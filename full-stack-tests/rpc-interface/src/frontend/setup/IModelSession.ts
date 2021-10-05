@@ -74,9 +74,8 @@ export class IModelSession {
 
   public async open(): Promise<CheckpointConnection> {
     try {
-      const env = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION ?? "";
       // eslint-disable-next-line no-console
-      console.log(`Environment: ${env}`);
+      console.log(`Environment: ${process.env.IMJS_URL_PREFIX}`);
       this._iModel = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId, this._imodelVersion);
       expect(this._iModel).to.exist;
     } catch (e: any) {
