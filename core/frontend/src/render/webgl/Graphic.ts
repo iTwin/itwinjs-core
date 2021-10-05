@@ -78,15 +78,103 @@ export interface BatchContext {
   iModel?: IModelConnection;
 }
 
-interface PerTargetBatchData {
-  readonly target: Target;
-  featureOverrides?: FeatureOverrides;
-  thematicSensors?: ThematicSensors;
+class PerTargetBatchData {
+  public readonly target: Target;
+  protected _featureOverrides?: FeatureOverrides;
+  protected _thematicSensors?: ThematicSensors;
+
+  public constructor(target: Target) {
+    this.target = target;
+  }
+
+  public dispose(): void {
+    this._thematicSensors = dispose(this._thematicSensors);
+    this._featureOverrides = dispose(this._featureOverrides);
+  }
+
+  public getThematicSensors(batch: Batch): ThematicSensors {
+    if (this._thematicSensors && !this._thematicSensors.matchesTarget(this.target))
+      this._thematicSensors = dispose(this._thematicSensors);
+
+    if (!this._thematicSensors)
+      this._thematicSensors = ThematicSensors.create(this.target, batch.range);
+
+    this._thematicSensors.update(this.target.uniforms.frustum.viewMatrix);
+    return this._thematicSensors;
+  }
+
+  public getFeatureOverrides(batch: Batch): FeatureOverrides {
+    if (!this._featureOverrides) {
+      this._featureOverrides = FeatureOverrides.createFromTarget(this.target, batch.options);
+      this._featureOverrides.initFromMap(batch.featureTable);
+    }
+
+    this._featureOverrides.update(batch.featureTable);
+    return this._featureOverrides;
+  }
+
+  public get featureOverrides() { return this._featureOverrides; }
+  public get thematicSensors() { return this._thematicSensors; }
 }
 
-function disposePerTargetBatchData(ptd: PerTargetBatchData): void {
-  ptd.featureOverrides = dispose(ptd.featureOverrides);
-  ptd.thematicSensors = dispose(ptd.thematicSensors);
+class PerTargetData {
+  private readonly _batch: Batch;
+  private readonly _data: PerTargetBatchData[] = [];
+
+  public constructor(batch: Batch) {
+    this._batch = batch;
+  }
+
+  public dispose(): void {
+    for (const data of this._data) {
+      data.target.onBatchDisposed(this._batch);
+      data.dispose();
+    }
+
+    this._data.length = 0;
+  }
+
+  public get isDisposed(): boolean {
+    return this._data.length === 0;
+  }
+
+  public onTargetDisposed(target: Target): void {
+    const index = this._data.findIndex((x) => x.target === target);
+    if (-1 === index)
+      return;
+
+    const data = this._data[index];
+    data.dispose();
+    this._data.splice(index, 1);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const data of this._data) {
+      if (data.featureOverrides)
+        stats.addFeatureOverrides(data.featureOverrides.byteLength);
+
+      if (data.thematicSensors)
+        stats.addThematicTexture(data.thematicSensors.bytesUsed);
+    }
+  }
+
+  public getThematicSensors(target: Target): ThematicSensors {
+    return this.getBatchData(target).getThematicSensors(this._batch);
+  }
+
+  public getFeatureOverrides(target: Target): FeatureOverrides {
+    return this.getBatchData(target).getFeatureOverrides(this._batch);
+  }
+
+  private getBatchData(target: Target): PerTargetBatchData {
+    let data = this._data.find((x) => x.target === target);
+    if (!data) {
+      this._data.push(data = new PerTargetBatchData(target));
+      target.addBatch(this._batch);
+    }
+
+    return data;
+  }
 }
 
 /** @internal */
@@ -95,16 +183,16 @@ export class Batch extends Graphic {
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private readonly _context: BatchContext = { batchId: 0 };
-  private readonly _perTargetData: PerTargetBatchData[] = [];
-  private readonly _options: BatchOptions;
+  private readonly _perTargetData = new PerTargetData(this);
+  public readonly options: BatchOptions;
 
   // Chiefly for debugging.
   public get tileId(): string | undefined {
-    return this._options.tileId;
+    return this.options.tileId;
   }
 
   public get locateOnly(): boolean {
-    return true === this._options.locateOnly;
+    return true === this.options.locateOnly;
   }
 
   public get batchId() { return this._context.batchId; }
@@ -123,37 +211,26 @@ export class Batch extends Graphic {
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
-    this._options = options ?? {};
+    this.options = options ?? {};
   }
 
   private _isDisposed = false;
   public get isDisposed(): boolean {
-    return this._isDisposed && 0 === this._perTargetData.length;
+    return this._isDisposed && this._perTargetData.isDisposed;
   }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
   public dispose() {
     dispose(this.graphic);
 
-    for (const ptd of this._perTargetData) {
-      ptd.target.onBatchDisposed(this);
-      disposePerTargetBatchData(ptd);
-    }
-
-    this._perTargetData.length = 0;
+    this._perTargetData.dispose();
     this._isDisposed = true;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
     stats.addFeatureTable(this.featureTable.byteLength);
-    for (const ptd of this._perTargetData) {
-      if (ptd.featureOverrides)
-        stats.addFeatureOverrides(ptd.featureOverrides.byteLength);
-
-      if (ptd.thematicSensors)
-        stats.addThematicTexture(ptd.thematicSensors.bytesUsed);
-    }
+    this._perTargetData.collectStatistics(stats);
   }
 
   public addCommands(commands: RenderCommands): void {
@@ -164,53 +241,20 @@ export class Batch extends Graphic {
     return true;
   }
 
-  private getPerTargetData(target: Target): PerTargetBatchData {
-    let ptd = this._perTargetData.find((x) => x.target === target);
-    if (!ptd) {
-      ptd = { target };
-      this._perTargetData.push(ptd);
-      target.addBatch(this);
-    }
-
-    return ptd;
-  }
-
   public getThematicSensors(target: Target): ThematicSensors {
     assert(target.plan.thematic !== undefined, "thematic display settings must exist");
     assert(target.plan.thematic.displayMode === ThematicDisplayMode.InverseDistanceWeightedSensors, "thematic display mode must be sensor-based");
     assert(target.plan.thematic.sensorSettings.sensors.length > 0, "must have at least one sensor to process");
 
-    const ptd = this.getPerTargetData(target);
-    if (ptd.thematicSensors && !ptd.thematicSensors.matchesTarget(target))
-      ptd.thematicSensors = dispose(ptd.thematicSensors);
-
-    if (!ptd.thematicSensors)
-      ptd.thematicSensors = ThematicSensors.create(target, this.range);
-
-    ptd.thematicSensors.update(target.uniforms.frustum.viewMatrix);
-
-    return ptd.thematicSensors;
+    return this._perTargetData.getThematicSensors(target);
   }
 
   public getOverrides(target: Target): FeatureOverrides {
-    const ptd = this.getPerTargetData(target);
-    if (!ptd.featureOverrides) {
-      ptd.featureOverrides = FeatureOverrides.createFromTarget(target, this._options);
-      ptd.featureOverrides.initFromMap(this.featureTable);
-    }
-
-    ptd.featureOverrides.update(this.featureTable);
-    return ptd.featureOverrides;
+    return this._perTargetData.getFeatureOverrides(target);
   }
 
   public onTargetDisposed(target: Target) {
-    const index = this._perTargetData.findIndex((x) => x.target === target);
-    if (-1 === index)
-      return;
-
-    const ptd = this._perTargetData[index];
-    disposePerTargetBatchData(ptd);
-    this._perTargetData.splice(index, 1);
+    this._perTargetData.onTargetDisposed(target);
   }
 }
 

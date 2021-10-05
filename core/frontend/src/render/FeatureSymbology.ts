@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64 } from "@itwin/core-bentley";
+import { BeEvent, Id64 } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureOverrides } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
@@ -17,6 +17,14 @@ import { ViewState } from "../ViewState";
  * @public
  */
 export namespace FeatureSymbology {
+  /** An object that serves as the source of a [[FeatureSymbology.Overrides]].
+   * ###TODO document me
+   * @alpha
+   */
+  export interface Source {
+    readonly onSourceDisposed: BeEvent<() => void>;
+  }
+
   /** Allows a [[Viewport]] to customize the appearance of individual [Feature]($common)s within it.
    *
    * The Viewport computes its base Overrides based on the following:
@@ -41,6 +49,13 @@ export namespace FeatureSymbology {
    * @see [[Viewport.neverDrawn]]
    */
   export class Overrides extends FeatureOverrides {
+    private _source?: Source;
+
+    /** @alpha */
+    public get source(): Source | undefined {
+      return this._source;
+    }
+
     /** Construct a new Overrides. The result is an empty set of overrides if no view or viewport is supplied.
      * @param view If supplied, the overrides will be initialized based on the current state of the view or viewport.
      */
@@ -52,6 +67,13 @@ export namespace FeatureSymbology {
         else
           this.initFromView(view);
       }
+    }
+
+    /** @alpha */
+    public static withSource(source: Source, view?: ViewState | Viewport): Overrides {
+      const ovrs = new Overrides(view);
+      ovrs._source = source;
+      return ovrs;
     }
 
     /** Initialize these Overrides based on a specific view.
