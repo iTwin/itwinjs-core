@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureAppearance, FeatureAppearanceProps, FeatureOverrides } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
