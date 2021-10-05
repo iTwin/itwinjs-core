@@ -18,7 +18,6 @@
     "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "outDir": "lib",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
