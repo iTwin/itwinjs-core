@@ -1,6 +1,13 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Oct 2021 13:07:03 GMT and should not be manually modified.
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+### Updates
+
+- Update the CopyBentleyStaticResourcesPlugin to support the `@itwin` scope in addition to the `@bentley` scope.
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT
