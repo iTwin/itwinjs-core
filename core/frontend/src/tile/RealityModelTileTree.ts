@@ -22,7 +22,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { IRealityDataConnection, RealityDataConnectionManager } from "../RealityDataConnection";
+import { RealityDataConnection, RealityDataConnectionManager } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
@@ -635,7 +635,7 @@ export namespace RealityModelTileTree {
     return undefined;
   }
 
-  async function getTileTreeProps(rdConnection: IRealityDataConnection, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
+  async function getTileTreeProps(rdConnection: RealityDataConnection, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
     const url = await rdConnection.getServiceUrl(iModel.contextId);
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
@@ -837,10 +837,10 @@ export class RealityModelTileClient {
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
   private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
-  private _rdConnection: IRealityDataConnection;
+  private _rdConnection: RealityDataConnection;
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(rdConnection: IRealityDataConnection, contextId?: string) {
+  constructor(rdConnection: RealityDataConnection, contextId?: string) {
     this._rdConnection = rdConnection;
     const rdSource = this._rdConnection.getSource();
     if (rdSource.isContextShare)

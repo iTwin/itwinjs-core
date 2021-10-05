@@ -13,7 +13,7 @@ import { RealityDataSource, realityDataSourceKeyToString } from "./RealityDataSo
  * This interface provide methods used to access a reality data from ContextShare
  * @alpha
  */
-export interface IRealityDataConnection {
+export interface RealityDataConnection {
   getRealityData(): RealityData | undefined;
   getRealityDataType(): string | undefined;
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
@@ -25,7 +25,7 @@ export interface IRealityDataConnection {
  * There is a one to one relationship between a reality data and the instances of present class.
  * @alpha
  */
-class RealityDataConnection implements IRealityDataConnection {
+class RealityDataConnectionImpl implements RealityDataConnection {
   private _rd: RealityData | undefined;
   private _rdSource: RealityDataSource;
 
@@ -38,7 +38,7 @@ class RealityDataConnection implements IRealityDataConnection {
    */
   public static async createFromSourceKey(sk: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
     const props: RealityDataSourceProps = {sourceKey: sk};
-    const rdConnection = new RealityDataConnection(props);
+    const rdConnection = new RealityDataConnectionImpl(props);
     let tilesetUrl: string | undefined;
     try {
       await rdConnection.queryRealityData(iTwinId);
@@ -97,20 +97,20 @@ class RealityDataConnection implements IRealityDataConnection {
  * @alpha
  */
 export class RealityDataConnectionManager {
-  private _realityDataConnections = new Map<string, IRealityDataConnection>();
+  private _realityDataConnections = new Map<string, RealityDataConnection>();
   // Singleton implementation
   private static _instance: RealityDataConnectionManager = new RealityDataConnectionManager();
   public static get instance(): RealityDataConnectionManager {
     return RealityDataConnectionManager._instance;
   }
-  public async getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<IRealityDataConnection | undefined> {
+  public async getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
     // search to see if it was already created
     const rdSourceKeyString = realityDataSourceKeyToString(rdSourceKey);
     let rdConnection = this._realityDataConnections.get(rdSourceKeyString);
     if (rdConnection)
       return rdConnection;
     // If not already in our list, create and add it to our list before returing it.
-    rdConnection = await RealityDataConnection.createFromSourceKey(rdSourceKey,  iTwinId);
+    rdConnection = await RealityDataConnectionImpl.createFromSourceKey(rdSourceKey,  iTwinId);
     if (rdConnection)
       this._realityDataConnections.set(rdSourceKeyString,rdConnection);
     return rdConnection;
