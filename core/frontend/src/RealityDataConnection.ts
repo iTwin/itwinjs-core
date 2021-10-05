@@ -14,8 +14,8 @@ import { RealityDataSource, realityDataSourceKeyToString } from "./RealityDataSo
  * @alpha
  */
 export interface RealityDataConnection {
-  getRealityData(): RealityData | undefined;
-  getRealityDataType(): string | undefined;
+  readonly realityData: RealityData | undefined;
+  readonly realityDataType: string | undefined;
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
   getSource(): RealityDataSource;
 }
@@ -64,13 +64,13 @@ class RealityDataConnectionImpl implements RealityDataConnection {
   /**
    * Returns Reality Data if available
    */
-  public getRealityData(): RealityData | undefined {
+  public get realityData(): RealityData | undefined {
     return this._rd;
   }
   /**
    * Returns Reality Data type if available
    */
-  public getRealityDataType(): string | undefined {
+  public get realityDataType(): string | undefined {
     return this._rd?.type;
   }
   /**

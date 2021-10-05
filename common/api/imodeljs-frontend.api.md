@@ -4980,18 +4980,6 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @alpha
-export interface IRealityDataConnection {
-    // (undocumented)
-    getRealityData(): RealityData | undefined;
-    // (undocumented)
-    getRealityDataType(): string | undefined;
-    // (undocumented)
-    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
-    // (undocumented)
-    getSource(): RealityDataSource;
-}
-
 // @beta
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
@@ -7501,9 +7489,21 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
 // @alpha
+export interface RealityDataConnection {
+    // (undocumented)
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // (undocumented)
+    getSource(): RealityDataSource;
+    // (undocumented)
+    readonly realityData: RealityData | undefined;
+    // (undocumented)
+    readonly realityDataType: string | undefined;
+}
+
+// @alpha
 export class RealityDataConnectionManager {
     // (undocumented)
-    getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<IRealityDataConnection | undefined>;
+    getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
     // (undocumented)
     static get instance(): RealityDataConnectionManager;
     }
@@ -7547,7 +7547,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(rdConnection: IRealityDataConnection, contextId?: string);
+    constructor(rdConnection: RealityDataConnection, contextId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;

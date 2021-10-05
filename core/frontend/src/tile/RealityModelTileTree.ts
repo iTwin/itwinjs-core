@@ -864,7 +864,7 @@ export class RealityModelTileClient {
   private initializeRDSRealityData(): void {
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
-        this._realityData = this._rdConnection.getRealityData();
+        this._realityData = this._rdConnection.realityData;
         if (!this._realityData)
           throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
 
