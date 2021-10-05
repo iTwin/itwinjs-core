@@ -205,6 +205,7 @@ export class SampleAppIModelApp {
         clientId: "imodeljs-spa-test",
         redirectUri: "http://localhost:3000/signin-callback",
         scope: baseOidcScopes.join(" "),
+        responseType: "code",
       });
       try {
         await auth.signInSilent();
@@ -706,83 +707,6 @@ const  SampleAppViewer2 = () => {
     </Provider >
   );
 };
-
-// class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSettingsStorage: UiSettings }> {
-//   constructor(props: any) {
-//     super(props);
-
-//     AppUi.initialize();
-//     this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
-
-//     this.state = {
-//       uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
-//     };
-//   }
-
-//   private _initializeSignin = async (): Promise<void> => {
-//     let isSignedIn = false;
-//     if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
-//       isSignedIn = IModelApp.authorizationClient.isAuthorized;
-
-//     return isSignedIn ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
-//   };
-
-//   private _onAccessTokenChanged = async (_accessToken: AccessToken) => {
-//     const authorized = !!IModelApp.authorizationClient;
-//     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
-//     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
-//     this.setState({ authorized, uiSettingsStorage });
-//     this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
-//   };
-
-//   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
-//     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
-//   };
-
-//   private _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
-//     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
-//   };
-
-//   // public override componentDidMount() {
-//   //   const oidcClient = IModelApp.authorizationClient;
-//   //   if (isFrontendAuthorizationClient(oidcClient))
-//   //     oidcClient.onAccessTokenChanged.addListener(this._onAccessTokenChanged);
-//   //   FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
-//   //   FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
-//   // }
-
-//   // public override componentWillUnmount() {
-//   //   const oidcClient = IModelApp.authorizationClient;
-//   //   if (isFrontendAuthorizationClient(oidcClient))
-//   //     oidcClient.onAccessTokenChanged.removeListener(this._onAccessTokenChanged);
-//   //   FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
-//   //   FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
-//   // }
-
-//   public override render(): JSX.Element {
-//     return (
-//       <Provider store={SampleAppIModelApp.store} >
-//         <ThemeManager>
-//           {/* eslint-disable-next-line deprecation/deprecation */}
-//           <BeDragDropContext>
-//             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-//               <AppDragInteraction>
-//                 <AppFrameworkVersion>
-//                   {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-//                   <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
-//                     <ConfigurableUiContent
-//                       appBackstage={<AppBackstageComposer />}
-//                     />
-//                   </UiSettingsProvider>
-//                 </AppFrameworkVersion>
-//               </AppDragInteraction>
-//             </SafeAreaContext.Provider>
-//           </BeDragDropContext>
-//         </ThemeManager>
-//       </Provider >
-//     );
-//   }
-// }
 
 // If we are using a browser, close the current iModel before leaving
 window.addEventListener("beforeunload", async () => { // eslint-disable-line @typescript-eslint/no-misused-promises

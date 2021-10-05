@@ -17,9 +17,7 @@ import { FrontstageManager, ModalFrontstageInfo, UiFramework, UserInfo } from "@
 
 // cSpell:Ignore userprofile signoutprompt
 
-/** Modal frontstage displaying sign out form.
- * @public
- */
+/** Modal frontstage displaying sign out form. */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.translate("userProfile.userprofile");
   private _signOut = UiFramework.translate("userProfile.signout");

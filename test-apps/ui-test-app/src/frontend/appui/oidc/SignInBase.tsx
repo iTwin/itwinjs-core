@@ -13,6 +13,8 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
 import { UiComponents } from "@itwin/components-react";
 import { Button } from "@itwin/itwinui-react";
+import { UiFramework } from "@itwin/appui-react";
+import { ProcessDetector } from "@itwin/core-bentley";
 
 // cspell:ignore signingin
 
@@ -26,14 +28,6 @@ export interface SignInProps extends CommonProps {
   onRegister?: () => void;
   /** Handler for clicking the Offline link */
   onOffline?: () => void;
-  /** Disable the signin button after the sign-in process has started. If unspecified defaults to true.
-   * @internal
-   */
-  disableSignInOnClick?: boolean;
-  /** Show a message when signing in
-   * @internal
-   */
-  signingInMessage?: string;
 }
 
 /** @internal */
@@ -50,7 +44,7 @@ interface SignInState {
  * SignIn React presentational component
  * @public
  */
-export class SignInBase extends React.PureComponent<SignInProps, SignInState> {
+export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
   constructor(props: SignInProps) {
     super(props);
@@ -87,13 +81,27 @@ export class SignInBase extends React.PureComponent<SignInProps, SignInState> {
   };
 
   public override render() {
-    const disableSignInOnClick = this.props.disableSignInOnClick === undefined ? true : this.props.disableSignInOnClick; // disableSignInOnClick defaults to true!
+    /*
+     * Note: In the case of electron, the signin happens in a disconnected web browser. We therefore show
+     * a message to direc the user to the browser. Also, since we cannot capture the errors in the browser,
+     * to clear the state of the signin UI, we instead allow signin button to be clicked multiple times.
+     * See https://authguidance.com/2018/01/11/desktop-apps-overview/ for the pattern
+     */
+    let disableSignInOnClick = true;
+    let signingInMessage: string | undefined;
+    // istanbul ignore next
+    if (ProcessDetector.isElectronAppFrontend) {
+      disableSignInOnClick = false;
+      const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
+      signingInMessage = UiFramework.localization.getLocalizedString(signingInMessageStringId);
+    }
+
     return (
       <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
         <div className="components-signin-content">
           <span className="icon icon-user" />
-          {(this.state.isSigningIn && this.props.signingInMessage !== undefined) ?
-            <span className="components-signin-prompt">{this.props.signingInMessage}</span> :
+          {(this.state.isSigningIn && signingInMessage !== undefined) ?
+            <span className="components-signin-prompt">{signingInMessage}</span> :
             <span className="components-signin-prompt">{this.state.prompt}</span>
           }
           <Button className="components-signin-button" styleType="cta" disabled={this.state.isSigningIn && disableSignInOnClick}
