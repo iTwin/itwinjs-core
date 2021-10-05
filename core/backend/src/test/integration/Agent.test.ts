@@ -5,18 +5,18 @@
 
 import { assert } from "chai";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { AccessToken } from "@itwin/core-bentley";
 
 // Configuration needed
 //    IMJS_AGENT_TEST_CLIENT_ID
 //    IMJS_AGENT_TEST_CLIENT_SECRET
 
 describe("Agent iModel Download (#integration)", () => {
-  let testProjectId: string;
+  let testITwinId: string;
   let testReadIModelId: string;
-  let user: AuthorizedBackendRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
@@ -33,15 +33,14 @@ describe("Agent iModel Download (#integration)", () => {
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    const jwt = await agentClient.getAccessToken();
-    user = new AuthorizedBackendRequestContext(jwt);
+    accessToken = await agentClient.getAccessToken();
 
-    testProjectId = await HubUtility.getTestITwinId(user);
-    testReadIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testReadIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
   });
 
   it("Agent should be able to open a checkpoint", async () => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testProjectId, iModelId: testReadIModelId });
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testReadIModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   });

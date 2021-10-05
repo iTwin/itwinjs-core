@@ -8,10 +8,10 @@ import {
   BeButtonEvent, CoordinateLockOverrides, EventHandled, HitDetail, IModelApp,
   LocateFilterStatus, LocateResponse, PrimitiveTool,
   SelectionMethod, SelectionMode,
-} from "@bentley/imodeljs-frontend";
-import { Point3d } from "@bentley/geometry-core";
-import { UiFramework } from "@bentley/ui-framework";
-import { ToolbarItemUtilities } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { UiFramework } from "@itwin/appui-react";
+import { ToolbarItemUtilities } from "@itwin/appui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";
 
 export class GenericTool extends PrimitiveTool {
@@ -32,7 +32,7 @@ export class GenericTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return this.i18n.translateWithNamespace(this.namespace.name, key);
+    return this.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   public async process(_elementId: string, _point?: Point3d) {

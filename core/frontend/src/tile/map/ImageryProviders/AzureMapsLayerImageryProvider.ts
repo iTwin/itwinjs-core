@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@bentley/imodeljs-common";
+import { MapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import { MapLayerImageryProvider } from "../../internal";
@@ -23,6 +23,6 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override getLogo(_vp: ScreenViewport) {
-    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.AzureMapsCopyright") });
+    return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") });
   }
 }

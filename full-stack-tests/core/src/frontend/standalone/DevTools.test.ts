@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsStatsOptions, IModelRpcProps } from "@bentley/imodeljs-common";
-import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
+import { LogLevel } from "@itwin/core-bentley";
+import { DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
+import { DevTools, IModelApp, PingTestResult } from "@itwin/core-frontend";
 
 describe("DevTools", () => {
   let devTools: DevTools;

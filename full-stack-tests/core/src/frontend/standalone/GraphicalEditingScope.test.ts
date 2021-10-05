@@ -5,13 +5,13 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
-} from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+} from "@itwin/core-frontend";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 
 const expect = chai.expect;

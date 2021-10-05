@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId,
   RenderSchedule,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 let uniqueId = 0;
@@ -36,7 +36,6 @@ function scaleSpatialRange(range: Range3d): Range3d {
 
   return result;
 }
-
 // The tile tree range is equal to the scaled+skewed project extents translated to align with the origin of the model range.
 function almostEqualRange(a: Range3d, b: Range3d): boolean {
   return a.diagonal().isAlmostEqual(b.diagonal());
@@ -66,7 +65,6 @@ function insertPhysicalModel(db: IModelDb): Id64String {
   expect(Id64.isValidId64(modelId)).to.be.true;
   return modelId;
 }
-
 function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);

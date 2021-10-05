@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Changed uses of `PresentationUnitSystem` to `UnitSystemKey`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

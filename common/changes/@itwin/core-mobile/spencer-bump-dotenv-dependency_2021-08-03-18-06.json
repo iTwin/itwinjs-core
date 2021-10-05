@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "Bumped dotenv and removed deprecated @types/dotenv",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

@@ -6,10 +6,9 @@
  * @module Authentication
  */
 
-import { decode } from "jsonwebtoken";
 import { GrantBody, TokenSet } from "openid-client";
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, AuthStatus, BentleyError } from "@itwin/core-bentley";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
 /**
@@ -25,13 +24,14 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
  * [self service registration page](https://developer.bentley.com/register/).
  * * The client type must be "Agent"
  * * Use the Client Id/Client Secret/Scopes to create the agent configuration that's passed in.
- * * Ensure the application can access the iTwin Project/Asset - in production environments, this is done by
- * using the iTwin project portal to add add the email **`{Client Id}@apps.imsoidc.bentley.com`** as an authorized user
+ * * Ensure the application can access the iTwin - in production environments, this is done by
+ * using the iTwin portal to add add the email **`{Client Id}@apps.imsoidc.bentley.com`** as an authorized user
  * with the appropriate role that includes the required access permissions.
  * @beta
  */
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
   private _accessToken?: AccessToken;
+  private _expiresAt?: Date;
 
   constructor(agentConfiguration: AgentAuthorizationClientConfiguration) {
     super(agentConfiguration);
@@ -55,34 +55,9 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", () => ({ error: error.error, message: error.message }));
     }
 
-    const userProfile = tokenSet.access_token
-      ? decode(tokenSet.access_token, { json: true, complete: false })
-      : undefined;
-    this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
-    return this._accessToken;
-  }
-
-  /**
-   * Get the access token
-   * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
-   */
-  public async getToken(): Promise<AccessToken> {
-    return this.generateAccessToken();
-  }
-
-  /**
-   * Refresh the access token - simply checks if the token is still valid before re-fetching a new access token
-   * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
-   */
-  public async refreshToken(jwt: AccessToken): Promise<AccessToken> {
-    // Refresh 1 minute before expiry
-    const expiresAt = jwt.getExpiresAt();
-    if (!expiresAt)
-      throw new BentleyError(AuthStatus.Error, "Invalid JWT passed to refresh");
-    if (expiresAt.getTime() - Date.now() > 1 * 60 * 1000)
-      return jwt;
-
-    this._accessToken = await this.generateAccessToken();
+    this._accessToken = `Bearer ${tokenSet.access_token}`;
+    if (tokenSet.expires_at)
+      this._expiresAt = new Date(tokenSet.expires_at * 1000);
     return this._accessToken;
   }
 
@@ -99,11 +74,10 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     if (!this._accessToken)
       return false;
 
-    const expiresAt = this._accessToken.getExpiresAt();
-    if (!expiresAt)
+    if (!this._expiresAt)
       throw new BentleyError(AuthStatus.Error, "Invalid JWT");
 
-    return expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
+    return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */

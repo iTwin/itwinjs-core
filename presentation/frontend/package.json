@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/presentation-frontend",
-  "version": "3.0.0-dev.70",
+  "name": "@itwin/presentation-frontend",
+  "version": "3.0.0-dev.77",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/presentation-frontend.js",
   "typings": "lib/presentation-frontend",
@@ -22,14 +22,14 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "copy:locale": "cpx \"../common/assets/**/*.json\" ./lib/public",
     "copy:assets": "cpx \"./src/**/*.json\" ./lib",
-    "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
+    "build": "npm run -s copy:assets && npm run -s copy:locale && npm run -s pseudolocalize && npm run -s extract && tsc 1>&2",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "docs": "npm run docs:reference && npm run docs:changelog",
+    "cover": "nyc npm -s test",
+    "docs": "npm run -s docs:reference && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
@@ -37,27 +37,27 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.70",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.70"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
+    "@itwin/core-common": "workspace:^3.0.0-dev.77",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.77",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.77",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.77",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.77"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -87,11 +87,11 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 100,
     "functions": 100,
-    "branches": 100,
+    "branches": 98,
     "lines": 100,
     "require": [
       "jsdom-global/register"
@@ -104,8 +104,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

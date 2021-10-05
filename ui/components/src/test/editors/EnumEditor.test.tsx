@@ -8,11 +8,11 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { EnumEditor } from "../../ui-components/editors/EnumEditor";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { EnumEditor } from "../../components-react/editors/EnumEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 import { handleError, selectChangeValueByIndex, stubScrollIntoView } from "../test-helpers/misc";
 
 describe("<EnumEditor />", () => {

@@ -5,7 +5,7 @@
 
 /* eslint-disable no-console */
 
-import * as g from "../geometry-core";
+import * as g from "../core-geometry";
 
 // console.log("=========================");
 // console.log("Standalone Output");

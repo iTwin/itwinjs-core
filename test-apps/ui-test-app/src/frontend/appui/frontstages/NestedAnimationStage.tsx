@@ -5,8 +5,8 @@
 import * as React from "react";
 import {
   ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, NestedFrontstage, ToolWidget, Widget, Zone,
-} from "@bentley/ui-framework";
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+} from "@itwin/appui-react";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class NestedAnimationStage extends FrontstageProvider {
   public get id(): string {

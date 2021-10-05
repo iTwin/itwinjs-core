@@ -7,8 +7,8 @@
  * @module BrowserAuthorization
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, assert, AuthStatus, BeEvent, BentleyError, IDisposable, Logger } from "@itwin/core-bentley";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
@@ -57,15 +57,18 @@ export interface BrowserAuthorizationClientRequestOptions {
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 
-  protected _accessToken?: AccessToken;
+  protected _accessToken: AccessToken = "";
+  protected _expiresAt?: Date;
 
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
   }
 
   public get hasExpired(): boolean {
+    if (this._expiresAt)
+      return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired;
     return !this._accessToken;
   }
 
@@ -241,10 +244,11 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   protected initAccessToken(user: User | undefined) {
     if (!user) {
-      this._accessToken = undefined;
+      this._accessToken = "";
       return;
     }
-    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
+    this._accessToken = `Bearer ${user.access_token}`;
+    this._expiresAt = new Date(user.expires_at * 1000);
   }
 
   /**
@@ -295,7 +299,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   protected _onUserStateChanged = (user: User | undefined) => {
     this.initAccessToken(user);
     try {
-      this.onUserStateChanged.raiseEvent(this._accessToken);
+      this.onAccessTokenChanged.raiseEvent(this._accessToken);
     } catch (err: any) {
       Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }

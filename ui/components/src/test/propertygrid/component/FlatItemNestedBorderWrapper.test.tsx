@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { FlatItemNestedBorderWrapper } from "../../../ui-components/propertygrid/component/FlatItemNestedBorderWrapper";
+import { FlatItemNestedBorderWrapper } from "../../../components-react/propertygrid/component/FlatItemNestedBorderWrapper";
 
 describe("FlatItemNestedBorderWrapper", () => {
   /**

@@ -5,7 +5,7 @@
 
 import {
   XAndY,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AbstractToolbarProps,
   ActionButton,
@@ -14,10 +14,10 @@ import {
   OnItemExecutedFunc,
   RelativePosition,
   UiAdmin,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import {
   IModelApp,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   Window,
   WindowProps,

@@ -6,16 +6,16 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
+import { IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
   ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
   HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse,
   PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";

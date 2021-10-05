@@ -6,11 +6,11 @@
  * @module FavoriteProperties
  */
 
-import { Id64Arg, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
-import { getScopeId, Presentation } from "@bentley/presentation-frontend";
-import { PropertyData } from "@bentley/ui-components";
+import { Id64Arg, using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { CategoryDescription, KeySet, Ruleset } from "@itwin/presentation-common";
+import { getScopeId, Presentation } from "@itwin/presentation-frontend";
+import { PropertyData } from "@itwin/components-react";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
 

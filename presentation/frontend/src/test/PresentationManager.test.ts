@@ -5,24 +5,24 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
-import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@itwin/core-bentley";
+import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
+import { IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
   DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
   ElementPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
   PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
-} from "@bentley/presentation-common";
-import { createTestContentDescriptor } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+} from "@itwin/presentation-common";
+import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
   createRandomRuleset, createRandomTransientId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
@@ -69,10 +69,10 @@ describe("PresentationManager", () => {
 
   const mockI18N = () => {
     i18nMock.reset();
-    Presentation.setI18nManager(i18nMock.object);
+    Presentation.setLocalization(i18nMock.object);
     const resolvedPromise = new Promise<void>((resolve) => resolve());
-    i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
-    i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
+    i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => resolvedPromise);
+    i18nMock.setup((x) => x.getLocalizedString(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
   };
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey }>(requestOptions: TOptions) => {

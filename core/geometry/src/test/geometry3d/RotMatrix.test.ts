@@ -1081,7 +1081,7 @@ function snapVectorToCubeFeatures(zVector: XYAndZ, tolerance: number = 1.0e-6): 
   }
   return Vector3d.create(x, y, z);
 }
-/*
+/**
  * Adjust a worldToView matrix to favor both
  * * direct view at faces, edges, and corners of a view cube.
  * * heads up

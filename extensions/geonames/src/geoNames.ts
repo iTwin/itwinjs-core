@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic, Localization } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
-} from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+} from "@itwin/core-frontend";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 
 /*-----------------------------------------------------------------------
@@ -44,7 +43,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = `${this.title} (${GeoNameExtension.i18n.translate("geoNames:misc.Population")}: ${props.population})`;
+      this.title = `${this.title} (${GeoNameExtension.localization.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -73,7 +72,6 @@ class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
 export class GeoNameMarkerManager {
   private _markerSet: GeoNameMarkerSet;
   public static decorator?: GeoNameMarkerManager; // static variable so we can tell if the manager is active.
-  protected _requestContext = new ClientRequestContext("");
   private static _scratchCarto = Cartographic.createZero();
   private static _scratchPoint = Point3d.createZero();
 
@@ -122,7 +120,7 @@ export class GeoNameMarkerManager {
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.i18n.translate(`geoNames:messages.${messageKey}`);
+    const message: string = GeoNameExtension.localization.getLocalizedString(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }
@@ -135,7 +133,7 @@ export class GeoNameMarkerManager {
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      const locationResponse: Response = await request(this._requestContext, url, requestOptions);
+      const locationResponse: Response = await request(url, requestOptions);
 
       const cities = new Array<GeoNameProps>();
       for (const geoName of locationResponse.body.geonames) {
@@ -209,17 +207,16 @@ class GeoNameUpdateTool extends GeoNameTool {
 }
 
 export class GeoNameExtension {
-  private static _i18n: I18N;
+  private static _localization: Localization;
   private static _defaultNs = "mapLayers";
 
-  public static get i18n(): I18N { return this._i18n; }
+  public static get localization(): Localization { return this._localization; }
 
-  public static async initialize(i18n: I18N): Promise<void> {
-    const namespace = this._i18n.registerNamespace(this._defaultNs);
-    await namespace.readFinished;
-    IModelApp.tools.register(GeoNameOnTool, namespace, i18n);
-    IModelApp.tools.register(GeoNameOffTool, namespace, i18n);
-    IModelApp.tools.register(GeoNameUpdateTool, namespace, i18n);
+  public static async initialize(localization: Localization): Promise<void> {
+    await this._localization.registerNamespace(this._defaultNs);
+    IModelApp.tools.register(GeoNameOnTool, this._defaultNs, localization);
+    IModelApp.tools.register(GeoNameOffTool, this._defaultNs, localization);
+    IModelApp.tools.register(GeoNameUpdateTool, this._defaultNs, localization);
     if (undefined !== IModelApp.viewManager.selectedView)
       await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { BackstageAppButton } from "../../ui-framework";
-import { ContentToolWidgetComposer } from "../../ui-framework/widgets/ContentToolWidgetComposer";
+import { BackstageAppButton } from "../../appui-react";
+import { ContentToolWidgetComposer } from "../../appui-react/widgets/ContentToolWidgetComposer";
 import TestUtils from "../TestUtils";
 
 describe("ContentToolWidgetComposer", () => {

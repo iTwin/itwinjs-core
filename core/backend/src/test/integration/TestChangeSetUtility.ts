@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { SpatialCategory } from "../../Category";
-import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseDb, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -15,21 +14,21 @@ import { HubUtility } from "./HubUtility";
 export class TestChangeSetUtility {
   private readonly _iModelName: string;
 
-  public projectId!: GuidString;
+  public iTwinId!: GuidString;
   public iModelId!: GuidString;
   private _iModel!: BriefcaseDb;
-  private _requestContext: AuthorizedClientRequestContext;
+  private _accessToken: AccessToken;
 
   private _modelId!: string;
   private _categoryId!: string;
 
-  constructor(requestContext: AuthorizedClientRequestContext, iModelName: string) {
-    this._requestContext = requestContext;
+  constructor(accessToken: AccessToken, iModelName: string) {
+    this._accessToken = accessToken;
     this._iModelName = HubUtility.generateUniqueName(iModelName); // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     this._iModel.saveChanges("Added test model");
   }
@@ -46,10 +45,10 @@ export class TestChangeSetUtility {
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    this.projectId = await HubUtility.getTestITwinId(this._requestContext);
+    this.iTwinId = await HubUtility.getTestITwinId(this._accessToken);
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel({ user: this._requestContext, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });
+    this.iModelId = await HubUtility.recreateIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();
@@ -57,7 +56,7 @@ export class TestChangeSetUtility {
     await this.addTestElements();
 
     // Push changes to the hub
-    await this._iModel.pushChanges({ user: this._requestContext, description: "Setup test model" });
+    await this._iModel.pushChanges({ accessToken: this._accessToken, description: "Setup test model" });
     return this._iModel;
   }
 
@@ -65,13 +64,13 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
-    await this._iModel.pushChanges({ user: this._requestContext, description: "Added test elements" });
+    await this._iModel.pushChanges({ accessToken: this._accessToken, description: "Added test elements" });
   }
 
   public async deleteTestIModel(): Promise<void> {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
-    await IModelHost.hubAccess.deleteIModel({ user: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(this._accessToken, this._iModel);
+    await IModelHost.hubAccess.deleteIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
   }
 }

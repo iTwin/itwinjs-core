@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   EnumerationChoice, IconEditorParams, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
-} from "../../ui-abstract";
+} from "../../appui-abstract";
 
 // cSpell:ignore Picklist
 

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 

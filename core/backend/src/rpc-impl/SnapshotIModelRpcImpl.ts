@@ -8,7 +8,7 @@
 
 import {
   IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface, SnapshotOpenOptions,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 

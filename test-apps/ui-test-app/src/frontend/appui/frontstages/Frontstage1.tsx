@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-imodel-components";
+import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@itwin/imodel-components-react";
 import {
   ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { StandardContentLayouts, UiAdmin, WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, UiAdmin, WidgetState } from "@itwin/appui-abstract";
 import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */

@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point } from "@bentley/ui-core";
-import { Direction, getDragDistance, withDragInteraction } from "../../../../ui-ninezone";
+import { Point } from "@itwin/core-react";
+import { Direction, getDragDistance, withDragInteraction } from "../../../../appui-layout-react";
 import { mount } from "../../../Utils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

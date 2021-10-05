@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { IModelApp } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
-import { UiItemsManager } from "@bentley/ui-abstract";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { UiItemsManager } from "@itwin/appui-abstract";
+import { ConfigurableUiManager } from "@itwin/appui-react";
 
 /**
  * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
  * '''ts
- *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with ui-framework's ConfigurableUiManager
+ *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with appui-react's ConfigurableUiManager
  *  // so it can be explicitly added to a stage via a FrontstageDef.
  *  await MapLayersUI.initialize (registerItemsProvider);
  * '''
  * @beta
  */
 export class MapLayersUI {
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
@@ -30,14 +30,13 @@ export class MapLayersUI {
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
    * ```
    */
-  public static async initialize(registerItemsProvider = true, i18n?: I18N): Promise<void> {
+  public static async initialize(registerItemsProvider = true, localization?: Localization): Promise<void> {
     // register namespace containing localized strings for this package
-    this._i18n = (i18n ? i18n : IModelApp.i18n);
-    const namespace = this._i18n.registerNamespace(this.i18nNamespace);
-    await namespace.readFinished;
+    this._localization = (localization ? localization : IModelApp.localization);
+    await this._localization.registerNamespace(this.localizationNamespace);
 
-    // _uiItemsProvider always created to provide access to i18n.
-    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._i18n);
+    // _uiItemsProvider always created to provide access to localization.
+    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._localization);
     if (registerItemsProvider)
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
     else
@@ -46,13 +45,13 @@ export class MapLayersUI {
 
   /** Unregisters the GeoTools internationalization service namespace */
   public static terminate() {
-    if (MapLayersUI._i18n)
-      MapLayersUI._i18n.unregisterNamespace(this.i18nNamespace);
-    MapLayersUI._i18n = undefined;
+    if (MapLayersUI._localization)
+      MapLayersUI._localization.unregisterNamespace(this.localizationNamespace);
+    MapLayersUI._localization = undefined;
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
+  public static get localizationNamespace(): string {
     return this._defaultNs;
   }
 }

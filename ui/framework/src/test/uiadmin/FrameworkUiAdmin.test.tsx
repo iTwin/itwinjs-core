@@ -10,13 +10,13 @@ import {
   AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem,
   DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult,
   PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
-} from "@bentley/ui-abstract";
-import { Point } from "@bentley/ui-core";
-import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework";
-import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
-import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
+} from "@itwin/appui-abstract";
+import { Point } from "@itwin/core-react";
+import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../appui-react";
+import { ClearKeyinPaletteHistoryTool } from "../../appui-react/tools/KeyinPaletteTools";
+import * as keyinExports from "../../appui-react/popup/KeyinPalettePanel";
 import TestUtils from "../TestUtils";
-import { MockRender, Tool } from "@bentley/imodeljs-frontend";
+import { MockRender, Tool } from "@itwin/core-frontend";
 import { Button } from "@itwin/itwinui-react";
 
 class TestDialogUiDataProvider extends DialogLayoutDataProvider {
@@ -145,7 +145,7 @@ describe("FrameworkUiAdmin", () => {
 
     uiAdmin = new FrameworkUiAdmin();
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ i18n: TestUtils.i18n });
+    await MockRender.App.startup({ localization: TestUtils.localization });
   });
 
   after(async () => {

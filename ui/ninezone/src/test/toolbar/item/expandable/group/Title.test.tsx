@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Title } from "../../../../../ui-ninezone";
+import { Title } from "../../../../../appui-layout-react";
 import { mount } from "../../../../Utils";
 
 describe("<Title />", () => {

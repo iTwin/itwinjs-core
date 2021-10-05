@@ -6,10 +6,10 @@
 import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { PresentationError } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
+import { PresentationError } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
@@ -26,13 +26,13 @@ describe("Presentation", () => {
 
   const mockI18N = () => {
     const mock = moq.Mock.ofType<I18N>();
-    mock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
+    mock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
     return mock;
   };
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({ localization: new I18N("iModelJs") });
     Presentation.terminate();
   });
 
@@ -47,7 +47,7 @@ describe("Presentation", () => {
       expect(() => Presentation.presentation).to.throw();
       expect(() => Presentation.selection).to.throw();
       expect(() => Presentation.favoriteProperties).to.throw();
-      expect(() => Presentation.i18n).to.throw();
+      expect(() => Presentation.localization).to.throw();
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
       expect(Presentation.selection).to.be.instanceof(selection.SelectionManager);
@@ -65,15 +65,15 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager.i18n with IModelApp.i18", async () => {
       const i18nMock = mockI18N();
-      (IModelApp as any)._i18n = i18nMock.object;
+      (IModelApp as any)._localization = i18nMock.object;
       await Presentation.initialize({ presentation: { activeLocale: "test" } });
-      expect(Presentation.i18n).to.equal(i18nMock.object);
+      expect(Presentation.localization).to.equal(i18nMock.object);
     });
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
       const i18nMock = mockI18N();
       i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
-      Presentation.setI18nManager(i18nMock.object);
+      Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize();
       expect(constructorSpy).to.be.calledWith({
@@ -85,7 +85,7 @@ describe("Presentation", () => {
     it("initializes PresentationManager with i18 locale if no activeLocale set in props", async () => {
       const i18nMock = mockI18N();
       i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
-      Presentation.setI18nManager(i18nMock.object);
+      Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
@@ -97,7 +97,7 @@ describe("Presentation", () => {
     it("initializes PresentationManager with undefined locale if i18n.languageList() returns empty array", async () => {
       const i18nMock = mockI18N();
       i18nMock.setup((x) => x.languageList()).returns(() => []).verifiable();
-      Presentation.setI18nManager(i18nMock.object);
+      Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
@@ -149,12 +149,12 @@ describe("Presentation", () => {
       expect(Presentation.presentation).to.be.not.null;
       expect(Presentation.selection).to.be.not.null;
       expect(Presentation.favoriteProperties).to.be.not.null;
-      expect(Presentation.i18n).to.be.not.null;
+      expect(Presentation.localization).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.presentation).to.throw;
       expect(() => Presentation.selection).to.throw;
       expect(() => Presentation.favoriteProperties).to.throw;
-      expect(() => Presentation.i18n).to.throw;
+      expect(() => Presentation.localization).to.throw;
     });
 
     it("calls registered initialization handler terminate callback", async () => {
@@ -227,22 +227,22 @@ describe("Presentation", () => {
 
   });
 
-  describe("setI18nManager", () => {
+  describe("setLocalization", () => {
 
     it("overwrites i18n instance before initialization", async () => {
       const i18n = new I18N();
-      Presentation.setI18nManager(i18n);
+      Presentation.setLocalization(i18n);
       await Presentation.initialize();
-      expect(Presentation.i18n).to.eq(i18n);
+      expect(Presentation.localization).to.eq(i18n);
     });
 
     it("overwrites i18n instance after initialization", async () => {
       const i18n = new I18N();
       await Presentation.initialize();
-      expect(Presentation.i18n).to.be.not.null;
-      expect(Presentation.i18n).to.not.eq(i18n);
-      Presentation.setI18nManager(i18n);
-      expect(Presentation.i18n).to.eq(i18n);
+      expect(Presentation.localization).to.be.not.null;
+      expect(Presentation.localization).to.not.eq(i18n);
+      Presentation.setLocalization(i18n);
+      expect(Presentation.localization).to.eq(i18n);
     });
 
   });

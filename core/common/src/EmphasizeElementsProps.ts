@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64Array } from "@bentley/bentleyjs-core";
+import { Id64Array } from "@itwin/core-bentley";
 import { ColorDefProps } from "./ColorDef";
 import { FeatureAppearanceProps } from "./FeatureSymbology";
 

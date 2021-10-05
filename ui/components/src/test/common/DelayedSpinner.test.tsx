@@ -7,7 +7,7 @@ import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
-import { DelayedSpinner } from "../../ui-components/common/DelayedSpinner";
+import { DelayedSpinner } from "../../components-react/common/DelayedSpinner";
 
 describe("<DelayedSpinner />", () => {
 

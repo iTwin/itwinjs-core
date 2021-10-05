@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
-import { TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUtility } from "@itwin/oidc-signin-tool";
 
 export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizationClient {
-  private _token: AccessToken | undefined;
+  private _token: AccessToken = "";
 
-  public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
+  public constructor(private _userCredentials: any) {
   }
 
   public async signIn(): Promise<void> {
@@ -19,25 +18,22 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
   }
 
   public async signOut(): Promise<void> {
-    this._token = undefined;
-    this.onUserStateChanged.raiseEvent(this._token);
+    this._token = "";
+    this.onAccessTokenChanged.raiseEvent(this._token);
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
   public get isAuthorized(): boolean {
-    return !!this._token;
+    return this._token !== "";
   }
   public get hasExpired(): boolean {
-    return !this._token;
+    return false;
   }
   public get hasSignedIn(): boolean {
-    return !!this._token;
+    return this._token !== "";
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
-    if (!this._token) {
-      throw new Error("User is not signed in.");
-    }
+  public async getAccessToken(): Promise<AccessToken> {
     return this._token;
   }
 }

@@ -1879,7 +1879,7 @@
       "type": "pickString",
       "options": [
         "product-settings",
-        "context-registry"
+        "itwin-registry"
       ]
     }
   ]

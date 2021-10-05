@@ -6,16 +6,17 @@
 import * as path from "path";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
-  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
-} from "@bentley/imodeljs-common";
+  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { System } from "@bentley/imodeljs-frontend/lib/webgl";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+} from "@itwin/core-frontend";
+import { System } from "@itwin/core-frontend/lib/webgl";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -181,6 +182,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: this.curConfig.renderOptions,
           tileAdmin: this.curConfig.tileProps,
+          realityDataAccess: new RealityDataAccessClient(),
         });
       }
 
@@ -1070,32 +1072,29 @@ function getTileProps(props: TileAdmin.Props): string {
 
 function getBackgroundMapProps(vp: ScreenViewport): string {
   let bmPropsStr = "";
+  const layer = vp.displayStyle.settings.mapImagery.backgroundBase;
+  if (layer instanceof BaseMapLayerSettings && layer.provider) {
+    switch (layer.provider.name) {
+      case "BingProvider":
+        break;
+      case "MapBoxProvider":
+        bmPropsStr += "MapBox";
+        break;
+    }
+
+    switch (layer.provider.type) {
+      case BackgroundMapType.Hybrid:
+        break;
+      case BackgroundMapType.Aerial:
+        bmPropsStr += "+aer";
+        break;
+      case BackgroundMapType.Street:
+        bmPropsStr += "+st";
+        break;
+    }
+  }
+
   const bmProps = vp.displayStyle.settings.backgroundMap;
-  switch (bmProps.providerName) {
-    case "BingProvider":
-      break;
-    case "MapBoxProvider":
-      bmPropsStr += "MapBox";
-      break;
-    default:
-      bmPropsStr += bmProps.providerName;
-      break;
-  }
-
-  switch (bmProps.mapType) {
-    case BackgroundMapType.Hybrid:
-      break;
-    case BackgroundMapType.Aerial:
-      bmPropsStr += "+aer";
-      break;
-    case BackgroundMapType.Street:
-      bmPropsStr += "+st";
-      break;
-    default:
-      bmPropsStr += `+type${bmProps.mapType}`;
-      break;
-  }
-
   if (bmProps.groundBias !== 0)
     bmPropsStr += `+bias${bmProps.groundBias}`;
 

@@ -7,8 +7,8 @@ import * as React from "react";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
-import { SettingsManager, SettingsTabEntry, SettingsTabsProvider } from "../../ui-core/settings/SettingsManager";
+import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../core-react/settings/SettingsContainer";
+import { SettingsManager, SettingsTabEntry, SettingsTabsProvider } from "../../core-react/settings/SettingsManager";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 

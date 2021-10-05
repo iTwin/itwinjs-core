@@ -6,14 +6,14 @@
 /** @packageDocumentation
  * @module Content
  */
-import { using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset, traverseContent,
-} from "@bentley/presentation-common";
-import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+} from "@itwin/presentation-common";
+import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 
 /**
  * Interface for a data provider, which is used by ContentBuilder.

@@ -7,7 +7,7 @@ import {
   ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, IconListEditorParams, InputEditorSizeParams, isButtonGroupEditorParams,
   isColorEditorParams, isCustomFormattedNumberParams, isIconListEditorParams, isInputEditorSizeParams, isSuppressLabelEditorParams,
   PropertyEditorParamTypes, SuppressLabelEditorParams,
-} from "../../ui-abstract";
+} from "../../appui-abstract";
 
 describe("EditorParams", () => {
   it("should evaluate types correctly", () => {

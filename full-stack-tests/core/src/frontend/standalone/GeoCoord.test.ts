@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d, XYZProps } from "@bentley/geometry-core";
-import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@bentley/imodeljs-common";
-import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Point3d, XYZProps } from "@itwin/core-geometry";
+import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
+import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 
 // spell-checker: disable
 

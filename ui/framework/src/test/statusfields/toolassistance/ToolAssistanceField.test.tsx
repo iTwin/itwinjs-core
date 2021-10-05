@@ -6,16 +6,16 @@ import { expect } from "chai";
 import { ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
-import { LocalSettingsStorage } from "@bentley/ui-core";
-import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
+import { Logger } from "@itwin/core-bentley";
+import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@itwin/core-frontend";
+import { WidgetState } from "@itwin/appui-abstract";
+import { LocalSettingsStorage } from "@itwin/core-react";
+import { FooterPopup, TitleBarButton } from "@itwin/appui-layout-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
-} from "../../../ui-framework";
+} from "../../../appui-react";
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 
 describe("ToolAssistanceField", () => {

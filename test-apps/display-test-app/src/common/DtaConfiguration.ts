@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { GuidString, ProcessDetector } from "@bentley/bentleyjs-core";
+import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 
 /** Parameters for starting display-test-app with a specified initial configuration */
 export interface DtaConfiguration {
@@ -50,6 +49,7 @@ export interface DtaConfiguration {
   logLevel?: string; // default undefined
   windowSize?: string; // default undefined
   devTools?: boolean; // default true
+  cacheTileMetadata?: boolean; // default false
 }
 
 let configuration: DtaConfiguration | undefined;
@@ -120,8 +120,8 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_WINDOW_SIZE)
     configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
 
-  configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS ? true : false;
-
+  configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
+  configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
   configuration.useProjectExtents = undefined === process.env.IMJS_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {

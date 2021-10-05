@@ -6,16 +6,15 @@
  * @module iModels
  */
 
-import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { ECVersion, Schema, SchemaKey } from "@bentley/ecschema-metadata";
-import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
   ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
   IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
 
@@ -243,7 +242,7 @@ export class IModelExporter {
    * If this parameter is not provided, then just the current changeset will be exported.
    * @note To form a range of versions to export, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
    */
-  public async exportChanges(user?: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
+  public async exportChanges(user?: AccessToken, startChangesetId?: string): Promise<void> {
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes");
     }
@@ -719,11 +718,11 @@ class ChangedInstanceIds {
   public font = new ChangedInstanceOps();
   private constructor() { }
 
-  public static async initialize(user: AuthorizedClientRequestContext | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
+  public static async initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, user })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, user })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, accessToken })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, accessToken })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     const changedInstanceIds = new ChangedInstanceIds();
     changesets.forEach((changeset): void => {

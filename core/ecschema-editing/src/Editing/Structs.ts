@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaKey, StructClass, StructClassProps } from "@bentley/ecschema-metadata";
+import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";

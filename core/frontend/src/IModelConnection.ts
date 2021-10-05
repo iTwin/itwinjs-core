@@ -8,8 +8,8 @@
 
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
-} from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams,
   FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
@@ -17,7 +17,7 @@ import {
   MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota,
   QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData, TextureLoadProps,
   ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
@@ -46,7 +46,7 @@ export interface BlankConnectionProps {
   extents: Range3dProps;
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
-  /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
+  /** The optional Guid that identifies the iTwin associated with the [[BlankConnection]]. */
   iTwinId?: GuidString;
 }
 
@@ -477,7 +477,7 @@ export abstract class IModelConnection extends IModel {
     }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-    return Cartographic.fromDegrees({longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z}, result);
+    return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
@@ -610,7 +610,7 @@ export abstract class IModelConnection extends IModel {
 export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
-  /** The Guid that identifies the *context* for this BlankConnection.
+  /** The Guid that identifies the iTwin for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
   public override get iTwinId(): GuidString | undefined { return this._iTwinId; }

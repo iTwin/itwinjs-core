@@ -1,0 +1,96 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/opacity";
+@import "../style/themecolors";
+@import "../button/button";
+@import "../z-index";
+
+$uicore-slider-height:          24px;
+$uicore-slider-rail-height:     4px;
+$uicore-slider-handle-size:     14px;
+$uicore-slider-minmax-margin:   6px;
+
+.core-slider-container {
+  position: relative;
+  height: $uicore-slider-height;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+
+  span.core-slider-minmax[data-testid="core-slider-min"] {
+    margin-right: 4px;
+  }
+
+  span.core-slider-minmax[data-testid="core-slider-max"] {
+    margin-left: 4px;
+  }
+
+  &.core-slider-tickLabels {
+    margin-bottom: 9px;
+  }
+
+  &.core.slider-includeTicksInWidth {
+    margin-right: 10px;
+  }
+
+  .core-slider-minMax {
+    margin-left: $uicore-slider-minmax-margin;
+    margin-right: $uicore-slider-minmax-margin;
+  }
+
+  .core-slider {
+    flex: 1;
+    position: relative;
+    height: inherit;
+    margin-bottom: 2px;
+  }
+
+  &.core-disabled {
+    cursor: not-allowed;
+
+    .core-slider {
+      .core-slider-rail {
+        cursor: not-allowed;
+      }
+
+      .core-slider-track {
+        cursor: not-allowed;
+
+        >.core-slider-track-inner {
+          background: $buic-foreground-disabled;
+        }
+      }
+
+      .core-slider-handle {
+        background: $buic-background-control-disabled;
+        border-color: $buic-background-control-stroke-disabled;
+        cursor: not-allowed;
+      }
+
+      .core-slider-tick-mark {
+        opacity: $uicore-opacity-disabled;
+      }
+
+      .core-slider-tick-label {
+        color: $buic-foreground-disabled;
+      }
+    }
+
+    .uicore-text-body {
+      color: $buic-foreground-disabled;
+    }
+
+    .icon {
+      color: $buic-foreground-disabled;
+    }
+  }
+}
+
+.core-slider_track-tooltip-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+}

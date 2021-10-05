@@ -4,22 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 
-import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { TestUtils } from "./TestUtils";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import {
   BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
-import { NumberInput, Toggle } from "@bentley/ui-core";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { NumberInput, Toggle } from "@itwin/core-react";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { Select } from "@itwin/itwinui-react";
+import { I18N } from "@itwin/core-i18n";
 
 describe("MapManagerSettings", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
@@ -66,7 +67,7 @@ describe("MapManagerSettings", () => {
 
   before(async () => {
     await TestUtils.initialize();
-    await MockRender.App.startup({});
+    await MockRender.App.startup({ localization: new I18N("iModelJs") });
   });
 
   after(async () => {

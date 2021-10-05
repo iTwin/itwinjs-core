@@ -8,17 +8,17 @@
 
 import { inPlaceSort } from "fast-sort";
 import memoize from "micro-memoize";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
   InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
   RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
   Value, ValuesMap,
-} from "@bentley/presentation-common";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@bentley/ui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
+} from "@itwin/presentation-common";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@itwin/appui-abstract";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";

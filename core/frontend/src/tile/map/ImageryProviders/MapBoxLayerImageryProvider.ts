@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@bentley/imodeljs-common";
+import { MapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import { MapLayerImageryProvider } from "../../internal";
@@ -45,7 +45,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override getLogo(_vp: ScreenViewport): HTMLTableRowElement | undefined {
-    return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.MapBoxCopyright") });
+    return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") });
   }
 
   // no initialization needed for MapBoxImageryProvider.

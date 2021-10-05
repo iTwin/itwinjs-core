@@ -10,18 +10,18 @@ import {
   LengthDescription, NotifyMessageDetails, OutputMessagePriority,
   PrimitiveTool, QuantityType,
   SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
   InputEditorSizeParams,
   PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
-import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
+import { Logger } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef } from "@itwin/core-common";
+import { FormatterSpec } from "@itwin/core-quantity";
+import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 import sampleToolSvg from "./SampleTool.svg?sprite";
 
 enum ToolOptions {
@@ -49,12 +49,12 @@ export class SampleTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return this.i18n.translateWithNamespace(this.namespace.name, key);
+    return this.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   public static getOptionString(name: string): string {
     const key = `tools.${this.toolId}.Options.${name}`;
-    return this.i18n.translateWithNamespace(this.namespace.name, key);
+    return this.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   // Tool Setting Properties

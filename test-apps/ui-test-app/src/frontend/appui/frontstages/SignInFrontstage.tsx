@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { Centered } from "@itwin/core-react";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -20,7 +21,7 @@ class SignInControl extends ContentControl {
     if (isFrontendAuthorizationClient(client))
       this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
-      this.reactNode = null;
+      this.reactNode =  <Centered>{"No authorization client available"}</Centered>;
   }
 
   // user chose to work offline from the sign in page

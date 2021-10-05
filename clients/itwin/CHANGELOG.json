@@ -1118,7 +1118,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Add missing peerDependency on @bentley/geometry-core"
+            "comment": "Add missing peerDependency on @itwin/core-geometry"
           }
         ]
       }

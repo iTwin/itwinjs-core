@@ -10,8 +10,8 @@
 import {
   ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
   Ray3d, Transform,
-} from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { SceneContext } from "../../ViewContext";
 import { Tile, TileTreeReference } from "../../tile/internal";

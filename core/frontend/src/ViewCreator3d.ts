@@ -12,9 +12,9 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
+import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";

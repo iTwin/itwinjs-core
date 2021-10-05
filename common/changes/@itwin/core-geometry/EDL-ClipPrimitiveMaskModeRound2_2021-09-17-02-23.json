@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Correct problems with all-convex mask clips",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

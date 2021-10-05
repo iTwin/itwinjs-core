@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BackendLoggerCategory, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { BackendLoggerCategory, NativeLoggerCategory } from "@itwin/core-backend";
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
-import { PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend";
+import { PresentationBackendNativeLoggerCategory } from "@itwin/presentation-backend";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 

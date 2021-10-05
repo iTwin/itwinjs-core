@@ -1,0 +1,25 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add required `width` and `height` props for `CategoryTree`, `ModelsTree` and `SpatialContainmentTree`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove `IModelConnectedCategoryTree`, `IModelConnectedModelsTree` and `IModelConnectedSpatialContainmentTree`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove deprecated `CategoryTreeWithSearchBox`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove deprecated `VisibilityComponent`, `VisibilityWidget` and related types.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

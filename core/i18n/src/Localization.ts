@@ -6,30 +6,30 @@
  * @module Localization
  */
 
+import { Localization } from "@itwin/core-common";
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 
 /** @public */
-export interface I18NOptions {
-  urlTemplate?: I18NextXhrBackend.LoadPathOption;
+interface LocalizationInitOptions {
+  urlTemplate: string;
 }
-
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
-export class I18N {
+export class I18N implements Localization {
   private _i18next: i18n;
-  private readonly _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
+  private readonly _namespaceRegistry: Map<string, Promise<void>> = new Map<string, Promise<void>>();
 
   /** Constructor for I18N.
    * @param nameSpaces either the name of the default namespace, an array of namespaces, or undefined. If an array, the first entry is the default.
    * @param options object with I18NOptions (optional)
    * @param renderFunction optional i18next.Callback function
    */
-  public constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: Callback) {
+  public constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback) {
     this._i18next = createInstance();
 
     const backendOptions: I18NextXhrBackend.BackendOptions = {
@@ -70,13 +70,12 @@ export class I18N {
             renderFunction(error, t);
           resolve();
         })
-        .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
+        .changeLanguage(isDevelopment ? "en" : undefined as any, undefined);
       // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
     });
 
     for (const nameSpace of nameSpaces) {
-      const i18nNameSpace = new I18NNamespace(nameSpace, initPromise);
-      this._namespaceRegistry.set(nameSpace, i18nNameSpace);
+      this._namespaceRegistry.set(nameSpace, initPromise);
     }
   }
 
@@ -96,7 +95,7 @@ export class I18N {
    * @returns The line with all %{keys} translated
    * @public
    */
-  public translateKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.translate(tag)); }
+  public getLocalizedKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.getLocalizedString(tag)); }
 
   /** Return the translated value of a key.
    * @param key - the key that matches a property in the JSON localization file.
@@ -104,14 +103,14 @@ export class I18N {
    * followed by a colon, followed by the property in the JSON file.
    * For example:
    * ``` ts
-   * const dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
+   * const dataString: string = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.BingDataAttribution");
    *  ```
    * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public translate(key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
     const value = this._i18next.t(key, options);
     if (typeof value !== "string")
       throw new Error("Translation key(s) not found");
@@ -126,7 +125,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -137,7 +136,7 @@ export class I18N {
       });
     }
 
-    return this.translate(fullKey, options);
+    return this.getLocalizedString(fullKey, options);
   }
 
   /** Gets the English translation.
@@ -147,7 +146,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
     const en = this._i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
@@ -163,7 +162,7 @@ export class I18N {
    * @param name - the name of the namespace
    * @public
    */
-  public getNamespace(name: string): I18NNamespace | undefined {
+  public getNamespace(name: string): Promise<void> | undefined {
     return this._namespaceRegistry.get(name);
   }
 
@@ -174,11 +173,11 @@ export class I18N {
    * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.
    * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
    * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
-   * fulfillment of the readPromise Promise property of the returned I18NNamespace.
+   * fulfillment of the readPromise Promise property of the returned LocalizationNamespace.
    * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
    * @public
    */
-  public registerNamespace(name: string): I18NNamespace {
+  public async registerNamespace(name: string): Promise<void> {
     const existing = this._namespaceRegistry.get(name);
     if (existing !== undefined)
       return existing;
@@ -203,25 +202,13 @@ export class I18N {
         }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length === 0)
-          Logger.logError("I81N", `The resource for namespace ${name} could not be loaded`);
+          Logger.logError("I18N", `The resource for namespace ${name} could not be loaded`);
 
         resolve();
       });
     });
-    const thisNamespace = new I18NNamespace(name, theReadPromise);
-    this._namespaceRegistry.set(name, thisNamespace);
-    return thisNamespace;
-  }
-
-  /** Waits for the Promises for all the registered namespaces to be fulfilled.
-   * @internal
-   */
-  public async waitForAllRead(): Promise<void[]> {
-    const namespacePromises = new Array<Promise<void>>();
-    for (const thisNamespace of this._namespaceRegistry.values()) {
-      namespacePromises.push(thisNamespace.readFinished);
-    }
-    return Promise.all(namespacePromises);
+    this._namespaceRegistry.set(name, theReadPromise);
+    return theReadPromise;
   }
 
   /** @internal */
@@ -231,13 +218,10 @@ export class I18N {
 
 }
 
-/** The class that represents a registered I18N Namespace
+/** The class that represents a registered Localization Namespace
  * @note The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
  * @public
  */
-export class I18NNamespace {
-  public constructor(public name: string, public readFinished: Promise<void>) { }
-}
 
 class BentleyLogger {
   public static readonly type = "logger";

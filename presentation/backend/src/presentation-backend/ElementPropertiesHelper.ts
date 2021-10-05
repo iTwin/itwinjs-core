@@ -6,12 +6,12 @@
  * @module Core
  */
 
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@itwin/core-bentley";
 import {
   CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
   ElementPropertiesStructArrayPropertyItem, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps,
   PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, traverseContentItem,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 
 /** @internal */
 export const buildElementProperties = (content: Content | undefined): ElementProperties | undefined => {

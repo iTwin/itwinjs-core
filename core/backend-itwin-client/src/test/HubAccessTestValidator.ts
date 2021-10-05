@@ -4,44 +4,41 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { TestConfig } from "./TestConfig";
+import { AccessToken } from "@itwin/core-bentley";
 
 chai.should();
 
-/** Utility to test basic access to the Context Registry, RBAC, and iModelHub */
+/** Utility to test basic access to the iTwin Registry, RBAC, and iModelHub */
 export class HubAccessTestValidator {
   private static _singletonInstance: HubAccessTestValidator;
 
-  private constructor(private _testProjectName: string, private _testProjectId: string, private _testIModelName: string, private _testIModelId: string) {
+  private constructor(private _testITwinName: string, private _testITwinId: string, private _testIModelName: string, private _testIModelId: string) {
   }
 
   public static async getInstance(): Promise<HubAccessTestValidator> {
     if (HubAccessTestValidator._singletonInstance)
       return HubAccessTestValidator._singletonInstance;
 
-    const accessToken: AccessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+    const accessToken = await TestUtility.getAccessToken(TestUsers.regular);
 
-    const testProjectName = "iModelJsIntegrationTest";
+    const testITwinName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
-    const testProjectId: string = await TestConfig.getITwinIdByName(requestContext, testProjectName);
-    const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testProjectId);
+    const testITwinId: string = await TestConfig.getITwinIdByName(accessToken, testITwinName);
+    const testIModelId: string = await TestConfig.queryIModelId(accessToken, testIModelName, testITwinId);
 
-    HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testProjectName, testProjectId, testIModelName, testIModelId);
+    HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testITwinName, testITwinId, testIModelName, testIModelId);
     return HubAccessTestValidator._singletonInstance;
   }
 
   public async validateITwinClientAccess(accessToken: AccessToken) {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
-    const projectId = await TestConfig.getITwinIdByName(requestContext, this._testProjectName);
-    chai.expect(projectId).to.be.equal(this._testProjectId);
+    const iTwinId = await TestConfig.getITwinIdByName(accessToken, this._testITwinName);
+    chai.expect(iTwinId).to.be.equal(this._testITwinId);
   }
 
   public async validateIModelHubAccess(accessToken: AccessToken) {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
-    const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
+    const iModelId = await TestConfig.queryIModelId(accessToken, this._testIModelName, this._testITwinId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);
   }
 }

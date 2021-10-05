@@ -6,13 +6,13 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@bentley/geometry-core";
+import { assert, ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -382,7 +382,7 @@ export class ImdlReader extends GltfReader {
     // We produce unique tile sections for very large (> 8 megapixel) textures, and unique glyph atlases for raster text.
     // Neither should be cached.
     const cacheable = !isGlyph && !isTileSection;
-    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
+    const ownership = cacheable ? { iModel: this._iModel, key: name } : undefined;
 
     const bufferViewId = JsonUtils.asString(namedTex.bufferView);
     const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
@@ -395,11 +395,13 @@ export class ImdlReader extends GltfReader {
 
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
-      const imageSource = new ImageSource(texBytes, format);
-      return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+      const source = new ImageSource(texBytes, format);
+      return this._system.createTextureFromSource({ source, ownership, type: textureType });
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
+    // eslint-disable-next-line deprecation/deprecation
+    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return this._system.createTextureFromElement(name, this._iModel, params, namedTex.format);
   }
 
@@ -453,7 +455,7 @@ export class ImdlReader extends GltfReader {
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
     this._options = options ?? {};
-    this._patternSymbols = props.scene.patternSymbols ?? { };
+    this._patternSymbols = props.scene.patternSymbols ?? {};
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {

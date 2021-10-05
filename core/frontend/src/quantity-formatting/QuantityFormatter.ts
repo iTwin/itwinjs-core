@@ -6,10 +6,10 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import {
   Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
-} from "@bentley/imodeljs-quantity";
+} from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BasicUnitsProvider } from "./BasicUnitsProvider";
@@ -118,9 +118,9 @@ export interface QuantityTypeDefinition {
   description: string;
   /* Provide a default FormatProps for a unit system. */
   getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
-  /** Generate a [FormatterSpec]$(imodeljs-quantity) that will be called to format values.*/
+  /** Generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  /** Generate a [ParserSpec]$(imodeljs-quantity) that will be called to parse a string into a quantity value.*/
+  /** Generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
 }
 
@@ -162,14 +162,14 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
 
   public get label(): string {
     if (!this._label) {
-      this._label = IModelApp.i18n.translate(this._labelKey);
+      this._label = IModelApp.localization.getLocalizedString(this._labelKey);
     }
     return this._label;
   }
 
   public get description(): string {
     if (!this._description) {
-      this._description = IModelApp.i18n.translate(this._descriptionKey);
+      this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
     }
     return this._description;
   }
@@ -286,8 +286,8 @@ export interface UnitFormattingSettingsProvider {
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
  * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
  * provided by the Presentation Manager on the backend. The QuantityFormatter contains a registry of quantity type definitions. These definitions implement
- * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(imodeljs-quantity), and provide methods
- * to generate both a [FormatterSpec]$(imodeljs-quantity) and a [ParserSpec]$(imodeljs-quantity). There are built-in quantity types that are
+ * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(core-quantity), and provide methods
+ * to generate both a [FormatterSpec]$(core-quantity) and a [ParserSpec]$(core-quantity). There are built-in quantity types that are
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
  *

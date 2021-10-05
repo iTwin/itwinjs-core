@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, using } from "@bentley/bentleyjs-core";
-import { IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { PresentationManager, UnitSystemFormat } from "@bentley/presentation-backend";
+import { IModelDb, SnapshotDb } from "@itwin/core-backend";
+import { Guid, using } from "@itwin/core-bentley";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
 import {
   ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset, RuleTypes,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
-import { findFieldByLabel } from "../Utils";
+import { getFieldByLabel } from "../Utils";
 
 describe("PresentationManager", () => {
 
@@ -36,7 +36,7 @@ describe("PresentationManager", () => {
         specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
       }],
     };
-    const keys = KeySet.fromJSON({ instanceKeys: [["Generic:PhysicalObject", ["0x74"]]], nodeKeys: [] });
+    const keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
     it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
       expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
@@ -96,8 +96,7 @@ describe("PresentationManager", () => {
           unitSystem,
         });
         expect(descriptor).to.not.be.undefined;
-        const field = findFieldByLabel(descriptor!.fields, "cm2")!;
-        expect(field).not.to.be.undefined;
+        const field = getFieldByLabel(descriptor!.fields, "cm2");
         const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
         const displayValues = content!.contentSet[0].displayValues.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
         expect(displayValues.length).is.eq(1);

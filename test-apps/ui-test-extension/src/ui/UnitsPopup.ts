@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { Presentation } from "@itwin/presentation-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 /** UnitsPopup is a modal dialog with only one DialogItem. It is intended to be a very basic example of using DialogItem interfaces and the DialogLayoutDataProvider to create React UI
  * in an iModel.js app and to apply changes only when the user hits the OK button.
  */
 export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
-  public static i18n: I18N;
+  public static localization: Localization;
 
-  constructor(i18N: I18N) {
+  constructor(localization: Localization) {
     super();
-    UnitsPopupUiDataProvider.i18n = i18N;
+    UnitsPopupUiDataProvider.localization = localization;
   }
 
   private _handleOK = async () => {
@@ -40,14 +40,14 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: UnitsPopupUiDataProvider._optionsName,
-      displayLabel: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Units"),
+      displayLabel: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Units"),
       typename: "enum",
       enum: {
         choices: [
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Metric"), value: "metric" },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Imperial"), value: "imperial" },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.UsSurvey"), value: "usSurvey" },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.UsCustomary"), value: "usCustomary" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Metric"), value: "metric" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Imperial"), value: "imperial" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UsSurvey"), value: "usSurvey" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UsCustomary"), value: "usCustomary" },
         ],
       },
     };

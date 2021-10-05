@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

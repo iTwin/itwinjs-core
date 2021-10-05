@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { PropertyValueFormat } from "@bentley/ui-abstract";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
   MutableTreeModel,
   MutableTreeModelNode,
   SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
-} from "@bentley/ui-components";
-import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
+} from "@itwin/components-react";
+import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import { Input } from "@itwin/itwinui-react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
@@ -42,7 +42,7 @@ function Toolbar(props: ToolbarProps) {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
-  const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.NoSubLayers"));
+  const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
     return <div className="map-manager-sublayer-panel">
       <div>{noneAvailableLabel}</div>
@@ -78,9 +78,9 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
-  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.SearchPlaceholder"));
-  const [allOnLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOn"));
-  const [allOffLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOff"));
+  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.SearchPlaceholder"));
+  const [allOnLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.AllOn"));
+  const [allOffLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.AllOff"));
   const [mapLayer, setMapLayer] = React.useState(props.mapLayer);
   const [layerFilterString, setLayerFilterString] = React.useState<string>("");
 

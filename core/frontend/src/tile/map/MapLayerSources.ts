@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { compareStrings, getErrorMessage } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { BentleyError, compareStrings } from "@itwin/core-bentley";
+import { Point2d } from "@itwin/core-geometry";
+import {
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
+} from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
@@ -78,16 +79,17 @@ export class MapLayerSource {
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
-  public static fromBackgroundMapProps(props: BackgroundMapProps) {
-    const settings = BackgroundMapSettings.fromJSON(props);
-    if (undefined !== settings) {
-      const layerSettings = MapLayerSettings.fromMapSettings(settings);
-      if (undefined !== layerSettings) {
-        const source = MapLayerSource.fromJSON(layerSettings);
-        source!.baseMap = true;
+  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps) {
+    const provider = BackgroundMapProvider.fromBackgroundMapProps(props);
+    const layerSettings = BaseMapLayerSettings.fromProvider(provider);
+    if (undefined !== layerSettings) {
+      const source = MapLayerSource.fromJSON(layerSettings);
+      if (source) {
+        source.baseMap = true;
         return source;
       }
     }
+
     return undefined;
   }
   public toJSON() {
@@ -212,8 +214,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const requestContext = new FrontendRequestContext();
-      const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
+      const sourcesJson = await getJson("assets/MapLayerSources.json");
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
@@ -228,7 +229,7 @@ export class MapLayerSources {
       try {
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), getErrorMessage(err)));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
       }
     }
 

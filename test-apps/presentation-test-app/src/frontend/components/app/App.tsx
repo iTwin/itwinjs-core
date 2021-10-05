@@ -5,16 +5,16 @@
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
-import { Geometry } from "@bentley/geometry-core";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
+import { Geometry } from "@itwin/core-geometry";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { DefaultContentDisplayTypes } from "@itwin/presentation-common";
 import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,
-} from "@bentley/presentation-components";
-import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
+} from "@itwin/presentation-components";
+import { Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { ElementSeparator, Orientation, RatioChangeResult } from "@itwin/core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { MyAppFrontend, MyAppSettings } from "../../api/MyAppFrontend";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
@@ -261,7 +261,7 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="app">
         <div className="app-header">
-          <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
+          <h2>{IModelApp.localization.getLocalizedString("Sample:welcome-message")}</h2>
         </div>
         <div className="app-pickers">
           <IModelSelector onIModelSelected={this.onIModelSelected} activeIModelPath={this.state.imodelPath} />

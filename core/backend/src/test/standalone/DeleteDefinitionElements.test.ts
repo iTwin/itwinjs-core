@@ -5,13 +5,13 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Set, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { GeometryPartProps, IModel } from "@bentley/imodeljs-common";
+import { Id64, Id64Set, Logger, LogLevel } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { GeometryPartProps, IModel } from "@itwin/core-common";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

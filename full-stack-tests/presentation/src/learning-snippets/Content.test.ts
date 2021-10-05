@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
-import { findFieldByLabel } from "../Utils";
+import { getFieldByLabel, tryGetFieldByLabel } from "../Utils";
 
 describe("Learning Snippets", () => {
 
@@ -313,7 +313,7 @@ describe("Learning Snippets", () => {
       }, {
         label: "Modeled Element",
       }]);
-      const calculatedField = findFieldByLabel(content!.descriptor.fields, "Calculated");
+      const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Calculated");
       expect(content!.contentSet[0].displayValues[calculatedField!.name]).to.be.undefined;
       expect(content!.contentSet[1].displayValues[calculatedField!.name]).to.eq("PREFIX_Uncategorized");
     });
@@ -500,7 +500,7 @@ describe("Learning Snippets", () => {
         label: "Yaw & Pitch & Roll",
       }]);
       expect(content!.contentSet.length).to.eq(1);
-      expect(content!.contentSet[0].displayValues[findFieldByLabel(content!.descriptor.fields, "Yaw & Pitch & Roll")!.name]).to.eq("0.000000 & 0.000000 & 90.000000");
+      expect(content!.contentSet[0].displayValues[getFieldByLabel(content!.descriptor.fields, "Yaw & Pitch & Roll").name]).to.eq("0.000000 & 0.000000 & 90.000000");
     });
 
     it("uses `propertyCategories` attribute", async () => {
@@ -593,9 +593,9 @@ describe("Learning Snippets", () => {
         descriptor: {},
       });
       expect(content!.descriptor.fields.length).to.eq(20);
-      expect(findFieldByLabel(content!.descriptor.fields, "User Label")).to.be.undefined;
-      expect(findFieldByLabel(content!.descriptor.fields, "Parent")).to.not.be.undefined;
-      expect(findFieldByLabel(content!.descriptor.fields, "Overriden Label")).to.not.be.undefined;
+      expect(tryGetFieldByLabel(content!.descriptor.fields, "User Label")).to.be.undefined;
+      expect(tryGetFieldByLabel(content!.descriptor.fields, "Parent")).to.not.be.undefined;
+      expect(tryGetFieldByLabel(content!.descriptor.fields, "Overriden Label")).to.not.be.undefined;
     });
 
   });

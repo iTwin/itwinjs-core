@@ -4,18 +4,15 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
-import { GuidString } from '@bentley/bentleyjs-core';
+import { GuidString } from '@itwin/core-bentley';
+import { RpcActivity } from '@itwin/core-common';
 
 // @alpha
 export class ClientTelemetryEvent extends TelemetryEvent {
-    constructor(telemetryEvent: TelemetryEvent, requestContext: AuthorizedClientRequestContext);
+    constructor(telemetryEvent: TelemetryEvent, requestContext: RpcActivity);
     readonly activityId?: GuidString;
     readonly clientApplicationId?: string;
     readonly clientApplicationVersion?: string;
-    readonly clientUserId?: string;
-    readonly clientUserOrgId?: string;
-    readonly clientUserOrgName?: string;
     // (undocumented)
     getProperties(): {
         [key: string]: any;
@@ -31,15 +28,15 @@ export class ClientTelemetryEvent extends TelemetryEvent {
 export abstract class FrontendTelemetryClient implements TelemetryClient {
     protected constructor();
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
     // (undocumented)
-    protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
+    protected abstract _postTelemetry(requestContext: RpcActivity, telemetryEvent: ClientTelemetryEvent): Promise<void>;
 }
 
 // @alpha (undocumented)
 export interface TelemetryClient {
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 // @public
@@ -52,7 +49,7 @@ export class TelemetryEvent {
     constructor(
     eventName: string,
     eventId?: string | undefined,
-    contextId?: string | undefined, iModelId?: string | undefined, changeSetId?: string | undefined, time?: {
+    iTwinId?: string | undefined, iModelId?: string | undefined, changeSetId?: string | undefined, time?: {
         startTime: Date;
         endTime: Date;
     } | undefined,
@@ -64,7 +61,6 @@ export class TelemetryEvent {
     };
     // (undocumented)
     readonly changeSetId?: string | undefined;
-    readonly contextId?: string | undefined;
     readonly eventId?: string | undefined;
     readonly eventName: string;
     getProperties(): {
@@ -72,6 +68,7 @@ export class TelemetryEvent {
     };
     // (undocumented)
     readonly iModelId?: string | undefined;
+    readonly iTwinId?: string | undefined;
     // (undocumented)
     readonly time?: {
         startTime: Date;
@@ -89,7 +86,7 @@ export class TelemetryManager {
     // (undocumented)
     hasClient(client: TelemetryClient): boolean;
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MessageHyperlink } from "../../../ui-ninezone";
+import { MessageHyperlink } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<MessageHyperlink />", () => {

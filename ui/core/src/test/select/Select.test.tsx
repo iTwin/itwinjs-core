@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { Select } from "../../ui-core";
+import { Select } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 
