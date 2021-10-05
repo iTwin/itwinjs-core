@@ -78,7 +78,8 @@ export interface BatchContext {
   iModel?: IModelConnection;
 }
 
-class PerTargetBatchData {
+/** @internal exported strictly for tests. */
+export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
   protected _thematicSensors?: ThematicSensors;
@@ -125,9 +126,13 @@ class PerTargetBatchData {
     for (const ovrs of this._featureOverrides.values())
       stats.addFeatureOverrides(ovrs.byteLength);
   }
+
+  /** Exposed strictly for tests. */
+  public get featureOverrides() { return this._featureOverrides; }
 }
 
-class PerTargetData {
+/** @internal exported strictly for tests. */
+export class PerTargetData {
   private readonly _batch: Batch;
   private readonly _data: PerTargetBatchData[] = [];
 
@@ -147,6 +152,9 @@ class PerTargetData {
   public get isDisposed(): boolean {
     return this._data.length === 0;
   }
+
+  /** Exposed strictly for tests. */
+  public get data(): PerTargetBatchData[] { return this._data; }
 
   public onTargetDisposed(target: Target): void {
     const index = this._data.findIndex((x) => x.target === target);
@@ -188,7 +196,8 @@ export class Batch extends Graphic {
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private readonly _context: BatchContext = { batchId: 0 };
-  private readonly _perTargetData = new PerTargetData(this);
+  /** Public strictly for tests. */
+  public readonly perTargetData = new PerTargetData(this);
   public readonly options: BatchOptions;
 
   // Chiefly for debugging.
@@ -221,21 +230,21 @@ export class Batch extends Graphic {
 
   private _isDisposed = false;
   public get isDisposed(): boolean {
-    return this._isDisposed && this._perTargetData.isDisposed;
+    return this._isDisposed && this.perTargetData.isDisposed;
   }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
   public dispose() {
     dispose(this.graphic);
 
-    this._perTargetData.dispose();
+    this.perTargetData.dispose();
     this._isDisposed = true;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
     stats.addFeatureTable(this.featureTable.byteLength);
-    this._perTargetData.collectStatistics(stats);
+    this.perTargetData.collectStatistics(stats);
   }
 
   public addCommands(commands: RenderCommands): void {
@@ -251,15 +260,15 @@ export class Batch extends Graphic {
     assert(target.plan.thematic.displayMode === ThematicDisplayMode.InverseDistanceWeightedSensors, "thematic display mode must be sensor-based");
     assert(target.plan.thematic.sensorSettings.sensors.length > 0, "must have at least one sensor to process");
 
-    return this._perTargetData.getThematicSensors(target);
+    return this.perTargetData.getThematicSensors(target);
   }
 
   public getOverrides(target: Target): FeatureOverrides {
-    return this._perTargetData.getFeatureOverrides(target);
+    return this.perTargetData.getFeatureOverrides(target);
   }
 
   public onTargetDisposed(target: Target) {
-    this._perTargetData.onTargetDisposed(target);
+    this.perTargetData.onTargetDisposed(target);
   }
 }
 
