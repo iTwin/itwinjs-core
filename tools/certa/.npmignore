@@ -7,7 +7,7 @@
 !lib/assets/**
 !bin/**
 assets/**
-lib/**/test/**
+test
 perftest
 !public/**
 !*.md

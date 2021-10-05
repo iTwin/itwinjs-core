@@ -98,7 +98,7 @@ if (!fs.existsSync("lib")) {
   process.exit(1);
 }
 
-const configFileName = `lib/${entryPointFileName}.json`;
+const configFileName = `lib/cjs/${entryPointFileName}.json`;
 fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
 
 const args = [

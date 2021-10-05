@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./certa/certaCommon";
-export * from "./TestFrontendAuthorizationClient";
 export * from "./TestUsers";
-
+export * from "./TestFrontendAuthorizationClient";
+export * from "./certa/certaCommon";

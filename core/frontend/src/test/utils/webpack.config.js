@@ -18,9 +18,7 @@ function createConfig(shouldInstrument) {
       filename: "bundled-tests.js",
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
-    // resolve: { mainFields: ["main", "module"] },
     devtool: "nosources-source-map",
-    // devtool: "none",
     module: {
       noParse: [
         // Don't parse draco_*_nodejs.js modules for `require` calls.  There are
@@ -42,7 +40,6 @@ function createConfig(shouldInstrument) {
       ]
     },
     stats: "errors-only",
-    // stats: "verbose",
     optimization: {
       nodeEnv: "production"
     },
@@ -71,8 +68,6 @@ function createConfig(shouldInstrument) {
       loader: require.resolve("istanbul-instrumenter-loader"),
       options: {
         debug: true,
-        // esModules: true,
-        produceSourceMap: true
       },
       enforce: "post",
     });

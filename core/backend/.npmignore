@@ -6,7 +6,7 @@
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
-!lib/**/assets/**
+!lib/cjs/assets/**
 
-lib/**/test/**
-perftest
+lib/cjs/test/**
+lib/cjs/perftest/**

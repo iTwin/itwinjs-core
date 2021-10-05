@@ -15,7 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-transformer/file.json --tsIndexFile=./core-transformer.ts --onlyJson",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "cover:integration": "nyc npm run -s test:integration",
     "extract-api": "betools extract-api --entry=core-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

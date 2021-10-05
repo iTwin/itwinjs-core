@@ -3,7 +3,7 @@
   "description": "UI Test Application",
   "private": true,
   "license": "MIT",
-  "version": "3.0.0-dev.69",
+  "version": "0.0.0",
   "homepage": "http://localhost:3000/",
   "scripts": {
     "compile": "npm run -s build:backend & tsc",
