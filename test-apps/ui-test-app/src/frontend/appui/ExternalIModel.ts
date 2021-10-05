@@ -10,7 +10,6 @@ import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-f
 import { SampleAppIModelApp } from "../";
 
 /* eslint-disable deprecation/deprecation */
-
 export interface IModelInfo {
   id: string;
   iTwinId: string;
@@ -53,7 +52,8 @@ export class ExternalIModel {
         searchString: iTwinName,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      },
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${iTwinName} was not found for the user.`);

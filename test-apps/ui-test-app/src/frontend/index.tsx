@@ -355,7 +355,6 @@ export class SampleAppIModelApp {
       const currentIModelConnection = UiFramework.getIModelConnection();
       if (currentIModelConnection) {
         SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
-
         await currentIModelConnection.close();
         UiFramework.setIModelConnection(undefined);
       }
@@ -430,12 +429,19 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        const iModel = new ExternalIModel(iTwinId, iModelId);
-        await iModel.openIModel();
-        iModelConnection = iModel.iModelConnection!;
+        try {
+          const iModel = new ExternalIModel(iTwinId, iModelId);
+          await iModel.openIModel();
+          iModelConnection = iModel.iModelConnection!;
+        } catch (_e) {
+          alert("Error opening selected iModel");
+          iModelConnection = undefined;
+          await LocalFileOpenFrontstage.open();
+          return;
+        }
       }
 
-      SampleAppIModelApp.setIsIModelLocal(false, true);
+      SampleAppIModelApp.setIsIModelLocal(!!iModelConnection?.isBriefcaseConnection, true);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);

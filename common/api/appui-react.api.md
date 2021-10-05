@@ -1306,6 +1306,7 @@ export interface ContentGroupProps {
 // @public
 export abstract class ContentGroupProvider {
     applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
+    onFrontstageDeactivated(): Promise<void>;
     prepareToSaveProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
     // (undocumented)
     abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
@@ -2558,10 +2559,10 @@ export class FrontstageDef {
     // @internal (undocumented)
     get nineZoneState(): NineZoneState | undefined;
     set nineZoneState(state: NineZoneState | undefined);
-    onActivated(): void;
-    protected _onActivated(): void;
-    onDeactivated(): void;
-    protected _onDeactivated(): void;
+    onActivated(): Promise<void>;
+    protected _onActivated(): Promise<void>;
+    onDeactivated(): Promise<void>;
+    protected _onDeactivated(): Promise<void>;
     onFrontstageReady(): void;
     protected _onFrontstageReady(): void;
     // @internal
@@ -2576,7 +2577,7 @@ export class FrontstageDef {
     get rightPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
     saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window): Promise<void>;
-    setActiveContent(): boolean;
+    setActiveContent(): Promise<boolean>;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
@@ -2649,6 +2650,8 @@ export class FrontstageManager {
     static get activeToolSettingsProvider(): ToolUiProvider | undefined;
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     static clearFrontstageDefs(): void;
+    // @internal (undocumented)
+    static clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
     static closeModalFrontstage(): void;
     static closeNestedFrontstage(): Promise<void>;
     static deactivateFrontstageDef(): Promise<void>;
@@ -2741,6 +2744,7 @@ export interface FrontstageProps extends CommonProps {
     defaultContentId?: string;
     defaultTool: ToolItemDef;
     id: string;
+    isIModelIndependent?: boolean;
     isInFooterMode?: boolean;
     leftPanel?: React.ReactElement<StagePanelProps>;
     rightPanel?: React.ReactElement<StagePanelProps>;

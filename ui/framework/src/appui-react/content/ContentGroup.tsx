@@ -60,6 +60,9 @@ export abstract class ContentGroupProvider {
   public applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
     return contentGroupProps;
   }
+
+  /** Allow provider to save any content group data before the stage deactivated. */
+  public async onFrontstageDeactivated() { }
 }
 
 /** Callback to process content properties during toJSON method

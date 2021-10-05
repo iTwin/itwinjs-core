@@ -253,6 +253,17 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       this.activeFractionInterval.clone(), this.localToWorld.clone(), this._arcLength01,
       this._designProperties?.clone());
   }
+
+  /** Return (if possible) a spiral which is a portion of this curve. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): IntegratedSpiral3d | undefined {
+    const spiralB = this.clone();
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);
+    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
+    spiralB.refreshComputedProperties();
+    return spiralB;
+  }
+
   /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transformA: Transform): boolean {
 
@@ -284,9 +295,13 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnY(plane.getNormalRef()));
   }
   /** Return length of the spiral.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
-  public quickLength() { return this._arcLength01; }
+  public quickLength() { return this.curveLength(); }
   /** Return length of the spiral.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
-  public override curveLength() { return this._arcLength01; }
+  public override curveLength() { return this._arcLength01 * (this._activeFractionInterval.absoluteDelta()); }
+  /** Return (unsigned) length of the spiral between fractions.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
+  public override curveLengthBetweenFractions(fraction0: number, fraction1: number) {
+    return this._arcLength01 * (this._activeFractionInterval.absoluteDelta() * Math.abs(fraction1 - fraction0));
+  }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
   public isSameGeometryClass(other: any): boolean { return other instanceof TransitionSpiral3d; }
   /** Add strokes from this spiral to `dest`.
