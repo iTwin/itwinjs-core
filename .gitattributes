@@ -1,6 +1,6 @@
-package.json text eol=lf
-package-lock.json text eol=lf
-presentation/common/Ruleset.schema.json text eol=lf
+# Convert all line endings for files detected as text to lf to avoid OS specific
+# line endings showing up in git diffs
+*                            text=auto
 
 # Don't allow people to merge changes to these generated files, because the result
 # may be invalid.  You need to run "rush update" again.
