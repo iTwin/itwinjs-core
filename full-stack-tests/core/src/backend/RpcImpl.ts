@@ -28,7 +28,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       const region = "0";
       return { iModelHub: { region } };
     }
-    const url = await (CloudEnv.cloudEnv.imodelClient ).getUrl();
+    const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl();
     return { iModelBank: { url } };
   }
 
