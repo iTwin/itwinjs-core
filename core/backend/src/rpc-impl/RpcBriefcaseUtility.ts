@@ -113,8 +113,7 @@ export class RpcBriefcaseUtility {
       throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
 
     // call reattach, just in case this is a V2 checkpoint whose accessToken is about to expire.
-    // Note: there's no reason to wait for this to complete.
-    iModelDb.reattachDaemon(accessToken); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await iModelDb.reattachDaemon(accessToken);
     return iModelDb;
   }
 

@@ -42,26 +42,26 @@ describe("SnapshotDb.reattachDaemon", () => {
 
     attachStub.resetHistory();
     clock.setSystemTime(Date.parse("2021-01-01T00:58:10Z")); // within safety period
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    assert.isFulfilled(checkpoint.reattachDaemon(""));
+    void expect(checkpoint.reattachDaemon("")).to.be.fulfilled;
     assert.equal(attachStub.callCount, 0, "should not need reattach yet");
 
     clock.setSystemTime(Date.parse("2021-01-01T00:59:10Z")); // after safety period
     returnValue.expiryTimestamp = Date.parse("2021-01-01T02:00:00Z");
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     const attachPromise = checkpoint.reattachDaemon("");
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    assert.isFulfilled(checkpoint.reattachDaemon(""), "additional calls should return fulfilled promise while first is processing");
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    assert.isFulfilled(checkpoint.reattachDaemon(""), "additional calls should return fulfilled promise while first is processing");
+    const promise2 = checkpoint.reattachDaemon(""); // gets copy of first promise
+    const promise3 = checkpoint.reattachDaemon(""); // "
     assert.equal(attachStub.callCount, 1); // shouldn't need to attach since first call already started the process
     assert.equal(infoLogStub.callCount, 1);
     assert.include(infoLogStub.args[0][1], "attempting to reattach");
     assert.equal(errorLogStub.callCount, 0);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    expect(attachPromise).to.not.be.fulfilled;
+    void expect(attachPromise).to.not.be.fulfilled;
+    void expect(promise2).to.not.be.fulfilled;
+    void expect(promise3).to.not.be.fulfilled;
     await attachPromise;
+    void expect(attachPromise).to.be.fulfilled;
+    void expect(promise2).to.be.fulfilled;
+    void expect(promise3).to.be.fulfilled;
     assert.equal(infoLogStub.callCount, 2);
     assert.include(infoLogStub.args[1][1], "reattached checkpoint");
 

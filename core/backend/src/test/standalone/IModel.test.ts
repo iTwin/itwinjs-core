@@ -1916,9 +1916,7 @@ describe("iModel", () => {
 
     errorLogStub.resetHistory();
     commandStub.callsFake(async () => daemonErrorResult);
-    await checkpoint.reattachDaemon(accessToken);
-    assert.equal(errorLogStub.callCount, 1);
-    assert.include(errorLogStub.args[0][1], "reattach checkpoint failed");
+    await expect(checkpoint.reattachDaemon(accessToken)).to.eventually.be.rejectedWith("attach failed");
 
     checkpoint.close();
   });

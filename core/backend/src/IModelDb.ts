@@ -9,8 +9,8 @@
 import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeEvent, BentleyError, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, OpenMode,
+  AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
+  JsonUtils, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
@@ -2325,6 +2325,53 @@ export class BriefcaseDb extends IModelDb {
   }
 }
 
+/** Used to reattach Daemon from a user's accessToken for V2 checkpoints.
+ * @note Reattach only happens if the previous access token either has expired or is about to expire within an application-supplied safety duration.
+ */
+class DaemonReattach {
+  /** the time at which the current token should be refreshed (its expiry minus safetySeconds) */
+  private _timestamp = 0;
+  /** while a refresh is happening, all callers get this promise. */
+  private _promise: Promise<void> | undefined;
+  /** Time, in seconds, before the current token expires to obtain a new token. Default is 1 hour. */
+  private _safetySeconds: number;
+
+  constructor(expiry: number, safetySeconds?: number) {
+    this._safetySeconds = safetySeconds ?? 60 * 60; // default to 1 hour
+    this.setTimestamp(expiry);
+  }
+  private async performReattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+    this._timestamp = 0; // everyone needs to wait until token is valid
+
+    // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's storage account.
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
+    try {
+      // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId!, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
+      this.setTimestamp(response.expiryTimestamp);
+    } finally {
+      this._promise = undefined;
+    }
+  }
+
+  private setTimestamp(expiryTimestamp: number) {
+    this._timestamp = expiryTimestamp - (this._safetySeconds * 1000);
+    if (this._timestamp < Date.now())
+      Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
+  }
+
+  public async reattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+    if (this._timestamp > Date.now())
+      return; // current token is fine
+
+    if (undefined === this._promise) // has reattach already begun?
+      this._promise = this.performReattach(accessToken, iModel); // no, start it
+
+    return this._promise;
+  }
+
+}
 /** A *snapshot* iModel database file that is used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -2332,8 +2379,7 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
-  private _reattachSafetySeconds = 60 * 60; // one hour
-  private _reattachTimestamp: number | undefined;
+  private _daemonReattach: DaemonReattach | undefined;
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
@@ -2456,6 +2502,7 @@ export class SnapshotDb extends IModelDb {
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
     snapshot._iTwinId = checkpoint.iTwinId;
+
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
@@ -2463,41 +2510,15 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    if (checkpoint.reattachSafetySeconds)
-      snapshot._reattachSafetySeconds = checkpoint.reattachSafetySeconds;
-
-    snapshot.setReattachTimestamp(expiryTimestamp);
+    snapshot._daemonReattach = new DaemonReattach(expiryTimestamp, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
+  /** Used to refresh the daemon's accessToken if this is a V2 checkpoint.
    * @internal
    */
   public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
-    if (undefined === this._reattachTimestamp || this._reattachTimestamp > Date.now())
-      return;
-
-    // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's
-    // storage account. Since we do this in plenty of time before the current token expires, there's no need to wait for it to complete.
-    // The current token will be fine for this and all future requests until the re-attach completes.
-
-    this._reattachTimestamp = undefined;  // so other requests won't attempt to reattach while this one is pending
-
-    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
-    try {
-      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
-      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
-      this.setReattachTimestamp(response.expiryTimestamp);
-    } catch (e: unknown) {
-      Logger.logError(BackendLoggerCategory.Authorization, "reattach checkpoint failed", BentleyError.getErrorProps(e));
-      this._reattachTimestamp = Date.now(); // make the next requester reattempt
-    }
-  }
-
-  private setReattachTimestamp(expiryTimestamp: number) {
-    this._reattachTimestamp = expiryTimestamp - (this._reattachSafetySeconds * 1000);
-    if (this._reattachTimestamp < Date.now())
-      Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
+    return this._daemonReattach?.reattach(accessToken, this);
   }
 
   /** @internal */
