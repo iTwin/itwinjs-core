@@ -21,7 +21,7 @@ class SignInControl extends ContentControl {
     if (isFrontendAuthorizationClient(client))
       this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
-      this.reactNode =  <Centered>{"No authorization client available"}</Centered>;
+      this.reactNode = <Centered>{"No authorization client available"}</Centered>;
   }
 
   // user chose to work offline from the sign in page
@@ -56,6 +56,7 @@ export class SignInFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}
+        isIModelIndependent={true}
         usage={StageUsage.Private}
       />
     );

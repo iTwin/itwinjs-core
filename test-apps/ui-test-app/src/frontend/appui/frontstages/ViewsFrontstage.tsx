@@ -173,7 +173,7 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
-        id: "default-group",
+        id: "views-frontstage-default-content-group",
         layout: contentLayoutProps,
         contents: contentProps,
       });
