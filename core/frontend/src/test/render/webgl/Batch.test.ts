@@ -56,11 +56,10 @@ describe("Batch", () => {
       const t1 = makeTarget();
       const br1 = makeBranch();
       const ba1 = makeBatch();
-      const o1 = makeOverrides();
 
       expect(ba1.perTargetData.data.length).to.equal(0);
 
-      t1.overrideFeatureSymbology(o1);
+      t1.overrideFeatureSymbology(makeOverrides());
       t1.pushBatch(ba1);
       expect(ba1.perTargetData.data.length).to.equal(1);
       t1.popBatch();
@@ -127,6 +126,69 @@ describe("Batch", () => {
     });
 
     it("is disposed when batch, target, or source is disposed", () => {
+      const t1 = makeTarget();
+      const t2 = makeTarget();
+      const s1 = makeSource();
+      const s2 = makeSource();
+      const ba1 = makeBatch();
+      const ba2 = makeBatch();
+      const br0 = makeBranch();
+      const br1 = makeBranch(makeOverrides(s1));
+      const br2 = makeBranch(makeOverrides(s2));
+
+      const batches = [ba1, ba2];
+
+      for (const target of [t1, t2]) {
+        for (const branch of [br0, br1, br2]) {
+          for (const batch of [ba1, ba2]) {
+            target.pushBatch(batch);
+            target.popBatch();
+
+            target.pushBranch(branch);
+            target.pushBatch(batch);
+            target.popBatch();
+            target.popBranch();
+          }
+        }
+      }
+
+      for (const batch of batches) {
+        expect(batch.perTargetData.data.length).to.equal(2);
+        for (let i = 0; i < 2; i++) {
+          const ovrs = batch.perTargetData.data[i].featureOverrides;
+          expect(ovrs.size).to.equal(3);
+          for (const source of [undefined, s1, s2])
+            expect(ovrs.get(source)).not.to.be.undefined;
+        }
+      }
+
+      s1.onSourceDisposed.raiseEvent();
+      for (const batch of batches) {
+        expect(batch.perTargetData.data.length).to.equal(2);
+        for (let i = 0; i < 2; i++) {
+          const ovrs = batch.perTargetData.data[i].featureOverrides;
+          expect(ovrs.size).to.equal(2);
+          expect(ovrs.get(s1)).to.be.undefined;
+        }
+      }
+
+      t2.dispose();
+      for (const batch of batches) {
+        expect(batch.perTargetData.data.length).to.equal(1);
+        expect(batch.perTargetData.data[0].target).to.equal(t1);
+        expect(batch.perTargetData.data[0].featureOverrides.size).to.equal(2);
+      }
+
+      ba1.dispose();
+      expect(ba1.perTargetData.data.length).to.equal(0);
+      expect(ba1.isDisposed).to.be.true;
+      expect(ba2.isDisposed).to.be.false;
+
+      t1.dispose();
+      s1.onSourceDisposed.raiseEvent();
+      expect(ba2.perTargetData.data.length).to.equal(0);
+
+      ba2.dispose();
     });
   });
 });

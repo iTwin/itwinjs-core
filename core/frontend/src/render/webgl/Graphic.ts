@@ -111,7 +111,8 @@ export class PerTargetBatchData {
     const source = this.target.currentFeatureSymbologyOverrides?.source;
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
-      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options));
+      const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
+      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
       ovrs.initFromMap(batch.featureTable);
     }
 
@@ -129,6 +130,14 @@ export class PerTargetBatchData {
 
   /** Exposed strictly for tests. */
   public get featureOverrides() { return this._featureOverrides; }
+
+  private onSourceDisposed(source: FeatureSymbology.Source): void {
+    const ovrs = this._featureOverrides.get(source);
+    if (ovrs) {
+      this._featureOverrides.delete(source);
+      ovrs.dispose();
+    }
+  }
 }
 
 /** @internal exported strictly for tests. */
