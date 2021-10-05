@@ -92,6 +92,7 @@ export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
 export * from "./render/RenderTarget";
 export * from "./render/RenderSystem";
+export * from "./render/RenderTexture";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
 export * from "./render/VisibleFeature";
