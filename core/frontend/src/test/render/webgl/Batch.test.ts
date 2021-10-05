@@ -12,11 +12,10 @@ import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../render/webgl/Target";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
-import { FeatureOverrides } from "../../../render/webgl/FeatureOverrides";
 
 describe("Batch", () => {
-  before(async () => await IModelApp.startup());
-  after(async () => await IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   function makeTarget(): Target {
     const rect = new ViewRect(0, 0, 100, 50);
@@ -126,14 +125,14 @@ describe("Batch", () => {
         updated: boolean;
       }
 
-      function reset(ovrs: Overrides[]): void {
-        for (const ovr of ovrs)
+      function reset(overrides: Overrides[]): void {
+        for (const ovr of overrides)
           ovr.updated = false;
       }
 
-      function hook(ovrs: Overrides[]): void {
-        reset(ovrs);
-        for (const ovr of ovrs)
+      function hook(overrides: Overrides[]): void {
+        reset(overrides);
+        for (const ovr of overrides)
           ovr.buildLookupTable = () => ovr.updated = true;
       }
 
