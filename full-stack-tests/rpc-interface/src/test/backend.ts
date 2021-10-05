@@ -38,8 +38,6 @@ process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

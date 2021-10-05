@@ -37,6 +37,7 @@ beta;BaseLayerSettings = BaseMapLayerSettings | ColorDef
 beta;BaseLayerSettings
 beta;BaseMapLayerProps 
 beta;BaseMapLayerSettings 
+beta;BaseReaderOptions
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
 internal;BentleyCloudRpcManager 
@@ -45,6 +46,9 @@ internal;class BentleyCloudRpcProtocol
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
+beta;BlobOptions 
+beta;BlobOptionsBuilder
+beta;BlobRange = QueryLimit
 public;BoundingSphere
 alpha;BRepCutProps
 public;BRepEntity
@@ -134,6 +138,18 @@ beta;CustomAttribute
 public;CutStyle
 public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
+internal;DbBlobRequest 
+internal;DbBlobResponse 
+public;DbQueryError 
+internal;DbQueryRequest 
+internal;DbQueryResponse 
+internal;DbRequest 
+internal;DbRequestExecutor
+internal;DbRequestKind
+internal;DbResponse
+internal;DbResponseKind
+internal;DbResponseStatus
+beta;DbRuntimeStats
 internal;DecorationGeometryProps
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
@@ -162,6 +178,7 @@ public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
+beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
@@ -474,6 +491,7 @@ public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransver
 public;ProjectionProps
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
+beta;PropertyMetaDataMap 
 beta;PropertyMetaDataProps
 public;QParams2d
 public;QParams3d
@@ -485,11 +503,15 @@ public;Quantization
 internal;isInRange(qpos: number, rangeScale?: number): boolean
 internal;isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean
 internal;isQuantized(qpos: number): boolean
-public;QueryLimit
-public;QueryPriority
-public;QueryQuota
-public;QueryResponse
-public;QueryResponseStatus
+beta;QueryBinder
+beta;QueryLimit
+beta;QueryOptions 
+beta;QueryOptionsBuilder
+beta;QueryPropertyMetaData
+beta;QueryQuota
+public;QueryRowFormat
+beta;QueryRowProxy
+beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
