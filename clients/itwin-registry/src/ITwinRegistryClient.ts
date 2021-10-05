@@ -5,11 +5,9 @@
 /** @packageDocumentation
  * @module ITwinRegistry
  */
-import * as deepAssign from "deep-assign";
 import { AccessToken } from "@itwin/core-bentley";
-import { RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { Client, request, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
-import { WsgClient } from "./wsg/WsgClient";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
 /** The iTwin object, for general properties covering Projects, Assets, and custom contexts
@@ -120,10 +118,10 @@ class Asset extends HiddenContext {
 /** Client API to access the iTwin registry services.
  * @beta
  */
-export class ITwinAccessClient extends WsgClient implements ITwinAccess {
+export class ITwinAccessClient extends Client implements ITwinAccess {
   public constructor() {
-    super("v2.5");
-    this.baseUrl = "https://api.bentley.com/contextregistry";
+    super();
+    this.baseUrl = "https://api.bentley.com/projects";
   }
 
   /** Get iTwins accessible to the user
@@ -132,19 +130,19 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @returns Array of iTwins, may be empty
    */
   public async getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]> {
-    const queryOptions: RequestQueryOptions = {
-      $top: arg?.pagination?.top,
-      $skip: arg?.pagination?.skip,
-    };
+    // const queryOptions: RequestQueryOptions = {
+    //   $top: arg?.pagination?.top,
+    //   $skip: arg?.pagination?.skip,
+    // };
 
-    if (arg?.search) {
-      if (arg.search.exactMatch)
-        queryOptions.$filter = `${arg.search.propertyName}+eq+'${arg.search.searchString}'`;
-      else
-        queryOptions.$filter = `${arg.search.propertyName}+like+'${arg.search.searchString}'`;
-    }
+    // if (arg?.search) {
+    //   if (arg.search.exactMatch)
+    //     queryOptions.$filter = `${arg.search.propertyName}+eq+'${arg.search.searchString}'`;
+    //   else
+    //     queryOptions.$search = arg.search.searchString;
+    // }
 
-    return this.getByQuery(accessToken, queryOptions);
+    return this.getByQuery(accessToken, arg);
   }
 
   /** Gets all iTwins using the given query options
@@ -152,65 +150,128 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of iTwins meeting the query's requirements
    */
-  private async getByQuery(accessToken: AccessToken, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
-    // Spread operator possible since there are no nested properties
-    const innerQuery = { ...queryOptions };
+  // private async getByQuery(accessToken: AccessToken, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+  //   // Spread operator possible since there are no nested properties
+  //   const innerQuery = { ...queryOptions };
 
-    // Alter to get all items including those asked to skip
-    innerQuery.$top = innerQuery.$top ? innerQuery.$top + (innerQuery.$skip ?? 0) : undefined;
-    innerQuery.$skip = undefined;
+  //   // Alter to get all items including those asked to skip
+  //   innerQuery.$top = innerQuery.$top ? innerQuery.$top + (innerQuery.$skip ?? 0) : undefined;
+  //   innerQuery.$skip = undefined;
 
-    const projectITwins: ITwin[] = await this.getInstances<Project>(accessToken, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", innerQuery);
-    const assetITwins: ITwin[] = await this.getInstances<Asset>(accessToken, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", innerQuery);
+  //   const projectITwins: ITwin[] = await this.getInstances<Project>(accessToken, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", innerQuery);
+  //   const assetITwins: ITwin[] = await this.getInstances<Asset>(accessToken, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", innerQuery);
 
-    // Default range is whole list
-    const projectRange = {
-      skip: 0,
-      top: projectITwins.length,
-    };
-    const assetRange = {
-      skip: 0,
-      top: assetITwins.length,
-    };
+  //   // Default range is whole list
+  //   const projectRange = {
+  //     skip: 0,
+  //     top: projectITwins.length,
+  //   };
+  //   const assetRange = {
+  //     skip: 0,
+  //     top: assetITwins.length,
+  //   };
 
-    // If a top value is given
-    if (innerQuery?.$top) {
-      // Either take half the elements, or more than half if the other list is too short
-      projectRange.top = Math.max(
-        Math.ceil(innerQuery.$top / 2), // Ceil to add an extra Project if top is Odd
-        innerQuery.$top - assetITwins.length
-      );
+  //   // If a top value is given
+  //   if (innerQuery?.$top) {
+  //     // Either take half the elements, or more than half if the other list is too short
+  //     projectRange.top = Math.max(
+  //       Math.ceil(innerQuery.$top / 2), // Ceil to add an extra Project if top is Odd
+  //       innerQuery.$top - assetITwins.length
+  //     );
 
-      assetRange.top = Math.max(
-        Math.floor(innerQuery.$top / 2),
-        innerQuery.$top - projectITwins.length
-      );
+  //     assetRange.top = Math.max(
+  //       Math.floor(innerQuery.$top / 2),
+  //       innerQuery.$top - projectITwins.length
+  //     );
+  //   }
+
+  //   // If a skip value is given
+  //   if (queryOptions?.$skip) {
+  //     // Either skip half the elements, or skip more if the other list is too short
+  //     projectRange.skip = Math.max(
+  //       Math.ceil(queryOptions.$skip / 2), // Ceil to skip project on Odd skips
+  //       queryOptions.$skip - assetITwins.length
+  //     );
+
+  //     assetRange.skip = Math.max(
+  //       Math.floor(queryOptions.$skip / 2), // Floor to skip asset on Even skips
+  //       queryOptions.$skip - projectITwins.length
+  //     );
+  //   }
+
+  //   return projectITwins
+  //     // if slice end > array.length, it returns the full array no error
+  //     .slice(projectRange.skip, projectRange.top)
+  //     .concat(assetITwins
+  //       .slice(assetRange.skip, assetRange.top)
+  //     );
+  // }
+
+  private async getByQuery(accessToken: AccessToken, queryArg?: ITwinQueryArg): Promise<ITwin[]> {
+    const requestOptions: RequestOptions = this.getRequestOptions(accessToken);
+    let url = await this.getUrl();
+    if (queryArg)
+      url = url + this.getQueryString(queryArg);
+
+    const iTwins: ITwin[] = [];
+
+    try {
+      const response = await request(url, requestOptions);
+
+      if (!response.body.projects) {
+        new Error("Expected array of iTwins not found in API response.");
+      }
+
+      response.body.projects.forEach((iTwin: any) => {
+        iTwins.push({
+          id: iTwin.id,
+          name: iTwin.displayName,
+          code: iTwin.projectNumber,
+        });
+      });
+    } catch (errorResponse: any) {
+      throw Error(`API request error: ${JSON.stringify(errorResponse)}`);
     }
 
-    // If a skip value is given
-    if (queryOptions?.$skip) {
-      // Either skip half the elements, or skip more if the other list is too short
-      projectRange.skip = Math.max(
-        Math.ceil(queryOptions.$skip / 2), // Ceil to skip project on Odd skips
-        queryOptions.$skip - assetITwins.length
-      );
-
-      assetRange.skip = Math.max(
-        Math.floor(queryOptions.$skip / 2), // Floor to skip asset on Even skips
-        queryOptions.$skip - projectITwins.length
-      );
-    }
-
-    return projectITwins
-      // if slice end > array.length, it returns the full array no error
-      .slice(projectRange.skip, projectRange.top)
-      .concat(assetITwins
-        .slice(assetRange.skip, assetRange.top)
-      );
+    return iTwins;
   }
 
-  protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
-    await super.setupOptionDefaults(options);
-    deepAssign(options, { headers: { "content-type": "application/json" } });
+  private getRequestOptions(accessTokenString: string): RequestOptions {
+    return {
+      method: "GET",
+      headers: {
+        "authorization": accessTokenString,
+        "content-type": "application/json",
+      },
+    };
+  }
+
+  private getQueryString(queryArg: ITwinQueryArg): string {
+    let queryBuilder = "";
+
+    // Handle searches
+    if (queryArg.search) {
+      if (queryArg.search.exactMatch)
+        queryBuilder = `${queryBuilder}${queryArg.search.propertyName}=${queryArg.search.searchString}&`;
+
+      // Currently the API only allows substring searching across both name and code at the same time
+      else
+        queryBuilder = `${queryBuilder}$search=${queryArg.search.searchString}&`;
+    }
+
+    // Handle pagination
+    if (queryArg.pagination) {
+      if (queryArg.pagination.skip)
+        queryBuilder = `${queryBuilder}$skip=${queryArg.pagination.skip}&`;
+      if (queryArg.pagination.top)
+        queryBuilder = `${queryBuilder}$top=${queryArg.pagination.top}&`;
+    }
+
+    // No query
+    if ("" === queryBuilder)
+      return queryBuilder;
+
+    // slice off last '&'
+    return `?${queryBuilder.slice(0,-1)}`;
   }
 }

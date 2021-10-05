@@ -29,7 +29,7 @@ export interface ITwinPaginationArg {
  * @beta
 */
 export enum ITwinSearchableProperty {
-  Name = "name",
+  Name = "displayName",
 }
 
 /** Argument for methods that may take searching
