@@ -7,13 +7,12 @@ import * as React from "react";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
 import { IModelApp } from "@itwin/core-frontend";
 import { ProgressRadial } from "@itwin/itwinui-react";
-import { BasicIModelInfo } from "../ExternalIModel";
 
 /** Properties for the [[IModelCard]] component */
 export interface IModelCardProps {
   showDescription?: boolean;
   iModel: { iTwinId: string, id: string, name: string, thumbnail?: string, description?: string };
-  onSelectIModel?: (iModelInfo: BasicIModelInfo) => void;
+  onSelectIModel?: (iModelInfo: { iTwinId: string, id: string, name: string }) => void;
 }
 
 interface IModelCardState {

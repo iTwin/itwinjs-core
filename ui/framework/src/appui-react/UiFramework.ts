@@ -384,10 +384,10 @@ export class UiFramework {
   public static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync = false) {
     const oldConnection = UiFramework.getIModelConnection();
     if (oldConnection !== iModelConnection) {
-      if (iModelConnection?.iModelId)
-        FrontstageManager.clearFrontstageDefsForIModelId(iModelConnection?.iModelId);
-      iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
+      if (oldConnection?.iModelId)
+        FrontstageManager.clearFrontstageDefsForIModelId(oldConnection?.iModelId);
       oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
+      iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
     }
     UiFramework.setActiveIModelId(iModelConnection?.iModelId ?? "");

@@ -92,7 +92,6 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
       }).then((iTwins: ITwin[]) => {
         this.setState({ isLoading: false, iTwins, filter: value });
       });
-
     }
   };
 

@@ -486,7 +486,6 @@ export class FrontstageDef {
       this._defaultContentId = props.defaultContentId;
 
     if (props.contentGroup instanceof ContentGroupProvider) {
-      // this._contentGroup = await props.contentGroup.provideContentGroup(props);
       this._contentGroupProvider = props.contentGroup;
     } else {
       this._contentGroup = props.contentGroup;
