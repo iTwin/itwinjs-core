@@ -263,14 +263,14 @@ Object {
       "name": "/selected-item/-DgnCustomItemTypes_MyProp__x003A__workingUnitsProp",
     },
     Object {
-      "expand": true,
-      "label": "Model Source",
-      "name": "/selected-item/-source_information-model_source",
+      "expand": false,
+      "label": "$élêçtèd Ítêm(s)",
+      "name": "/selected-item/",
     },
     Object {
-      "expand": false,
-      "label": "Selected Item(s)",
-      "name": "/selected-item/",
+      "expand": true,
+      "label": "Mòdél $õürçê",
+      "name": "/selected-item/-source_information-model_source",
     },
   ],
   "description": "Physical Object",
@@ -1538,7 +1538,7 @@ Object {
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
-          "displayLabel": "Name",
+          "displayLabel": "Ñámê",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
@@ -1551,7 +1551,7 @@ Object {
       PropertyRecord {
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
-          "displayLabel": "Path",
+          "displayLabel": "Pàth",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
@@ -1572,7 +1572,7 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "Selected Item(s)",
+      "label": "$élêçtèd Ítêm(s)",
       "name": "/selected-item/",
     },
   ],
@@ -1624,7 +1624,7 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "Selected Item(s)",
+      "label": "$élêçtèd Ítêm(s)",
       "name": "/selected-item/",
     },
   ],
@@ -1995,17 +1995,17 @@ Object {
           "childCategories": Array [
             Object {
               "expand": true,
-              "label": "Model Source",
+              "label": "Mòdél $õürçê",
               "name": "/selected-item/-source_information-model_source",
             },
           ],
           "expand": false,
-          "label": "Source Information",
+          "label": "$óúrçè Íñfórmâtíöñ",
           "name": "/selected-item/-source_information",
         },
       ],
       "expand": false,
-      "label": "Selected Item(s)",
+      "label": "$élêçtèd Ítêm(s)",
       "name": "/selected-item/",
     },
   ],
@@ -3274,7 +3274,7 @@ Object {
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2.dgn",
         "property": Object {
-          "displayLabel": "Name",
+          "displayLabel": "Ñámê",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
           "typename": "string",
         },
@@ -3287,7 +3287,7 @@ Object {
       PropertyRecord {
         "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
         "property": Object {
-          "displayLabel": "Path",
+          "displayLabel": "Pàth",
           "name": "rc_generic_PhysicalObject_bis_Model_bis_ISubModeledElement_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
           "typename": "string",
         },
@@ -3308,7 +3308,7 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "Selected Item(s)",
+      "label": "$élêçtèd Ítêm(s)",
       "name": "/selected-item/",
     },
   ],
@@ -3357,7 +3357,7 @@ Object {
       "childCategories": Array [
         Object {
           "expand": false,
-          "label": "Selected Item(s)",
+          "label": "$élêçtèd Ítêm(s)",
           "name": "Favorite-/selected-item/",
         },
       ],
@@ -3367,7 +3367,7 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "Selected Item(s)",
+      "label": "$élêçtèd Ítêm(s)",
       "name": "/selected-item/",
     },
   ],

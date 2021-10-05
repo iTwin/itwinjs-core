@@ -13,4 +13,4 @@
 
 # then ignore some stuff again
 lib/**/test/**
-en-PSEUDO
+lib/**/public/locales/en-PSEUDO/**

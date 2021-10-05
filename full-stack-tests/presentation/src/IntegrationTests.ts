@@ -87,7 +87,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
     localeDirectories: [path.join(libDir, "assets", "locales")],
-    defaultLocale: "en",
+    defaultLocale: "en-PSUEDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
@@ -98,7 +98,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
-      activeLocale: "en",
+      activeLocale: "en-PSUEDO",
     },
   };
 
