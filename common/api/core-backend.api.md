@@ -621,6 +621,7 @@ export interface CheckpointProps extends TokenArg {
     readonly expectV2?: boolean;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
+    readonly reattachSafetySeconds?: number;
 }
 
 // @public

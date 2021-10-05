@@ -33,7 +33,6 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/context-registry-client": "workspace:*",
     "deep-assign": "^2.0.0",
     "js-base64": "^3.6.1",
     "lodash": "^4.17.10"
@@ -48,6 +47,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@types/deep-assign": "^0.1.0",
     "@types/node": "14.14.31",

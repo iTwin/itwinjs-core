@@ -26,7 +26,7 @@ export * from "./imodelhub/Thumbnails";
 export * from "./imodelhub/Permissions";
 
 export * from "./imodelbank/IModelBankClient";
-export * from "./imodelbank/IModelBankFileSystemContextClient";
+export * from "./imodelbank/IModelBankFileSystemITwinClient";
 export * from "./imodelbank/IModelBankHandler";
 
 export * from "./wsg/ChunkedQueryContext";

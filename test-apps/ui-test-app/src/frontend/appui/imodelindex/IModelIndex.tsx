@@ -64,10 +64,10 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public override async componentDidMount() {
-    const projectId = this.props.iModelConnection.iTwinId!;
+    const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
 
-    await this.startRetrieveThumbnail(projectId, iModelId);
+    await this.startRetrieveThumbnail(iTwinId, iModelId);
     await this.startRetrieveIModelInfo();
   }
 
@@ -92,7 +92,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* retrieves the iModel thumbnail. */
   private async startRetrieveThumbnail(iTwinId: string, iModelId: string) {
     const hubFrontend = new IModelHubFrontend();
-    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken()), iModelId, { contextId: iTwinId, size: "Small" });
+    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken())!, iModelId, { iTwinId, size: "Small" });
     this.setState({ thumbnail: _thumbnail });
   }
 

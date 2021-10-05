@@ -402,7 +402,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   // console.log("%s %s %s", url, options.method, queryStr);
 
-  /*
+  /**
   * Note:
   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
   * Fetch only rejects if there's some network issue (permissions issue or similar)

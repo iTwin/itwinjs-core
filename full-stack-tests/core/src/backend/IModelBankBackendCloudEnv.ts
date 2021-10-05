@@ -12,7 +12,7 @@ import * as https from "https";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger } from "@itwin/core-bentley";
-import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankClient, IModelBankFileSystemITwinClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 
@@ -41,11 +41,11 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   };
 
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
-  const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+  const iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    contextMgr,
+    iTwinMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
     shutdown: async () => 0,
@@ -155,11 +155,11 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
-  const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+  const iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    contextMgr,
+    iTwinMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
     shutdown: doShutdown,

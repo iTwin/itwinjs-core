@@ -27,7 +27,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
 export interface CheckpointProps extends TokenArg {
   readonly expectV2?: boolean;
 
-  /** Context (Project or Asset) that the iModel belongs to */
+  /** iTwin that the iModel belongs to */
   readonly iTwinId: GuidString;
 
   /** Id of the iModel */
@@ -35,6 +35,9 @@ export interface CheckpointProps extends TokenArg {
 
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
+
+  /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
+  readonly reattachSafetySeconds?: number;
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.

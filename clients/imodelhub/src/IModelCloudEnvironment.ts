@@ -7,14 +7,14 @@
  */
 
 import { AccessToken } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { IModelClient } from "./IModelClient";
 
-/** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".
+/** How to discover iTwins
  * @internal
  */
-export interface ContextManagerClient {
+export interface ITwinManagerClient {
   getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
 }
 
@@ -23,7 +23,7 @@ export interface ContextManagerClient {
  */
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
-  readonly contextMgr: ContextManagerClient;
+  readonly iTwinMgr: ITwinManagerClient;
   readonly imodelClient: IModelClient;
   getAuthorizationClient(userCredentials: any): AuthorizationClient;
   startup(): Promise<void>;

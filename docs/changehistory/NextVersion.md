@@ -326,6 +326,7 @@ Previously, creating a [RenderTexture]($common) generally involved creating a [R
 [RenderSystem.createTexture]($frontend) takes a [CreateTextureArgs]($frontend) specifying the type of texture to create, the image from which to create it, and optional ownership information. The image includes information about its transparency - that is, whether it contains only opaque pixels, only semi-transparent pixels, or a mixture of both, where fully transparent pixels are ignored. If the caller knows this information, it should be supplied; the default - [TextureTransparency.Mixed]($frontend) - is somewhat more expensive to render.
 
 Adjusting code to pass the [RenderTexture.Type]($common):
+
 ```ts
   // Replace this:
   system.createTextureFromImageBuffer(imageBuffer, iModel, new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
@@ -337,6 +338,7 @@ Adjusting code to pass the [RenderTexture.Type]($common):
 ```
 
 Adjusting code that specifies `RenderTexture.Params.isOwned`:
+
 ```ts
   // Replace this:
   const isOwned = true;
@@ -349,6 +351,7 @@ Adjusting code that specifies `RenderTexture.Params.isOwned`:
 ```
 
 Adjusting code that specifies `RenderTexture.Params.key`:
+
 ```ts
   // Replace this:
   system.createTextureFromImageBuffer(imageBuffer, iModel, new RenderTexture.Params(myKey);
@@ -360,6 +363,7 @@ Adjusting code that specifies `RenderTexture.Params.key`:
 ```
 
 Adjusting callers of [RenderSystem.createTextureFromImage]($frontend):
+
 ```ts
   // Replace this:
   system.createTextureFromImage(image, hasAlpha, iModel, params);
@@ -376,6 +380,7 @@ Adjusting callers of [RenderSystem.createTextureFromImage]($frontend):
 ```
 
 Adjusting callers of [RenderSystem.createTextureFromImageBuffer]($frontend):
+
 ```ts
   // Replace this:
   system.createTextureFromImageBuffer(buffer, iModel, params);
@@ -391,6 +396,7 @@ Adjusting callers of [RenderSystem.createTextureFromImageBuffer]($frontend):
 ```
 
 Adjusting callers of [RenderSystem.createTextureFromImageSource]($frontend):
+
 ```ts
   // Replace this:
   await system.createTextureFromImageSource(source, iModel, params);
@@ -701,36 +707,37 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @itwin/core-common
 
-| Removed                                      | Replacement                                                    |
-| -------------------------------------------- | -------------------------------------------------------------- |
-| `AnalysisStyle.scalar`                       | `AnalysisStyle.thematic`                                       |
-| `AnalysisStyleScalar`                        | `AnalysisStyleThematic`                                        |
-| `AnalysisStyleScalarProps`                   | `AnalysisStyleThematicProps`                                   |
-| `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
-| `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
-| `Code.getValue`                              | `Code.value`                                                   |
-| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
-| `DisplayStyleSettings.excludedElements`      | `DisplayStyleSettings.excludedElementIds`                      |
-| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
-| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
-| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
-| `LatAndLong`                                 | _eliminated_                                                   |
-| `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
-| `TerrainSettings.locatable`                  | `BackgroundMapSettings.locatable`                              |
-| `TerrainSettingsProps.nonLocatable`          | `BackgroundMapProps.nonLocatable`                              |
-| `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
-| `ViewFlagProps.edgeMask`                     | _eliminated_                                                   |
-| `ViewFlagProps.hlMatColors`                  | _eliminated_                                                   |
-| `ViewFlags.clone`                            | [ViewFlags.copy]($common)                                      |
-| `ViewFlags.edgeMask`                         | _eliminated_                                                   |
-| `ViewFlags.hLineMaterialColors`              | _eliminated_                                                   |
-| `ViewFlags.noCameraLights`                   | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noGeometryMap`                    | _eliminated_                                                   |
-| `ViewFlags.noSolarLight`                     | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noSourceLights`                   | [ViewFlags.lighting]($common)                                  |
+| Removed                                               | Replacement                                                    |
+| ----------------------------------------------------- | -------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                                | `AnalysisStyle.thematic`                                       |
+| `AnalysisStyleScalar`                                 | `AnalysisStyleThematic`                                        |
+| `AnalysisStyleScalarProps`                            | `AnalysisStyleThematicProps`                                   |
+| `BriefcaseTypes.DeprecatedStandalone`                 | `BriefcaseTypes.Unassigned`                                    |
+| `BriefcaseTypes.Standalone`                           | `BriefcaseTypes.Unassigned`                                    |
+| `Code.getValue`                                       | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                              | `CodeSpec.scopeType`                                           |
+| `DisplayStyleSettings.excludedElements`               | `DisplayStyleSettings.excludedElementIds`                      |
+| `DisplayStyleOverridesOptions.includeProjectSpecific` | `DisplayStyleOverridesOptions.includeITwinSpecific`            |
+| `IModel.changeSetId`                                  | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`                     | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                              | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`                  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                             | Use IPC for writing to iModels                                 |
+| `LatAndLong`                                          | _eliminated_                                                   |
+| `LatLongAndHeight`                                    | [CartographicProps]($common)                                   |
+| `TerrainSettings.locatable`                           | `BackgroundMapSettings.locatable`                              |
+| `TerrainSettingsProps.nonLocatable`                   | `BackgroundMapProps.nonLocatable`                              |
+| `ViewFlagOverrides` class                             | [ViewFlagOverrides]($common) type                              |
+| `ViewFlagProps.edgeMask`                              | _eliminated_                                                   |
+| `ViewFlagProps.hlMatColors`                           | _eliminated_                                                   |
+| `ViewFlags.clone`                                     | [ViewFlags.copy]($common)                                      |
+| `ViewFlags.edgeMask`                                  | _eliminated_                                                   |
+| `ViewFlags.hLineMaterialColors`                       | _eliminated_                                                   |
+| `ViewFlags.noCameraLights`                            | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
+| `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
 
 ### @itwin/core-frontend
 
@@ -970,6 +977,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                                     | Replacement                                                   |
 | ------------------------------------------- | ------------------------------------------------------------- |
+| `FavoritePropertiesScope.Project`           | `FavoritePropertiesScope.ITwin`                               |
 | `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 | `PresentationManager.compareHierarchies`    | _eliminated_                                                  |
 | `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                  |

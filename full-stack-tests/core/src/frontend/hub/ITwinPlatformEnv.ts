@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import {
   BriefcaseQuery,
-  ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemContextClient, IModelHubFrontend, IModelQuery, VersionQuery,
+  ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
-import { ContextRegistryClientWrapper } from "../../common/ContextRegistryClientWrapper";
+import { ITwinRegistryClientWrapper } from "../../common/ITwinRegistryClientWrapper";
 
 export interface IModelNameArg {
   readonly iModelName: string;
@@ -85,13 +85,13 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 /** Defines a base set of the set of Simple base interface for the client implementations that will be passed to the IModelApp. */
 export interface ITwinPlatformAbstraction {
   readonly hubAccess: TestFrontendHubAccess;
-  readonly contextMgr: ContextRegistryClientWrapper;
+  readonly iTwinMgr: ITwinRegistryClientWrapper;
   readonly authClient?: AuthorizationClient;
 }
 
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Platform. */
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
-  public readonly contextMgr = new ContextRegistryClientWrapper(); // this should be the new ContextRegistryWrapper defined in #2045
+  public readonly iTwinMgr = new ITwinRegistryClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
   public readonly hubAccess = new IModelHubFrontend();
   public readonly authClient?: AuthorizationClient;
 
@@ -102,21 +102,21 @@ export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
 
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Stack. */
 export class ITwinStackCloudEnv implements ITwinPlatformAbstraction {
-  public readonly contextMgr: IModelBankFileSystemContextClient;
+  public readonly iTwinMgr: IModelBankFileSystemITwinClient;
   public readonly hubAccess: TestFrontendHubAccess;
   public readonly authClient?: AuthorizationClient;
 
   public constructor(orchestratorUrl: string, authClient?: AuthorizationClient) {
     this.hubAccess = new IModelBankFrontend(orchestratorUrl);
-    this.contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+    this.iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
     this.authClient = authClient;
   }
 
-  public async bootstrapIModelBankProject(token: AccessToken, projectName: string): Promise<void> {
-    const iTwin: ITwin | undefined = await this.contextMgr.getITwinByName(token, projectName);
+  public async bootstrapIModelBankProject(token: AccessToken, iTwinName: string): Promise<void> {
+    const iTwin: ITwin | undefined = await this.iTwinMgr.getITwinByName(token, iTwinName);
     if (iTwin !== undefined)
-      await this.contextMgr.deleteContext(token, iTwin.id);
-    await this.contextMgr.createContext(token, projectName);
+      await this.iTwinMgr.deleteITwin(token, iTwin.id);
+    await this.iTwinMgr.createITwin(token, iTwinName);
   }
 }
 
