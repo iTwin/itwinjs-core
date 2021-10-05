@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.0.0-dev.76",
+  "version": "3.0.0-dev.77",
   "description": "iModel.js UI complex components",
   "main": "lib/components-react.js",
   "typings": "lib/components-react",
@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.76",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.76",
-    "@itwin/core-react": "workspace:^3.0.0-dev.76",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.77",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.77",
+    "@itwin/core-react": "workspace:^3.0.0-dev.77",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
