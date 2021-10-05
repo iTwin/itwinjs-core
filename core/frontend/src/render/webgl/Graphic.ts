@@ -80,7 +80,7 @@ export interface BatchContext {
 
 class PerTargetBatchData {
   public readonly target: Target;
-  protected _featureOverrides?: FeatureOverrides;
+  protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -89,7 +89,10 @@ class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
-    this._featureOverrides = dispose(this._featureOverrides);
+    for (const value of this._featureOverrides.values())
+      dispose(value);
+
+    this._featureOverrides.clear();
   }
 
   public getThematicSensors(batch: Batch): ThematicSensors {
@@ -104,17 +107,24 @@ class PerTargetBatchData {
   }
 
   public getFeatureOverrides(batch: Batch): FeatureOverrides {
-    if (!this._featureOverrides) {
-      this._featureOverrides = FeatureOverrides.createFromTarget(this.target, batch.options);
-      this._featureOverrides.initFromMap(batch.featureTable);
+    const source = this.target.currentFeatureSymbologyOverrides?.source;
+    let ovrs = this._featureOverrides.get(source);
+    if (!ovrs) {
+      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options));
+      ovrs.initFromMap(batch.featureTable);
     }
 
-    this._featureOverrides.update(batch.featureTable);
-    return this._featureOverrides;
+    ovrs.update(batch.featureTable);
+    return ovrs;
   }
 
-  public get featureOverrides() { return this._featureOverrides; }
-  public get thematicSensors() { return this._thematicSensors; }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (this._thematicSensors)
+      stats.addThematicTexture(this._thematicSensors.bytesUsed);
+
+    for (const ovrs of this._featureOverrides.values())
+      stats.addFeatureOverrides(ovrs.byteLength);
+  }
 }
 
 class PerTargetData {
@@ -149,13 +159,8 @@ class PerTargetData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const data of this._data) {
-      if (data.featureOverrides)
-        stats.addFeatureOverrides(data.featureOverrides.byteLength);
-
-      if (data.thematicSensors)
-        stats.addThematicTexture(data.thematicSensors.bytesUsed);
-    }
+    for (const data of this._data)
+      data.collectStatistics(stats);
   }
 
   public getThematicSensors(target: Target): ThematicSensors {
