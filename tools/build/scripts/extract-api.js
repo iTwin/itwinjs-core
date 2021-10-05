@@ -35,7 +35,7 @@ const rushCommon = resolveRoot("common");
 
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  projectFolder: "../",
+  projectFolder: "../../",
   compiler: {
     tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },
