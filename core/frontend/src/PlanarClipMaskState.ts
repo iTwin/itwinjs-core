@@ -58,7 +58,7 @@ export class PlanarClipMaskState {
           const model = view.iModel.models.getLoaded(modelId);
           assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
           if (model?.asGeometricModel)
-            this._tileTreeRefs.push(createMaskTreeReference(model.asGeometricModel));
+            this._tileTreeRefs.push(createMaskTreeReference(view, model.asGeometricModel));
         }
       }
     }

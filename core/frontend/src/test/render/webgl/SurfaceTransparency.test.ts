@@ -9,6 +9,7 @@ import {
 } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
+import { TextureTransparency } from "../../../render/RenderTexture";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";
@@ -65,11 +66,17 @@ describe("Surface transparency", () => {
     imodel = createBlankConnection();
 
     const opaqueImage = ImageBuffer.create(new Uint8Array([255, 255, 255]), ImageBufferFormat.Rgb, 1);
-    opaqueTexture = IModelApp.renderSystem.createTextureFromImageBuffer(opaqueImage, imodel, new RenderTexture.Params(imodel.transientIds.next))!;
+    opaqueTexture = IModelApp.renderSystem.createTexture({
+      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      image: { source: opaqueImage, transparency: TextureTransparency.Opaque },
+    })!;
     expect(opaqueTexture).not.to.be.undefined;
 
     const translucentImage = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
-    translucentTexture = IModelApp.renderSystem.createTextureFromImageBuffer(translucentImage, imodel, new RenderTexture.Params(imodel.transientIds.next))!;
+    translucentTexture = IModelApp.renderSystem.createTexture({
+      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      image: { source: translucentImage, transparency: TextureTransparency.Translucent },
+    })!;
     expect(translucentTexture).not.to.be.undefined;
 
     opaqueMaterial = createMaterial(1);
@@ -245,7 +252,11 @@ describe("Surface transparency", () => {
 
   it("always applies to glyph text unless reading pixels", () => {
     const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
-    const tx = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next, RenderTexture.Type.Glyph))!;
+    const tx = IModelApp.renderSystem.createTexture({
+      type: RenderTexture.Type.Glyph,
+      ownership: { iModel: imodel, key: imodel.transientIds.next },
+      image: { source: img, transparency: TextureTransparency.Translucent },
+    });
     expect(tx).not.to.be.undefined;
 
     expectTranslucent(() => createMesh(0, tx));

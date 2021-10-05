@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.0.0-dev.76",
+  "version": "3.0.0-dev.77",
   "description": "iTwin.js frontend components",
   "main": "lib/core-frontend.js",
   "typings": "lib/core-frontend",
@@ -36,17 +36,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.76",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.76",
-    "@itwin/core-common": "workspace:^3.0.0-dev.76",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.76",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.76",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.76",
-    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.76",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.76",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.76",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.76",
-    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.76"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.77",
+    "@itwin/core-common": "workspace:^3.0.0-dev.77",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.77",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.77",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.77",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.77",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.77",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.77",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.77",
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.77"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

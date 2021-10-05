@@ -33,6 +33,17 @@
       ]
     },
     {
+      "name": "@bentley/frontend-authorization-client",
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [
         "frontend",
@@ -90,7 +101,6 @@
     {
       "name": "@bentley/reality-data-client",
       "allowedCategories": [
-        "frontend",
         "internal"
       ]
     },
@@ -217,6 +227,12 @@
       ]
     },
     {
+      "name": "@itwin/core-electron",
+      "allowedCategories": [
+        "internal"
+      ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [
         "backend",
@@ -258,6 +274,12 @@
       "name": "@itwin/core-markup",
       "allowedCategories": [
         "frontend",
+        "internal"
+      ]
+    },
+    {
+      "name": "@itwin/core-mobile",
+      "allowedCategories": [
         "internal"
       ]
     },
@@ -341,12 +363,6 @@
       ]
     },
     {
-      "name": "@itwin/core-electron",
-      "allowedCategories": [
-        "internal"
-      ]
-    },
-    {
       "name": "@itwin/eslint-plugin",
       "allowedCategories": [
         "backend",
@@ -410,12 +426,6 @@
     },
     {
       "name": "@itwin/map-layers",
-      "allowedCategories": [
-        "internal"
-      ]
-    },
-    {
-      "name": "@itwin/core-mobile",
       "allowedCategories": [
         "internal"
       ]
