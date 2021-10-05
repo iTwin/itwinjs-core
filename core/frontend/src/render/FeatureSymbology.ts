@@ -39,7 +39,7 @@ export namespace FeatureSymbology {
      */
     readonly onSourceDisposed: BeEvent<() => void>;
   }
-  
+
   /** Allows a [[Viewport]] to customize the appearance of individual [Feature]($common)s within it.
    *
    * The Viewport computes its base Overrides based on the following:
