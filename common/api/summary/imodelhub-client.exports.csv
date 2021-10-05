@@ -52,7 +52,6 @@ internal;ConflictingCodesError
 internal;ConflictingLocksError 
 internal;constructorFromEventType(type: IModelHubEventType): EventConstructor
 internal;ConstructorType = new () => any
-internal;ContextManagerClient
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultIModelCreateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
@@ -80,7 +79,7 @@ internal;HubCode
 internal;HubIModel 
 internal;HubUserInfo 
 internal;IModelBankClient 
-internal;IModelBankFileSystemContextClient 
+internal;IModelBankFileSystemITwinClient 
 internal;IModelBankHandler 
 internal;IModelBaseHandler 
 internal;class IModelClient
@@ -88,7 +87,7 @@ internal;IModelCloudEnvironment
 internal;IModelCreatedEvent 
 public;IModelCreateOptions
 public;IModelDeletedEvent 
-internal;IModelFileSystemContextProps
+internal;IModelFileSystemITwinProps
 internal;IModelHandler
 internal;IModelHubClient 
 internal;IModelHubClientError 
@@ -105,6 +104,7 @@ internal;IModelsHandler
 public;IModelType
 public;InitializationState
 internal;InstanceIdQuery 
+internal;ITwinManagerClient
 internal;LargeThumbnail 
 internal;Lock 
 internal;LockBase 

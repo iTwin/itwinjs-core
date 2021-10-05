@@ -1975,7 +1975,7 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createMaskTreeReference(model: GeometricModelState): TileTreeReference;
+export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
 
 // @internal (undocumented)
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
@@ -1988,6 +1988,23 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 
 // @internal (undocumented)
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
+
+// @public
+export interface CreateTextureArgs {
+    image: TextureImage;
+    ownership?: TextureOwnership;
+    type?: RenderTexture.Type;
+}
+
+// @public
+export interface CreateTextureFromSourceArgs {
+    ownership?: TextureCacheOwnership & {
+        key: string;
+    } | "external";
+    source: ImageSource;
+    transparency?: TextureTransparency;
+    type?: RenderTexture.Type;
+}
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -5276,17 +5293,17 @@ export interface MapLayerSetting {
 // @internal (undocumented)
 export class MapLayerSettingsService {
     // (undocumented)
-    static deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static deleteSharedSettings(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
-    static getSettingFromUrl(accessToken: AccessToken, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
-    static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
+    static getSettingFromUrl(accessToken: AccessToken, url: string, iTwinId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
+    static getSourcesFromSettingsService(iTwinId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
     // (undocumented)
     static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
     // (undocumented)
-    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
     static get SourceNamespace(): string;
-    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
 }
 
 // @internal
@@ -6703,6 +6720,12 @@ export interface OffScreenViewportOptions {
     viewRect: ViewRect;
 }
 
+// @internal
+export interface OldTextureImage {
+    format: ImageSourceFormat;
+    image: HTMLImageElement;
+}
+
 // @public
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
@@ -8117,12 +8140,18 @@ export abstract class RenderSystem implements IDisposable {
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+    // (undocumented)
+    createTexture(_args: CreateTextureArgs): RenderTexture | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
-    createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
-    createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
-    createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
+    // @deprecated
+    createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined;
+    // @deprecated
+    createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
+    // @deprecated
+    createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
+    createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -8138,7 +8167,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
-    findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
+    findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     get isMobile(): boolean;
@@ -8147,7 +8176,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
     // @internal
-    loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
+    loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined>;
     // @internal (undocumented)
     get maxRealityImageryLayers(): number;
     // @internal (undocumented)
@@ -9625,7 +9654,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
-    // (undocumented)
     reset(): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
@@ -9802,13 +9830,35 @@ export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSp
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
+// @public
+export type TextureCacheKey = string | Gradient.Symb;
+
+// @public
+export interface TextureCacheOwnership {
+    iModel: IModelConnection;
+    key: string | Gradient.Symb;
+}
+
 // @internal (undocumented)
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
-// @internal
+// @public
 export interface TextureImage {
-    format: ImageSourceFormat | undefined;
-    image: HTMLImageElement | undefined;
+    source: TextureImageSource;
+    transparency?: TextureTransparency;
+}
+
+// @public
+export type TextureImageSource = HTMLImageElement | ImageBuffer;
+
+// @public
+export type TextureOwnership = TextureCacheOwnership | "external";
+
+// @public
+export enum TextureTransparency {
+    Mixed = 2,
+    Opaque = 0,
+    Translucent = 1
 }
 
 // @internal (undocumented)

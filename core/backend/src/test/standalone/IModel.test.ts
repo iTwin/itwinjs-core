@@ -7,34 +7,33 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
+import { BlobDaemon } from "@bentley/imodeljs-native";
 import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@itwin/core-bentley";
+import {
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
+  GeographicCRS, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError,
+  IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
+  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+} from "@itwin/core-common";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
-  GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
-  MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
-  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
-} from "@itwin/core-common";
-import { BlobDaemon } from "@bentley/imodeljs-native";
+import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
-import { BriefcaseDb } from "../../IModelDb";
 import {
-  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
-  DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions,
-  DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
-  InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
-  RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
-  ViewDefinition,
+  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
+  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
+  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
+import { BriefcaseDb } from "../../IModelDb";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -557,7 +556,7 @@ describe("iModel", () => {
 
   it("should create display styles", () => {
     const defaultViewFlags = new ViewFlags().toJSON();
-    const defaultMapImagery = new DisplayStyleSettings({ }).toJSON().mapImagery;
+    const defaultMapImagery = new DisplayStyleSettings({}).toJSON().mapImagery;
 
     const viewFlags = new ViewFlags({ patterns: false, visibleEdges: true });
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
@@ -1592,7 +1591,7 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1651,7 +1650,7 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1744,7 +1743,7 @@ describe("iModel", () => {
 
   it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1777,7 +1776,7 @@ describe("iModel", () => {
 
   it("presence of a GCS imposes the ecef value", async () => {
     const args = {
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
@@ -1868,6 +1867,9 @@ describe("iModel", () => {
     snapshot.saveChanges();
     snapshot.close();
 
+    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
+    const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
+
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
       user: "testAccount",
@@ -1893,14 +1895,22 @@ describe("iModel", () => {
     assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
+    assert.equal(errorLogStub.callCount, 1);
+    assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
 
+    errorLogStub.resetHistory();
     await checkpoint.reattachDaemon(accessToken);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
+    assert.equal(errorLogStub.callCount, 1);
+    assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
+    assert.equal(infoLogStub.callCount, 2);
+    assert.include(infoLogStub.args[0][1], "attempting to reattach");
+    assert.include(infoLogStub.args[1][1], "reattached checkpoint");
 
+    errorLogStub.resetHistory();
     commandStub.callsFake(async () => daemonErrorResult);
-    const error = await getIModelError(checkpoint.reattachDaemon(accessToken));
-    expectIModelError(DbResult.BE_SQLITE_ERROR, error);
+    await expect(checkpoint.reattachDaemon(accessToken)).to.eventually.be.rejectedWith("attach failed");
 
     checkpoint.close();
   });
@@ -2547,7 +2557,6 @@ describe("iModel", () => {
     assert.isUndefined(subject4.federationGuid); // should not have changed
   });
 });
-
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
 

@@ -46,7 +46,7 @@ export interface BlankConnectionProps {
   extents: Range3dProps;
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
-  /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
+  /** The optional Guid that identifies the iTwin associated with the [[BlankConnection]]. */
   iTwinId?: GuidString;
 }
 
@@ -610,7 +610,7 @@ export abstract class IModelConnection extends IModel {
 export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
-  /** The Guid that identifies the *context* for this BlankConnection.
+  /** The Guid that identifies the iTwin for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
   public override get iTwinId(): GuidString | undefined { return this._iTwinId; }

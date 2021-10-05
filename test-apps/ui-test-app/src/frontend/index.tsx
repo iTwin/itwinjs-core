@@ -10,7 +10,7 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { I18N } from "@itwin/core-i18n";
 import { AccessToken, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import {
   BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient,
@@ -149,7 +149,7 @@ export interface RootState extends FrameworkRootState {
 }
 
 interface SampleIModelParams {
-  projectId: string;
+  iTwinId: string;
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
@@ -324,24 +324,24 @@ export class SampleAppIModelApp {
     return category;
   }
 
-  public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+  public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
     // open the imodel
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-      `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+      `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
-      const req = await NativeApp.requestDownloadBriefcase(projectId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
         // eslint-disable-next-line no-console
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
       });
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      const iModel = new ExternalIModel(projectId, iModelId);
+      const iModel = new ExternalIModel(iTwinId, iModelId);
       await iModel.openIModel();
       iModelConnection = iModel.iModelConnection!;
     }
@@ -419,7 +419,7 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModelIndex: projectId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModelIndex: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
@@ -456,44 +456,44 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
+    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_ITWIN_NAME) {
       const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
-      const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
+      const iTwinName = process.env.IMJS_UITESTAPP_IMODEL_ITWIN_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const accessToken = await IModelApp.getAccessToken();
       const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
         search: {
-          searchString: projectName,
+          searchString: iTwinName,
           propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
         },
       });
 
       if (iTwinList.length === 0)
-        throw new Error(`ITwin ${projectName} was not found for the user.`);
+        throw new Error(`ITwin ${iTwinName} was not found for the user.`);
       else if (iTwinList.length > 1)
-        throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+        throw new Error(`Multiple iTwins named ${iTwinName} were found for the user.`);
 
-      const project: ITwin = iTwinList[0];
+      const iTwin: ITwin = iTwinList[0];
 
-      const iModel = (await (new IModelHubClient()).iModels.get(accessToken, project.id, new IModelQuery().byName(iModelName)))[0];
+      const iModel = (await (new IModelHubClient()).iModels.get(accessToken, iTwin.id, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.id, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(project.id, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
+        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId);
+        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId);
       }
     } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
       // open to the Local File frontstage
@@ -506,14 +506,14 @@ export class SampleAppIModelApp {
 
   private static _usingParams(): SampleIModelParams | undefined {
     const urlParams = new URLSearchParams(window.location.search);
-    const projectId = urlParams.get("projectId");
+    const iTwinId = urlParams.get("iTwinId");
     const iModelId = urlParams.get("iModelId");
 
-    if (projectId && iModelId) {
+    if (iTwinId && iModelId) {
       const viewIds = urlParams.getAll("viewId");
       const stageId = urlParams.get("stageId") || undefined;
 
-      return { projectId, iModelId, viewIds, stageId };
+      return { iTwinId, iModelId, viewIds, stageId };
     }
 
     return undefined;

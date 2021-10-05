@@ -18,22 +18,22 @@ export class NativeAppTest {
     return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args) as PromiseReturnType<TestIpcInterface[T]>;
   }
 
-  public static async initializeTestProject(): Promise<string> {
+  public static async initializeTestITwin(): Promise<string> {
     const user = TestUsers.regular;
-    const props = await NativeAppTest.callBackend("getTestProjectProps", user);
+    const props = await NativeAppTest.callBackend("getTestITwinProps", user);
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
       const authorizationClient = bank.getAuthorizationClient(user);
-      await bank.bootstrapIModelBankProject((await authorizationClient.getAccessToken())!, props.projectName);
+      await bank.bootstrapITwin((await authorizationClient.getAccessToken())!, props.iTwinName);
       this.imodelCloudEnv = bank;
     } else {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
     const accessToken = await IModelApp.getAccessToken();
-    const project = await this.imodelCloudEnv.contextMgr.getITwinByName(accessToken, props.projectName);
-    assert(project && project.id);
-    return project.id;
+    const iTwin = await this.imodelCloudEnv.iTwinMgr.getITwinByName(accessToken, props.iTwinName);
+    assert(iTwin && iTwin.id);
+    return iTwin.id;
   }
 
   public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {

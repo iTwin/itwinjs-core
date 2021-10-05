@@ -24,9 +24,9 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  useProjectName: boolean;
-  projectId?: string;
-  projectName?: string;
+  useITwinName: boolean;
+  iTwinId?: string;
+  iTwinName?: string;
   changeSetId?: string;
 }
 
@@ -138,9 +138,9 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
-      useProjectName: !process.env.IMODEL_PROJECTID,
-      projectId: process.env.IMODEL_PROJECTID,
-      projectName: process.env.IMODEL_PROJECTNAME,
+      useITwinName: !process.env.IMODEL_PROJECTID,
+      iTwinId: process.env.IMODEL_PROJECTID,
+      iTwinName: process.env.IMODEL_PROJECTNAME,
 
       // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       changeSetId: process.env.IMODEL_CHANGESETID,
@@ -158,9 +158,9 @@ export class Settings {
         useName: !process.env.IMODEL_WRITE_IMODELID,
         id: process.env.IMODEL_WRITE_IMODELID,
         name: process.env.IMODEL_WRITE_IMODELNAME,
-        useProjectName: !process.env.IMODEL_WRITE_PROJECTID,
-        projectId: process.env.IMODEL_WRITE_PROJECTID,
-        projectName: process.env.IMODEL_WRITE_PROJECTNAME,
+        useITwinName: !process.env.IMODEL_WRITE_PROJECTID,
+        iTwinId: process.env.IMODEL_WRITE_PROJECTID,
+        iTwinName: process.env.IMODEL_WRITE_PROJECTNAME,
       });
     }
 

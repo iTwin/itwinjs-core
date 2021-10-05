@@ -8,9 +8,9 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemITwinClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
@@ -26,7 +26,7 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
-const bankProjects: string[] = [];
+const bankITwins: string[] = [];
 
 export const sharedimodelName = "imodeljs-clients Shared iModel";
 
@@ -199,14 +199,15 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   return (await authorizationClient.getAccessToken())!;
 }
 
-export async function bootstrapBankProject(accessToken: AccessToken, projectName: string): Promise<void> {
-  if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
+export async function bootstrapBankITwin(accessToken: AccessToken, name: string): Promise<void> {
+  if (getCloudEnv().isIModelHub || bankITwins.includes(name))
     return;
 
-  const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
   let iTwin: ITwin | undefined;
   try {
-    iTwin = await bankContext.getITwinByName(accessToken, projectName);
+    iTwin = await bankContext.getITwinByName(accessToken, name);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
       iTwin = undefined;
@@ -215,39 +216,23 @@ export async function bootstrapBankProject(accessToken: AccessToken, projectName
     }
   }
   if (!iTwin)
-    await bankContext.createContext(accessToken, projectName);
+    await bankContext.createITwin(accessToken, name);
 
-  bankProjects.push(projectName);
+  bankITwins.push(name);
 }
 
-export async function getAssetId(accessToken: AccessToken, assetName?: string): Promise<string> {
+export async function getITwinId(accessToken: AccessToken, iTwinName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
-  assetName = assetName || TestConfig.assetName;
+  iTwinName = iTwinName || TestConfig.iTwinName;
 
-  await bootstrapBankProject(accessToken, assetName);
+  await bootstrapBankITwin(accessToken, iTwinName);
 
-  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(accessToken, assetName);
-
-  if (!iTwin || !iTwin.id)
-    throw new Error(`Asset with name ${assetName} doesn't exist.`);
-
-  return iTwin.id;
-}
-
-export async function getProjectId(accessToken: AccessToken, projectName?: string): Promise<string> {
-  if (TestConfig.enableMocks)
-    return Guid.createValue();
-
-  projectName = projectName || TestConfig.projectName;
-
-  await bootstrapBankProject(accessToken, projectName);
-
-  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(accessToken, projectName);
+  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(accessToken, iTwinName);
 
   if (!iTwin || !iTwin.id)
-    throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
+    throw new Error(`iTwin with name ${TestConfig.iTwinName} doesn't exist.`);
 
   return iTwin.id;
 }
@@ -259,7 +244,7 @@ export function getUniqueIModelName(imodelName: string): string {
   return `${imodelName} - ${getTestInstanceId()}`;
 }
 
-export async function deleteIModelByName(accessToken: AccessToken, contextId: string, imodelName: string, useUniqueName = true): Promise<void> {
+export async function deleteIModelByName(accessToken: AccessToken, iTwinId: string, imodelName: string, useUniqueName = true): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
@@ -267,24 +252,24 @@ export async function deleteIModelByName(accessToken: AccessToken, contextId: st
     imodelName = getUniqueIModelName(imodelName);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(accessToken, contextId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(accessToken, iTwinId, new IModelQuery().byName(imodelName));
 
   for (const imodel of imodels) {
-    await client.iModels.delete(accessToken, contextId, imodel.id!);
+    await client.iModels.delete(accessToken, iTwinId, imodel.id!);
   }
 }
 
-export async function getIModelId(accessToken: AccessToken, imodelName: string, projectId?: string, useUniqueName = true): Promise<GuidString> {
+export async function getIModelId(accessToken: AccessToken, imodelName: string, iTwinId?: string, useUniqueName = true): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
   if (useUniqueName)
     imodelName = getUniqueIModelName(imodelName);
 
-  projectId = projectId ?? await getProjectId(accessToken);
+  iTwinId = iTwinId ?? await getITwinId(accessToken);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(accessToken, iTwinId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
     throw new Error(`iModel with name ${imodelName} doesn't exist.`);
@@ -714,7 +699,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(accessToken: AccessToken, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(accessToken: AccessToken, name: string, iTwinId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
@@ -724,22 +709,22 @@ export async function createIModel(accessToken: AccessToken, name: string, conte
   if (useUniqueName)
     name = getUniqueIModelName(name);
 
-  contextId = contextId || await getProjectId(accessToken, TestConfig.projectName);
+  iTwinId = iTwinId || await getITwinId(accessToken, TestConfig.iTwinName);
 
   const client = getDefaultClient();
 
-  const imodels = await client.iModels.get(accessToken, contextId, new IModelQuery().byName(name));
+  const imodels = await client.iModels.get(accessToken, iTwinId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await client.iModels.delete(accessToken, contextId, imodels[0].id!);
+      await client.iModels.delete(accessToken, iTwinId, imodels[0].id!);
     } else {
       return;
     }
   }
 
   const pathName = fromSeedFile && !TestConfig.enableIModelBank ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(accessToken, contextId, name,
+  return client.iModels.create(accessToken, iTwinId, name,
     { path: pathName, timeOutInMilliseconds: TestConfig.initializeiModelTimeout });
 }
 

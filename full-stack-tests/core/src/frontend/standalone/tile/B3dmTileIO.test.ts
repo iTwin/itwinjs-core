@@ -293,19 +293,16 @@ describe("B3dmReader", () => {
 
   it("should locate texture for mesh", async () => {
     class Texture extends RenderTexture {
-      public constructor(params: RenderTexture.Params) {
-        super(params);
-      }
-
+      public constructor(type: RenderTexture.Type) { super(type); }
       public dispose() { }
       public get bytesUsed() { return 0; }
     }
 
     let textureCreated = false;
-    IModelApp.renderSystem.createTextureFromImage = () => {
+    IModelApp.renderSystem.createTexture = () => {
       expect(textureCreated).to.be.false;
       textureCreated = true;
-      return new Texture(RenderTexture.Params.defaults);
+      return new Texture(RenderTexture.Type.Normal);
     };
 
     let texturedMeshCreated = false;

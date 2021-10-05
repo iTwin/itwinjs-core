@@ -215,7 +215,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     setMapSources(newSources);
   }, [setMapSources]);
 
-  /*
+  /**
   * Handle change events in the MapLayerSettingsService
   */
   React.useEffect(() => {
