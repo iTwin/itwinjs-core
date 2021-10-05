@@ -2,19 +2,7 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "jsx": "react",
-    "types": [
-      "sinon-chai",
-      "chai-as-promised",
-      "mocha",
-      "chai-jest-snapshot",
-    ]
+    "types": ["sinon-chai", "chai-as-promised", "mocha", "chai-jest-snapshot"]
   },
-  "include": [
-    "./src/**/*.ts*",
-    "src/test/ReactInstance.js"
-  ],
-  "exclude": [
-    "lib",
-    "node_modules"
-  ]
+  "include": ["./src/**/*.ts*", "src/test/ReactInstance.js"]
 }
