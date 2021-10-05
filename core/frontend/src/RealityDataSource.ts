@@ -11,10 +11,16 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 
+/** Utility function to convert a RealityDataSourceKey into its string representation
+* @alpha
+*/
 export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string {
   return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey.iTwinId}`;
 }
 
+/** This class provides access to the reality data provider services.
+* @alpha
+*/
 export class RealityDataSource {
   public readonly rdSourceKey: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */

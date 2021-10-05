@@ -40,14 +40,15 @@ export enum RealityDataProvider {
   */
   ContextShare = "ContextShare",
   /**
-   * Will provide Open Street Map Building (OCM) from Cesium Ion (in 3dTile format)
+   * Will provide Open Street Map Building (OSM) from Cesium Ion (in 3dTile format)
   */
   CesiumIonAsset = "CesiumIonAsset",
 }
 
 /** Identify the Reality Data storage format
  * @alpha
- */export enum RealityDataFormat {
+ */
+export enum RealityDataFormat {
   /**
    * 3dTile supported formats; RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
    * */
@@ -58,12 +59,14 @@ export enum RealityDataProvider {
   OPC = "OPC",
 }
 
-// Key used by ContextShare RealityDataProvider
+/**
+ * Key used by ContextShare RealityDataProvider
+ * @alpha
+ */
 export interface RealityDataSourceKey {
   /**
    * The provider that supplies the access to reality data source for displaying the reality model
    * @see [[RealityDataProvider]] for default supported value;
-   *
   */
   provider: string;
   /**
@@ -84,12 +87,7 @@ export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
   sourceKey: RealityDataSourceKey;
 }
-export interface RealityDataConnectionProps {
-  /** The source key that identify a reality data for the provider. */
-  sourceKey: RealityDataSourceKey;
-  /** The URL that supplies the 3d tiles for displaying the reality model*/
-  tilesetUrl: string;
-}
+
 /** JSON representation of a [[ContextRealityModel]].
  * @public
  */
@@ -97,6 +95,7 @@ export interface ContextRealityModelProps {
   /**
    * The reality data source key identify the reality data provider and storage format.
    * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+   * @alpha
    */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -168,6 +167,7 @@ export class ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
   /**
    * The reality data source key identify the reality data provider and storage format.
+   * @alpha
    */
   public readonly  rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
