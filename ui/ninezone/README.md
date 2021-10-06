@@ -21,7 +21,7 @@ npm install @itwin/appui-layout-react
 ### Basic Usage
 
 ```javascript
-import BackButton from "@itwin/appui-layout-react/lib/ui-ninezone/components/buttons/Back";
+import BackButton from "@itwin/appui-layout-react";
 
 <BackButton />
 ```

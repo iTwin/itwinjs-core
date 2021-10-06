@@ -10,8 +10,8 @@ import {
 } from "@itwin/core-frontend";
 import {
   DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
-} from "@itwin/core-frontend/lib/render-primitives";
-import { Branch } from "@itwin/core-frontend/lib/webgl";
+} from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;

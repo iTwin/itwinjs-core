@@ -13,7 +13,7 @@ import {
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
-import { NineZoneProvider } from "../Providers";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTitleBar", () => {
   it("should dispatch WIDGET_DRAG_END", () => {
@@ -24,7 +24,7 @@ describe("WidgetTitleBar", () => {
     });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -32,7 +32,7 @@ describe("WidgetTitleBar", () => {
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
@@ -66,7 +66,7 @@ describe("WidgetTitleBar", () => {
       });
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -74,7 +74,7 @@ describe("WidgetTitleBar", () => {
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
@@ -103,7 +103,7 @@ describe("WidgetTitleBar", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -114,7 +114,7 @@ describe("WidgetTitleBar", () => {
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
@@ -152,7 +152,7 @@ describe("WidgetTitleBar", () => {
       });
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -163,7 +163,7 @@ describe("WidgetTitleBar", () => {
         <PanelStateContext.Provider value={nineZone.panels.right}>
           <PanelTarget />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
@@ -198,7 +198,7 @@ describe("WidgetTitleBar", () => {
       });
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -206,7 +206,7 @@ describe("WidgetTitleBar", () => {
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];

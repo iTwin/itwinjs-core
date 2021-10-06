@@ -1,5 +1,7 @@
 # start off ignoring everything, and then add back only the files we want
 *
+!*.md
+
 !lib/**/*.d.ts
 !lib/**/*.d.ts.map
 !lib/**/*.js
@@ -7,8 +9,8 @@
 !lib/**/*.*css
 !lib/**/*.json
 !lib/**/*.svg
-!lib/public/**/*
-lib/public/locales/en-PSEUDO
-lib/test
-!*.md
+!lib/**/public/**/*
+
 !rulesets/**/*
+
+lib/**/test/**

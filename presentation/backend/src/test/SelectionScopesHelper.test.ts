@@ -9,7 +9,7 @@ import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 
 describe("SelectionScopesHelper", () => {

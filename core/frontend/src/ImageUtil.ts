@@ -221,7 +221,7 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
 export async function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined> {
   try {
     return await imageElementFromUrl(url);
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }

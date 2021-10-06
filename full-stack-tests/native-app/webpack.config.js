@@ -83,13 +83,20 @@ function createConfig(shouldInstrument) {
     config.module.rules.push({
       test: /\.(jsx?|tsx?)$/,
       include: [
-        path.join(__dirname, "../../core/backend"),
+        // path.join(__dirname, "../../core/backend"),
         path.join(__dirname, "../../core/frontend"),
       ],
       loader: require.resolve("istanbul-instrumenter-loader"),
-      options: {
-        debug: true
-      },
+      options: { esModules: true },
+      enforce: "post",
+    });
+    config.module.rules.push({
+      test: /\.(jsx?|tsx?)$/,
+      include: [
+        path.join(__dirname, "../../core/backend"),
+        // path.join(__dirname, "../../core/frontend"),
+      ],
+      loader: require.resolve("istanbul-instrumenter-loader"),
       enforce: "post",
     });
   }
@@ -99,6 +106,6 @@ function createConfig(shouldInstrument) {
 
 // Exporting two configs in a array like this actually tells webpack to run twice - once for each config.
 module.exports = [
-  createConfig(true),
+  // createConfig(true),
   createConfig(false)
 ]

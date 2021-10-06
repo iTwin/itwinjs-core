@@ -9,7 +9,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { SnapshotDb } from "@itwin/core-backend";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {

@@ -8,7 +8,7 @@ import {
 } from "@itwin/core-frontend";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
 import { Point3d } from "@itwin/core-geometry";
-import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/webgl";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;

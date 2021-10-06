@@ -7,7 +7,7 @@
 !lib/**/*.*css
 !lib/**/*.json
 !lib/**/*.svg
-!lib/public/**/*
-lib/test
+!lib/**/public/**/*
+lib/**/test/**
 !*.md
 !rulesets/**/*

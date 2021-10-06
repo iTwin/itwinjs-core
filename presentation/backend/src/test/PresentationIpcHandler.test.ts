@@ -9,7 +9,7 @@ import {
   NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createRandomBaseNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomBaseNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";

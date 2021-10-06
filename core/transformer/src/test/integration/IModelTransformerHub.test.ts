@@ -18,11 +18,8 @@ import {
   IModelExporter,
   IModelTransformer, TransformerLoggerCategory,
 } from "../../core-transformer";
-import { HubMock } from "@itwin/core-backend/lib/test/HubMock";
-import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/test/IModelTestUtils";
+import { ExtensiveTestScenario, HubMock, HubUtility, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "@itwin/core-backend/lib/test/KnownTestLocations";
-import { HubUtility } from "@itwin/core-backend/lib/test/integration/HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");

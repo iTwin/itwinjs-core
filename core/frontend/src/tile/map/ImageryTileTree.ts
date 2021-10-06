@@ -219,7 +219,7 @@ class ImageryTileLoader extends RealityTileLoader {
         type: RenderTexture.Type.FilteredTileSection,
         source,
       });
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

@@ -1545,7 +1545,7 @@ export class RenderTimeline extends InformationRecordElement {
   private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
     try {
       return JSON.parse(json);
-    } catch (_) {
+    } catch {
       return [];
     }
   }

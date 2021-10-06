@@ -36,7 +36,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     if (undefined === view) {
       try {
         view = await iModel.views.load(id);
-      } catch (_) {
+      } catch {
         // The view probably refers to a nonexistent display style or model/category selector. Replace with a default spatial view.
         // Or, we've opened a blank connection and `id` is intentionally invalid.
         // The viewport's title bar will display "UNNAMED" instead of the bad view's name.

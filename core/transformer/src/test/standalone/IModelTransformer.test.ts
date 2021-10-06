@@ -16,8 +16,7 @@ import {
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, Subject,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/test/IModelTestUtils";
-import { KnownTestLocations } from "@itwin/core-backend/lib/test/KnownTestLocations";
+import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps,
   IModel, IModelError, PhysicalElementProps, Placement3d,

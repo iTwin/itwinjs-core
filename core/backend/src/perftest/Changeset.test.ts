@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodelhub-client";
 import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools";
 import { IModelHubBackend  } from "../IModelHubBackend";
 import {
   BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,

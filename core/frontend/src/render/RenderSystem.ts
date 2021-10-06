@@ -618,7 +618,7 @@ export abstract class RenderSystem implements IDisposable {
           transparency,
         },
       });
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

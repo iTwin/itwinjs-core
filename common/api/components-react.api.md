@@ -46,7 +46,7 @@ import { PropertyValue } from '@itwin/appui-abstract';
 import * as PropTypes from 'prop-types';
 import { RatioChangeResult } from '@itwin/core-react';
 import * as React from 'react';
-import ReactDataGrid = require('react-data-grid');
+import ReactDataGrid from 'react-data-grid';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { SelectOption } from '@itwin/itwinui-react';
 import { SortDirection } from '@itwin/core-react';

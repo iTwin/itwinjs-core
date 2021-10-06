@@ -835,7 +835,7 @@ export async function getGcsConverterAvailable(iModel: IModelConnection) {
   try {
     const responseProps = await converter.getIModelCoordinatesFromGeoCoordinates(requestProps);
     haveConverter = responseProps.iModelCoords.length === 1 && responseProps.iModelCoords[0].s !== GeoCoordStatus.NoGCSDefined;
-  } catch (_) {
+  } catch {
     haveConverter = false;
   }
   return haveConverter;

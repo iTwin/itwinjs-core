@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as moq from "typemoq";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {

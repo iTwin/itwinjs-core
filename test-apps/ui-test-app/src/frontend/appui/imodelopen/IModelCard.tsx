@@ -48,7 +48,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     const hubFrontend = new IModelHubFrontend();
     try {
       this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken()), arg.id, { iTwinId: arg.iTwinId, size: "Small" });
-    } catch (_) {}
+    } catch {}
     this.setState({ waitingForThumbnail: false });
   }
 

@@ -66,7 +66,7 @@ export class ViewCreator3d {
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
       await viewState.load();
-    } catch (_) {
+    } catch {
     }
 
     if (options?.standardViewId)
