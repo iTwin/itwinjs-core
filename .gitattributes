@@ -2,7 +2,7 @@
 # line endings showing up in git diffs
 *                            text=auto
 
-# Ensure these file types of the correct OS specific line endings
+# Ensure these file types use the correct OS specific line endings
 *.bat                        eol=crlf
 *.sh                         eol=lf
 
