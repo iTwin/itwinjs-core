@@ -158,9 +158,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (json !== undefined) {
       this.serviceJson = json;
       if (json.capabilities) {
+        const nbLods = json.tileInfo?.lods?.length;
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
         this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
-        this._tileMap = new ArcGISTileMap(this._settings.url, this._requestContext);
+        if (this._tileMapSupported)
+          this._tileMap = new ArcGISTileMap(this._settings.url, this._requestContext, nbLods);
       }
       if (json.copyrightText) this._copyrightText = json.copyrightText;
       if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
