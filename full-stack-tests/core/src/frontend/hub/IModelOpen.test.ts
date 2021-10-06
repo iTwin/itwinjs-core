@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeDuration, GuidString, Logger } from "@itwin/core-bentley";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelVersion } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@itwin/core-frontend";
+import { ProgressInfo } from "@bentley/itwin-client";
+import { BeDuration, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { IModelVersion, SyncMode } from "@itwin/core-common";
+import { BriefcaseConnection, CheckpointConnection, IModelApp, IModelConnection, MockRender, NativeApp } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestUtility } from "./TestUtility";
+import { usingOfflineScope } from "../HttpRequestHook";
+import { TestUtility } from "../TestUtility";
 
 describe("Opening IModelConnection (#integration)", () => {
   let testITwinId: GuidString;
@@ -78,3 +80,72 @@ describe("Opening IModelConnection (#integration)", () => {
   });
 
 });
+
+if (ProcessDetector.isElectronAppFrontend) {
+
+  describe("Electron/Native iModel Download (#integration)", async () => {
+
+    let iTwinId: GuidString;
+
+    before(async () => {
+      iTwinId = await TestUtility.getTestITwinId();
+    });
+
+    it("Download Briefcase with progress events (#integration)", async () => {
+      let events = 0;
+      let loaded = 0;
+      let total = 0;
+      const iModelId = await TestUtility.queryIModelIdByName(TestUtility.testITwinName, TestUtility.testIModelNames.codePush);
+      const downloader = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+        (progress: ProgressInfo) => {
+          assert.isNumber(progress.loaded);
+          assert.isNumber(progress.total);
+          assert.isTrue(progress.loaded >= loaded);
+          assert.isTrue(progress.total! >= progress.loaded);
+          loaded = progress.loaded;
+          total = progress.total!;
+          events++;
+        });
+
+      assert(loaded >= total);
+      await downloader.downloadPromise;
+      assert.notEqual(events, 0);
+
+      await usingOfflineScope(async () => {
+        const rs = await NativeApp.getCachedBriefcases(iModelId);
+        assert(rs.length > 0);
+        const connection = await BriefcaseConnection.openFile({ fileName: downloader.fileName });
+        const rowCount = await connection.queryRowCount("SELECT ECInstanceId FROM bis.Element LIMIT 1");
+        assert.notEqual(rowCount, 0);
+        await connection.close();
+        await NativeApp.deleteBriefcase(downloader.fileName);
+      });
+    });
+
+    it("Should be able to cancel download (#integration)", async () => {
+      const iModelId = await TestUtility.queryIModelIdByName(TestUtility.testITwinName, TestUtility.testIModelNames.stadium);
+      let downloadAborted = false;
+      const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
+      await NativeApp.deleteBriefcase(fileName);
+
+      const downloader = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { fileName, syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+        (progress: ProgressInfo) => {
+          assert.isNumber(progress.loaded);
+          assert.isNumber(progress.total);
+          assert.isTrue(progress.total! >= progress.loaded);
+          if (progress.total! > 0 && progress.loaded > (progress.total! / 8))
+            void downloader.requestCancel(); // cancel after 1/8 of the file is downloaded
+        });
+
+      try {
+        await downloader.downloadPromise;
+      } catch (err: any) {
+        assert.isTrue(err.message.includes("cancelled"));
+        downloadAborted = true;
+      }
+      await NativeApp.deleteBriefcase(downloader.fileName);
+      assert.isTrue(downloadAborted, "download should abort");
+    });
+
+  });
+}

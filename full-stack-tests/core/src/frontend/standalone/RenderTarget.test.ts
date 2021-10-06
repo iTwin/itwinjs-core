@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
-import {
-  ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
-} from "@itwin/core-common";
-import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
-  Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
-} from "@itwin/core-frontend";
 import { expect } from "chai";
-import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
+import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
+import {
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
+  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+} from "@itwin/core-frontend";
+import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
+import {
+  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
+} from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -22,13 +23,13 @@ describe("Vertex buffer objects", () => {
     const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
-    await IModelApp.startup({ renderSys: renderSysOpts });
+    await TestUtility.startFrontend({ renderSys: renderSysOpts });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should render correctly", async () => {
@@ -90,13 +91,13 @@ describe("RenderTarget", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should have expected view definition", async () => {

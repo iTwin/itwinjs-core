@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
+import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -26,7 +26,7 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
     await MockRender.App.startup({
       applicationVersion: "1.2.1.1",
       hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,

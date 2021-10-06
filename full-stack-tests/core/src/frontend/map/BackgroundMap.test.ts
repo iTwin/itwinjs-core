@@ -5,7 +5,8 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
-import { IModelApp, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 // Set of tests require a BingMap key to be defined
@@ -16,7 +17,7 @@ describe("Background map (#integration)", () => {
     assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
 
-    await IModelApp.startup({
+    await TestUtility.startFrontend({
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,
@@ -40,7 +41,7 @@ describe("Background map (#integration)", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   // The view consists of a white rectangle in the center of a top view - smooth-shaded mode. Map initially off. Map is coplanar with top of rectangle.

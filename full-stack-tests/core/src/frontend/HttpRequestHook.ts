@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RequestGlobalOptions } from "@bentley/itwin-client";
-import { NativeAppTest } from "./NativeAppTest";
+import { TestRpcInterface } from "../common/RpcInterfaces";
 
 const NATIVE_XHR = Symbol.for("NATIVE_XHR");
 const NATIVE_FETCH = Symbol.for("NATIVE_FETCH");
@@ -387,9 +387,9 @@ export async function usingOfflineScope<TResult>(func: () => Promise<TResult>): 
   });
 }
 export async function usingBackendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
-  await NativeAppTest.callBackend("beginOfflineScope");
+  await TestRpcInterface.getClient().beginOfflineScope();
   const endScope = async () => {
-    await NativeAppTest.callBackend("endOfflineScope");
+    await TestRpcInterface.getClient().endOfflineScope();
   };
   const result = func();
   result.then(endScope, endScope);

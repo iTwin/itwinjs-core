@@ -60,7 +60,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
   return undefined;
 }
 
-describe.only("TileUpload", () => {
+describe("TileUpload", () => {
   const accessToken: AccessToken = "fake token";
   const testITwinId: GuidString = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");

@@ -36,6 +36,15 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async purgeCheckpoints(_iModelId: string): Promise<void> {
     return this.forward(arguments);
   }
+  public async purgeStorageCache(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async beginOfflineScope(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async endOfflineScope(): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 
 export abstract class EventsTestRpcInterface extends RpcInterface {

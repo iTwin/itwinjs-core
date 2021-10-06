@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
+  EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
 } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-
-/* eslint-disable deprecation/deprecation */
 
 describe("FeatureOverrideProvider", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -22,7 +21,7 @@ describe("FeatureOverrideProvider", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   class Provider implements FeatureOverrideProvider {

@@ -6,8 +6,9 @@
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/ElectronBackend";
+import {IModelHubBackend } from "@bentley/imodelhub-client/lib/imodelhub-node";
 import { Version } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 
 export namespace IModelHubUtils {

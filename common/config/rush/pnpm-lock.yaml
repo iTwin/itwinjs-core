@@ -2019,6 +2019,7 @@ importers:
       glob: ^7.1.2
       internal-tools: workspace:*
       istanbul-instrumenter-loader: ^3.0.1
+      nock: ^12.0.3
       null-loader: ^0.1.1
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -2069,6 +2070,7 @@ importers:
       glob: 7.2.0
       internal-tools: link:../../tools/internal
       istanbul-instrumenter-loader: 3.0.1_webpack@4.42.0
+      nock: 12.0.3
       null-loader: 0.1.1
       nyc: 15.1.0
       rimraf: 3.0.2

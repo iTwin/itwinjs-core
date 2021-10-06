@@ -38,7 +38,7 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
   });
 
-  it("should raise onAfterStartup events", async () => {
+  it.only("should raise onAfterStartup events", async () => {
     await IModelTestUtils.shutdownBackend();
 
     const eventHandler = sinon.spy();

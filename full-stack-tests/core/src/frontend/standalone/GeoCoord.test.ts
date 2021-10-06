@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d, XYZProps } from "@itwin/core-geometry";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
-import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { GeoConverter, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { Point3d, XYZProps } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
 
 // spell-checker: disable
 
@@ -19,7 +20,7 @@ describe("GeoCoord", () => {
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     iModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
@@ -34,7 +35,7 @@ describe("GeoCoord", () => {
 
   after(async () => {
     if (iModel) await iModel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should get different results for different datums", async () => {

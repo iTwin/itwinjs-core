@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/itwin-registry-client";
+
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import {
-  BriefcaseQuery,
-  ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
+import { ITwin } from "@bentley/itwin-registry-client";
+import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { ITwinRegistryClientWrapper } from "../../common/ITwinRegistryClientWrapper";

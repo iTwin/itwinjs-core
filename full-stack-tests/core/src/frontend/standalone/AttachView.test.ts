@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
-} from "@itwin/core-frontend";
+import { MockRender, ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
 
 describe("ViewState attached to Viewport", async () => {
   let imodel: SnapshotConnection;

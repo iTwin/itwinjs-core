@@ -149,14 +149,6 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Native App Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
-      testRunTitle: "Native App - Integration Tests - ${{ parameters.Node_Version }}"
-    enabled: false
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
     displayName: "Publish Rpc Interface Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"

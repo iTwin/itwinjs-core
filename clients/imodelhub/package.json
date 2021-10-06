@@ -48,7 +48,6 @@
     "@bentley/itwin-client": "workspace:^3.0.0-dev.78"
   },
   "devDependencies": {
-    "@bentley/backend-itwin-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/itwin-registry-client": "workspace:*",

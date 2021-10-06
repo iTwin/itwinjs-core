@@ -147,7 +147,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /full-stack-tests/core                @imodeljs/admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
 /full-stack-tests/imodelhub-client    @amikoliunas @Animagne
-/full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
 /full-stack-tests/presentation  @imodeljs/presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig

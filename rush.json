@@ -543,12 +543,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "native-app-full-stack-tests",
-      "projectFolder": "full-stack-tests/native-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "rpc-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
@@ -565,7 +559,6 @@
       "packageName": "@itwin/imodelhub-client-tests",
       "projectFolder": "full-stack-tests/imodelhub-client",
       "reviewCategory": "integration-testing",
-      "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     }
   ]

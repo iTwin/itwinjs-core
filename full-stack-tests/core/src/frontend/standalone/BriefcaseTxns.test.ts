@@ -86,7 +86,6 @@ describe("BriefcaseTxns", () => {
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
-      // eslint-disable-next-line deprecation/deprecation
       await deleteElements(imodel, [elem1]);
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");

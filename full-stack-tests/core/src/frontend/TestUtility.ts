@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/itwin-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { ITwin } from "@bentley/itwin-registry-client";
+import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
-import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./ITwinPlatformEnv";
+import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
+import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
+    codePush: "CodesPushTest",
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
     readOnly: "ReadOnlyTest",
@@ -120,6 +122,28 @@ export class TestUtility {
   public static get iModelAppOptions(): IModelAppOptions {
     return {
       applicationVersion: "1.2.1.1",
+      rpcInterfaces,
     };
+  }
+
+  /** Helper around the different startup workflows for different app types.
+   * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.
+   *
+   * Otherwise, IModelApp.startup is used directly.
+   */
+  public static async startFrontend(config?: IModelAppOptions): Promise<void> {
+    if (ProcessDetector.isElectronAppFrontend)
+      return ElectronApp.startup({ iModelApp: config } );
+    return IModelApp.startup(config);
+  }
+
+  /** Helper around the different shutdown workflows for different app types.
+   * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.
+   *
+   */
+  public static async shutdownFrontend(): Promise<void> {
+    if (ProcessDetector.isElectronAppFrontend)
+      return ElectronApp.shutdown();
+    return IModelApp.shutdown();
   }
 }

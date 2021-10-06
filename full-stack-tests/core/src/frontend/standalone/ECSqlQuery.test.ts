@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { DbResult } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;
@@ -14,7 +15,7 @@ describe("ECSql Query", () => {
   let imodel5: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await SnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
@@ -28,7 +29,7 @@ describe("ECSql Query", () => {
     if (imodel3) await imodel3.close();
     if (imodel4) await imodel4.close();
     if (imodel5) await imodel5.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
   it("Restart query", async () => {
     let cancelled = 0;
