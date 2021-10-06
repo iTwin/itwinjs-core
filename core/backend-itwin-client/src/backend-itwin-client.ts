@@ -6,17 +6,9 @@ export * from "./oidc";
 export * from "./telemetry";
 export * from "./BackendITwinClientLoggerCategory";
 export * from "./HttpRequestHost";
-export * from "./imodelhub/LocalhostFileHandler";
-export * from "./imodelhub/BlobDownloader";
-export * from "./imodelhub/AzureFileHandler";
-export * from "./UrlFileHandler";
-export * from "./StorageServiceFileHandler";
 
 /** @docs-package-description
  *
- */
-/** @docs-package-description iModelHub
- * Classes for accessing iModelHub
  */
 /**
  * @docs-group-description Authentication

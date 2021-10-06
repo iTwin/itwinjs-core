@@ -8,21 +8,20 @@
 
 import * as fs from "fs";
 import * as https from "https";
+import { Base64 } from "js-base64";
 import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
-import { AccessToken, Logger } from "@itwin/core-bentley";
-import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
-  UserCancelledError,
+  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired, UserCancelledError,
 } from "@bentley/itwin-client";
-import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
-import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
+import { AccessToken, Logger } from "@itwin/core-bentley";
+import { ArgumentCheck } from "../imodelhub/Errors";
+import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "./AzCopy";
 import { BlobDownloader, ConfigData, ProgressData } from "./BlobDownloader";
-import { Base64 } from "js-base64";
 
-const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
+const loggerCategory: string = IModelHubClientLoggerCategory.FileHandlers;
 
 /**
  * Stream that buffers writing to file.

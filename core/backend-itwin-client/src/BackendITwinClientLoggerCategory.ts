@@ -12,10 +12,6 @@
  * @public
  */
 export enum BackendITwinClientLoggerCategory {
-  /** The logger category used for file handlers
-   */
-  FileHandlers = "backend-itwin-client.FileHandlers",
-
   /** The logger category used for Authorization */
   Authorization = "backend-itwin-client.Authorization",
 

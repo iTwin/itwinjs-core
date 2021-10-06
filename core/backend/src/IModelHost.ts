@@ -355,9 +355,8 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    if (undefined === configuration.hubAccess)
-      throw new Error("Please provide the configuration `hubAccess`.");
-    IModelHost._hubAccess = configuration.hubAccess;
+    if (undefined !== configuration.hubAccess)
+      IModelHost._hubAccess = configuration.hubAccess;
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 

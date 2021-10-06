@@ -7,25 +7,28 @@
  */
 
 import { join } from "path";
-import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
-  IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,
-} from "@bentley/imodelhub-client";
+  AcquireNewBriefcaseIdArg, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
+  CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockProps, SnapshotDb, TokenArg,
+  V2CheckpointAccessProps,
+} from "@itwin/core-backend";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
-import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import {
-  AcquireNewBriefcaseIdArg, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg,
-  IModelNameArg, ITwinIdArg, LockProps, V2CheckpointAccessProps,
-} from "./BackendHubAccess";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { CheckpointProps } from "./CheckpointManager";
-import { BriefcaseLocalValue, IModelDb, SnapshotDb, TokenArg } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
+import { IModelBankClient } from "./imodelbank/IModelBankClient";
+import { IModelClient } from "./IModelClient";
+import { BriefcaseQuery } from "./imodelhub/Briefcases";
+import { ChangeSet, ChangeSetQuery, ChangesType } from "./imodelhub/ChangeSets";
+import { CheckpointQuery } from "./imodelhub/Checkpoints";
+import { CheckpointV2, CheckpointV2Query } from "./imodelhub/CheckpointsV2";
+import { IModelHubClient } from "./imodelhub/Client";
+import { CodeQuery } from "./imodelhub/Codes";
+import { IModelQuery } from "./imodelhub/iModels";
+import { Lock, LockQuery, LockType } from "./imodelhub/Locks";
+import { VersionQuery } from "./imodelhub/Versions";
+import { AzureFileHandler } from "./itwin-client/AzureFileHandler";
 
 /** @internal */
 export class IModelHubBackend {
@@ -84,7 +87,6 @@ export class IModelHubBackend {
     return this.getLatestChangeset(arg);
   }
 
-  // move back to the backend
   public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
@@ -118,7 +120,6 @@ export class IModelHubBackend {
     return hubIModel.wsgId;
   }
 
-  // Move back to backend
   public static async deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void> {
     const dirName = BriefcaseManager.getIModelPath(arg.iModelId);
     if (IModelJsFs.existsSync(dirName)) {
@@ -197,7 +198,7 @@ export class IModelHubBackend {
     };
   }
   private static toChangeSetFileProps(cs: ChangeSet, basePath: string): ChangesetFileProps {
-    const csProps = this.toChangeSetProps(cs) ;
+    const csProps = this.toChangeSetProps(cs) as ChangesetFileProps;
     csProps.pathname = join(basePath, cs.fileName!);
     return csProps;
   }
@@ -282,7 +283,7 @@ export class IModelHubBackend {
     return val;
   }
 
-  public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
     checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
@@ -321,7 +322,7 @@ export class IModelHubBackend {
     };
   }
 
-  public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
     checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();

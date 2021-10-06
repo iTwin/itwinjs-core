@@ -5,34 +5,35 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import * as path from "path";
 import * as fs from "fs";
 import { Base64 } from "js-base64";
-import {
-  AccessToken,
-  BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
-} from "@itwin/core-bentley";
-import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import {
-  AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps,
-  ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
-  IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps,
-  RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
-} from "@itwin/core-common";
+import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import {
+  AccessToken, BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
+} from "@itwin/core-bentley";
+import {
+  AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
+  ElementProps, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps,
+  PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse,
+  SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
+} from "@itwin/core-common";
+import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
+import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
-import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import {
-  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
-  DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
+  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
   ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelHostConfiguration,
-  IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
+  IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
+  Platform, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
+import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
 import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
@@ -40,7 +41,6 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);

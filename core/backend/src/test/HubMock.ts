@@ -44,10 +44,9 @@ import { LocalHub } from "./LocalHub";
  * test against a "real" IModelHub, you can simply comment off the call [[startup]], though in that case you should make sure the name of your
  * iModel is unique so your test won't collide with other tests (iModel name uniqueness is not necessary for mocked tests.)
  *
- * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createIModel]] with a `revision0` iModel.
+ * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `revision0` iModel.
  * They use mock (aka "bogus") credentials for `AccessTokens`, which is fine since [[HubMock]] never accesses resources outside the current
- * computer. The mock `AccessTokens` are obtained by calling [[IModelTestUtils.getUserContext]]. There are 4 user profiles (Regular, Manager,
- * Super, SuperManager) for simulating different users/roles.
+ * computer.
  *
  * @note Only one HubMock at a time, *running in a single process*, may be active. The comments above about multiple simultaneous tests refer to tests
  * running on different computers, or on a single computer in multiple processes. All of those scenarios are problematic without mocking.

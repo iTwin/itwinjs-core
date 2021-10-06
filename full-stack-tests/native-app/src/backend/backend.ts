@@ -8,15 +8,15 @@ import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
-import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import {
-  BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
-  IpcHandler, NativeHost, NativeLoggerCategory,
-} from "@itwin/core-backend";
-import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import {
+  BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost,
+  NativeLoggerCategory,
+} from "@itwin/core-backend";
+import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
+import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestITwinProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";

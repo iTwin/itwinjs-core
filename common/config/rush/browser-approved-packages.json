@@ -12,7 +12,7 @@
     },
     {
       "name": "@bentley/backend-itwin-client",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
@@ -73,6 +73,10 @@
     {
       "name": "@itwin/appui-react",
       "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
+      "name": "@itwin/backend-itwin-client",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@itwin/backend-webpack-tools",
@@ -288,7 +292,7 @@
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "almost-equal",
@@ -520,11 +524,11 @@
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "fs-write-stream-atomic",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "fuse.js",
@@ -536,7 +540,7 @@
     },
     {
       "name": "got",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "highlight.js",
@@ -704,7 +708,7 @@
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "puppeteer",

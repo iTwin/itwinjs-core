@@ -7,7 +7,7 @@ import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
 import { BriefcaseStatus } from "@itwin/core-bentley";
 import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
-import { BufferedStream } from "./imodelhub/AzureFileHandler";
+import { BufferedStream } from "./AzureFileHandler";
 
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 const pipeline = promisify(pipeline_callback);

@@ -12,9 +12,9 @@ import * as pathLib from "path";
 import * as url from "url";
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
-import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 
-const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
+const loggerCategory: string = IModelHubClientLoggerCategory.FileHandlers;
 
 /**
  * Provides methods to work with the local file system. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as Azure from "@azure/storage-blob";
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
@@ -15,6 +15,7 @@ import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../cor
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { RpcTrace } from "../../RpcBackend";
+import { HubMock } from "../HubMock";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -59,10 +60,11 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
   return undefined;
 }
 
-describe("TileUpload (#integration)", () => {
-  let accessToken: AccessToken;
+describe.only("TileUpload", () => {
+  const accessToken: AccessToken = "fake token";
+  const testITwinId: GuidString = Guid.createValue();
+  const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
   let testIModelId: GuidString;
-  let testITwinId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
   let blobService: Azure.BlobServiceClient;
 
@@ -80,16 +82,14 @@ describe("TileUpload (#integration)", () => {
     };
 
     await IModelTestUtils.startBackend(config);
+    HubMock.startup("TileTest");
+    testIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId: testITwinId, iModelName: "TileUpload", revision0 });
 
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
-
-    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    testITwinId = await HubUtility.getTestITwinId(accessToken);
-    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
     const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);

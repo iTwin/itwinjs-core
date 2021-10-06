@@ -3,5 +3,4 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./BackendITwinClientLoggerCategory";
-export * from "./UrlFileHandler";
 export * from "./telemetry";

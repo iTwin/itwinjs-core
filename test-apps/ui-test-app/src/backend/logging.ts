@@ -17,7 +17,7 @@ export function initializeLogging() {
 
   Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
   Logger.setLevel(BackendLoggerCategory.IModelHost, LogLevel.Trace);
-  Logger.setLevel(BackendITwinClientLoggerCategory.FileHandlers, LogLevel.Trace);
+  Logger.setLevel(IModelHubClientLoggerCategory.FileHandlers, LogLevel.Trace);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Warning);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_Connections, LogLevel.Info);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_RulesEngine_Threads, LogLevel.Info);

@@ -39,11 +39,7 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.77",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.77",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.77",
     "@itwin/core-common": "workspace:^3.0.0-dev.77",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.77",
     "@bentley/telemetry-client": "workspace:^3.0.0-dev.77"
   },
   "//devDependencies": [
@@ -51,27 +47,16 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@types/chai": "^4.1.4",
-    "@types/deep-assign": "^0.1.0",
-    "@types/fs-extra": "^4.0.7",
-    "@types/jsonwebtoken": "^8.5.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
-    "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
-    "@types/stream-buffers": "~3.0.2",
-    "@types/proper-lockfile": "^4.1.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "dotenv": "^10.0.0",
@@ -83,23 +68,11 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "source-map-support": "^0.5.6",
-    "stream-buffers": "~3.0.2",
     "typescript": "~4.4.0"
   },
   "dependencies": {
-    "applicationinsights": "^1.7.5",
-    "deep-assign": "^2.0.0",
-    "fs-extra": "^8.1.0",
-    "fs-write-stream-atomic": "^1.0.10",
-    "got": "~11.8.2",
     "https-proxy-agent": "^5.0.0",
-    "js-base64": "^3.6.1",
-    "jsonwebtoken": "^8.5.0",
-    "openid-client": "^4.7.4",
-    "semver": "^5.5.0",
-    "agentkeepalive": "^4.1.4",
-    "proper-lockfile": "^4.1.2"
+    "openid-client": "^4.7.4"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

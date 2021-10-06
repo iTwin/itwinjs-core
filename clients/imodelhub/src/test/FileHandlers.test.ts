@@ -10,7 +10,7 @@ import * as nock from "nock";
 import * as path from "path";
 import { AsyncMutex, BeEvent } from "@itwin/core-bentley";
 import { CancelRequest, ProgressInfo } from "@bentley/itwin-client";
-import { AzureFileHandler } from "../imodelhub/AzureFileHandler";
+import { AzureFileHandler } from "../itwin-client/AzureFileHandler";
 
 const testValidUrl = "https://example.com/";
 const testErrorUrl = "http://bad.example.com/";  // NB: This is not automatically mocked - each test should use nock as-needed.
