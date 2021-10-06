@@ -1094,6 +1094,10 @@ the widget in a floating container. The property `defaultFloatingPosition` may a
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
+### New Way To Close UI Elements
+
+Previously `UiFramework` would monitor the state of an access token and would close all the UI elements if the token was found to be empty. This feature has been removed and the ability to close the UI is now public within [ConfigureableUiManager]($appui-react) and should be used by calling `.closeUi()`. `UiFramework` will no longer monitor the access token and this ability should be implemented by the app itself.
+
 ### `ControlledTree` API Changes
 
 `ControlledTree` component has received the following breaking changes:

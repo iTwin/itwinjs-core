@@ -9,8 +9,7 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { isBrowserAuthorizationClient } from "@itwin/browser-authorization";
+import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -174,12 +173,6 @@ export class UiFramework {
     UiFramework._widgetManager = new WidgetManager();
 
     UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
-
-    const oidcClient = IModelApp.authorizationClient;
-    // istanbul ignore next
-    if (isBrowserAuthorizationClient(oidcClient)) {
-      oidcClient.onAccessTokenChanged.addListener(UiFramework._handleUserStateChanged);
-    }
 
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
     await UiIModelComponents.initialize(UiFramework._localization);
@@ -541,13 +534,6 @@ export class UiFramework {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
     UiFramework.setUiVersion(args.version);
-  };
-
-  // istanbul ignore next
-  private static _handleUserStateChanged = (accessToken: AccessToken) => {
-    if (accessToken === "") {
-      ConfigurableUiManager.closeUi();
-    }
   };
 
   /** Determines whether a ContextMenu is open
