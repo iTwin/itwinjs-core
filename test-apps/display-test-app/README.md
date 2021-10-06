@@ -23,7 +23,7 @@ The application may be run as an Electron app, Mobile app or within a browser. T
 
 * To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 
-* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see below.
+* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
 * To start the application in Electron, navigate to the root of display-test-app, and use the command:
 

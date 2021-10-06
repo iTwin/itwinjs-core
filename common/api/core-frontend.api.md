@@ -100,7 +100,7 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
-import * as Fuse from 'fuse.js';
+import Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
@@ -2964,7 +2964,15 @@ export namespace FeatureSymbology {
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
-        }
+        // @alpha (undocumented)
+        get source(): Source | undefined;
+        // @alpha
+        static withSource(source: Source, view?: ViewState | Viewport): Overrides;
+    }
+    // @alpha
+    export interface Source {
+        readonly onSourceDisposed: BeEvent<() => void>;
+    }
 }
 
 // @public
@@ -11593,7 +11601,7 @@ export interface ViewCreator2dOptions {
 // @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
-    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState>;
     }
 
 // @public

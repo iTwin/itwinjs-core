@@ -1,14 +1,17 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.0.0-dev.77",
+  "version": "3.0.0-dev.78",
   "description": "iTwin.js components common to frontend and backend",
-  "main": "lib/core-common.js",
-  "typings": "lib/core-common",
+  "main": "lib/cjs/core-common.js",
+  "module": "lib/esm/core-common.js",
+  "typings": "lib/cjs/core-common",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-common",
@@ -34,12 +37,13 @@
   "dependencies": {
     "@ungap/url-search-params": "^0.1.2",
     "flatbuffers": "~1.12.0",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.77",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.77"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.78",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.78",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.78"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
@@ -54,7 +58,6 @@
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
-    "js-base64": "^3.6.1",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

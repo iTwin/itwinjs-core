@@ -1,26 +1,27 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "3.0.0-dev.77",
+  "version": "3.0.0-dev.78",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
-  "main": "lib/ecschema-editing.js",
-  "typings": "lib/ecschema-editing",
+  "main": "lib/cjs/ecschema-editing.js",
+  "typings": "lib/cjs/ecschema-editing",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-editing"
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2 && npm run -s createLocalization && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-editing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs",
-    "createLocalization": "node ./scripts/createLocalization.js"
+    "createLocalization": "node ./scripts/createLocalization.js && cpx \"./public/locales/**/*\" ./lib/public"
   },
   "keywords": [
     "Bentley",
@@ -62,8 +63,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.77"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.78",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.78"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

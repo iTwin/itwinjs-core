@@ -45,13 +45,6 @@
     "expand": "See more",
     "collapse": "See less"
   },
-  "signIn": {
-    "prompt": "Please sign in to access your Bentley services.",
-    "signInButton": "Sign In",
-    "profilePrompt": "Don't have a profile?",
-    "register": "Register",
-    "offlineButton": "Work Offline?"
-  },
   "timepicker": {
     "day-period-am": "AM",
     "day-period-pm": "PM"

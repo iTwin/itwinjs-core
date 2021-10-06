@@ -12,7 +12,7 @@ import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation,
 import {
   ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
 } from "@itwin/core-orbitgt";
-import { DownloaderNode } from "@itwin/core-orbitgt/lib/system/runtime/DownloaderNode";
+import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
 
 interface OrbitGtPointCloudProps {
   rdsUrl?: string;

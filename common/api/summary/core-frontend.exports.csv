@@ -153,6 +153,7 @@ internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boo
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
 public;FeatureOverrideProvider
 public;FeatureSymbology
+alpha;Source
 public;FitViewTool 
 internal;Flags
 public;FlashMode

@@ -8,7 +8,7 @@ import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin
 import {
   HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
-import { FeatureOverrides, Target } from "@itwin/core-frontend/lib/webgl";
+import { FeatureOverrides, Target } from "@itwin/core-frontend/lib/cjs/webgl";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -49,7 +49,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {});
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -74,7 +74,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {});
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);

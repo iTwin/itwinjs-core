@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { BeDuration } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { NativeApp } from "@itwin/core-frontend";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
 import { Presentation } from "../presentation-frontend/Presentation";
 
