@@ -118,18 +118,5 @@ export class PerformanceMetrics {
     }
 
     this.endFrame();
-
-    if (this.gatherGlFinish && (!this.useDisjointTimer || !system.isGLTimerSupported)) { // Add extra GPU Flush for dpta timing purposes
-      const bytes = new Uint8Array(4);
-      const gl = system.context;
-      const beginTimePoint = BeTimePoint.now();
-      const colorTexture = fbo.getColor(0);
-      system.frameBufferStack.execute(fbo, true, false, () => {
-        gl.readPixels(colorTexture.width -1, colorTexture.height -1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes); // Do this for second pixel
-      });
-      const endTimePoint = BeTimePoint.now();
-      this.frameTimings.set("GPU Flush", endTimePoint.milliseconds - beginTimePoint.milliseconds);
-      console.log(`GPU Time: ${endTimePoint.milliseconds - beginTimePoint.milliseconds}`); // eslint-disable-line no-console
-    }
   }
 }
