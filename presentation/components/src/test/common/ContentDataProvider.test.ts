@@ -2,21 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, FIELD_NAMES_SEPARATOR, KeySet, Paged, RegisteredRuleset, SelectionInfo,
 } from "@itwin/presentation-common";
 import {
-  createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstanceKey, createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomECInstanceKey, createRandomRuleset, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
+  createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";

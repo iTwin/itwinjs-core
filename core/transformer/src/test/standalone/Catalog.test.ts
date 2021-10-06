@@ -13,8 +13,7 @@ import {
   PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType, RecipeDefinitionElement, RepositoryLink, SnapshotDb,
   SpatialCategory, TemplateRecipe2d, TemplateRecipe3d, TypeDefinitionElement,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/core-backend/lib/test/IModelTestUtils";
-import { KnownTestLocations } from "@itwin/core-backend/lib/test/KnownTestLocations";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,

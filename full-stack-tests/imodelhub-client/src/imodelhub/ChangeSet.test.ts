@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import * as fs from "fs";
 import * as path from "path";
 import { AccessToken, GuidString, IModelHubStatus } from "@itwin/core-bentley";

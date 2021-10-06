@@ -3214,7 +3214,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
         if (elevation !== undefined)
           elevationOffset = elevation;
         return await this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
-      } catch (_) {
+      } catch {
       }
     }
     return true;
@@ -3268,7 +3268,7 @@ export class ViewGlobeBirdTool extends ViewTool {
         if (elevation !== undefined)
           elevationOffset = elevation;
         return await this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
-      } catch (_) {
+      } catch {
       }
     }
     return true;
@@ -3332,7 +3332,7 @@ export class ViewGlobeLocationTool extends ViewTool {
               this._globalLocation.center.height = elevationOffset;
           }
         }
-      } catch (_) {
+      } catch {
       }
     }
 
