@@ -9,7 +9,7 @@
 import { Localization } from "@itwin/core-common";
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import HttpApi, { BackendOptions } from "i18next-http-backend";
+import * as HttpApi from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 
 /** @public */
@@ -32,7 +32,7 @@ export class I18N implements Localization {
   public constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback) {
     this._i18next = createInstance();
 
-    const backendOptions: BackendOptions = {
+    const backendOptions: HttpApi.BackendOptions = {
       loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
     };
