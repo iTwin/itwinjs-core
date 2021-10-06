@@ -36,6 +36,7 @@ import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
+import { BentleyStatus } from "@itwin/core-bentley";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -52,6 +53,7 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
  */
 export class FrontstageDef {
   private _id: string = "";
+  private _initialProps?: FrontstageProps;
   private _defaultTool?: ToolItemDef;
   private _defaultContentId: string = "";
   private _isInFooterMode: boolean = true;
@@ -154,11 +156,15 @@ export class FrontstageDef {
   }
 
   /** Handles when the Frontstage becomes activated */
-  protected _onActivated(): void { }
+  protected async _onActivated() { }
 
   /** Handles when the Frontstage becomes activated */
-  public onActivated(): void {
+  public async onActivated() {
     this.updateWidgetDefs();
+
+    if (this._contentGroupProvider && this._initialProps) {
+      this._contentGroup = await this._contentGroupProvider.provideContentGroup(this._initialProps);
+    }
 
     // istanbul ignore next
     if (!this._contentGroup)
@@ -168,14 +174,14 @@ export class FrontstageDef {
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
-    this._onActivated();
+    await this._onActivated();
   }
 
   /** Handles when the Frontstage becomes inactive */
-  protected _onDeactivated(): void { }
+  protected async _onDeactivated() { }
 
   /** Handles when the Frontstage becomes inactive */
-  public onDeactivated(): void {
+  public async onDeactivated() {
     for (const control of this._widgetControls) {
       control.onFrontstageDeactivated();
     }
@@ -187,13 +193,15 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+    if (this.contentGroupProvider)
+      await this.contentGroupProvider.onFrontstageDeactivated();
 
     this._timeTracker.stopTiming();
 
     this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
     UiFramework.childWindowManager.closeAllChildWindows();
 
-    this._onDeactivated();
+    await this._onDeactivated();
     this._isStageClosing = false;
   }
 
@@ -261,7 +269,7 @@ export class FrontstageDef {
   }
 
   /** Sets the active view content control to the default or first */
-  public setActiveContent(): boolean {
+  public async setActiveContent(): Promise<boolean> {
     let contentControl: ContentControl | undefined;
     let activated = false;
 
@@ -276,9 +284,10 @@ export class FrontstageDef {
 
     if (contentControl) {
       ContentViewManager.setActiveContent(contentControl.reactNode, true);
-      if (contentControl.viewport)
-        IModelApp.viewManager.setSelectedView(contentControl.viewport); // eslint-disable-line @typescript-eslint/no-floating-promises
-      activated = true;
+      if (contentControl.viewport) {
+        const status = await IModelApp.viewManager.setSelectedView(contentControl.viewport);
+        activated = status === BentleyStatus.SUCCESS;
+      }
     }
 
     return activated;
@@ -470,14 +479,13 @@ export class FrontstageDef {
    */
   public async initializeFromProps(props: FrontstageProps): Promise<void> {
     this._id = props.id;
-
+    this._initialProps = props;
     this._defaultTool = props.defaultTool;
 
     if (props.defaultContentId !== undefined)
       this._defaultContentId = props.defaultContentId;
 
     if (props.contentGroup instanceof ContentGroupProvider) {
-      this._contentGroup = await props.contentGroup.provideContentGroup(props);
       this._contentGroupProvider = props.contentGroup;
     } else {
       this._contentGroup = props.contentGroup;
