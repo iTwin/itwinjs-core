@@ -99,6 +99,6 @@ function createConfig(shouldInstrument) {
 
 // Exporting two configs in a array like this actually tells webpack to run twice - once for each config.
 module.exports = [
-  createConfig(true),
+  // createConfig(true),
   createConfig(false)
 ]
