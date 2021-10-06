@@ -114,7 +114,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   return rpcs;
 };
 
-const getBackendConfig = (): DtaConfiguration => {
+export const loadBackendConfig = (): DtaConfiguration => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
@@ -122,7 +122,7 @@ const getBackendConfig = (): DtaConfiguration => {
 };
 
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
-  const dtaConfig = getBackendConfig();
+  const dtaConfig = loadBackendConfig();
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.logTileLoadTimeThreshold = 3;

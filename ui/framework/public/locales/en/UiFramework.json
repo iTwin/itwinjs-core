@@ -112,14 +112,6 @@
     "sheets": "Sheets",
     "others": "Others"
   },
-  "userProfile": {
-    "userprofile": "User Profile",
-    "signout": "Sign Out",
-    "signoutprompt": "Do you want to sign out?"
-  },
-  "signIn": {
-    "signingInMessage": "Sign In has started - please switch to your browser and enter your credentials"
-  },
   "buttons": {
     "yes": "Yes",
     "no": "No",
@@ -224,19 +216,6 @@
       "description": "Focus into the Tool Settings widget",
       "flyover": "Focus into Tool Settings"
     }
-  },
-  "iModelIndex": {
-    "views": "Views",
-    "3dModels": "3D Models",
-    "enteriModeling": "Enter iModel",
-    "upToDate": "You have the latest version.",
-    "updatesAvailable": "Later changes are available",
-    "toastTitle": "Need more control?",
-    "toastMessage": "Try ProjectWise Document Codes.",
-    "learnMore": "Learn more",
-    "enteriModel": "Enter iModel",
-    "noSavedView": "No saved views were found.",
-    "nextTab": "Switching you to the 3D Models tab..."
   },
   "listTools": {
     "searchViews": "Search Views...",

@@ -106,7 +106,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
       }
     } catch (_error) {
       // eslint-disable-next-line no-console
-      console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and are your IMJS_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");
+      console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID correctly set?");
     }
     for (const entry of available) {
       const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;

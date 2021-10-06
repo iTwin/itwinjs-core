@@ -8,19 +8,13 @@ import * as React from "react";
 import { SearchBox } from "@itwin/core-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
+import { BasicIModelInfo, IModelInfo } from "../ExternalIModel";
 import { ITwinDialog } from "./ITwinDialog";
-
-export interface IModelInfo {
-  id: string;
-  iTwinId: string;
-  name: string;
-  createdDate: Date;
-}
 
 /** Properties for the [[IModelList]] component */
 export interface IModelListProps {
   iModels?: IModelInfo[];
-  onIModelSelected?: (iModel: IModelInfo) => void;
+  onIModelSelected?: (iModelInfo: BasicIModelInfo) => void;
 }
 
 interface IModelListState {
@@ -110,6 +104,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
           <IModelCard key={iModelInfo.id}
             iModel={iModelInfo}
             showDescription={this.state.showDescriptions}
+            onSelectIModel={this.props.onIModelSelected}
           />
         ))}
       </div>

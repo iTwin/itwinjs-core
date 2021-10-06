@@ -42,7 +42,6 @@ function configMockSettings() {
     return;
 
   process.env.IMJS_IMODELHUB_URL = "https://api.bentley.com/imodelhub";
-  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = "0";
   process.env.IMJS_URL_PREFIX = "";
   process.env.IMJS_TEST_SERVICEACCOUNT1_USER_NAME = "test";
   process.env.IMJS_TEST_SERVICEACCOUNT1_USER_PASSWORD = "test";

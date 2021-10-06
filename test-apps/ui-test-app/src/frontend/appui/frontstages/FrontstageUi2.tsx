@@ -65,7 +65,7 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
     }
 
     return new ContentGroup({
-      id: "main-content-group",
+      id: "ui2-frontstage-main-content-group",
       layout: StandardContentLayouts.singleView,
       contents: [
         {

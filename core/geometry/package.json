@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "3.0.0-dev.77",
+  "version": "3.0.0-dev.78",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/core-geometry.js",
   "typings": "lib/core-geometry",
@@ -31,7 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.77"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.78"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
