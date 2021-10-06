@@ -208,7 +208,7 @@ export class ConfigurableUiManager {
     return htmlElement;
   }
 
-  /** Closes all the ui elements currently open */
+  /** Closes all UI popups currently open */
   public static closeUi(): void {
     MessageManager.closeAllMessages();
     ModelessDialogManager.closeAll();
