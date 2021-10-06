@@ -540,7 +540,7 @@ export class UiFramework {
       };
       const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
-    } catch (_) {}
+    } catch {}
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used

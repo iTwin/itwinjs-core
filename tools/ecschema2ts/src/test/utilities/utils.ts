@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DOMParser } from "@xmldom/xmldom";
-import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { SchemaReadHelper } from "@itwin/ecschema-metadata/lib/Deserialization/Helper";
-import { XmlParser } from "@itwin/ecschema-metadata/lib/Deserialization/XmlParser";
+import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaToTs } from "../../ecschema2ts";
-import { expect } from "chai";
 
 declare const __dirname: string; // eslint-disable-line @typescript-eslint/naming-convention
 

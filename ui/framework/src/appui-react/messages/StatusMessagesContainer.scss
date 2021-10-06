@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@itwin/core-react/lib/core-react/text/mixins";
-@import "~@itwin/core-react/lib/core-react/icons/index";
-@import "~@itwin/core-react/lib/core-react/scrollbar";
-@import "~@itwin/core-react/lib/core-react/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/text/mixins";
+@import "~@itwin/core-react/lib/cjs/core-react/icons/index";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
 
 .uifw-statusbar-message-label {
   color: $buic-text-color;

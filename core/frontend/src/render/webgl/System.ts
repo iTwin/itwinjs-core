@@ -279,7 +279,7 @@ export class IdMap implements WebGLDisposable {
           transparency,
         },
       });
-    } catch (_) {
+    } catch {
       return undefined;
     } finally {
       this.texturesFromImageSources.delete(key);

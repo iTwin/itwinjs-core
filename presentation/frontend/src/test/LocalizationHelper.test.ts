@@ -7,10 +7,9 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { I18N } from "@itwin/core-i18n";
 import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
-import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
 import {
-  createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition,
-} from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
 import { Presentation } from "../presentation-frontend/Presentation";
 
