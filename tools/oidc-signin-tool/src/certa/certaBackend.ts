@@ -45,10 +45,6 @@ loadEnv(path.join(process.cwd(), ".env"));
  * If the oidcConfig param is provided, it will always be used over the default.
  */
 async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
-  // Handle OIDC signin
-  // console.log("Starting OIDC signin...");
-  // console.time("Finished OIDC signin in");
-
   let token: AccessToken | undefined;
   if (undefined === oidcConfig || null === oidcConfig) {
     token = await TestUtility.getAccessToken(user);
@@ -59,8 +55,6 @@ async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthori
 
   if (undefined === token)
     throw new Error("Failed to get access token");
-
-  // console.timeEnd("Finished OIDC signin in");
 
   return token;
 }

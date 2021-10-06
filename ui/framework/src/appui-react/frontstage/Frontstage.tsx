@@ -54,7 +54,8 @@ export interface FrontstageProps extends CommonProps {
    * Version increase is required when widgets are added/removed.
    */
   version?: number;
-
+  /** if isIModelIndependent then frontstage is independent from any iModel. */
+  isIModelIndependent?: boolean;
   /** The Zone in the top-left corner.
    * @deprecated Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;
