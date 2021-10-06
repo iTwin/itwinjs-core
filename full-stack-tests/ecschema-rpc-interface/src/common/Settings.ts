@@ -5,7 +5,7 @@
 import { LogLevel } from "@itwin/core-bentley";
 import { IModelReadRpcInterface } from "@itwin/core-common";
 import { TestUserCredentials } from "@itwin/oidc-signin-tool";
-import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export interface Backend {
   version: string;

@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent, BeUiEvent, using } from "@itwin/core-bentley";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@itwin/components-react";
 import { SelectionHandler } from "@itwin/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { createSimpleTreeModelNode } from "./Common";
 import TestUtils from "../TestUtils";
+import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../appui-react/imodel-components/VisibilityTreeEventHandler";
 
 describe("VisibilityTreeEventHandler", () => {
 

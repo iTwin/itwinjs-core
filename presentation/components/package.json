@@ -2,8 +2,9 @@
   "name": "@itwin/presentation-components",
   "version": "3.0.0-dev.78",
   "description": "React components based on iModel.js Presentation library",
-  "main": "lib/presentation-components.js",
-  "typings": "lib/presentation-components",
+  "main": "lib/cjs/presentation-components.js",
+  "module": "lib/esm/presentation-components.js",
+  "typings": "lib/cjs/presentation-components",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -25,10 +26,13 @@
   },
   "scripts": {
     "compile": "npm run -s build",
-    "copy:locale": "cpx \"../common/assets/**/*\" ./lib/public && cpx \"./public/**/*\" ./lib/public",
-    "copy:assets": "cpx \"./src/**/*.{scss,json}\" ./lib",
-    "build": "npm run -s copy:assets && npm run -s copy:locale && npm run -s pseudolocalize && npm run -s extract && tsc 1>&2",
-    "build:watch": "npm run -s copy:assets && npm run -s copy:locale && npm run -s pseudolocalize && npm run -s extract && tsc -w",
+    "build": "npm run -s copy:locale && npm run -s pseudolocalize && npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "npm run -s copy:cjs && tsc -p tsconfig.cjs.json",
+    "build:esm": "npm run -s copy:esm && tsc -p tsconfig.esm.json",
+    "copy:locale": "cpx \"./public/**/*\" ./lib/public",
+    "copy:cjs": "cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
+    "copy:esm": "cpx \"./src/**/*.{scss,json}\" ./lib/esm",
+    "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s extract && npm run -s docs:changelog",
@@ -38,7 +42,7 @@
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
@@ -117,7 +121,7 @@
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": true,
     "statements": 100,
-    "functions": 100,
+    "functions": 99,
     "branches": 100,
     "lines": 100,
     "require": [
@@ -129,7 +133,7 @@
     "exclude": [
       "src/presentation-components.ts",
       "src/test/**",
-      "lib/test/**"
+      "lib/cjs/test/**"
     ]
   },
   "eslintConfig": {

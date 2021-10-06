@@ -17,12 +17,15 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/presentation-testing.js",
-  "typings": "lib/presentation-testing",
+  "main": "lib/cjs/presentation-testing.js",
+  "module": "lib/esm/presentation-testing.js",
+  "typings": "lib/cjs/presentation-testing",
   "scripts": {
     "compile": "npm run -s build",
-    "build": "npm run -s extract && tsc 1>&2",
-    "build:watch": "tsc -w",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s docs:changelog",
@@ -31,7 +34,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-testing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha -r ignore-styles -r jsdom-global/register --config ../.mocharc.json \"./lib/test/**/*.test.js\""
+    "test": "mocha -r ignore-styles -r jsdom-global/register --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\""
   },
   "devDependencies": {
     "cpx": "^1.5.0",

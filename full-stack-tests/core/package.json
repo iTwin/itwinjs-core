@@ -1,6 +1,7 @@
 {
   "name": "core-full-stack-tests",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {

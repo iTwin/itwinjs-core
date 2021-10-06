@@ -8,7 +8,7 @@
 
 // cSpell:ignore linkify
 
-import LinkifyIt = require("linkify-it");
+import LinkifyIt from "linkify-it";
 
 const linkify = new LinkifyIt({ fuzzyLink: false });
 
@@ -69,7 +69,7 @@ linkify
 export const matchLinks = (text: string): Array<{ index: number, lastIndex: number, schema: string, url: string }> => {
   const head = text.slice(0, 5);
   if (head === "pw://" || head === "pw:\\\\")
-    return Array({ index: 0, lastIndex: text.length, schema: "pw:", url: text});
+    return Array({ index: 0, lastIndex: text.length, schema: "pw:", url: text });
 
   const matches = linkify.match(text);
   return matches ? matches as Array<{ index: number, lastIndex: number, schema: string, url: string }> : [];

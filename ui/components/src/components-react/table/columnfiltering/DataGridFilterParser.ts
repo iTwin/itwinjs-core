@@ -6,12 +6,9 @@
  * @module Table
  */
 
-// Matches how react-data-grid is exported
-// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
-
 import { Logger } from "@itwin/core-bentley";
 import { Timer } from "@itwin/core-react";
+import ReactDataGrid from "react-data-grid";
 import { UiComponents } from "../../UiComponents";
 import { TableColumn } from "../component/TableColumn";
 import { ColumnDescription, FilterRenderer } from "../TableDataProvider";

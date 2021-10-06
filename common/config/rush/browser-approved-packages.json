@@ -94,7 +94,6 @@
       "name": "@bentley/react-scripts",
       "allowedCategories": [
         "extensions",
-        "frontend",
         "internal"
       ]
     },
@@ -1260,6 +1259,7 @@
       "name": "npm-run-all",
       "allowedCategories": [
         "backend",
+        "frontend",
         "integration-testing",
         "internal"
       ]
@@ -1650,7 +1650,6 @@
       "name": "svg-sprite-loader",
       "allowedCategories": [
         "extensions",
-        "frontend",
         "internal"
       ]
     },
@@ -1708,6 +1707,7 @@
       "allowedCategories": [
         "backend",
         "common",
+        "extensions",
         "frontend",
         "internal",
         "tools"

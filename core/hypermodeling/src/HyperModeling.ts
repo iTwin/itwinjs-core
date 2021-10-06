@@ -174,7 +174,7 @@ export class HyperModeling {
     try {
       const nRows = await imodel.queryRowCount("SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1");
       return nRows > 0;
-    } catch (_) {
+    } catch {
       // An iModel with a version of BisCore older than 1.0.11 will produce an expected "table not found" on the SectionDrawingLocation ECClass.
       return false;
     }

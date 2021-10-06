@@ -6,7 +6,6 @@
  * @module Item
  */
 
-import "@itwin/appui-layout-react/lib/appui-layout-react/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";

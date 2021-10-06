@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as jsonpath from "jsonpath";
-import { DefaultSupportedTypes, RealityData, RealityDataAccessClient, RealityDataRelationship } from "../../RealityDataClient";
 import { AccessToken, Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
 import { ImsAuthorizationClient } from "@bentley/itwin-client";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { DefaultSupportedTypes, RealityData, RealityDataAccessClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
