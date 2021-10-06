@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-i18n",
+      "comment": "change dependency of deprecated i18next-xhr to i18next-http",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-i18n"
+}

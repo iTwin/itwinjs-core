@@ -9,7 +9,7 @@
 import { Localization } from "@itwin/core-common";
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
+import * as HttpApi from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 
 /** @public */
@@ -32,7 +32,7 @@ export class I18N implements Localization {
   public constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback) {
     this._i18next = createInstance();
 
-    const backendOptions: I18NextXhrBackend.BackendOptions = {
+    const backendOptions: HttpApi.BackendOptions = {
       loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
     };
@@ -63,7 +63,7 @@ export class I18N implements Localization {
     }
 
     const initPromise = new Promise<void>((resolve) => {
-      this._i18next.use(XHR)
+      this._i18next.use(HttpApi)
         .use(BentleyLogger)
         .init(initOptions, (error, t) => {
           if (renderFunction !== undefined)
@@ -191,7 +191,7 @@ export class I18N implements Localization {
         // Here we got a non-null err object.
         // This method is called when the system has attempted to load the resources for the namespace for each
         // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
-        // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
+        // using i18next-http-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
         const errorList = err as string[];
         let locales: string[] = this.languageList().map((thisLocale: any) => `/${thisLocale}/`);
