@@ -8,7 +8,7 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
@@ -1927,18 +1927,15 @@ describe("iModel", () => {
     snapshot.close();
 
     // Mock iModelHub
-    const mockCheckpointV2: CheckpointV2 = {
-      wsgId: "INVALID",
-      ecId: "INVALID",
-      changeset,
-      containerAccessKeyAccount: "testAccount",
-      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
-      containerAccessKeySAS: "testSAS",
-      containerAccessKeyDbName: "testDb",
+    const mockCheckpointV2: V2CheckpointAccessProps = {
+      user: "testAccount",
+      container: `imodelblocks-${iModelId}`,
+      auth: "testSAS",
+      dbAlias: "testDb",
+      storageType: "azure?sas=1",
     };
-    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
-    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    const checkpointsV2Handler = IModelHost.hubAccess;
+    sinon.stub(checkpointsV2Handler, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1958,15 +1955,13 @@ describe("iModel", () => {
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
-    const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
-    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    const checkpointsV2Handler = IModelHost.hubAccess;
+    sinon.stub(checkpointsV2Handler, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
-    hubMock.callsFake(async () => [{} as any]);
     error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });

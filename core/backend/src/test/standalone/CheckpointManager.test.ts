@@ -142,9 +142,7 @@ describe("Checkpoint Manager", () => {
     snapshot.saveChanges();
     snapshot.close();
 
-    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
-    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => { throw new ResponseError(IModelHubStatus.Unknown, "Feature is disabled."); });
-    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => { throw new ResponseError(IModelHubStatus.Unknown, "Feature is disabled."); });
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);
