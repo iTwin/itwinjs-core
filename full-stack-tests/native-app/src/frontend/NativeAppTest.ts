@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { testIpcChannel, TestIpcInterface } from "../common/IpcInterfaces";
 import { IModelBankCloudEnv } from "./hub/IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./hub/IModelHubCloudEnv";

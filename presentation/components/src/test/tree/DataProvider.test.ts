@@ -2,18 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Node, RegisteredRuleset } from "@itwin/presentation-common";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
-import {
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset,
-} from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset, PromiseContainer, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PageOptions } from "@itwin/components-react";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";

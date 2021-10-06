@@ -156,7 +156,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
           if (this.wasCanceled)
             return undefined;
         }
-      } catch (_) {
+      } catch {
         // ###TODO: detect cases in which retry is warranted
         // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
         // incomplete results. Since we're not retrying, that's the best we can do.

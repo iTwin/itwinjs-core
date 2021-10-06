@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@itwin/core-react/lib/core-react/style/themecolors";
-@import "~@itwin/core-react/lib/core-react/style/opacity";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/opacity";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "~@itwin/itwinui-css/scss/style/variables";
-@import "~@itwin/core-react/lib/core-react/icons/variables";
-@import "~@itwin/core-react/lib/core-react/button/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/icons/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/button/variables";
 
 $date-picker-m: 16px;
 $date-picker-icons-color-actionable: rgba($buic-foreground-body, $uicore-opacity-2);

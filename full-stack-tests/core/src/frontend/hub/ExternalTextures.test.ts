@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/webgl";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {

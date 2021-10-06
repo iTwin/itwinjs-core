@@ -10,10 +10,9 @@ import * as moq from "typemoq";
 import { I18N } from "@itwin/core-i18n";
 import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
-  createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
-import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
+  createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
