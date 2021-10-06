@@ -21,7 +21,7 @@ To get usage help run:
 This application demonstrates the following:
 
 - Using the `IModelTransformer` API
-- Calling the `ContextRegistry` API to get *context* (project or asset) information
+- Calling the `ITwinRegistry` API to get *context* (project or asset) information
 - Querying `IModelHub` to get iModel information
 - How to handle either *briefcase* or *snapshot* iModel in the same application
 - Using [yargs](http://yargs.js.org/) to handle command line arguments

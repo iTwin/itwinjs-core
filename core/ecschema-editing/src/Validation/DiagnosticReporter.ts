@@ -26,7 +26,7 @@ export interface IDiagnosticReporter {
    */
   suppressions?: Map<string, string[]>;
 
-  /** The I18N object to use for message translation. */
+  /** The localization object to use for message translation. */
   localization?: Localization;
 
   /**
@@ -87,7 +87,7 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
 
 /**
  * An abstract [[SuppressionDiagnosticReporter]] implementation that formats the
- * diagnostic message with the message args. If an I18N implementation is specified,
+ * diagnostic message with the message args. If a Localization implementation is specified,
  * the message will also be translated.
  * @beta
  */
@@ -95,14 +95,14 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   /**
    * Initializes a new FormatDiagnosticReporter
    * @param suppressions A Map where the key is a schema full name and the value is collection of diagnostic codes to suppress.
-   * @param localization The I18N instance to use to translate validation messages.
+   * @param localization The Localization instance to use to translate validation messages.
    */
   constructor(suppressions?: Map<string, string[]>, localization?: Localization) {
     super(suppressions);
     this.localization = localization;
   }
 
-  /** The I18N object to use for message translation. If undefined, no translation will occur. */
+  /** The Localization object to use for message translation. If undefined, no translation will occur. */
   public localization?: Localization;
 
   /**

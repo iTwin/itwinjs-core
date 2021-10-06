@@ -96,11 +96,13 @@ internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
-internal;createMaskTreeReference(model: GeometricModelState): TileTreeReference
+internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
+public;CreateTextureArgs
+public;CreateTextureFromSourceArgs
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormatPropEditorSpec
@@ -151,6 +153,7 @@ internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boo
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
 public;FeatureOverrideProvider
 public;FeatureSymbology
+alpha;Source
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -365,6 +368,7 @@ internal;NullTarget
 internal;OffScreenTarget 
 public;OffScreenViewport 
 public;OffScreenViewportOptions
+internal;OldTextureImage
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
@@ -523,8 +527,13 @@ internal;TerrainTexture
 internal;TerrainTileContent 
 beta;TextInputFormatPropEditorSpec 
 beta;TextSelectFormatPropEditorSpec 
+public;TextureCacheKey = string | Gradient.Symb
+public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
-internal;TextureImage
+public;TextureImage
+public;TextureImageSource = HTMLImageElement | ImageBuffer
+public;TextureOwnership = TextureCacheOwnership | "external"
+public;TextureTransparency
 internal;ThreeAxes
 public;class Tile
 public;TileAdmin

@@ -11,7 +11,7 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { AccessToken, assert, AuthStatus, BentleyError, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, AuthStatus, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
 import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
@@ -23,6 +23,7 @@ import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 const loggerCategory = "electron-auth";
 
@@ -41,12 +42,14 @@ export class ElectronAuthorizationBackend extends ImsAuthorizationClient impleme
   private _tokenStore?: ElectronTokenStore;
   private _expiresAt?: Date;
   public get tokenStore() { return this._tokenStore!; }
+  protected baseUrl?: string;
 
   public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
     super();
     this.config = config;
+    this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
   }
 
   public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
@@ -217,8 +220,9 @@ export class ElectronAuthorizationBackend extends ImsAuthorizationClient impleme
     this._expiresAt = new Date(expiresAtMilliseconds);
 
     await this.tokenStore.save(this._tokenResponse);
-    this.setAccessToken(accessToken);
-    return accessToken;
+    const bearerToken = `${tokenResponse.tokenType} ${accessToken}`;
+    this.setAccessToken(bearerToken);
+    return bearerToken;
   }
 
   private get _hasExpired(): boolean {

@@ -37,7 +37,7 @@ export class TestUsers {
     };
   }
 
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
+  /** User with typical permissions of the iTwin administrator - Co-Admin: Yes, Connect-Services-Admin: No */
   public static get manager(): TestUserCredentials {
     return {
       email: process.env.IMJS_TEST_MANAGER_USER_NAME ?? "",

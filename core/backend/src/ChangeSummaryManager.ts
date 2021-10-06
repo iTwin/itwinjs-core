@@ -67,7 +67,7 @@ export interface ChangeSummaryExtractOptions {
  * @beta
  */
 export interface CreateChangeSummaryArgs extends TokenArg {
-  /** Id of the context that contains the iModel */
+  /** Id of the iTwin that contains the iModel */
   iTwinId: GuidString;
 
   /** Id of the iModel */

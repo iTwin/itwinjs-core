@@ -7,12 +7,12 @@
  */
 
 import { join } from "path";
-import { BeEvent, GuidString } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
-import { AccessToken, RequestGlobalOptions } from "@bentley/itwin-client";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";

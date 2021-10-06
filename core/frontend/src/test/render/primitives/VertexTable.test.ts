@@ -42,7 +42,7 @@ function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: n
 }
 
 class FakeTexture extends RenderTexture {
-  public constructor() { super(RenderTexture.Params.defaults); }
+  public constructor() { super(RenderTexture.Type.Normal); }
   public dispose() { }
   public get bytesUsed(): number { return 0; }
 }
