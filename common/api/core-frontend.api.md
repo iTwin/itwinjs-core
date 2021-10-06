@@ -2964,15 +2964,7 @@ export namespace FeatureSymbology {
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
-        // @alpha (undocumented)
-        get source(): Source | undefined;
-        // @alpha
-        static withSource(source: Source, view?: ViewState | Viewport): Overrides;
-    }
-    // @alpha
-    export interface Source {
-        readonly onSourceDisposed: BeEvent<() => void>;
-    }
+        }
 }
 
 // @public
@@ -11601,7 +11593,7 @@ export interface ViewCreator2dOptions {
 // @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
-    createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState>;
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
     }
 
 // @public

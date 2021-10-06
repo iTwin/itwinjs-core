@@ -1802,7 +1802,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     constructor(localToWorld: Transform, spiralType: string | undefined, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeFractionInterval: Segment1d | undefined, evaluator: XYCurveEvaluator);
     get activeStrokes(): LineString3d;
     clone(): DirectSpiral3d;
-    clonePartialCurve(fractionA: number, fractionB: number): DirectSpiral3d | undefined;
     cloneTransformed(transform: Transform): DirectSpiral3d;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static createArema(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
@@ -1818,6 +1817,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     static createPolishCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
     static createTruncatedClothoid(spiralType: string, localToWorld: Transform, numXTerm: number, numYTerm: number, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeInterval: Segment1d | undefined): DirectSpiral3d | undefined;
     static createWesternAustralian(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    curveLength(): number;
     readonly curvePrimitiveType = "transitionSpiral";
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
@@ -2872,13 +2872,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     get activeStrokes(): LineString3d;
     bearing01: AngleSweep;
     clone(): IntegratedSpiral3d;
-    clonePartialCurve(fractionA: number, fractionB: number): IntegratedSpiral3d | undefined;
     cloneTransformed(transform: Transform): TransitionSpiral3d;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static createFrom4OutOf5(spiralType: string | undefined, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined, fractionInterval: undefined | Segment1d, localToWorld: Transform): IntegratedSpiral3d | undefined;
     static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, typeName?: string): IntegratedSpiral3d | undefined;
     curveLength(): number;
-    curveLengthBetweenFractions(fraction0: number, fraction1: number): number;
     readonly curvePrimitiveType = "transitionSpiral";
     static readonly defaultSpiralType = "clothoid";
     dispatchToGeometryHandler(handler: GeometryHandler): any;
