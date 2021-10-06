@@ -23,9 +23,6 @@ export class TestUtils {
 
   public static async initializeUiCore() {
     if (!TestUtils._uiCoreInitialized) {
-      // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiCoreInitialized = true;
     }
