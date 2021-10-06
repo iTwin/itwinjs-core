@@ -3,7 +3,8 @@
   "compilerOptions": {
     "target": "es2017",
     "module": "commonjs",
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "esModuleInterop": true,
   },
   "include": [
     "./src/**/*.ts"

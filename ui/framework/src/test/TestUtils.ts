@@ -70,9 +70,6 @@ export class TestUtils {
 
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
-      // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
         this._rootReducer = combineReducers({

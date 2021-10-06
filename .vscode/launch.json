@@ -566,12 +566,10 @@
       "cwd": "${workspaceFolder}/ui/components",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/test/**/*.test.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test"
       ],
       "skipFiles": [
         "<node_internals>/**/*.js",
