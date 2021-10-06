@@ -6,7 +6,7 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
@@ -45,15 +45,18 @@ export class LockConflict extends IModelError {
 
 /**
  * The properties to access a V2 checkpoint through a daemon.
- * @beta
+ * @internal
  */
 export interface V2CheckpointAccessProps {
-  readonly container: string;
-  readonly auth: string;
-  /** The name of the container */
+  /** blob store account name. */
   readonly user: string;
-  /** The name of the virtual file used for the Checkpoint */
+  /** The name of the iModel's blob store container holding all checkpoints. */
+  readonly container: string;
+  /** AccessToken that grants access to the container. */
+  readonly auth: AccessToken;
+  /** The name of the virtual file within the container, used for the checkpoint */
   readonly dbAlias: string;
+  /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
   readonly storageType: string;
 }
 
@@ -164,7 +167,7 @@ export interface BackendHubAccess {
   queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-  /** push a changeset to iModelHub. Returns the newly pushed changeSet's index */
+  /** push a changeset to iModelHub. Returns the newly pushed changeset's index */
   pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
   getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;

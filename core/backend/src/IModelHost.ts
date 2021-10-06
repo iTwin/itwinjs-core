@@ -92,7 +92,9 @@ export class IModelHostConfiguration {
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
-  /** The kind of iModel server to use. */
+  /** The kind of iModel hub server to use.
+   * @beta
+   */
   public hubAccess?: BackendHubAccess;
 
   /** The credentials to use for the tile cache service. If omitted, a local cache will be used.

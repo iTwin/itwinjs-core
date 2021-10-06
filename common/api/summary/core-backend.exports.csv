@@ -30,7 +30,7 @@ beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
-internal;CheckPointArg = DownloadRequest
+internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -181,7 +181,6 @@ internal;TileContentState
 internal;Tiles
 public;IModelHost
 public;IModelHostConfiguration
-internal;IModelHubBackend
 public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
@@ -323,7 +322,7 @@ public;class TypeDefinitionElement
 public;UpdateModelOptions 
 public;UrlLink 
 internal;V1CheckpointManager
-beta;V2CheckpointAccessProps
+internal;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
 public;ViewAttachment 

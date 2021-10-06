@@ -1863,7 +1863,7 @@ describe("iModel", () => {
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
     snapshot.saveChanges();
     snapshot.close();
 
@@ -1880,7 +1880,7 @@ describe("iModel", () => {
     };
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").get(() => mockCheckpointV2);
 
-    // Mock blockcacheVFS daemon
+    // Mock BlobDaemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     const daemonErrorResult = { result: DbResult.BE_SQLITE_ERROR, errMsg: "NOT GOOD" };
