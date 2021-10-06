@@ -38,7 +38,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
   }
 
   public override async componentDidMount() {
-    const externalIModel = new ExternalIModel(this.props.iTwinName, this.props.imodelName);
+    const externalIModel = await ExternalIModel.create({iTwinName: this.props.iTwinName, iModelName: this.props.imodelName});
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {
