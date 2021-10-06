@@ -22,7 +22,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { RealityDataConnection, RealityDataConnectionManager } from "../RealityDataConnection";
+import { RealityDataConnection } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
@@ -620,7 +620,7 @@ export namespace RealityModelTileTree {
   }
 
   export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnectionManager.getFromSourceKey(rdSourceKey, iModel.contextId);
+    const rdConnection = await RealityDataConnection.fromSourceKey(rdSourceKey, iModel.contextId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdConnection) {
       const url = await rdConnection.getServiceUrl(iModel.contextId);

@@ -24,7 +24,7 @@ import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityDataConnectionManager } from "../RealityDataConnection";
+import { RealityDataConnection } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
@@ -360,7 +360,7 @@ export namespace OrbitGtTileTree {
   }
 
   export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnectionManager.getFromSourceKey(rdSourceKey, iModel.contextId);
+    const rdConnection = await RealityDataConnection.fromSourceKey(rdSourceKey, iModel.contextId);
 
     const realityData = rdConnection ? rdConnection.realityData : undefined;
     if (rdConnection === undefined || realityData === undefined )

@@ -28,6 +28,17 @@ export interface RealityDataConnection {
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
 }
 
+/** @alpha */
+export namespace RealityDataConnection {
+  /** Return an instance of a RealityDataConnection from a source key.
+   * There will aways be only one reality data connection for a corresponding reality data source key.
+   * @alpha
+   */
+  export async function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
+    return RealityDataConnectionImpl.fromSourceKey(rdSourceKey, iTwinId);
+  }
+}
+
 /**
  * This class encapsulates access to a reality data from ContextShare
  * There is a one to one relationship between a reality data and the instances of present class.
@@ -107,20 +118,5 @@ class RealityDataConnectionImpl implements RealityDataConnection {
   */
   public get source(): RealityDataSource {
     return this._rdSource;
-  }
-}
-
-/**
- * Provides method to manage reality data connection
- * @alpha
- */
-export class RealityDataConnectionManager {
-  /**
-   * Return an instance of a RealityDataConnection from a source key
-   * There will aways be only one reality data connection for a corresponding reality data source key
-   * @alpha
-   */
-  public static async getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
-    return RealityDataConnectionImpl.fromSourceKey(rdSourceKey, iTwinId);
   }
 }

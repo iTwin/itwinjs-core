@@ -7504,9 +7504,9 @@ export interface RealityDataConnection {
     readonly source: RealityDataSource;
 }
 
-// @alpha
-export class RealityDataConnectionManager {
-    static getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+// @alpha (undocumented)
+export namespace RealityDataConnection {
+    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
 }
 
 // @public
