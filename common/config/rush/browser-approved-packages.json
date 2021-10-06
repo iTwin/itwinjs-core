@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "@bentley/reality-data-client",
@@ -892,7 +892,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "symlink-dir",
