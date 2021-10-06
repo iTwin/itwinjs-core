@@ -1,12 +1,16 @@
 # start off ignoring everything
 *
 # then add back only the files we want
+!*.md
+
 !lib/**/*.d.ts
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
 !lib/**/*.json
-!*.md
+!lib/**/assets/*.json
+!lib/**/public/*.json
+
 # then ignore some stuff again
-lib/test
-lib/tsconfig.json
+lib/**/test/**
+lib/**/public/locales/en-PSEUDO/**

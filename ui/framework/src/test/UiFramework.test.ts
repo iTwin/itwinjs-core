@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 import { IModelRpcProps } from "@itwin/core-common";
 import { RpcRequestsHandler } from "@itwin/presentation-common";
-import { createRandomSelectionScope } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@itwin/core-frontend";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
