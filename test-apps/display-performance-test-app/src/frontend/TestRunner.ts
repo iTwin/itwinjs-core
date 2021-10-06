@@ -33,12 +33,6 @@ export interface TestSetsProps extends TestConfigProps {
   signIn?: boolean;
   minimize?: boolean;
   testSet: TestSetProps[];
-  /** Describes how to react to an otherwise uncaught exception during a test.
-   *  - "terminate" => log the exception and terminate immediately.
-   *  - undefined => log the exception and continue to next test.
-   * Logged exceptions include the string "DPTA_EXCEPTION".
-   */
-  onException?: "terminate";
 }
 
 /** Context for any number of TestCases to be run against an iModel. */
@@ -133,7 +127,6 @@ export class TestRunner {
   private readonly _logFileName: string;
   private readonly _testNamesImages = new Map<string, number>();
   private readonly _testNamesTimings = new Map<string, number>();
-  private readonly _terminateOnException: boolean;
 
   public get curConfig(): TestConfig {
     return this._config.top;
@@ -151,7 +144,6 @@ export class TestRunner {
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
 
-    this._terminateOnException = "terminate" === props.onException;
     ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
   }
 
@@ -984,7 +976,7 @@ export class TestRunner {
   private async onException(ex: any): Promise<void> {
     // We need to log here so it gets written to the file.
     await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
-    if (this._terminateOnException)
+    if ("terminate" === this.curConfig.onException)
       await DisplayPerfRpcInterface.getClient().terminate();
   }
 }
