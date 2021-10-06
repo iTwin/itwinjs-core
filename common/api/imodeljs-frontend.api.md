@@ -7490,23 +7490,16 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
 // @alpha
 export interface RealityDataConnection {
-    // (undocumented)
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
-    // (undocumented)
-    getSource(): RealityDataSource;
-    // (undocumented)
     readonly realityData: RealityData | undefined;
-    // (undocumented)
     readonly realityDataType: string | undefined;
+    readonly source: RealityDataSource;
 }
 
 // @alpha
 export class RealityDataConnectionManager {
-    // (undocumented)
-    getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
-    // (undocumented)
-    static get instance(): RealityDataConnectionManager;
-    }
+    static getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+}
 
 // @public
 export interface RealityDataQueryCriteria {
@@ -7529,15 +7522,12 @@ export class RealityDataSource {
     // (undocumented)
     get isContextShare(): boolean;
     // (undocumented)
-    isUrlResolved: boolean;
-    // (undocumented)
     get iTwinId(): string | undefined;
     // (undocumented)
     readonly rdSourceKey: RealityDataSourceKey;
     // (undocumented)
     get realityDataId(): string | undefined;
-    tilesetUrl: string | undefined;
-}
+    }
 
 // @alpha
 export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;

@@ -620,7 +620,7 @@ export namespace RealityModelTileTree {
   }
 
   export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnectionManager.instance.getFromSourceKey(rdSourceKey, iModel.contextId);
+    const rdConnection = await RealityDataConnectionManager.getFromSourceKey(rdSourceKey, iModel.contextId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdConnection) {
       const url = await rdConnection.getServiceUrl(iModel.contextId);
@@ -842,7 +842,7 @@ export class RealityModelTileClient {
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
   constructor(rdConnection: RealityDataConnection, contextId?: string) {
     this._rdConnection = rdConnection;
-    const rdSource = this._rdConnection.getSource();
+    const rdSource = this._rdConnection.source;
     if (rdSource.isContextShare)
       this.rdsProps = this.getRDSClientPropsFromSource(rdSource); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)

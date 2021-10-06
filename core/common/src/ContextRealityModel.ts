@@ -60,7 +60,8 @@ export enum RealityDataFormat {
 }
 
 /**
- * Key used by ContextShare RealityDataProvider
+ * Key used by RealityDataConnection to identify RealityDataSource and reality data format
+ * This key identify one and only one reality data on the provider
  * @alpha
  */
 export interface RealityDataSourceKey {

@@ -360,7 +360,7 @@ export namespace OrbitGtTileTree {
   }
 
   export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnectionManager.instance.getFromSourceKey(rdSourceKey, iModel.contextId);
+    const rdConnection = await RealityDataConnectionManager.getFromSourceKey(rdSourceKey, iModel.contextId);
 
     const realityData = rdConnection ? rdConnection.realityData : undefined;
     if (rdConnection === undefined || realityData === undefined )

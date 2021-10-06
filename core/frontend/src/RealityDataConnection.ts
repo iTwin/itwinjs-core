@@ -14,10 +14,18 @@ import { RealityDataSource, realityDataSourceKeyToString } from "./RealityDataSo
  * @alpha
  */
 export interface RealityDataConnection {
+  /** Metatdata on the reality data source */
   readonly realityData: RealityData | undefined;
+  /** The reality data type (e.g.: "RealityMesh3DTiles", OPC, Terrain3DTiles, Cesium3DTiles, ... )*/
   readonly realityDataType: string | undefined;
+  /** The source provides access to the reality data provider services.*/
+  readonly source: RealityDataSource;
+  /**
+   * This method returns the URL to obtain the Reality Data properties.
+   * @param iTwinId id of associated iTwin project
+   * @returns string containing the URL to reality data.
+   */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
-  getSource(): RealityDataSource;
 }
 
 /**
@@ -26,11 +34,24 @@ export interface RealityDataConnection {
  * @alpha
  */
 class RealityDataConnectionImpl implements RealityDataConnection {
+  private static _realityDataConnections = new Map<string, RealityDataConnection>();
   private _rd: RealityData | undefined;
   private _rdSource: RealityDataSource;
 
   private constructor(props: RealityDataSourceProps) {
     this._rdSource = RealityDataSource.fromProps(props);
+  }
+  public static async fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
+    // search to see if it was already created
+    const rdSourceKeyString = realityDataSourceKeyToString(rdSourceKey);
+    let rdConnection = RealityDataConnectionImpl._realityDataConnections.get(rdSourceKeyString);
+    if (rdConnection)
+      return rdConnection;
+    // If not already in our list, create and add it to our list before returing it.
+    rdConnection = await RealityDataConnectionImpl.createFromSourceKey(rdSourceKey,  iTwinId);
+    if (rdConnection)
+      RealityDataConnectionImpl._realityDataConnections.set(rdSourceKeyString,rdConnection);
+    return rdConnection;
   }
   /**
    * Create an instance of this class from a source key and iTwin context/
@@ -74,11 +95,9 @@ class RealityDataConnectionImpl implements RealityDataConnection {
     return this._rd?.type;
   }
   /**
-   * This method returns the URL to obtain the Reality Data details from PW Context Share.
-   * Technically it should never be required as the RealityData object returned should have all the information to obtain the
-   * data.
+   * This method returns the URL to obtain the Reality Data details.
    * @param iTwinId id of associated iTwin project
-   * @returns string containing the URL to reality data for indicated tile.
+   * @returns string containing the URL to reality data.
    */
   public async getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined> {
     return this._rdSource.getServiceUrl(iTwinId);
@@ -86,33 +105,22 @@ class RealityDataConnectionImpl implements RealityDataConnection {
   /**
   * Returns the source implementation associated to this reality data connection
   */
-  public getSource(): RealityDataSource {
+  public get source(): RealityDataSource {
     return this._rdSource;
   }
 }
 
 /**
- * This class manage reality data connection instance used to access reality data from ContextShare
- * There will aways be only one reality data connection for a corresponding reality data source key
+ * Provides method to manage reality data connection
  * @alpha
  */
 export class RealityDataConnectionManager {
-  private _realityDataConnections = new Map<string, RealityDataConnection>();
-  // Singleton implementation
-  private static _instance: RealityDataConnectionManager = new RealityDataConnectionManager();
-  public static get instance(): RealityDataConnectionManager {
-    return RealityDataConnectionManager._instance;
-  }
-  public async getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
-    // search to see if it was already created
-    const rdSourceKeyString = realityDataSourceKeyToString(rdSourceKey);
-    let rdConnection = this._realityDataConnections.get(rdSourceKeyString);
-    if (rdConnection)
-      return rdConnection;
-    // If not already in our list, create and add it to our list before returing it.
-    rdConnection = await RealityDataConnectionImpl.createFromSourceKey(rdSourceKey,  iTwinId);
-    if (rdConnection)
-      this._realityDataConnections.set(rdSourceKeyString,rdConnection);
-    return rdConnection;
+  /**
+   * Return an instance of a RealityDataConnection from a source key
+   * There will aways be only one reality data connection for a corresponding reality data source key
+   * @alpha
+   */
+  public static async getFromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
+    return RealityDataConnectionImpl.fromSourceKey(rdSourceKey, iTwinId);
   }
 }

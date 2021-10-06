@@ -24,15 +24,15 @@ export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey):
 export class RealityDataSource {
   public readonly rdSourceKey: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
-  public tilesetUrl: string | undefined;
-  public isUrlResolved: boolean = false;
+  private _tilesetUrl: string | undefined;
+  private _isUrlResolved: boolean = false;
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
   protected constructor(props: RealityDataSourceProps) {
     this.rdSourceKey = props.sourceKey;
-    this.isUrlResolved=false;
+    this._isUrlResolved=false;
   }
   public static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     let format = inputFormat ? inputFormat : RealityDataFormat.ThreeDTile;
@@ -133,7 +133,7 @@ export class RealityDataSource {
    */
   public async getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined> {
     // If url was not resolved - resolve it
-    if (this.isContextShare && !this.isUrlResolved) {
+    if (this.isContextShare && !this._isUrlResolved) {
       const rdSourceKey = this.rdSourceKey;
       // we need to resolve tilesetURl from realityDataId and iTwinId
       const client = new RealityDataClient();
@@ -145,16 +145,16 @@ export class RealityDataSource {
 
           const resolvedITwinId = iTwinId ? iTwinId : rdSourceKey.iTwinId;
 
-          this.tilesetUrl = await client.getRealityDataUrl(authRequestContext, resolvedITwinId, rdSourceKey.id);
-          this.isUrlResolved=true;
+          this._tilesetUrl = await client.getRealityDataUrl(authRequestContext, resolvedITwinId, rdSourceKey.id);
+          this._isUrlResolved=true;
         }
       } catch (e) {
         const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.id} and iTwinId=${iTwinId}`;
         Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
       }
     } else if (this.rdSourceKey.provider === RealityDataProvider.TilesetUrl || this.rdSourceKey.provider === RealityDataProvider.CesiumIonAsset) {
-      this.tilesetUrl = this.rdSourceKey.id;
+      this._tilesetUrl = this.rdSourceKey.id;
     }
-    return this.tilesetUrl;
+    return this._tilesetUrl;
   }
 }
