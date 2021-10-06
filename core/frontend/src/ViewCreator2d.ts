@@ -70,7 +70,7 @@ export class ViewCreator2d {
     const viewState = await this._createViewState2d(modelId, baseClassName.classFullName, options);
     try {
       await viewState.load();
-    } catch (_) { }
+    } catch { }
 
     return viewState;
   }

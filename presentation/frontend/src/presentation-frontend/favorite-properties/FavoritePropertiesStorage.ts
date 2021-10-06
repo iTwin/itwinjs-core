@@ -181,7 +181,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     if (this._connectivityInfo.status === InternetConnectivityStatus.Online) {
       try {
         return await this._impl.loadProperties(iTwinId, imodelId);
-      } catch (_) {
+      } catch {
         // return from offline cache if the above fails
       }
     }
@@ -198,7 +198,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     try {
       await this._impl.saveProperties(properties, iTwinId, imodelId);
       this._propertiesOfflineCache.reservedDelete(key, reservationId);
-    } catch (_) {
+    } catch {
       this._propertiesOfflineCache.reservedSet(key, properties, reservationId);
     }
   }
@@ -207,7 +207,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     if (this._connectivityInfo.status === InternetConnectivityStatus.Online) {
       try {
         return await this._impl.loadPropertiesOrder(iTwinId, imodelId);
-      } catch (_) {
+      } catch {
         // return from offline cache if the above fails
       }
     }
@@ -224,7 +224,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     try {
       await this._impl.savePropertiesOrder(orderInfos, iTwinId, imodelId);
       this._propertiesOrderOfflineCache.reservedDelete(key, reservationId);
-    } catch (_) {
+    } catch {
       this._propertiesOrderOfflineCache.reservedSet(key, orderInfos, reservationId);
     }
   }

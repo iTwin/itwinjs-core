@@ -148,7 +148,7 @@ export abstract class MapLayerImageryProvider {
       if (undefined !== response.text) {
         strings.push(response.text);
       }
-    } catch (_) {
+    } catch {
     }
   }
   protected async toolTipFromJsonUrl(_strings: string[], url: string): Promise<void> {
@@ -157,7 +157,7 @@ export abstract class MapLayerImageryProvider {
       if (undefined !== json) {
 
       }
-    } catch (_) { }
+    } catch { }
   }
 
   public matchesMissingTile(tileData: Uint8Array): boolean {

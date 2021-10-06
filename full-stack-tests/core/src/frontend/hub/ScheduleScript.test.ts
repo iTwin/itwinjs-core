@@ -55,7 +55,7 @@ describe("Schedule script (#integration)", () => {
       let threw = false;
       try {
         treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
-      } catch (_) {
+      } catch {
         threw = true;
       }
 

@@ -65,7 +65,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
 
       const ctor = id.isSheet ? SheetProxyTree : DrawingProxyTree;
       return new ctor({ tree, ref: treeRef, view, state: id.state, attachment: id.attachment });
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -101,7 +101,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
       const categorySelector = new CategorySelectorState({} as any, state.iModel);
 
       return new DrawingViewState(viewProps, state.iModel, categorySelector, displayStyle, sheetExtents);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

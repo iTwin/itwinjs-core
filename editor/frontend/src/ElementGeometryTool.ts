@@ -32,7 +32,7 @@ export class ElementGeometryGraphicsProvider {
       const graphicOwner = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
       this.cleanupGraphic();
       return (undefined !== (this.graphic = graphicOwner));
-    } catch (_) {
+    } catch {
       return false;
     }
   }

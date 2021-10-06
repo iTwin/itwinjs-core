@@ -66,7 +66,7 @@ export class ViewCreator3d {
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
       await viewState.load();
-    } catch (_) {
+    } catch {
     }
 
     if (options?.standardViewId)
@@ -264,7 +264,7 @@ export class ViewCreator3d {
     let models = [];
     try {
       models = await this._executeQuery(query);
-    } catch (_) {
+    } catch {
       // possible that the isNotSpatiallyLocated property is not available in the iModel's schema
       query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
       models = await this._executeQuery(query);

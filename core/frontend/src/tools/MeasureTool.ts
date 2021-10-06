@@ -747,7 +747,7 @@ export class MeasureLocationTool extends PrimitiveTool {
           const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
           toolTipHtml += `${translateBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
           toolTipHtml += `${translateBold("Altitude") + formattedHeight}<br>`;
-        } catch (_) { }
+        } catch { }
       }
     }
 

@@ -283,7 +283,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           });
         if (token?.token)
           tokenParam = `&token=${token.token}`;
-      } catch (_) {
+      } catch {
       }
     }
     return `${url}${tokenParam}`;

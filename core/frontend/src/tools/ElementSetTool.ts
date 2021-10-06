@@ -436,7 +436,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);
       }
-    } catch (_) { }
+    } catch { }
 
     return ids;
   }
