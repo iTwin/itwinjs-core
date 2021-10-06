@@ -3100,7 +3100,15 @@ export namespace FeatureSymbology {
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
-        }
+        // @alpha (undocumented)
+        get source(): Source | undefined;
+        // @alpha
+        static withSource(source: Source, view?: ViewState | Viewport): Overrides;
+    }
+    // @alpha
+    export interface Source {
+        readonly onSourceDisposed: BeEvent<() => void>;
+    }
 }
 
 // @alpha
