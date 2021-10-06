@@ -65,7 +65,10 @@ export class RealityDataSource {
       });
       const isOPC = attUrl.pathname.match(".opc*") !== null;
       const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
-      const projectId = urlParts1.find((val: string) => val.includes("--"))!.split("--")[1];
+      let projectId: string | undefined;
+      const projectIdSection = urlParts1.find((val: string) => val.includes("--"));
+      if (projectIdSection)
+        projectId = projectIdSection.split("--")[1];
       // Make sure the url to compare are REALITYMESH3DTILES url, otherwise, compare the url directly
       if (isRDSUrl || isOPC) {
         // Make sure the reality data id are the same
