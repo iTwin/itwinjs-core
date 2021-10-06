@@ -17,6 +17,7 @@ import { DisplayValueGroup } from '@itwin/presentation-common';
 import { DistinctValuesRequestOptions } from '@itwin/presentation-common';
 import { ElementProperties } from '@itwin/presentation-common';
 import { ElementPropertiesRequestOptions } from '@itwin/presentation-common';
+import { ElementsPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Entity } from '@itwin/core-backend';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
@@ -178,6 +179,11 @@ export class PresentationManager {
     getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
     // @beta
     getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+    // @beta
+    getElementsProperties(requestOptions: Prioritized<ElementsPropertiesRequestOptions<IModelDb>>): Promise<{
+        total: number;
+        items: ElementProperties[];
+    }>;
     getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;

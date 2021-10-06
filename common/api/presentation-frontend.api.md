@@ -20,6 +20,7 @@ import { DisplayValueGroup } from '@itwin/presentation-common';
 import { DistinctValuesRequestOptions } from '@itwin/presentation-common';
 import { ElementProperties } from '@itwin/presentation-common';
 import { ElementPropertiesRequestOptions } from '@itwin/presentation-common';
+import { ElementsPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
@@ -301,6 +302,8 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     // @beta
     getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
+    // @beta
+    getElementsProperties(requestOptions: ElementsPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]>;

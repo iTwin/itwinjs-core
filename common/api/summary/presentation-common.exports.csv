@@ -108,6 +108,8 @@ beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
+beta;ElementsPropertiesRequestOptions
+beta;ElementsPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord

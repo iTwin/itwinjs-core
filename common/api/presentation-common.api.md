@@ -784,6 +784,14 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     type: "struct";
 }
 
+// @beta
+export interface ElementsPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+    elementClasses?: string[];
+}
+
+// @beta
+export type ElementsPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementsPropertiesRequestOptions<never>>;
+
 // @public
 export interface EnumerationChoice {
     label: string;
@@ -1874,6 +1882,8 @@ export class PresentationRpcInterface extends RpcInterface {
     getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON>;
     // @beta (undocumented)
     getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties>;
+    // @beta (undocumented)
+    getElementsProperties(_token: IModelRpcProps, _options: ElementsPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
@@ -2404,6 +2414,8 @@ export class RpcRequestsHandler implements IDisposable {
     getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
     // (undocumented)
     getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
+    // (undocumented)
+    getElementsProperties(options: ElementsPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
     // (undocumented)
     getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
     // (undocumented)
