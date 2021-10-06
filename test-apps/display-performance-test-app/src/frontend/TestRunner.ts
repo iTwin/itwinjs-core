@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -33,6 +33,12 @@ export interface TestSetsProps extends TestConfigProps {
   signIn?: boolean;
   minimize?: boolean;
   testSet: TestSetProps[];
+  /** Describes how to react to an otherwise uncaught exception during a test.
+   *  - "terminate" => log the exception and terminate immediately.
+   *  - undefined => log the exception and continue to next test.
+   * Logged exceptions include the string "DPTA_EXCEPTION".
+   */
+  onException?: "terminate";
 }
 
 /** Context for any number of TestCases to be run against an iModel. */
@@ -127,6 +133,7 @@ export class TestRunner {
   private readonly _logFileName: string;
   private readonly _testNamesImages = new Map<string, number>();
   private readonly _testNamesTimings = new Map<string, number>();
+  private readonly _terminateOnException: boolean;
 
   public get curConfig(): TestConfig {
     return this._config.top;
@@ -143,6 +150,7 @@ export class TestRunner {
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
+    this._terminateOnException = "terminate" === props.onException;
   }
 
   /** Run all the tests. */
@@ -184,6 +192,8 @@ export class TestRunner {
           tileAdmin: this.curConfig.tileProps,
           realityDataAccess: new RealityDataAccessClient(),
         });
+
+        ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
       }
 
       // Run test against all iModels matching the test config.
@@ -215,9 +225,13 @@ export class TestRunner {
 
       await this.logTest();
 
-      const result = await this.runTest(context);
-      if (result)
-        await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      try {
+        const result = await this.runTest(context);
+        if (result)
+          await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      } catch (ex) {
+        await this.onException(ex);
+      }
     }
   }
 
@@ -965,6 +979,13 @@ export class TestRunner {
       ctx.putImageData(typeImgData, 0, 0);
       await savePng(this.getImageName(test, `type_${pixStr}_`), canvas);
     }
+  }
+
+  private async onException(ex: any): Promise<void> {
+    if (this._terminateOnException)
+      throw ex;
+
+    await DisplayPerfTestApp.logException(ex);
   }
 }
 

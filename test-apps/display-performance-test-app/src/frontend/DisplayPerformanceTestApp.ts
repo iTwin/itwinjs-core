@@ -49,11 +49,12 @@ export class DisplayPerfTestApp {
   }
 
   public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<void> {
-    const msg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
+    const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
+    const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
     const client = DisplayPerfRpcInterface.getClient();
     await client.consoleLog(msg);
     if (logFile)
-      await client.writeExternalFile(logFile.dir, logFile.name, true, `${msg}\n`);
+      await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
   }
 }
 
