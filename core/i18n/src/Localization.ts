@@ -8,7 +8,7 @@
 
 import { Localization } from "@itwin/core-common";
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
-import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
+import i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import HttpApi, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 
