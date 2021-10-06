@@ -8,6 +8,7 @@ import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/imodelhub-node";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import {
@@ -107,10 +108,11 @@ async function init() {
 
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
+  IModelHubBackend.setIModelClient(CloudEnv.cloudEnv.imodelClient);
 
   // Start the backend
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  iModelHost.hubAccess = IModelHubBackend;
   iModelHost.concurrentQuery.concurrent = 2;
   iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.cacheDir = path.join(__dirname, "out");

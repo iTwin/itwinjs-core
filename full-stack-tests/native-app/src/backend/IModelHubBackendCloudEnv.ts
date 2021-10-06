@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AzureFileHandler } from "@bentley/backend-itwin-client";
+import { AzureFileHandler } from "@bentley/imodelhub-client/lib/itwin-client/file-handlers";
 import { IModelCloudEnvironment, IModelHubClient } from "@bentley/imodelhub-client";
 import { ITwinRegistryClientWrapper } from "../common/ITwinRegistryClientWrapper";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";

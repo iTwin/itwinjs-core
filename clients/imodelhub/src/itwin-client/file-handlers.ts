@@ -5,4 +5,5 @@
 export * from "./AzureFileHandler";
 export * from "./BlobDownloader";
 export * from "./LocalhostFileHandler";
+export * from "./StorageServiceFileHandler";
 export * from "./UrlFileHandler";
