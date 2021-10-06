@@ -1263,4 +1263,4 @@ The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($co
 
 ## Remove ninezone-test-app
 
-The `ninezone-test-app` was used to test and demonstrate the deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in the ui-test-app.
+The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
