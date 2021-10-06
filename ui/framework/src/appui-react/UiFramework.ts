@@ -529,15 +529,18 @@ export class UiFramework {
   public static async postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
     if (!IModelApp.authorizationClient)
       return;
-    const activity: RpcActivity = {
-      sessionId: IModelApp.sessionId,
-      activityId: "",
-      applicationId: IModelApp.applicationId,
-      applicationVersion: IModelApp.applicationVersion,
-      accessToken: (await IModelApp.authorizationClient.getAccessToken()) ?? "",
-    };
-    const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
-    await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
+
+    try {
+      const activity: RpcActivity = {
+        sessionId: IModelApp.sessionId,
+        activityId: "",
+        applicationId: IModelApp.applicationId,
+        applicationVersion: IModelApp.applicationVersion,
+        accessToken: (await IModelApp.authorizationClient.getAccessToken()) ?? "",
+      };
+      const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
+      await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
+    } catch (_) {}
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used

@@ -9,7 +9,7 @@ import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
-import { getRpcInterfaces, Settings } from "../common/Settings";
+import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
@@ -28,8 +28,6 @@ function loadEnv(envFile: string) {
 }
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
-const settings = new Settings(process.env);
-process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 void (async () => {
   RpcConfiguration.developmentMode = true;
 
