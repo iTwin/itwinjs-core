@@ -6,9 +6,6 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { Client } from '@bentley/itwin-client';
-import { RequestOptions } from '@bentley/itwin-client';
-import { RequestQueryOptions } from '@bentley/itwin-client';
-import { RequestTimeoutOptions } from '@bentley/itwin-client';
 
 // @beta
 export interface ITwin {
@@ -26,12 +23,10 @@ export interface ITwinAccess {
 }
 
 // @beta
-export class ITwinAccessClient extends WsgClient implements ITwinAccess {
+export class ITwinAccessClient extends Client implements ITwinAccess {
     constructor();
     getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]>;
-    // (undocumented)
-    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-}
+    }
 
 // @beta
 export interface ITwinPaginationArg {
@@ -52,7 +47,7 @@ export interface ITwinQueryArg {
 // @beta
 export enum ITwinSearchableProperty {
     // (undocumented)
-    Name = "name"
+    Name = "displayName"
 }
 
 // @beta
