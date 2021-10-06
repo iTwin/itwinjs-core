@@ -154,7 +154,7 @@ export interface TestConfigProps {
   /** Describes how to react to an otherwise uncaught exception during a test.
    *  - "terminate" => log the exception and terminate immediately.
    *  - undefined => log the exception and continue to next test.
-   * Logged exceptions include the string "DPTA_EXCEPTION".
+   * Logged exceptions will include the string "DPTA_EXCEPTION" for easy grepping.
    */
   onException?: "terminate";
 }
