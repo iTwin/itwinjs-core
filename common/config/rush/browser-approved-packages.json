@@ -15,10 +15,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
       "name": "@bentley/frontend-authorization-client",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -44,7 +40,7 @@
     },
     {
       "name": "@bentley/itwin-registry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/product-settings-client",
@@ -120,7 +116,7 @@
     },
     {
       "name": "@itwin/core-i18n",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/core-markup",
@@ -560,7 +556,7 @@
     },
     {
       "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "i18next-xhr-backend",
