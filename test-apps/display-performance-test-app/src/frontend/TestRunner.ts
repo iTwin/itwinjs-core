@@ -150,7 +150,9 @@ export class TestRunner {
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
+
     this._terminateOnException = "terminate" === props.onException;
+    ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
   }
 
   /** Run all the tests. */
@@ -192,8 +194,6 @@ export class TestRunner {
           tileAdmin: this.curConfig.tileProps,
           realityDataAccess: new RealityDataAccessClient(),
         });
-
-        ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
       }
 
       // Run test against all iModels matching the test config.
@@ -984,10 +984,8 @@ export class TestRunner {
   private async onException(ex: any): Promise<void> {
     // We need to log here so it gets written to the file.
     await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
-
-    // Throw a special error to tell dpta not to log again
     if (this._terminateOnException)
-      throw "TERMINATE";
+      await DisplayPerfRpcInterface.getClient().terminate();
   }
 }
 
