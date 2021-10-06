@@ -227,7 +227,6 @@ function testGraphFromSegments(ck: Checker, x0: number, segments: LineSegment3d[
     GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, dy += yStep);
   if (expectSingleLoop)
     GraphChecker.verifyGraphCounts(ck, theGraph, true, 2, undefined, undefined);
-  HalfEdgeGraphOps.formMonotoneFaces(theGraph);
   GraphChecker.verifySignedFaceCounts(ck, theGraph, undefined, 1, undefined);
   GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(theGraph), dx, dy += yStep);
   if (outputAnnotatedGeometry)
@@ -328,7 +327,6 @@ describe("MonotoneFaces", () => {
       const numFace = (numLine - 1) * (numLine - 2);
       GraphChecker.verifyGraphCounts(ck, theGraph, true, numFace, (numLine + 2) * (numLine + 2) - 4, a * b * numFace);
 
-      HalfEdgeGraphOps.formMonotoneFaces(theGraph);
       GraphChecker.captureAnnotatedGraph(allGeometry, theGraph, dx, dy);
       dy += yStep;
       // console.log("Total Faces: ", theGraph.collectFaceLoops().length);
@@ -796,39 +794,40 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  const dartInTriangleOuter = [
+    Point3d.create (1,-4), Point3d.create (13,0), Point3d.create (1,4), Point3d.create (1,-4),
+  ];
+  const dartInTriangleInner = [
+    Point3d.create (5,0), Point3d.create (3,-2), Point3d.create (9,0), Point3d.create (3,2),Point3d.create (5,0),
+  ];
+
   it("DartInTriangle", () => {
     // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
-    const outer = [
-      Point3d.create (1,-4), Point3d.create (13,0), Point3d.create (1,4), Point3d.create (1,-4),
-    ];
-    const inner = [
-      Point3d.create (5,0), Point3d.create (3,-2), Point3d.create (9,0), Point3d.create (3,2),Point3d.create (5,0),
-    ];
-    const outerArea = PolygonOps.areaXY(outer);
-    const innerArea = PolygonOps.areaXY(inner);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, dx, dy);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, dx, dy);
+    const outerArea = PolygonOps.areaXY(dartInTriangleOuter);
+    const innerArea = PolygonOps.areaXY(dartInTriangleInner);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleOuter, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleInner, dx, dy);
     dy += 10;
-    const graph1 = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
       if (graph1) {
         const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
-        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface1), "area of dart in dart");
+        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface1), "area of dart in triangle");
         GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy);
     }
     dx += 20;
     dy = 0;
-    inner.reverse();
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, dx, dy);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, dx, dy);
+    const innerReversed = dartInTriangleInner.slice().reverse();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dartInTriangleOuter, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, innerReversed, dx, dy);
     dy += 10;
-    const graph2 = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
+    const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, innerReversed]);
       if (graph2) {
         const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
-        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface2), "area of dart in dart");
+        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface2), "area of reversed dart in triangle");
         GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, dx, dy);
     }
 
@@ -985,7 +984,6 @@ const _messyShape = [
     }
   }
   it("MessyPolygon", () => {
-    // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -997,6 +995,69 @@ const _messyShape = [
     x0 += 3.0 * range.xLength();
     tryTriangulation(allGeometry, cleanerPoints, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "MessyPolygon");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  /**
+   * @return number of removed edges
+   */
+  function tryExpandConvex(ck: Checker, allGeometry: GeometryQuery[], graph: HalfEdgeGraph, method: number, x0: number, y0: number): number {
+    ck.testTrue(HalfEdgeGraphOps.isEveryFaceConvex(graph), "graph has non-convex face on input");
+    const polyface = PolyfaceBuilder.graphToPolyface(graph);
+    const range = polyface.range();
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0);
+    let numRemovedEdges = 0;
+    let succeeded = false;
+    switch (method) {
+      case 1: { // mask, yank and delete edges
+        numRemovedEdges = HalfEdgeGraphOps.expandConvexFaces(graph);
+        const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
+        y0 += range.yLength();
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0, y0);
+        succeeded = ck.testLT(0, numRemovedEdges, "expandConvexFaces did not remove any edges.");
+        break;
+      }
+      case 2: { // collect, isolate and delete edges
+        const removableEdges = HalfEdgeGraphOps.collectRemovableEdgesToExpandConvexFaces(graph);
+        if ((succeeded = ck.testDefined(removableEdges, "expandConvexFaces did not return any removable edges.")) && removableEdges) {
+          for (const node of removableEdges) node.isolateEdge();
+          numRemovedEdges = graph.deleteIsolatedEdges() / 2;
+          const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
+          y0 += range.yLength();
+          GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0, y0);
+          ck.testExactNumber(numRemovedEdges, removableEdges.length, "deleted unexpected number of removable edges.");
+        }
+        break;
+      }
+    }
+    if (succeeded)
+      ck.testTrue(HalfEdgeGraphOps.isEveryFaceConvex(graph), "expandConvexFaces yielded non-convex face.");
+    return numRemovedEdges;
+  }
+
+  it("ExpandConvexFaces-DartInTriangle", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    Triangulator.clearAndEnableDebugGraphCapture(true);
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
+    if (graph1) {
+      const range = HalfEdgeGraphOps.graphRange(graph1);
+      const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, x0, y0);
+      const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
+      x0 += range.xLength();
+      const numRemovedEdges2 = tryExpandConvex(ck, allGeometry, graph2!, 2, x0, y0);
+      ck.testExactNumber(numRemovedEdges1, numRemovedEdges2, "expandConvexFaces methods removed different numbers of edges.");
+    } else {
+      const debugGraph = Triangulator.claimDebugGraph();
+      if (debugGraph) {
+        const debugPolyface = PolyfaceBuilder.graphToPolyface(debugGraph);
+        const range = debugPolyface.range();
+        GeometryCoreTestIO.captureGeometry(allGeometry, debugPolyface, x0 += range.xLength(), y0);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-DartInTriangle");
     expect(ck.getNumErrors()).equals(0);
   });
 

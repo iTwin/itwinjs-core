@@ -107,30 +107,6 @@ export class HalfEdgeGraphOps {
   }
 
   /**
-   * * For each face with positive area . . . add edges as needed so that each face has one definitely lower node and one definite upper node.
-   * * Hence tracing edges from the low node, there is a sequence of upward edges, reaching the upper,  then a sequence of downward edges reaching the low node.
-   * * This is an essential step for subsequent triangulation.
-   *
-   * @param graph
-   */
-  public static formMonotoneFaces(graph: HalfEdgeGraph) {
-
-    const allFaces = graph.collectFaceLoops();
-    graph.clearMask(HalfEdgeMask.VISITED);
-    // For every face, break the face down into monotone sections
-    for (const node of allFaces) {
-      if (node.isMaskSet(HalfEdgeMask.VISITED))
-        continue;
-      const area = node.signedFaceArea();
-      if (area <= 0.0) {
-        node.setMaskAroundFace(HalfEdgeMask.VISITED);
-        continue;
-      }
-
-    }
-  }
-
-  /**
    * * Visit all nodes in `graph`.
    * * invoke `pinch(node, vertexPredecessor)`
    * * this leaves the graph as isolated edges.
@@ -156,10 +132,10 @@ export class HalfEdgeGraphOps {
    * @remarks Best results when input faces are convex.
    * @param graph graph to examine and mark
    * @param mark the mask used to mark (both sides of) removable edges
-   * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.EXTERIOR to expand only interior faces.
+   * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return number of edges masked (half the number of HalfEdges masked)
    */
-  public static markRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, mark: HalfEdgeMask, barrier: HalfEdgeMask = HalfEdgeMask.EXTERIOR): number {
+  public static markRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, mark: HalfEdgeMask, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
     if (HalfEdgeMask.NULL_MASK === mark)
       return 0;
     const visit = graph.grabMask(true);
@@ -182,10 +158,10 @@ export class HalfEdgeGraphOps {
    * Collect edges between faces if the union of the faces is convex.
    * @remarks Best results when input faces are convex.
    * @param graph graph to examine
-   * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.EXTERIOR to expand only interior faces.
+   * @param barrier edges with this mask (on either side) will not be collected. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return one HalfEdge per removable edge
    */
-   public static collectRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.EXTERIOR): HalfEdge[] | undefined {
+  public static collectRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): HalfEdge[] | undefined {
     const removable: HalfEdge[] = [];
     const mark = graph.grabMask(true);
     if (0 < this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier)) {
@@ -200,6 +176,39 @@ export class HalfEdgeGraphOps {
     }
     graph.dropMask(mark);
     return removable;
+  }
+
+  /**
+   * Remove edges between faces if the union of the faces is convex.
+   * @remarks Best results when input faces are convex.
+   * @param graph graph to modify
+   * @param barrier edges with this mask (on either side) will not be removed. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
+   * @return number of edges deleted
+   */
+  public static expandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
+    const mark = graph.grabMask(true);
+    const numRemovedEdges = this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier);
+    if (numRemovedEdges > 0)
+      graph.yankAndDeleteEdges((node: HalfEdge) => node.getMask(mark));
+    graph.dropMask(mark);
+    return numRemovedEdges;
+  }
+
+  /**
+   * Test desired faces for convexity.
+   * @param graph graph to examine
+   * @param avoid faces with this mask will not be examined. Defaults to HalfEdgeMask.EXTERIOR.
+   * @return whether every face in the graph is convex
+   */
+  public static isEveryFaceConvex(graph: HalfEdgeGraph, avoid: HalfEdgeMask = HalfEdgeMask.EXTERIOR): boolean {
+    const allFaces = graph.collectFaceLoops();
+    for (const node of allFaces) {
+      if (node.isMaskedAroundFace(avoid))
+        continue;
+      if (!node.isFaceConvex())
+        return false;
+      }
+    return true;
   }
 }
 
