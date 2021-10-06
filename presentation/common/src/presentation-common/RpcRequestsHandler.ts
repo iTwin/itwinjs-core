@@ -22,8 +22,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
+  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import {
   ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
@@ -175,6 +175,11 @@ export class RpcRequestsHandler implements IDisposable {
   public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined> {
     return this.request<ElementProperties | undefined, ElementPropertiesRequestOptions<IModelRpcProps>>(
       this.rpcClient.getElementProperties.bind(this.rpcClient), options);
+  }
+
+  public async getElementsProperties(options: ElementsPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>> {
+    return this.request<PagedResponse<ElementProperties>, ElementsPropertiesRequestOptions<IModelRpcProps>>(
+      this.rpcClient.getElementsProperties.bind(this.rpcClient), options);
   }
 
   public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON> {

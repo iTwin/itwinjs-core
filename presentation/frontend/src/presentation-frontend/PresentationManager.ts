@@ -12,9 +12,10 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse,
-  PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey,
+  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -415,6 +416,17 @@ export class PresentationManager implements IDisposable {
   public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
     await this.onConnection(requestOptions.imodel);
     return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+  }
+
+  /**
+   * Retrieves property data in a simplified format for a all elements or all elements of
+   * specified classes.
+   * @beta
+   */
+  public async getElementsProperties(requestOptions: ElementsPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>> {
+    await this.onConnection(requestOptions.imodel);
+    const rpcOptions = this.toRpcTokenOptions(requestOptions);
+    return buildPagedResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getElementsProperties({ ...rpcOptions, paging: partialPageOptions }));
   }
 
   /** Retrieves display label definition of specific item. */

@@ -5,18 +5,18 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions,
   ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs,
   DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
   DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ElementPropertiesRpcRequestOptions, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement,
-  Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
-  SelectionScopeRequestOptions, VariableValueTypes,
+  ElementPropertiesRpcRequestOptions, ElementsPropertiesRequestOptions, ElementsPropertiesRpcRequestOptions, FieldDescriptor, FieldDescriptorType,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
+  Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
+  RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { createTestContentDescriptor, createTestSelectClassInfo } from "@itwin/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
@@ -1115,6 +1115,48 @@ describe("PresentationRpcImpl", () => {
           .returns(async () => managerResponse)
           .verifiable();
         const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(expectedRpcResponse);
+      });
+
+    });
+
+    describe("getElementsProperties", () => {
+
+      it("calls manager", async () => {
+        const testElementsProperties: ElementProperties[] = [{
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        }];
+        const managerOptions: ElementsPropertiesRequestOptions<IModelDb> = {
+          imodel: testData.imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+          paging: testData.pageOptions,
+        };
+        const managerResponse = { total: 1, items: testElementsProperties };
+        const rpcOptions: PresentationRpcRequestOptions<ElementsPropertiesRpcRequestOptions> = {
+          ...defaultRpcParams,
+          elementClasses: ["TestSchema:TestClass"],
+          paging: testData.pageOptions,
+        };
+        const expectedRpcResponse = { total: 1, items: testElementsProperties };
+        presentationManagerMock
+          .setup(async (x) => x.getElementsProperties(managerOptions))
+          .returns(async () => managerResponse)
+          .verifiable();
+        const actualResult = await impl.getElementsProperties(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(expectedRpcResponse);
       });

@@ -13,9 +13,10 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
   DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
-  PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
+  ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet,
+  LabelDefinition, Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
@@ -991,6 +992,68 @@ describe("PresentationManager", () => {
       const actualResult = await manager.getElementProperties(options);
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getElementsProperties", () => {
+
+    it("requests elements properties", async () => {
+      const elementClasses = ["TestSchema:TestClass"];
+      const result = {
+        total: 1,
+        items: [{
+          class: "test class",
+          id: "0x1",
+          label: "test label",
+          items: {},
+        }],
+      };
+      const options: ElementsPropertiesRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        elementClasses,
+        paging: { start: 0, size: 0 },
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getElementsProperties(toIModelTokenOptions(options)))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getElementsProperties(options);
+      expect(actualResult).to.deep.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("requests elements properties through multiple requests when getting partial responses", async () => {
+      const elementClasses = ["TestSchema:TestClass"];
+      const element1: ElementProperties = {
+        class: "test class",
+        id: "0x1",
+        label: "test label",
+        items: {},
+      };
+      const element2: ElementProperties = {
+        class: "test class",
+        id: "0x2",
+        label: "test label 2",
+        items: {},
+      };
+      const managerOptions: ElementsPropertiesRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        elementClasses,
+        paging: undefined,
+      };
+      const rpcHandlerOptions = toIModelTokenOptions(managerOptions);
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getElementsProperties({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
+        .returns(async () => ({ total: 2, items: [element1] }))
+        .verifiable();
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getElementsProperties({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
+        .returns(async () => ({ total: 2, items: [element2] }))
+        .verifiable();
+      const actualResult = await manager.getElementsProperties(managerOptions);
+      rpcRequestsHandlerMock.verifyAll();
+      expect(actualResult).to.deep.eq({ total: 2, items: [element1, element2] });
     });
 
   });

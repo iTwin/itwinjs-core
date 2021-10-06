@@ -14,13 +14,13 @@ import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
-  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Key,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
-  SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo,
+  HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Key, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse,
+  PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementProperties } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
@@ -623,7 +623,36 @@ export class PresentationManager {
       rulesetOrId: "ElementProperties",
       keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
     });
-    return buildElementProperties(content);
+    const properties = buildElementsProperties(content);
+    return properties[0];
+  }
+
+  /**
+   * Retrieves property data in a simplified format for all elements or all elements of
+   * specified classes.
+   * @beta
+   */
+  public async getElementsProperties(requestOptions: Prioritized<ElementsPropertiesRequestOptions<IModelDb>>) {
+    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
+
+    const elementProperties: ElementProperties[] = [];
+    for (const entry of elementIds) {
+      const keys = new KeySet(entry[1].map((id) => ({ id, className: entry[0] })));
+      const content = await this.getContent({
+        ...optionsNoElementClasses,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys,
+      });
+      elementProperties.push(...buildElementsProperties(content));
+    }
+
+    return { total: elementsCount, items: elementProperties };
   }
 
   /**

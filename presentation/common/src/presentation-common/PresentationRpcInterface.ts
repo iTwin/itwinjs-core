@@ -22,8 +22,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, Paged, SelectionScopeRequestOptions,
+  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -108,6 +108,12 @@ export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequ
 export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
 
 /**
+ * Data structure for all elements properties RPC request options.
+ * @beta
+ */
+export type ElementsPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementsPropertiesRequestOptions<never>>;
+
+/**
  * Data structure for distinct values' request options.
  * @public
  */
@@ -165,6 +171,8 @@ export class PresentationRpcInterface extends RpcInterface {
 
   /** @beta */
   public async getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties> { return this.forward(arguments); }
+  /** @beta */
+  public async getElementsProperties(_token: IModelRpcProps, _options: ElementsPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>> { return this.forward(arguments); }
 
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 

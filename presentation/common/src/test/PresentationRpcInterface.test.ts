@@ -14,7 +14,7 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
+  ElementsPropertiesRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -175,6 +175,14 @@ describe("PresentationRpcInterface", () => {
         elementId: "0x1",
       };
       await rpcInterface.getElementProperties(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
+    it("forwards getElementsProperties call", async () => {
+      const options: ElementsPropertiesRpcRequestOptions = {
+        elementClasses: ["TestSchema:TestClass"],
+      };
+      await rpcInterface.getElementsProperties(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 

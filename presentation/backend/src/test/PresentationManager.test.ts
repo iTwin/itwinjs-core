@@ -14,11 +14,12 @@ import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  FieldDescriptor, FieldDescriptorType, FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset,
-  SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ElementsPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions,
+  HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON,
+  NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset,
+  RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSelectClassInfo, createTestSimpleContentField,
@@ -663,6 +664,7 @@ describe("PresentationManager", () => {
           level: faker.random.number(),
         } as SelectionInfo,
       };
+      imodelMock.reset();
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       manager = new PresentationManager({ addon: nativePlatformMock.object });
@@ -1746,6 +1748,117 @@ describe("PresentationManager", () => {
           },
         };
         const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+    });
+
+    describe("getElementsProperties", () => {
+      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsByClass);
+      }
+
+      it("returns elements properties", async () => {
+        // what the addon receives
+        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
+        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
+        elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet(elementKeys)),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label 1",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value 1",
+              },
+              displayValues: {
+                test: "test display value 1",
+              },
+            }),
+            createTestContentItem({
+              label: "test label 2",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+              values: {
+                test: "test value 2",
+              },
+              displayValues: {
+                test: "test display value 2",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: ElementsPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+        };
+        const expectedResponse = {
+          total: 2,
+          items: [
+            {
+              class: "Test Class",
+              id: "0x123",
+              label: "test label 1",
+              items: {
+                ["Test Category"]: {
+                  type: "category",
+                  items: {
+                    ["Test Field"]: {
+                      type: "primitive",
+                      value: "test display value 1",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              class: "Test Class",
+              id: "0x124",
+              label: "test label 2",
+              items: {
+                ["Test Category"]: {
+                  type: "category",
+                  items: {
+                    ["Test Field"]: {
+                      type: "primitive",
+                      value: "test display value 2",
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        };
+        const result = await manager.getElementsProperties(options);
         verifyMockRequest(expectedContentParams);
         expect(result).to.deep.eq(expectedResponse);
       });

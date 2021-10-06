@@ -142,6 +142,15 @@ export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions
 }
 
 /**
+ * Request type for all elements properties requests.
+ * @beta
+ */
+export interface ElementsPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+  /** Classes of the elements to get properties for. */
+  elementClasses?: string[];
+}
+
+/**
  * Request type for label requests
  * @public
  */
