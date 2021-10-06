@@ -28,7 +28,7 @@
     },
     {
       "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
@@ -73,10 +73,6 @@
     {
       "name": "@itwin/appui-react",
       "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
-      "name": "@itwin/backend-itwin-client",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@itwin/backend-webpack-tools",
@@ -292,15 +288,11 @@
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "almost-equal",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "applicationinsights",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "autoprefixer",
@@ -528,7 +520,7 @@
     },
     {
       "name": "fs-write-stream-atomic",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "fuse.js",
@@ -540,7 +532,7 @@
     },
     {
       "name": "got",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "highlight.js",
@@ -613,10 +605,6 @@
     {
       "name": "jsonpath",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "jsonwebtoken",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "linkify-it",
@@ -708,7 +696,7 @@
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "puppeteer",
@@ -881,10 +869,6 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "stream-buffers",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "superagent",
