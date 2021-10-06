@@ -11,7 +11,7 @@ import { I18N } from "@itwin/core-i18n";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
 

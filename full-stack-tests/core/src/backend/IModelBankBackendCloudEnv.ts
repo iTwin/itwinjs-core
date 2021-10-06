@@ -11,8 +11,8 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { IModelBankClient, IModelBankFileSystemITwinClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
 import { UrlFileHandler } from "@bentley/imodelhub-client/lib/itwin-client/file-handlers";
 import { Logger } from "@itwin/core-bentley";
 

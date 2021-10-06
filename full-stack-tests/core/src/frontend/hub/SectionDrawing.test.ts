@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
@@ -50,7 +50,7 @@ describe("Section Drawings (#integration)", () => {
 
   it("loads section drawing info for view", async () => {
     for (const spec of specs) {
-      const first = await imodel.views.load(spec.views[0]) as DrawingViewState;
+      const first = await imodel.views.load(spec.views[0]) ;
       expect(first).instanceof(DrawingViewState);
       expect(first.baseModelId).to.equal(spec.model);
 
@@ -60,7 +60,7 @@ describe("Section Drawings (#integration)", () => {
       expect(info.drawingToSpatialTransform.isIdentity).to.be.false;
 
       if (spec.views.length > 1) {
-        const second = await imodel.views.load(spec.views[1]) as DrawingViewState;
+        const second = await imodel.views.load(spec.views[1]) ;
         expect(second).instanceof(DrawingViewState);
         expect(second.baseModelId).to.equal(first.baseModelId);
 
@@ -73,7 +73,7 @@ describe("Section Drawings (#integration)", () => {
   });
 
   it("updates section drawing info when viewed model changes", async () => {
-    let view = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    let view = await imodel.views.load(specs[0].views[0]) ;
     for (let i = 1; i < specs.length; i++) {
       const oldInfo = view.sectionDrawingInfo;
 
@@ -88,7 +88,7 @@ describe("Section Drawings (#integration)", () => {
   });
 
   it("clones section drawing info", async () => {
-    const first = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    const first = await imodel.views.load(specs[0].views[0]) ;
     const info = first.sectionDrawingInfo;
 
     const second = first.clone();
@@ -98,7 +98,7 @@ describe("Section Drawings (#integration)", () => {
   });
 
   it("preserves section drawing info when round-tripped through JSON", async () => {
-    const view = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    const view = await imodel.views.load(specs[0].views[0]) ;
     const info = view.sectionDrawingInfo;
 
     const props = view.toProps();
@@ -114,7 +114,7 @@ describe("Section Drawings (#integration)", () => {
   });
 
   it("clones attachment info when view is cloned", async () => {
-    const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    const v1 = await imodel.views.load(specs[0].views[0]) ;
     const v2 = v1.clone();
     expect(v2.attachmentInfo).not.to.equal(v1.attachmentInfo);
     expect(v2.attachmentInfo).to.deep.equal(v1.attachmentInfo);
@@ -123,23 +123,23 @@ describe("Section Drawings (#integration)", () => {
   it("only allocates attachment if attachment is to be displayed", async () => {
     expect(DrawingViewState.alwaysDisplaySpatialView).to.be.false;
     await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
-      expect((vp.view as DrawingViewState).attachment).to.be.undefined;
+      expect((vp.view ).attachment).to.be.undefined;
     });
 
     DrawingViewState.alwaysDisplaySpatialView = true;
     await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
-      expect((vp.view as DrawingViewState).attachment).not.to.be.undefined;
+      expect((vp.view ).attachment).not.to.be.undefined;
     });
   });
 
   it("allocates attachment when attached to viewport and disposes of it when detached from viewport", async () => {
     DrawingViewState.alwaysDisplaySpatialView = true;
-    const v1 = await imodel.views.load(specs[0].views[0]) as DrawingViewState;
+    const v1 = await imodel.views.load(specs[0].views[0]) ;
     expect(v1.attachment).to.be.undefined;
     let v2: DrawingViewState;
     let v3: DrawingViewState;
     await testOnScreenViewport(specs[0].views[0], imodel, 40, 30, async (vp) => {
-      v2 = vp.view as DrawingViewState;
+      v2 = vp.view ;
       expect(v2.attachment).not.to.be.undefined;
 
       v3 = v2.clone();

@@ -2,22 +2,23 @@
   "name": "@bentley/backend-itwin-client",
   "version": "3.0.0-dev.78",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "lib/backend-itwin-client.js",
+  "main": "lib/cjs/backend-itwin-client.js",
+  "typings": "lib/cjs/backend-itwin-client",
   "browser": {
-    "./lib/backend-itwin-client.js": "./lib/backend-itwin-client-mobile.js"
+    "./lib/cjs/backend-itwin-client.js": "./lib/cjs/backend-itwin-client-mobile.js"
   },
-  "typings": "lib/backend-itwin-client",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
-    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run -s test:integration",
+    "cover:integration": "nyc --report-dir ./lib/cjs/test/coverage/integration npm run -s test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

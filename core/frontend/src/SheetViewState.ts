@@ -178,7 +178,7 @@ class ViewAttachmentsInfo {
         try {
           const view = await iModel.views.load(attachment.view.id);
           return view;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       };

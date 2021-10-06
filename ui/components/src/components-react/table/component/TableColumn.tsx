@@ -6,10 +6,7 @@
  * @module Table
  */
 
-// Matches how react-data-grid is exported
-// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
-
+import ReactDataGrid from "react-data-grid";
 import { DistinctValueCollection, FilterableColumn, FilterableTable } from "../columnfiltering/ColumnFiltering";
 import { FilterableColumnBase } from "../columnfiltering/FilterableColumnBase";
 import { ColumnDescription, TableDataProvider } from "../TableDataProvider";

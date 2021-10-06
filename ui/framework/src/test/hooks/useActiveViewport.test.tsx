@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../appui-react";
 import { mount } from "../TestUtils";
 

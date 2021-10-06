@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
-import * as nock from "nock";
+import nock from "nock";
 import * as path from "path";
 import { AsyncMutex, BeEvent } from "@itwin/core-bentley";
 import { CancelRequest, ProgressInfo } from "@bentley/itwin-client";

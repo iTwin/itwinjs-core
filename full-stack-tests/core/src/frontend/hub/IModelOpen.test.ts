@@ -8,7 +8,7 @@ import { ProgressInfo } from "@bentley/itwin-client";
 import { BeDuration, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { IModelVersion, SyncMode } from "@itwin/core-common";
 import { BriefcaseConnection, CheckpointConnection, IModelApp, IModelConnection, MockRender, NativeApp } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { TestUtility } from "../TestUtility";

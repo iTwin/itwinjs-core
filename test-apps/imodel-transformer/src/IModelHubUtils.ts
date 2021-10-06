@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/ElectronBackend";
-import {IModelHubBackend } from "@bentley/imodelhub-client/lib/imodelhub-node";
 import { Version } from "@bentley/imodelhub-client";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { BriefcaseDb, BriefcaseManager, IModelHost, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
+import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 
 export namespace IModelHubUtils {
 

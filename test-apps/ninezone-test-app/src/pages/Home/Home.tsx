@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./Home.scss";
-import "@itwin/core-react/lib/core-react/colorthemes.scss";
 import * as React from "react";
 import Navigation from "./Navigation";
 import Readme from "./Readme";

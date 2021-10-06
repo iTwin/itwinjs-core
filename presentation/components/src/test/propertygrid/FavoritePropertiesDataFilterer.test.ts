@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
-import { createTestSimpleContentField } from "@itwin/presentation-common/lib/test/_helpers/Content";
+import { createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";

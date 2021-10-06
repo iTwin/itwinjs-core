@@ -3,20 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { Code, ElementProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { waitForAllAsyncs } from "@itwin/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAllAsyncs } from "@itwin/presentation-common/lib/cjs/test";
 import {
   HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@itwin/presentation-frontend";
@@ -96,7 +94,7 @@ describe("Viewport withUnifiedSelection", () => {
       />).instance() as any as IUnifiedSelectionComponent;
 
       expect(viewport.selectionHandler).to.not.be.undefined;
-      expect(viewport.selectionHandler!.imodel).to.eq(imodelMock.object);
+      expect(viewport.selectionHandler?.imodel).to.eq(imodelMock.object);
     });
 
     it("applies current selection after mounting", () => {

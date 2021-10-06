@@ -5,11 +5,11 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent, Id64String, using } from "@itwin/core-bentley";
 import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
-import { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components/lib/presentation-components/tree/FilteredDataProvider";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { isPromiseLike } from "@itwin/core-react";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";

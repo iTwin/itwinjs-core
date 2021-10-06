@@ -8,7 +8,7 @@ import { ITwin } from "@bentley/itwin-registry-client";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
@@ -101,7 +101,7 @@ export class TestUtility {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
-    return iModelId!;
+    return iModelId;
   }
 
   /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */

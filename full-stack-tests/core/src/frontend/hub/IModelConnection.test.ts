@@ -10,7 +10,7 @@ import {
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
 
@@ -96,7 +96,7 @@ describe("IModelConnection (#integration)", () => {
     assert.instanceOf(viewState, OrthographicViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
-    assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
+    assert.instanceOf((viewState ).modelSelector, ModelSelectorState);
 
     viewDefinitions = await iModel.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
     assert.isAtLeast(viewDefinitions.length, 1);

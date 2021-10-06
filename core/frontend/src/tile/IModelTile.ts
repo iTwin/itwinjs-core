@@ -118,7 +118,7 @@ export class IModelTile extends Tile {
     if (undefined !== reader) {
       try {
         content = await reader.read();
-      } catch (_) {
+      } catch {
         //
       }
     }

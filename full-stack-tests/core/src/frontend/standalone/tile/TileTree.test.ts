@@ -198,7 +198,7 @@ describe("requestTileTreeProps", () => {
       try {
         await IModelApp.tileAdmin.requestTileTreeProps(imodel, id);
         fulfilled.push(id);
-      } catch (_) {
+      } catch {
         //
       }
     };

@@ -25,7 +25,7 @@ describe("Unit Conversion tests", () => {
   );
 
   before(() => {
-    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
   });

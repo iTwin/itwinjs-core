@@ -898,7 +898,7 @@ export abstract class GltfReader {
           try {
             const imageBitmap = await GltfReader.webWorkerManager.queueOperation(workerOp)
             return this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
-          } catch (_) {
+          } catch {
             return undefined;
           }
         ------------------------------------- */
@@ -917,7 +917,7 @@ export abstract class GltfReader {
             transparency: isTransparent && ImageSourceFormat.Png === format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
           },
         });
-      } catch (_) {
+      } catch {
         return undefined;
       }
     } catch (e) {

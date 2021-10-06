@@ -10,8 +10,8 @@ import {
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
-import { MeshArgs } from "@itwin/core-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/webgl";
+import { MeshArgs } from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";
