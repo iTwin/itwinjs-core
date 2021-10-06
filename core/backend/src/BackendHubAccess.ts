@@ -18,7 +18,7 @@ import { TokenArg } from "./IModelDb";
  * @public
  */
 export enum LockState {
-  /** The entity is not locked */
+  /** The element is not locked */
   None = 0,
   /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
   Shared = 1,
