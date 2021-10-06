@@ -16,6 +16,8 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/co
  */
 export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
+    if (undefined === IModelApp.authorizationClient)
+      return { status: UiSettingsStatus.AuthorizationError };
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
