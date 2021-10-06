@@ -669,8 +669,6 @@ export class TestRunner {
 
     await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
     await this.logToConsole("Tests complete. Press Ctrl-C to exit.");
-
-    return DisplayPerfRpcInterface.getClient().finishTest();
   }
 
   private async saveCsv(row: Map<string, number | string>): Promise<void> {

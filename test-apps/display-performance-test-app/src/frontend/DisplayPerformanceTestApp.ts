@@ -117,6 +117,8 @@ async function main() {
     await runner.run();
   } catch (err: any) {
     await DisplayPerfTestApp.logException(err);
+  } finally {
+    await DisplayPerfRpcInterface.getClient().terminate();
   }
 
   return IModelApp.shutdown();
