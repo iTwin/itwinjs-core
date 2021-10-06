@@ -53,29 +53,32 @@ export class RealityDataSource {
     }
     // detect if it is a RDS url
     const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
-    const urlParts1 = formattedUrl1.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
-    let partOffset1: number = 0;
-    urlParts1.find((value, index) => {
-      if (value === "Repositories") {
-        partOffset1 = index;
-        return true;
-      }
-      return false;
-    });
-    const isOPC = attUrl.pathname.match(".opc*") !== null;
-    const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
-    const projectId = urlParts1.find((val: string) => val.includes("--"))!.split("--")[1];
-    // Make sure the url to compare are REALITYMESH3DTILES url, otherwise, compare the url directly
-    if (isRDSUrl || isOPC) {
-      // Make sure the reality data id are the same
-      const guid1 = urlParts1.find(Guid.isGuid);
-      if (guid1 !== undefined) {
-        const provider = inputProvider ? inputProvider : RealityDataProvider.ContextShare;
-        format = inputFormat ? inputFormat : isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
-        const contextShareKey: RealityDataSourceKey = { provider, format, id: guid1, iTwinId: projectId };
-        return contextShareKey;
+    if (formattedUrl1) {
+      const urlParts1 = formattedUrl1.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
+      let partOffset1: number = 0;
+      urlParts1.find((value, index) => {
+        if (value === "Repositories") {
+          partOffset1 = index;
+          return true;
+        }
+        return false;
+      });
+      const isOPC = attUrl.pathname.match(".opc*") !== null;
+      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
+      const projectId = urlParts1.find((val: string) => val.includes("--"))!.split("--")[1];
+      // Make sure the url to compare are REALITYMESH3DTILES url, otherwise, compare the url directly
+      if (isRDSUrl || isOPC) {
+        // Make sure the reality data id are the same
+        const guid1 = urlParts1.find(Guid.isGuid);
+        if (guid1 !== undefined) {
+          const provider = inputProvider ? inputProvider : RealityDataProvider.ContextShare;
+          format = inputFormat ? inputFormat : isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
+          const contextShareKey: RealityDataSourceKey = { provider, format, id: guid1, iTwinId: projectId };
+          return contextShareKey;
+        }
       }
     }
+
     // default to tileSetUrl
     const provider2 = inputProvider ? inputProvider : RealityDataProvider.TilesetUrl;
     const urlKey: RealityDataSourceKey = { provider: provider2, format, id: tilesetUrl };
@@ -90,8 +93,12 @@ export class RealityDataSource {
       return { provider: RealityDataProvider.TilesetUrl, format, id: blobUrl };
 
     // const accountName   = url.hostname.split(".")[0];
-    const pathSplit     = url.pathname.split("/");
-    const containerName = pathSplit[1];
+    let containerName= "";
+    if (url.pathname) {
+      const pathSplit = url.pathname.split("/");
+      containerName = pathSplit[1];
+    }
+
     // const blobFileName  = `/${pathSplit[2]}`;
     // const sasToken      = url.search.substr(1);
     const isOPC = url.pathname.match(".opc*") !== null;
