@@ -38,14 +38,12 @@ describe("IModelHost", () => {
     expect(Schemas.getRegisteredSchema("Functional")).to.exist;
   });
 
-  it.only("should raise onAfterStartup events", async () => {
+  it("should raise onAfterStartup events", async () => {
     await IModelTestUtils.shutdownBackend();
 
     const eventHandler = sinon.spy();
     IModelHost.onAfterStartup.addOnce(eventHandler);
-    const promise = IModelHost.startup();
-    expect(eventHandler.called).to.be.false;
-    await promise;
+    await IModelHost.startup();
     expect(eventHandler.calledOnce).to.be.true;
   });
 

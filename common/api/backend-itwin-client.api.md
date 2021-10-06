@@ -6,20 +6,14 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
 import { ClientTelemetryEvent } from '@bentley/telemetry-client';
-import { FileHandler } from '@bentley/itwin-client';
-import * as https from 'https';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IntrospectionResponse as IntrospectionResponse_2 } from 'openid-client';
 import { Issuer } from 'openid-client';
-import { ProgressCallback } from '@bentley/itwin-client';
 import { RpcActivity } from '@itwin/core-common';
 import { TelemetryClient } from '@bentley/telemetry-client';
 import { TelemetryEvent } from '@bentley/telemetry-client';
-import { Transform } from 'stream';
-import { TransformCallback } from 'stream';
 
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
@@ -32,22 +26,6 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
 
 // @beta
 export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
-
-// @internal
-export class AzureFileHandler implements FileHandler {
-    constructor(useDownloadBuffer?: boolean, threshold?: number, config?: ConfigData);
-    // (undocumented)
-    agent?: https.Agent;
-    basename(filePath: string): string;
-    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
-    exists(filePath: string): boolean;
-    getFileSize(filePath: string): number;
-    isDirectory(filePath: string): boolean;
-    static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
-    join(...paths: string[]): string;
-    unlink(filePath: string): void;
-    uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
-    }
 
 // @beta
 export abstract class BackendAuthorizationClient extends ImsAuthorizationClient {
@@ -70,7 +48,6 @@ export interface BackendAuthorizationClientConfiguration {
 // @public
 export enum BackendITwinClientLoggerCategory {
     Authorization = "backend-itwin-client.Authorization",
-    FileHandlers = "backend-itwin-client.FileHandlers",
     Introspection = "backend-itwin-client.Introspection",
     Telemetry = "backend-itwin-client.Telemetry"
 }
@@ -108,23 +85,6 @@ export class BackendTelemetryEvent extends ClientTelemetryEvent {
     };
 }
 
-// @internal
-export class BlobDownloader {
-    // (undocumented)
-    static downloadFile(downloadUrl: string, downloadFile: string, config?: ConfigData, onProgress?: (data: ProgressData) => void, cancelRequest?: CancelRequest): Promise<void>;
-    // (undocumented)
-    static formatBytes(bytes: number): string;
-    // (undocumented)
-    static formatRate(bytePerSec: number): string;
-    }
-
-// @internal
-export class BufferedStream extends Transform {
-    constructor(bufferSize: number);
-    _flush(callback: TransformCallback): void;
-    _transform(chunk: any, encoding: string, callback: TransformCallback): void;
-}
-
 // @alpha
 export class ClientAuthDetail {
     constructor(response: IntrospectionResponse);
@@ -142,24 +102,6 @@ export class ClientAuthIntrospectionManager {
     getClientAuthDetails(requestContext: RpcActivity): Promise<ClientAuthDetail>;
     // (undocumented)
     readonly introspectionClient: IntrospectionClient;
-}
-
-// @internal
-export interface ConfigData {
-    // (undocumented)
-    blockSize?: number;
-    // (undocumented)
-    checkMD5AfterDownload?: boolean;
-    // (undocumented)
-    downloadRateWindowSize?: number;
-    // (undocumented)
-    enableResumableDownload?: boolean;
-    // (undocumented)
-    ignoreResumeData?: boolean;
-    // (undocumented)
-    progressReportAfter?: number;
-    // (undocumented)
-    simultaneousDownloads?: number;
 }
 
 // @beta
@@ -257,20 +199,6 @@ export abstract class IntrospectionResponseCache {
     protected abstract storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
 }
 
-// @internal
-export class LocalhostHandler implements FileHandler {
-    // (undocumented)
-    agent?: https.Agent;
-    basename(filePath: string): string;
-    downloadFile(_accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
-    exists(filePath: string): boolean;
-    getFileSize(filePath: string): number;
-    isDirectory(filePath: string): boolean;
-    join(...paths: string[]): string;
-    unlink(filePath: string): void;
-    uploadFile(_accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
-}
-
 // @alpha (undocumented)
 export class MemoryIntrospectionResponseCache extends IntrospectionResponseCache {
     // (undocumented)
@@ -279,50 +207,6 @@ export class MemoryIntrospectionResponseCache extends IntrospectionResponseCache
     protected getResponse(key: string): Promise<IntrospectionResponse | undefined>;
     // (undocumented)
     protected storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
-}
-
-// @internal
-export interface ProgressData {
-    // (undocumented)
-    blocksDownloaded: number;
-    // (undocumented)
-    blocksDownloading: number;
-    // (undocumented)
-    blocksPending: number;
-    // (undocumented)
-    bytesDone: number;
-    // (undocumented)
-    bytesTotal: number;
-    // (undocumented)
-    downloadRateBytesPerSec: number;
-    // (undocumented)
-    percentage: number;
-    // (undocumented)
-    windowRateBytesPerSec: number;
-}
-
-// @internal
-export class StorageServiceFileHandler extends UrlFileHandler {
-    constructor();
-}
-
-// @internal
-export class UrlFileHandler implements FileHandler {
-    constructor();
-    // (undocumented)
-    agent?: https.Agent;
-    basename(filePath: string): string;
-    // (undocumented)
-    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
-    exists(filePath: string): boolean;
-    getFileSize(filePath: string): number;
-    isDirectory(filePath: string): boolean;
-    join(...paths: string[]): string;
-    unlink(filePath: string): void;
-    // (undocumented)
-    uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
-    // (undocumented)
-    protected _uploadMethod: string;
 }
 
 

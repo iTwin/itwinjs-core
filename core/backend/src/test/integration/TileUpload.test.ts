@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
+  RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { assert } from "chai";
-import * as zlib from "zlib";
-import { IModelDb } from "../../IModelDb";
 import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubUtility } from "./HubUtility";
+import { IModelDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
 import { HubMock } from "../HubMock";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -106,6 +105,7 @@ describe("TileUpload", () => {
   });
 
   after(async () => {
+    HubMock.shutdown();
     // Re-start backend with default config
     await IModelTestUtils.shutdownBackend();
     await IModelTestUtils.startBackend();

@@ -6554,19 +6554,10 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
-<<<<<<< HEAD
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
-    static get initialized(): boolean;
-    // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
-=======
     static initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
->>>>>>> master
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)

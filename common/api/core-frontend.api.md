@@ -4283,10 +4283,6 @@ export class IModelApp {
     static get hasRenderSystem(): boolean;
     // @internal
     static get hubAccess(): FrontendHubAccess | undefined;
-<<<<<<< HEAD
-    static get i18n(): I18N;
-=======
->>>>>>> master
     // @internal (undocumented)
     static get initialized(): boolean;
     static get localization(): Localization;
@@ -4359,11 +4355,7 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
     hubAccess?: FrontendHubAccess;
-<<<<<<< HEAD
-    i18n?: I18N | I18NOptions;
-=======
     localization?: Localization;
->>>>>>> master
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     // @beta
