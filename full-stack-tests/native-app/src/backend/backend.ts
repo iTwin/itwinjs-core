@@ -61,7 +61,7 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
     const iTwinName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
+      const region = "0";
       return { iTwinName, iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl();

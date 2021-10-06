@@ -24,15 +24,6 @@
       ]
     },
     {
-      "name": "@bentley/context-registry-client",
-      "allowedCategories": [
-        "backend",
-        "common",
-        "integration-testing",
-        "internal"
-      ]
-    },
-    {
       "name": "@bentley/frontend-authorization-client",
       "allowedCategories": [
         "backend",
@@ -88,7 +79,6 @@
       "allowedCategories": [
         "backend",
         "common",
-        "frontend",
         "integration-testing",
         "internal"
       ]
@@ -272,7 +262,6 @@
       "name": "@itwin/core-i18n",
       "allowedCategories": [
         "backend",
-        "common",
         "edit",
         "extensions",
         "frontend",
@@ -1076,8 +1065,7 @@
     {
       "name": "i18next-node-fs-backend",
       "allowedCategories": [
-        "backend",
-        "common"
+        "backend"
       ]
     },
     {

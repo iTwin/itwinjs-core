@@ -307,7 +307,6 @@ export class SyncUiEventDispatcher {
   public static clearConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     SyncUiEventDispatcher._unregisterListenerFunc && SyncUiEventDispatcher._unregisterListenerFunc();
-    UiFramework.setActiveIModelId("");
   }
 
   /** This should be called by IModelApp when the active IModelConnection is established. */
@@ -316,8 +315,6 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher._unregisterListenerFunc();
 
     if (iModelConnection.isBlankConnection()) {
-      iModelConnection && UiFramework.setActiveIModelId(iModelConnection.iModelId ?? "");
-      UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, []);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 0);
       return;
     }

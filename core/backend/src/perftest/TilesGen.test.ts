@@ -205,7 +205,6 @@ describe("TilesGenerationPerformance", () => {
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
-    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = config.regionId;
     if (IModelJsFs.existsSync(config.iModelLocation)) {
       imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));
       // delete the .tile file
@@ -213,7 +212,7 @@ describe("TilesGenerationPerformance", () => {
       for (const tileFile of tileFiles)
         IModelJsFs.removeSync(path.join(config.iModelLocation, tileFile));
     } else {
-      requestContext = await TestUtility.getAccessToken(TestUsers.super);
+      requestContext = await TestUtility.getAccessToken(TestUsers.regular);
     }
   });
 

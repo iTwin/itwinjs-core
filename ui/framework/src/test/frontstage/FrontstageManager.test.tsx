@@ -11,8 +11,12 @@ import { render } from "@testing-library/react";
 import { Logger } from "@itwin/core-bentley";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Size } from "@itwin/core-react";
-import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
-import { ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager, ModalFrontstageRequestedCloseEventArgs, RestoreFrontstageLayoutTool, SettingsModalFrontstage, ToolSettingsManager, ToolUiProvider } from "../../appui-react";
+import { IModelApp, IModelConnection, MockRender, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
+import {
+  ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager,
+  ModalFrontstageRequestedCloseEventArgs, RestoreFrontstageLayoutTool, SettingsModalFrontstage,
+  ToolSettingsManager, ToolUiProvider, UiFramework,
+} from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
 
@@ -213,6 +217,11 @@ describe("FrontstageManager", () => {
   });
 
   describe("ConfigurableUiContent", () => {
+    before(() => {
+      const imodelConnectionMock = moq.Mock.ofType<IModelConnection>();
+      imodelConnectionMock.setup((x) => x.iModelId).returns(() => "dummyImodelId");
+      sinon.stub(UiFramework, "getIModelConnection").get(() => imodelConnectionMock.object);
+    });
 
     it("mouse moves should be handled for frontstage tracking", async () => {
       const fakeTimers = sinon.useFakeTimers();

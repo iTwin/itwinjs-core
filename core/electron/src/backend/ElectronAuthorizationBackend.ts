@@ -228,8 +228,9 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     this._expiresAt = new Date(expiresAtMilliseconds);
 
     await this.tokenStore.save(this._tokenResponse);
-    this.setAccessToken(accessToken);
-    return accessToken;
+    const bearerToken = `${tokenResponse.tokenType} ${accessToken}`;
+    this.setAccessToken(bearerToken);
+    return bearerToken;
   }
 
   private get _hasExpired(): boolean {

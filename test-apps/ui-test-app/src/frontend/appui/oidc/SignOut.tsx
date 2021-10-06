@@ -17,13 +17,11 @@ import { FrontstageManager, ModalFrontstageInfo, UiFramework, UserInfo } from "@
 
 // cSpell:Ignore userprofile signoutprompt
 
-/** Modal frontstage displaying sign out form.
- * @public
- */
+/** Modal frontstage displaying sign out form. */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.translate("userProfile.userprofile");
-  private _signOut = UiFramework.translate("userProfile.signout");
-  private _signOutPrompt = UiFramework.translate("userProfile.signoutprompt");
+  public title: string = IModelApp.localization.getLocalizedString("SampleApp:userProfile.userprofile");
+  private _signOut = IModelApp.localization.getLocalizedString("SampleApp:userProfile.signout");
+  private _signOutPrompt = IModelApp.localization.getLocalizedString("SampleApp:userProfile.signoutprompt");
   private _userInfo: UserInfo | undefined = undefined;
 
   constructor(userInfo?: UserInfo) {
