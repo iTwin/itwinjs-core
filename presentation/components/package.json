@@ -26,11 +26,12 @@
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "npm run -s pseudolocalize && npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s copy:locale && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "npm run -s copy:cjs && tsc -p tsconfig.cjs.json",
     "build:esm": "npm run -s copy:esm && tsc -p tsconfig.esm.json",
-    "copy:cjs": "cpx \"./public/**/*\" ./lib/cjs/public && cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
-    "copy:esm": "cpx \"./public/**/*\" ./lib/esm/public && cpx \"./src/**/*.{scss,json}\" ./lib/esm",
+    "copy:locale": "cpx \"./public/**/*\" ./lib/public",
+    "copy:cjs": "cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
+    "copy:esm": "cpx \"./src/**/*.{scss,json}\" ./lib/esm",
     "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
@@ -40,7 +41,6 @@
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },

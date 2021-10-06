@@ -23,8 +23,8 @@
   "scripts": {
     "compile": "npm run -s build",
     "build": "npm run -s build:cjs",
-    "build:cjs": "npm run -s copy:cjs && tsc 1>&2",
-    "copy:cjs": "cpx \"./assets/**/*\" ./lib/cjs/assets",
+    "build:cjs": "npm run -s copy:assets && tsc 1>&2",
+    "copy:assets": "cpx \"./assets/**/*\" ./lib/assets",
     "build:watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",

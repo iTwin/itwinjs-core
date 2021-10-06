@@ -18,6 +18,6 @@
     "node_modules/@itwin/build-tools/mocha-reporter"
   ],
   "reporterOptions": [
-    "mochaFile=lib/cjs/test/junit_results.xml"
+    "mochaFile=lib/test/junit_results.xml"
   ]
 }

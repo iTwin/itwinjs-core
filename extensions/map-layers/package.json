@@ -8,12 +8,13 @@
   "license": "MIT",
   "scripts": {
     "compile": "npm run -s build",
-    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:locale",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run -s copy:esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:cjs": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/cjs\" && cpx \"./src/public/locales/**/*\" ./lib/cjs/public/",
-    "copy:esm": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/esm\" && cpx \"./src/public/locales/**/*\" ./lib/esm/public/",
+    "copy:locale": "cpx \"./src/public/locales/**/*\" ./lib/public",
+    "copy:cjs": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/cjs\"",
+    "copy:esm": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/esm\"",
     "cover": "nyc npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
@@ -140,7 +141,7 @@
       "node_modules/@itwin/build-tools/mocha-reporter"
     ],
     "reporterOptions": [
-      "mochaFile=lib/cjs/test/junit_results.xml"
+      "mochaFile=lib/test/junit_results.xml"
     ]
   }
 }

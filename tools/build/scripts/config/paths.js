@@ -20,7 +20,7 @@ module.exports = {
   appPublic: resolveApp('public'),
   appDocs: resolveApp('lib/cjs/docs'),
   appJsonDocs: resolveApp('lib/cjs/docs/json/file.json'),
-  appJUnitTestResults: resolveApp('lib/cjs/test/junit_results.xml'),
+  appJUnitTestResults: resolveApp('lib/test/junit_results.xml'),
   libExtract: resolveApp('lib/cjs/extract'),
   appLocalesEnglish: resolveApp('public/locales/en'),
   appLocalesPseudolocalize: resolveApp('public/locales/en-pseudo'),

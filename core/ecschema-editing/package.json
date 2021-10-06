@@ -21,7 +21,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs",
-    "createLocalization": "node ./scripts/createLocalization.js"
+    "createLocalization": "node ./scripts/createLocalization.js && cpx \"./public/locales/**/*\" ./lib/public"
   },
   "keywords": [
     "Bentley",
