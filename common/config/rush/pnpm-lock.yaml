@@ -637,7 +637,6 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       eslint: ^7.11.0
-      i18next-node-fs-backend: ^2.1.3
       mocha: ^8.3.2
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -667,7 +666,6 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
       eslint: 7.32.0
-      i18next-node-fs-backend: 2.1.3
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -1116,13 +1114,13 @@ importers:
       eslint: ^7.11.0
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
-      i18next-xhr-backend: ^2.0.1
+      i18next-http-backend: ^1.3.1
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
-      i18next-xhr-backend: 2.0.1
+      i18next-http-backend: 1.3.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -1712,7 +1710,6 @@ importers:
       fuse.js: ^3.3.0
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
-      i18next-xhr-backend: ^2.0.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
       save: ^2.3.3
@@ -1736,7 +1733,6 @@ importers:
       fuse.js: 3.6.1
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
-      i18next-xhr-backend: 2.0.1
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
@@ -1792,7 +1788,6 @@ importers:
       fuse.js: ^3.3.0
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
-      i18next-xhr-backend: ^2.0.1
       js-base64: ^3.6.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
@@ -1817,7 +1812,6 @@ importers:
       fuse.js: 3.6.1
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
-      i18next-xhr-backend: 2.0.1
       js-base64: 3.7.1
       save: 2.4.0
       webpack: 4.42.0
@@ -11523,6 +11517,12 @@ packages:
     dependencies:
       cross-spawn: 6.0.5
 
+  /cross-fetch/3.1.4:
+    resolution: {integrity: sha512-1eAtFWdIubi6T4XPy6ei9iUFoKpUkIF971QLN8lIvvvwueI65+Nw5haMNKUwfJxabqlIIDODJKGrQ66gxC0PbQ==}
+    dependencies:
+      node-fetch: 2.6.1
+    dev: false
+
   /cross-spawn/6.0.5:
     resolution: {integrity: sha512-eTVLrBSt7fjbDygz805pMnstIs2VTBNkRm0qxZd+M7A5XDdxVRWO5MxGBXZhjY4cqLYLdtrGqRf8mBPmzwSpWQ==}
     engines: {node: '>=4.8'}
@@ -14458,17 +14458,10 @@ packages:
     resolution: {integrity: sha512-wPbtH18FdOuB245I8Bhma5/XSDdN/HpYlX+wga1eMy+slhaFQSnrWX6fp+aYSL2eEuj0RlfHeEVz6Fo/lxAj6A==}
     dev: false
 
-  /i18next-node-fs-backend/2.1.3:
-    resolution: {integrity: sha512-CreMFiVl3ChlMc5ys/e0QfuLFOZyFcL40Jj6jaKD6DxZ/GCUMxPI9BpU43QMWUgC7r+PClpxg2cGXAl0CjG04g==}
-    deprecated: replaced by i18next-fs-backend
+  /i18next-http-backend/1.3.1:
+    resolution: {integrity: sha512-o79n4GBBRpl20hByC+ne/S1UaSZ4iGAn59Hu2TEZGjN0WLB72L7WrM39Cshziyrssp6MQfdI8wjToU2Q6kpSvA==}
     dependencies:
-      js-yaml: 3.13.1
-      json5: 2.0.0
-    dev: true
-
-  /i18next-xhr-backend/2.0.1:
-    resolution: {integrity: sha512-CP0XPjJsTE4hY1rM1KXFYo63Ib61EBLEcTvMDyJwr0vs9p/UTuA3ENCmzSs9+ghZgWSjdOigc0oUERHaxctbsQ==}
-    deprecated: replaced by i18next-http-backend
+      cross-fetch: 3.1.4
     dev: false
 
   /i18next/10.6.0:
@@ -15970,14 +15963,6 @@ packages:
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  /js-yaml/3.13.1:
-    resolution: {integrity: sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==}
-    hasBin: true
-    dependencies:
-      argparse: 1.0.10
-      esprima: 4.0.1
-    dev: true
-
   /js-yaml/3.14.1:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
     hasBin: true
@@ -16181,14 +16166,6 @@ packages:
     hasBin: true
     dependencies:
       minimist: 1.2.5
-
-  /json5/2.0.0:
-    resolution: {integrity: sha512-0EdQvHuLm7yJ7lyG5dp7Q3X2ku++BG5ZHaJ5FTnaXpKqDrw4pMxel5Bt3oAYMthnrthFBdnZ1FcsXTPyrQlV0w==}
-    engines: {node: '>=6'}
-    hasBin: true
-    dependencies:
-      minimist: 1.2.5
-    dev: true
 
   /json5/2.2.0:
     resolution: {integrity: sha512-f+8cldu7X/y7RAJurMEJmdoKXGB/X550w2Nr3tTbezL6RwEE/iMcm+tZnXeoZtKuOq6ft8+CqzEkrIgx1fPoQA==}
@@ -17387,6 +17364,11 @@ packages:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
     dev: true
     optional: true
+
+  /node-fetch/2.6.1:
+    resolution: {integrity: sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==}
+    engines: {node: 4.x || >=6.0.0}
+    dev: false
 
   /node-fetch/2.6.2:
     resolution: {integrity: sha512-aLoxToI6RfZ+0NOjmWAgn9+LEd30YCkJKFSyWacNZdEKTit/ZMcKjGkTRo8uWEsnIb/hfKecNPEbln02PdWbcA==}
