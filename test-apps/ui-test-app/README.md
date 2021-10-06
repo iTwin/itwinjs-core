@@ -66,8 +66,6 @@ To set the environment variables, either set them directly within the terminal y
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
-* IMJS_URL_PREFIX
-  * Appends a prefix to all urls calling the iTwin Platform.
 
 ### Electron-only
 
