@@ -2,6 +2,10 @@
 # line endings showing up in git diffs
 *                            text=auto
 
+# Ensure these file types of the correct OS specific line endings
+*.bat                        eol=crlf
+*.sh                         eol=lf
+
 # Don't allow people to merge changes to these generated files, because the result
 # may be invalid.  You need to run "rush update" again.
 pnpm-lock.yaml               merge=binary
