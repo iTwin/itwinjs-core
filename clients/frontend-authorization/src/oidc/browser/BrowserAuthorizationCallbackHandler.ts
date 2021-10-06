@@ -59,7 +59,6 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
 
   /**
    * Merges the basic and advanced settings into a single configuration object consumable by the internal userManager.
-   * @param requestContext
    * @param basicSettings
    * @param advancedSettings
    */

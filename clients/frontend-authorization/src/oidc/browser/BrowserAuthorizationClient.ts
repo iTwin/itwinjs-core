@@ -92,7 +92,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Merges the basic and advanced settings into a single configuration object consumable by the internal userManager.
-   * @param requestContext
    * @param basicSettings
    * @param advancedSettings
    */
@@ -142,7 +141,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Alias for signInRedirect needed to satisfy [[FrontendAuthorizationClient]]
-   * @param requestContext
    */
   public async signIn(): Promise<void> {
     return this.signInRedirect();
@@ -173,7 +171,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Attempts a sign-in via popup with the authorization provider
-   * @param requestContext
    */
   public async signInPopup(args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
     let user = await this.nonInteractiveSignIn(args);
