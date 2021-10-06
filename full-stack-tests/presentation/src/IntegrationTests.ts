@@ -43,7 +43,7 @@ const copyITwinBackendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
   fs.readdirSync(iTwinPackagesPath).map((packageName) => {
     const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "assets");
+    return path.join(packagePath, "lib", "cjs", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
   }).forEach((src) => {
