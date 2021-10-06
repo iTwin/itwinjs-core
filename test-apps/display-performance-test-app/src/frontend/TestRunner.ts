@@ -982,10 +982,12 @@ export class TestRunner {
   }
 
   private async onException(ex: any): Promise<void> {
-    if (this._terminateOnException)
-      throw ex;
+    // We need to log here so it gets written to the file.
+    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
 
-    await DisplayPerfTestApp.logException(ex);
+    // Throw a special error to tell dpta not to log again
+    if (this._terminateOnException)
+      throw "TERMINATE";
   }
 }
 

@@ -117,7 +117,9 @@ async function main() {
     const runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
-    await DisplayPerfTestApp.logException(err);
+    // "TERMINATE" indicates the exception has already been logged and now we just want to exit.
+    if ("TERMINATE" !== err)
+      await DisplayPerfTestApp.logException(err);
   } finally {
     await DisplayPerfRpcInterface.getClient().terminate();
   }
