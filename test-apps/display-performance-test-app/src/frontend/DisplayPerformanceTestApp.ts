@@ -47,6 +47,14 @@ export class DisplayPerfTestApp {
 
     IModelApp.animationInterval = undefined;
   }
+
+  public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<void> {
+    const msg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
+    const client = DisplayPerfRpcInterface.getClient();
+    await client.consoleLog(msg);
+    if (logFile)
+      await client.writeExternalFile(logFile.dir, logFile.name, true, `${msg}\n`);
+  }
 }
 
 async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
@@ -108,7 +116,7 @@ async function main() {
     const runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
-    alert(err.toString());
+    await DisplayPerfTestApp.logException(err);
   }
 
   return IModelApp.shutdown();

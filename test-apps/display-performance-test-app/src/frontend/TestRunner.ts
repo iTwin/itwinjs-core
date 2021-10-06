@@ -221,7 +221,13 @@ export class TestRunner {
     }
   }
 
+  private numRuns = 0;
+  private numBeforeThrow = 1;
+
   private async runTest(context: TestContext): Promise<TestResult | undefined> {
+    if (++this.numRuns > this.numBeforeThrow)
+      throw new Error("Expected exception");
+
     // Reset the title bar to include the current model and view name
     const testConfig = this.curConfig;
     document.title = "Display Performance Test App:  ".concat(testConfig.iModelName ?? "", "  [", testConfig.viewName ?? "", "]");
@@ -378,7 +384,7 @@ export class TestRunner {
           }
         }
       } catch (err: any) {
-        await this.logError(err.toString());
+        await DisplayPerfTestApp.logException(err, { dir: this.curConfig.outputPath, name: this._logFileName });
       }
     }
 
