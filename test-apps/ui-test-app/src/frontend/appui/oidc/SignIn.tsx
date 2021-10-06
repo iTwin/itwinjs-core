@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
-import { UiComponents } from "@itwin/components-react";
+import { IModelApp } from "@itwin/core-frontend";
 import { Button } from "@itwin/itwinui-react";
 import { UiFramework } from "@itwin/appui-react";
 import { ProcessDetector } from "@itwin/core-bentley";
@@ -51,11 +51,12 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
     this.state = {
       isSigningIn: false,
-      prompt: UiComponents.translate("signIn.prompt"),
-      signInButton: UiComponents.translate("signIn.signInButton"),
-      profilePrompt: UiComponents.translate("signIn.profilePrompt"),
-      registerAnchor: UiComponents.translate("signIn.register"),
-      offlineButton: UiComponents.translate("signIn.offlineButton"),
+
+      prompt: IModelApp.localization.getLocalizedString("SampleApp:signIn.prompt"),
+      signInButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.signInButton"),
+      profilePrompt: IModelApp.localization.getLocalizedString("SampleApp:signIn.profilePrompt"),
+      registerAnchor: IModelApp.localization.getLocalizedString("SampleApp:signIn.register"),
+      offlineButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.offlineButton"),
     };
   }
 

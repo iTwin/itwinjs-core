@@ -42,7 +42,6 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
       return [
         BackstageItemUtilities.createStageLauncher(EditFrontstage.stageId, 100, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.editIModel"), IModelApp.localization.getLocalizedString("SampleApp:backstage.editStage"), "icon-edit"),
         BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
-        BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
         BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
         SettingsModalFrontstage.getBackstageActionItem(400, 10),
       ];

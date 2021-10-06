@@ -90,7 +90,7 @@ export interface SampleAppState {
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
-  isIModelLocal: false,
+  isIModelLocal: true,  // initialize to true to hide iModelIndex from enabling which should only occur if External iModel is open.
   initialViewIds: [],
 };
 
@@ -356,13 +356,14 @@ export class SampleAppIModelApp {
       });
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
+      SampleAppIModelApp.setIsIModelLocal(true, true);
     } else {
       const iModel = await ExternalIModel.create({ iTwinId, iModelId });
       await iModel.openIModel();
       iModelConnection = iModel.iModelConnection!;
+      SampleAppIModelApp.setIsIModelLocal(false, true);
     }
 
-    SampleAppIModelApp.setIsIModelLocal(false, true);
     await this.openViews(iModelConnection, viewIdsSelected);
   }
 
@@ -373,6 +374,7 @@ export class SampleAppIModelApp {
         SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
         await currentIModelConnection.close();
         UiFramework.setIModelConnection(undefined);
+        SampleAppIModelApp.setIsIModelLocal(true, true); // set to true to hide iModelIndex option which should only show if External imodel is open.
       }
     }
   }
