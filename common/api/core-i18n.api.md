@@ -4,25 +4,26 @@
 
 ```ts
 
-import { Callback } from 'i18next';
 import { Localization } from '@itwin/core-common';
 import { TranslationOptions } from 'i18next';
 
 // @public
-export class I18N implements Localization {
-    constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback);
+export class ITwinLocalization implements Localization {
+    constructor(options?: LocalizationOptions);
+    // @internal (undocumented)
+    changeLanguage(language: string): void;
     // @internal
     getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    // @internal (undocumented)
+    getLanguageList(): string[];
     getLocalizedKeys(line: string): string;
     getLocalizedString(key: string | string[], options?: TranslationOptions): string;
     // @internal
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
-    getNamespace(name: string): Promise<void> | undefined;
-    // @internal (undocumented)
-    languageList(): string[];
+    getNamespacePromise(name: string): Promise<void> | undefined;
     // @internal (undocumented)
     loadNamespace(name: string, i18nCallback: any): void;
-    registerNamespace(name: string): Promise<void>;
+    registerNamespace(name: string, setDefault?: true): Promise<void>;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
 }

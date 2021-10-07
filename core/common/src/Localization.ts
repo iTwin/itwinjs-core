@@ -6,11 +6,35 @@
  * @module Localization
  */
 
-/** @public */
-// This should be more clearly defined or removed as we remove I18N and its dependencies (Formerly i18next::TranslationOptions).
-type LocalizationOptions = any;
+/** Options for Localization
+ * @public
+ */
+interface LocalizationOptions {
+  /** for interpolation values */
+  [key: string]: any;
+  /**
+   * defaultValue to return if a translation was not found
+   */
+  defaultValue?: any;
+  /**
+   * count value used for plurals
+   */
+  count?: number;
+  /**
+   * used for contexts (eg. male\female)
+   */
+  context?: any;
+  /**
+   * override languages to use
+   */
+  lngs?: string[];
+  /**
+   * override language to lookup key if not found see fallbacks for details
+   */
+  fallbackLng?: string;
+}
 
-/** The interface defining the localization requirements of iModelJs.
+/** The interface defining the localization requirements of [IModelApp]($frontend).
  * @public
  */
 export interface Localization {
@@ -22,23 +46,24 @@ export interface Localization {
   getLocalizedKeys(inputString: string): string;
   registerNamespace(namespace: string, setDefault?: true): Promise<void>;
   unregisterNamespace(namespace: string): void;
-  getNamespace(name: string): Promise<void> | undefined;
+  getNamespacePromise(name: string): Promise<void> | undefined;
+  /** Get the list of available languages for translations */
   getLanguageList(): string[];
+  /** change the language for translations. This overrides the language from the browser. */
   changeLanguage(language: string): void;
-
 }
 
-/** The default [[Localization]] used in the event that an implementation is not provided to [[IModelApp]]. Does not perform localizations.
+/** The default [[Localization]] used in the event that an implementation is not provided to [IModelApp]($frontend). Does not perform localizations.
  * @public
  */
 export class EmptyLocalization implements Localization {
   public getLocalizedString(key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
-  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
-  public getEnglishString(_namespace: string, key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
+  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
+  public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getLocalizedKeys(inputString: string): string { return inputString; }
   public async registerNamespace(): Promise<void> { return; }
   public unregisterNamespace(): void { }
-  public getNamespace(): Promise<void> | undefined { return; }
+  public getNamespacePromise(): Promise<void> | undefined { return; }
   public getLanguageList(): string[] { return []; }
   public changeLanguage(): void { }
 }

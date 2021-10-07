@@ -139,11 +139,11 @@ export class ITwinLocalization implements Localization {
   /** @internal */
   public loadNamespace(name: string, i18nCallback: any) { this._i18next.loadNamespaces(name, i18nCallback); }
 
-  /** Get an already registered Namespace.
+  /** Get the promise for an already registered Namespace.
    * @param name - the name of the namespace
    * @public
    */
-  public getNamespace(name: string): Promise<void> | undefined {
+  public getNamespacePromise(name: string): Promise<void> | undefined {
     return this._namespaceRegistry.get(name);
   }
 

@@ -12,16 +12,15 @@ describe("ITwinLocalization tests", () => {
     await i18n.registerNamespace("namespace1");
     await i18n.registerNamespace("namespace2");
 
-    assert.strictEqual((i18n as any)._namespaceRegistry.size, 2);
-    assert.isDefined(i18n.getNamespace("namespace1"));
-    assert.isDefined(i18n.getNamespace("namespace2"));
+    assert.isDefined(i18n.getNamespacePromise("namespace1"));
+    assert.isDefined(i18n.getNamespacePromise("namespace2"));
 
     i18n.unregisterNamespace("namespace2");
-    assert.isDefined(i18n.getNamespace("namespace1"));
-    assert.isUndefined(i18n.getNamespace("namespace2"));
+    assert.isDefined(i18n.getNamespacePromise("namespace1"));
+    assert.isUndefined(i18n.getNamespacePromise("namespace2"));
 
     await i18n.registerNamespace("namespace2");
-    assert.isDefined(i18n.getNamespace("namespace1"));
-    assert.isDefined(i18n.getNamespace("namespace2"));
+    assert.isDefined(i18n.getNamespacePromise("namespace1"));
+    assert.isDefined(i18n.getNamespacePromise("namespace2"));
   });
 });
