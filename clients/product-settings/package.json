@@ -1,9 +1,10 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "3.0.0-dev.78",
+  "version": "3.0.0-dev.79",
   "description": "iModel.js Product Settings Client",
-  "main": "lib/product-settings-client.js",
-  "typings": "lib/product-settings-client",
+  "main": "lib/cjs/product-settings-client.js",
+  "module": "lib/esm/product-settings-client.js",
+  "typings": "lib/cjs/product-settings-client",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -12,7 +13,9 @@
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "extract-api": "betools extract-api --entry=product-settings-client",
@@ -32,8 +35,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.78",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.78"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.79",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.79"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

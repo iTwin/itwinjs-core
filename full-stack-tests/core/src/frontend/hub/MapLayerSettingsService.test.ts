@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 
 import { TestUtility } from "./TestUtility";
 import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";

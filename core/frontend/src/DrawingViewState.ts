@@ -360,7 +360,7 @@ export class DrawingViewState extends ViewState2d {
         displaySpatialView = !!row.displaySpatialView;
         try {
           drawingToSpatialTransform = JSON.parse(row.drawingToSpatialTransform);
-        } catch (_) {
+        } catch {
           // We'll use identity transform.
         }
 

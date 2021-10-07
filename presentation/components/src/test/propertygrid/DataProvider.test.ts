@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
@@ -14,12 +15,9 @@ import {
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
 } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
+  createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { PropertyCategory } from "@itwin/components-react";

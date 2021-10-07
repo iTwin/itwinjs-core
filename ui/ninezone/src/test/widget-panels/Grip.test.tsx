@@ -12,7 +12,7 @@ import {
   addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
 } from "../../appui-layout-react";
-import { createDragItemInfo, NineZoneProvider, NineZoneProviderProps } from "../Providers";
+import { createDragItemInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
 
 describe("WidgetPanelGrip", () => {
   const wrapper = (props: any) => <WidgetPanelContext.Provider
@@ -30,13 +30,13 @@ describe("WidgetPanelGrip", () => {
   it("should render resizing", () => {
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
       { wrapper }
     );
     const grip = container.getElementsByClassName("nz-widgetPanels-grip")[0];
@@ -51,14 +51,14 @@ describe("WidgetPanelGrip", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
       { wrapper }
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
@@ -85,14 +85,14 @@ describe("WidgetPanelGrip", () => {
     });
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
       { wrapper }
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
@@ -116,13 +116,13 @@ describe("WidgetPanelGrip", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
       { wrapper }
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
@@ -135,13 +135,13 @@ describe("WidgetPanelGrip", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
       { wrapper }
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
@@ -164,14 +164,14 @@ describe("WidgetPanelGrip", () => {
     });
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
       { wrapper }
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
@@ -187,7 +187,7 @@ describe("WidgetPanelGrip", () => {
 });
 
 describe("useResizeGrip", () => {
-  interface WrapperProps extends NineZoneProviderProps {
+  interface WrapperProps extends TestNineZoneProviderProps {
     children?: React.ReactNode;
     side?: PanelSide;
   }
@@ -195,7 +195,7 @@ describe("useResizeGrip", () => {
   function Wrapper(props: WrapperProps) {
     const { children, side, state, ...nzProps } = props;
     const nineZone = state || createNineZoneState();
-    return <NineZoneProvider // eslint-disable-line react/display-name
+    return <TestNineZoneProvider // eslint-disable-line react/display-name
       state={nineZone}
       {...nzProps}
     >
@@ -204,7 +204,7 @@ describe("useResizeGrip", () => {
           {children}
         </PanelStateContext.Provider>
       </WidgetPanelContext.Provider>
-    </NineZoneProvider>;
+    </TestNineZoneProvider>;
   }
   const wrapper = Wrapper;
 

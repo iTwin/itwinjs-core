@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 // required to get certa to read the .env file - should be reworked
-import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
@@ -17,7 +17,7 @@ import {
 } from "@itwin/core-backend";
 import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestITwinProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 

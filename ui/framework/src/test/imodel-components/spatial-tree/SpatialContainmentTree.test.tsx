@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@itwin/presentation-common";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
-import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
