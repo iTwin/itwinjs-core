@@ -8,11 +8,11 @@
 
 // cspell:ignore rtmp stmp
 
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { G, Marker, Element as MarkupElement, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -41,12 +41,12 @@ export abstract class RedlineTool extends MarkupTool {
   protected createMarkup(_svgMarkup: G, _ev: BeButtonEvent, _isDynamics: boolean): void { }
   protected clearDynamicsMarkup(_isDynamics: boolean): void { this.markup.svgDynamics!.clear(); }
 
-  public override onRestartTool(): void { this.exitTool(); } // Default to single shot and return control to select tool...
-  public override onCleanup() { this.clearDynamicsMarkup(false); }
+  public override async onRestartTool() { return this.exitTool(); } // Default to single shot and return control to select tool...
+  public override async onCleanup() { this.clearDynamicsMarkup(false); }
 
-  public override onReinitialize(): void {
+  public override async onReinitialize() {
     this.clearDynamicsMarkup(false);
-    super.onReinitialize();
+    return super.onReinitialize();
   }
 
   public override async onUndoPreviousStep(): Promise<boolean> {
@@ -71,17 +71,17 @@ export abstract class RedlineTool extends MarkupTool {
     }
 
     this.createMarkup(this.markup.svgMarkup!, ev, false);
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
   protected provideToolAssistance(mainInstrKey: string, singlePoint: boolean = false): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainInstrKey));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -400,7 +400,7 @@ export class DistanceTool extends ArrowTool {
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length)) {
-      this.onReinitialize();
+      await this.onReinitialize();
       return EventHandled.No;
     }
     if (0 === this._points.length)
@@ -437,7 +437,8 @@ export class SketchTool extends RedlineTool {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
     if (undefined !== ev.viewport && this._points.length > 0 && evPt.distanceSquaredXY(this._points[this._points.length - 1]) > this._minDistSquared)
       this._points.push(evPt);
-    super.onMouseMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+    return super.onMouseMotion(ev);
   }
 }
 
@@ -451,7 +452,7 @@ export class SymbolTool extends RedlineTool {
 
   constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
 
-  public override onInstall(): boolean { if (undefined === this._symbolData) return false; return super.onInstall(); }
+  public override async onInstall(): Promise<boolean> { if (undefined === this._symbolData) return false; return super.onInstall(); }
   protected override showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true); }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
@@ -501,12 +502,12 @@ export class SymbolTool extends RedlineTool {
       return EventHandled.No;
 
     this.createMarkup(this.markup.svgMarkup!, ev, false);
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 

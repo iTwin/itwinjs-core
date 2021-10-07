@@ -6,8 +6,8 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../imodeljs-backend";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { IModelHost, PhysicalElement } from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -22,20 +22,20 @@ import { HubUtility } from "./HubUtility";
 //      - Required: "openid imodelhub context-registry-service:read-only"
 
 describe("Schema XML Import Tests (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
-  let testContextId: string;
+  let accessToken: AccessToken;
+  let testITwinId: string;
   let readWriteTestIModelId: GuidString;
 
   before(async () => {
     HubMock.startup("schemaImport");
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    readWriteTestIModelId = await HubUtility.recreateIModel(requestContext, testContextId, HubUtility.generateUniqueName("ReadWriteTest"));
+    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    readWriteTestIModelId = await HubUtility.recreateIModel({ accessToken, iTwinId: testITwinId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
   after(async () => {
     try {
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -47,8 +47,8 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
-    await iModel.importSchemaStrings(requestContext, [schemaString]); // will throw an exception if import fails
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    await iModel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure
 

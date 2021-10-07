@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
+import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderGraphic } from "../../../render/RenderGraphic";
@@ -41,7 +41,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPath works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -62,7 +62,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -86,7 +86,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -124,7 +124,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     expect(accum.geometries.isEmpty).to.be.true;
     expect(accum.isEmpty).to.be.true;
@@ -134,7 +134,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     expect(accum.isEmpty).to.be.true;
     accum.addGeometry(new FakeGeometry());
@@ -144,7 +144,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshBuilderMap works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -185,7 +185,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshes works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -226,7 +226,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("saveToGraphicList works as expected", () => {
-    accum = new GeometryAccumulator({ iModel });
+    accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));

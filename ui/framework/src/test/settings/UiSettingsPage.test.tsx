@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { getUiSettingsManagerEntry, UiSettingsPage } from "../../ui-framework/settings/ui/UiSettingsPage";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { getUiSettingsManagerEntry, UiSettingsPage } from "../../appui-react/settings/ui/UiSettingsPage";
 import TestUtils, { handleError, selectChangeValueByText, storageMock, stubScrollIntoView } from "../TestUtils";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import { ColorTheme } from "../../ui-framework/theme/ThemeManager";
+import { UiFramework } from "../../appui-react/UiFramework";
+import { ColorTheme } from "../../appui-react/theme/ThemeManager";
 
 describe("UiSettingsPage", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;

@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { HSVColor } from "@bentley/imodeljs-common";
+import { HSVColor } from "@itwin/core-common";
 import { fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { TestUtils } from "../TestUtils";
-import { HueSlider } from "../../ui-imodel-components/color/HueSlider";
+import { HueSlider } from "../../imodel-components-react/color/HueSlider";
 
 describe("<HueSlider />", () => {
   const hsv = new HSVColor(60, 100, 50);

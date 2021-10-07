@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
@@ -513,7 +513,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   protected drawOverlayDecorations(): void { }
 
-  /*
+  /**
    * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.

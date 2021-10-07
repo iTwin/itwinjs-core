@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
-import { MutableGridCategory } from "../../ui-components/propertygrid/internal/flat-items/MutableGridCategory";
-import { PropertyCategoryRendererManager } from "../../ui-components/propertygrid/PropertyCategoryRendererManager";
+import { MutableGridCategory } from "../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
+import { PropertyCategoryRendererManager } from "../../components-react/propertygrid/PropertyCategoryRendererManager";
 import { FlatGridTestUtils } from "./component/internal/flat-items/FlatGridTestUtils";
 
 describe("PropertyCategoryRendererManager", () => {

@@ -1,0 +1,54 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/icons/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/inputs/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/variables";
+@import "~@itwin/itwinui-css/scss/inputs/input";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+.uifw-ValidationTextbox {
+  @include iui-font-family;
+  position: relative;
+  padding: $uicore-unbordered-padding;
+  width: 12em;
+  height: 1em;
+
+  .ValidationTextbox-input {
+    position: absolute;
+    @include iui-input;
+    min-height: $uicore-component-height-normal;
+    padding: $uicore-iui-input-padding;
+    width: 12em;
+    left: 0px;
+    top: 0px;
+  }
+
+  .ValidationTextbox-invalid {
+    border-color: $buic-foreground-alert;
+  }
+
+  .ValidationTextbox-invalid:focus {
+    border-color: $buic-foreground-alert;
+  }
+
+  .ValidationTextbox-icon {
+    position: absolute;
+    padding: $uicore-bordered-padding;
+    width: $uicore-line-height;
+    height: $uicore-line-height;
+    line-height: $uicore-line-height;
+    font-size: $uicore-icons-small;
+    cursor: pointer;
+    top: 0px;
+    right: 0px;
+    text-align: center;
+    color: $buic-icon-color;
+
+    &:hover {
+      color: $buic-foreground-primary;
+    }
+  }
+}

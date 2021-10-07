@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
-import { Cartographic, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { Point2d } from "@itwin/core-geometry";
+import { Cartographic, MapLayerSettings, ServerError } from "@itwin/core-common";
 
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
@@ -61,7 +61,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
         if (!this.cartoRange)
           this.cartoRange = this._allLayersRange;
       }
-    } catch (error) {
+    } catch (error: any) {
       // Don't throw error if unauthorized status:
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
       // When credentials will be provided, a new provider will be created, and initialization should be fine.

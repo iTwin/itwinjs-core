@@ -6,9 +6,9 @@
  * @module LocatingElements
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { SnapRequestProps } from "@bentley/imodeljs-common";
+import { BeDuration } from "@itwin/core-bentley";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
+import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -297,10 +297,10 @@ export class AccuSnap implements Decorator {
     const sameElem = (undefined !== newHit && newHit.isSameHit(this.currHit));
     const sameHit = (sameElem && !newSnap);
     const sameSnap = (sameElem && undefined !== newSnap && undefined !== currSnap);
-    const samePt = (sameHit || (sameSnap && newSnap!.snapPoint.isAlmostEqual(currSnap!.snapPoint)));
-    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap!.isHot)));
+    const samePt = (sameHit || (sameSnap && newSnap.snapPoint.isAlmostEqual(currSnap.snapPoint)));
+    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap.isHot)));
     const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.snapMode === currSnap.snapMode);
-    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit!.getHitType())));
+    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit.getHitType())));
 
     // see if it is the same point on the same element, the hot flags are the same multiple snaps, and the snap modes are the same
     if (samePt && sameType && sameBaseSnapMode) {
@@ -417,7 +417,7 @@ export class AccuSnap implements Decorator {
     if (!this.errorKey)
       return;
 
-    this.explanation = IModelApp.i18n.translate(this.errorKey);
+    this.explanation = IModelApp.localization.getLocalizedString(this.errorKey);
     if (!this.explanation)
       return;
 
@@ -642,7 +642,7 @@ export class AccuSnap implements Decorator {
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
-          out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
+          out.explanation = IModelApp.localization.getLocalizedString(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
         }
         return undefined;
       }
@@ -983,8 +983,8 @@ export class AccuSnap implements Decorator {
     const tool = IModelApp.toolAdmin.activeTool;
     if (undefined === tool)
       return true;
-    tool.onSuspend();
-    tool.onUnsuspend();
+    await tool.onSuspend();
+    await tool.onUnsuspend();
     return true;
   }
 

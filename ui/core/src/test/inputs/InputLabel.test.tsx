@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { InputLabel, InputStatus } from "../../ui-core";
+import { InputLabel, InputStatus } from "../../core-react";
 
 describe("<InputLabel />", () => {
   it("should render", () => {

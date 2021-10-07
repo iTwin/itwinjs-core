@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
 
 .map-manager-sublayer-tree {
   height: 100%;
@@ -11,7 +11,7 @@
   flex-direction: column;
 
   .core-tree-node {
-    > .contents {
+    >.contents {
       padding-left: 31px;
     }
   }
@@ -44,6 +44,7 @@
       &:hover {
         color: var(--buic-accessory-primary-tint);
       }
+
       &:focus {
         box-shadow: $uicore-button-focus-boxshadow;
         outline: none;
@@ -53,6 +54,11 @@
 
   .tree-toolbar-searchbox {
     margin-left: 6px;
-    width: 100%;;
+    width: 100%;
+    ;
   }
+}
+
+.map-manager-sublayer-tree-content {
+  flex-grow: 1;
 }

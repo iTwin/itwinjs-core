@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, render } from "@testing-library/react";
-import { EventEmitter, ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../ui-ninezone";
+import { EventEmitter, ScrollableWidgetContent, TabIdContext, TabState, WidgetContentManagerContext } from "../../appui-layout-react";
 
 describe("ScrollableWidgetContent", () => {
   it("should save and restore scroll position", () => {

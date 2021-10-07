@@ -1,0 +1,28 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/inputs/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/space";
+
+.uifw-accudraw-field-container {
+  padding: 6px;
+
+  .iui-input {
+    padding: $uicore-iui-input-padding;
+  }
+}
+
+.uifw-accudraw-field-container-horizontal {
+  max-width: 550px;
+  display: flex;
+  flex-direction: row;
+}
+
+.uifw-accudraw-field-container-vertical {
+  max-width: 250px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  row-gap: $iui-xs;
+}

@@ -7,16 +7,16 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
+import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
   FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl, WidgetDef,
-} from "../../ui-framework";
-import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
-import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
-import { UiFramework } from "../../ui-framework/UiFramework";
-import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
+} from "../../appui-react";
+import { StagePanelRuntimeProps } from "../../appui-react/stagepanels/StagePanel";
+import { StagePanelDef, StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
+import { UiFramework } from "../../appui-react/UiFramework";
+import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
 import TestUtils, { mount } from "../TestUtils";
 
 /* eslint-disable react/jsx-key */
@@ -136,13 +136,17 @@ describe("StagePanel", () => {
 
   it("Panels should render in a Frontstage", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "Test1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
             id="Test1"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
 
             topMostPanel={
               <StagePanel
@@ -194,11 +198,12 @@ describe("StagePanel", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
-    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    expect(frontstageDef).to.not.be.undefined;
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
-      const widgetDef = frontstageProvider.frontstageDef.findWidgetDef("stagePanelWidget");
+    if (frontstageDef) {
+      const widgetDef = frontstageDef.findWidgetDef("stagePanelWidget");
       expect(widgetDef).to.not.be.undefined;
     }
 

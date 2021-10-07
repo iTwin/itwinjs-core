@@ -1,0 +1,9 @@
+sep=;
+Release Tag;API Item
+beta;ITwin
+beta;ITwinAccess
+beta;ITwinAccessClient 
+beta;ITwinPaginationArg
+beta;ITwinQueryArg
+beta;ITwinSearchableProperty
+beta;ITwinSearchArg

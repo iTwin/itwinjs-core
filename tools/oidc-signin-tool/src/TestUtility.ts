@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken } from "@itwin/core-bentley";
 import { TestBrowserAuthorizationClient } from "./TestBrowserAuthorizationClient";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials, TestUsers } from "./TestUsers";
 
@@ -46,16 +46,4 @@ export class TestUtility {
     return client.getAccessToken();
   }
 
-  /**
-   * Create or retrieve the client request context for the specified iModel.js test user
-   * - A previously cached token is reused if available to construct the context, or otherwise uses [[TestBrowserAuthorizationClient]]
-   * to signin the user through a headless browser.
-   * - Uses the default iModel.js internal OIDC SPA client registration
-   * @param user Test user credentials
-   * @internal
-   */
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await this.getAccessToken(user);
-    return new AuthorizedClientRequestContext(accessToken);
-  }
 }

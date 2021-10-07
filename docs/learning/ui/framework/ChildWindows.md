@@ -1,6 +1,6 @@
 # Child Window Manager
 
-The [ChildWindowManager]($ui-framework) class, available via property `UiFramework.childWindowManager`, provides methods to open child windows displaying React components in another browser window. This child browser window shares the same javascript context as the single page IModelApp running in the main browser window. This manager maintains a list of all child windows and closes them when the page containing the IModelApp is unloaded.
+The [ChildWindowManager]($appui-react) class, available via property `UiFramework.childWindowManager`, provides methods to open child windows displaying React components in another browser window. This child browser window shares the same javascript context as the single page IModelApp running in the main browser window. This manager maintains a list of all child windows and closes them when the page containing the IModelApp is unloaded.
 
 ## Popup URL
 
@@ -60,4 +60,4 @@ A Widget can specify set its `canPopout` property to true if its supports being 
 
 ## API Reference
 
-- [ChildWindowManager]($ui-framework:ChildWindowManager)
+- [ChildWindowManager]($appui-react:ChildWindowManager)

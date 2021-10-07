@@ -6,8 +6,8 @@
  * @module Authentication
  */
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { AccessToken } from "@itwin/core-bentley";
+import { removeAccessTokenPrefix } from "@bentley/itwin-client";
 import { GrantBody, TokenSet } from "openid-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
@@ -28,29 +28,23 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     super(configuration);
   }
 
-  private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessToken, grantType: string): Promise<AccessToken> {
-    requestContext.enter();
+  private async exchangeToJwtToken(accessToken: AccessToken | undefined, grantType: string): Promise<AccessToken | undefined> {
 
     const grantParams: GrantBody = {
       grant_type: grantType, // eslint-disable-line @typescript-eslint/naming-convention
       scope: this._configuration.scope,
-      assertion: accessToken.toTokenString(IncludePrefix.No),
+      assertion: removeAccessTokenPrefix(accessToken),
     };
 
-    const client = await this.getClient(requestContext);
+    const client = await this.getClient();
     const tokenSet: TokenSet = await client.grant(grantParams);
-
-    const exchangedToken = AccessToken.fromTokenResponseJson(tokenSet);
-    const userInfo = accessToken.getUserInfo();
-    if (userInfo !== undefined)
-      accessToken.setUserInfo(userInfo);
-    return exchangedToken;
+    const accessTokenString = `Bearer ${tokenSet.access_token}`;
+    return accessTokenString;
   }
 
   /** Get a delegation JWT for a new scope from another JWT */
-  public async getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken> {
-    requestContext.enter();
-    return this.exchangeToJwtToken(requestContext, accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
+  public async getJwtFromJwt(accessToken?: AccessToken): Promise<AccessToken | undefined> {
+    return this.exchangeToJwtToken(accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
   }
 
 }

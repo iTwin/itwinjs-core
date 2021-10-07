@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "rename to @itwin/eslint-plugin",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin"
+}

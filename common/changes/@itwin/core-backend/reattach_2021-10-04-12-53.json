@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "allow apps to set safety interval for reattaching deamon",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

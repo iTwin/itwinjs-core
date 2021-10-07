@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
@@ -16,11 +16,17 @@
     "noEmit": true,
     "types": [
       "@bentley/react-scripts"
+    ],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ]
   },
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/*.tsx",
+    "../../ui/framework/src/test/frontstage/StandardFrontstage.tsx"
   ],
   "exclude": [
     "./src/backend/**/*.ts"

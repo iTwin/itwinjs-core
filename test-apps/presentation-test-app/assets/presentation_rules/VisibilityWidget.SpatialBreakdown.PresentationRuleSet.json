@@ -1,5 +1,5 @@
 {
-  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "$schema": "../../node_modules/@itwin/presentation-common/Ruleset.schema.json",
   "id": "VisibilityWidget.SpatialBreakdown",
   "rules": [
     {
@@ -18,14 +18,12 @@
           "arePolymorphic": true,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelContainsElements"
-              },
-              "requiredDirection": "Backward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "Model"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelContainsElements"
+                },
+                "direction": "Backward"
               },
               "isRequired": true,
               "alias": "model"
@@ -43,19 +41,15 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "SpatialComposition",
-            "classNames": [
-              "CompositeComposesSubComposites"
-            ]
-          },
-          "relatedClasses": {
-            "schemaName": "SpatialComposition",
-            "classNames": [
-              "CompositeElement"
-            ]
-          },
-          "requiredDirection": "Forward",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeComposesSubComposites"
+              },
+              "direction": "Forward"
+            }
+          ],
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -67,19 +61,15 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "SpatialComposition",
-            "classNames": [
-              "CompositeOverlapsSpatialElements"
-            ]
-          },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialElement"
-            ]
-          },
-          "requiredDirection": "Forward",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeOverlapsSpatialElements"
+              },
+              "direction": "Forward"
+            }
+          ],
           "groupByClass": false,
           "groupByLabel": false
         }

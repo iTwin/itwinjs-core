@@ -2,63 +2,63 @@
 
 ## Table of Contents
 
-- [Table of Content](#table-of-content)
-- [Introduction](#introduction)
-  - [Preface](#preface)
-    - [What is a Connector](#what-is-a-connector)
-  - [Who should read this guide?](#who-should-read-this-guide)
-  - [Ways to sync data to an iTwin](#ways-to-sync-data-to-an-itwin)
-  - [Preliminary Reading](#preliminary-reading)
-  - [Structure of the guide](#structure-of-the-guide)
-  - [Foundations](#foundations)
-    - [iTwin](#itwin)
-    - [iModelHub](#imodelhub)
-    - [iModel](#imodel)
-    - [Briefcases](#briefcases)
-    - [Element](#element)
-    - [Changeset](#changeset)
-- [The basics of writing a Connector](#the-basics-of-writing-a-connector)
-  - [Connecting data to an iTwin](#connecting-data-to-an-itwin)
-    - [Data Extraction](#data-extraction)
-    - [Data alignment](#data-alignment)
-    - [Schemas](#schemas)
-    - [Domain Schemas](#domain-schemas)
-    - [Extending a Schema](#extending-a-schema)
-    - [Dynamic Schemas](#dynamic-schemas)
-    - [Display Labels](#display-labels)
-    - [CodeValues](#codevalues)
-  - [Sync](#sync)
-    - [Detecting and pushing changes](#detecting-and-pushing-changes)
-    - [Provenance and External Repository](#provenance-and-external-repository)
-      - [Case 1 : File metadata](#case-1--file-metadata)
-      - [Case 2 : Id mapping](#case-2--id-mapping)
-    - [Change detection](#change-detection)
-- [Connector SDK](#connector-sdk)
-  - [Getting started](#getting-started)
-  - [BridgeRunner](#bridgerunner)
-  - [Synchronizer](#synchronizer)
-  - [Connector interface methods](#connector-interface-methods)
-    - [InitializeJob](#initializejob)
-    - [OpenSourceData](#opensourcedata)
-    - [ImportDefinitions](#importdefinitions)
-    - [ImportDomainSchema](#importdomainschema)
-    - [ImportDynamicSchema](#importdynamicschema)
-    - [UpdateExistingData](#updateexistingdata)
-  - [Execution Sequence](#execution-sequence)
-  - [Analyzing the Connector output](#analyzing-the-connector-output)
-    - [ECSQL](#ecsql)
-    - [Visualizing the output](#visualizing-the-output)
-  - [Logs](#logs)
-  - [Error Messages](#error-messages)
-  - [Building a test for a Connector](#building-a-test-for-a-connector)
-- [Advanced Topics](#advanced-topics)
-  - [Job Subjects](#job-subjects)
-  - [Schema merging](#schema-merging)
-  - [Units and Coordinate systems](#units-and-coordinate-systems)
-  - [Dealing with geometry](#dealing-with-geometry)
-  - [Authentication](#authentication)
-  - [Locks & Codes](#locks--codes)
-  - [More information](#more-information)
+- [Write A Connector](#write-a-connector)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+    - [Preface](#preface)
+      - [What is a Connector](#what-is-a-connector)
+    - [Who should read this guide?](#who-should-read-this-guide)
+    - [Ways to sync data to an iTwin](#ways-to-sync-data-to-an-itwin)
+    - [Preliminary Reading](#preliminary-reading)
+    - [Structure of the guide](#structure-of-the-guide)
+    - [Foundations](#foundations)
+      - [iTwin](#itwin)
+      - [iModelHub](#imodelhub)
+      - [iModel](#imodel)
+      - [Briefcases](#briefcases)
+      - [Element](#element)
+      - [Changeset](#changeset)
+  - [The basics of writing a Connector](#the-basics-of-writing-a-connector)
+    - [Connecting data to an iTwin](#connecting-data-to-an-itwin)
+      - [Data Extraction](#data-extraction)
+      - [Data alignment](#data-alignment)
+        - [Schemas](#schemas)
+          - [Domain Schemas](#domain-schemas)
+          - [Dynamic Schemas](#dynamic-schemas)
+        - [Display Labels](#display-labels)
+        - [CodeValues](#codevalues)
+      - [Sync](#sync)
+        - [Detecting and pushing changes](#detecting-and-pushing-changes)
+        - [Provenance and External Repository](#provenance-and-external-repository)
+          - [Case 1 : File metadata](#case-1--file-metadata)
+          - [Case 2 : Id mapping](#case-2--id-mapping)
+        - [Change detection](#change-detection)
+  - [Connector SDK](#connector-sdk)
+    - [Getting started](#getting-started)
+    - [BridgeRunner](#bridgerunner)
+    - [Synchronizer](#synchronizer)
+    - [Connector interface methods](#connector-interface-methods)
+      - [InitializeJob](#initializejob)
+      - [OpenSourceData](#opensourcedata)
+      - [ImportDefinitions](#importdefinitions)
+      - [ImportDomainSchema](#importdomainschema)
+      - [ImportDynamicSchema](#importdynamicschema)
+      - [UpdateExistingData](#updateexistingdata)
+    - [Execution Sequence](#execution-sequence)
+    - [Analyzing the Connector output](#analyzing-the-connector-output)
+      - [ECSQL](#ecsql)
+      - [Visualizing the output](#visualizing-the-output)
+    - [Logs](#logs)
+    - [Error Messages](#error-messages)
+    - [Building a test for a Connector](#building-a-test-for-a-connector)
+  - [Advanced Topics](#advanced-topics)
+    - [Job Subjects](#job-subjects)
+    - [Schema merging](#schema-merging)
+    - [Units and Coordinate systems](#units-and-coordinate-systems)
+    - [Dealing with geometry](#dealing-with-geometry)
+    - [Authentication](#authentication)
+    - [Locks & Codes](#locks--codes)
+    - [More information](#more-information)
 
 ## Introduction
 
@@ -256,13 +256,13 @@ A Connector is usually dealing with two levels of provenance
 1. What is the identity and metadata of a file or repository synchronized into an iModel?
 2. What is the identity of the element within that repository?
 
-[RepositoryLink]($imodeljs-backend) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
+[RepositoryLink]($core-backend) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
 
-[ExternalSource]($imodeljs-backend) is an information container found in a repository. A few use cases for ExternalSources are listed below:
+[ExternalSource]($core-backend) is an information container found in a repository. A few use cases for ExternalSources are listed below:
 
 1. A MicroStation DGN file, for example, may contain multiple models which in turn contain elements. The repository link would point to the DGN file while the ExternalSource would refer the models within the DGN file,
 2. In many cases, the external file is not a container for multiple smaller models, so there would be a one-to-one correspondence between an ExternalSource and its RepositoryLink,
-3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup]($imodeljs-backend)
+3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup]($core-backend)
 
 ###### Case 1 : File metadata
 
@@ -395,21 +395,21 @@ The node packages you'll need can be installed using
 
 ```Shell
 $npm install  @bentley/backend-itwin-client
-$npm install  @bentley/bentleyjs-core
-$npm install  @bentley/context-registry-client
-$npm install  @bentley/ecschema-metadata
-$npm install  @bentley/geometry-core
+$npm install  @itwin/core-bentley
+$npm install  @bentley/itwin-registry-client
+$npm install  @itwin/ecschema-metadata
+$npm install  @itwin/core-geometry
 $npm install  @bentley/imodelhub-client
-$npm install  @bentley/imodeljs-backend
-$npm install  @bentley/imodeljs-common
+$npm install  @itwin/core-backend
+$npm install  @itwin/core-common
 $npm install  @bentley/itwin-client
 $npm install  @bentley/rbac-client
 $npm install  @bentley/telemetry-client
 
-$npm install  --save-dev @bentley/build-tools
+$npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @bentley/config-loader
-$npm install  --save-dev @bentley/eslint-plugin
-$npm install  --save-dev @bentley/oidc-signin-tool
+$npm install  --save-dev @itwin/eslint-plugin
+$npm install  --save-dev @itwin/oidc-signin-tool
 
 $npm install  --save-dev chai
 $npm install  --save-dev cpx
@@ -481,8 +481,8 @@ Use this method to add any models (e.g., physical, definition, or group) require
 
 See also:
 
-- [DefinitionModel.insert]($imodeljs-backend)
-- [PhysicalModel.insert]($imodeljs-backend)
+- [DefinitionModel.insert]($core-backend)
+- [PhysicalModel.insert]($core-backend)
 
 #### OpenSourceData
 
@@ -635,7 +635,7 @@ See this article on [Logging](./common/Logging.md)
 
 ### Error Messages
 
-See [BriefcaseStatus]($bentleyjs-core)
+See [BriefcaseStatus]($core-bentley)
 
 ### Building a test for a Connector
 
@@ -677,7 +677,7 @@ Please see the section on [GeometryStream](./common/geometrystream) to understan
 Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
-2. Construct a [GeometryStreamBuilder]($imodeljs-common) to help with collecting all the geometric primitives that will be used to create the element.
+2. Construct a [GeometryStreamBuilder]($core-common) to help with collecting all the geometric primitives that will be used to create the element.
 3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
 4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
@@ -687,7 +687,7 @@ See this article on [AccessToken](./common/AccessToken.md)
 
 ### Locks & Codes
 
-The Connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes, it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local transaction. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a Connector must not call SaveChanges directly.
+The Connector SDK takes care of acquiring locks and codes. It goes to iModelHub to acquire all needed locks and to request all codes used before committing the local transaction. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a Connector must not call SaveChanges directly.
 
 The connector’s channel root element is locked. No elements or models in the channel are locked. As long as the Connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a Connector inserts or updates.
 
@@ -699,14 +699,12 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 ### More information
 
-For more indepth information please see:
+For more information please see:
 
-- [BriefcaseManager.create]($imodeljs-backend)
-- [BriefcaseDb.open]($imodeljs-backend)
-- [IModelDb.saveChanges]($imodeljs-backend)
-- [BriefcaseDb.pullAndMergeChanges]($imodeljs-backend)
-- [BriefcaseDb.pushChanges]($imodeljs-backend)
-- [ConcurrencyControl](./backend/ConcurrencyControl.md)
+- [BriefcaseDb.open]($core-backend)
+- [IModelDb.saveChanges]($core-backend)
+- [BriefcaseDb.pullChanges]($core-backend)
+- [BriefcaseDb.pushChanges]($core-backend)
 - [Insert a Subject element](./backend/createelements#subject)
 - [Insert a ModelSelector element](./backend/CreateElements.md#ModelSelector)
 - [Insert a CategorySelector element](./backend/CreateElements.md#CategorySelector)

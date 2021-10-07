@@ -6,16 +6,16 @@
  * @module HyperModeling
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   ClipVector, Transform, XYZProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   Placement3d, SectionType,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DrawingViewState, IModelConnection, SheetViewState, SpatialViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT
@@ -141,9 +141,7 @@ export class SectionDrawingLocationState {
       if (str) {
         try {
           clip = ClipVector.fromJSON(JSON.parse(str));
-        } catch {
-          //
-        }
+        } catch {}
       }
 
       return clip;
@@ -214,7 +212,7 @@ export class SectionDrawingLocationState {
     try {
       for await (const row of iModel.query(selectSectionDrawingLocationStatesECSql))
         states.push(new SectionDrawingLocationState(row as SectionDrawingLocationStateData, iModel));
-    } catch (_) {
+    } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.
     }
 

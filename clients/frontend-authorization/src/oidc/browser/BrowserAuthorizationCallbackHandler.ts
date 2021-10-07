@@ -8,7 +8,7 @@
  */
 
 import { UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError } from "@itwin/core-bentley";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
 
@@ -118,7 +118,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     try {
       await callbackHandler.handleSigninCallbackInternal();
       return;
-    } catch (err) {
+    } catch (err: any) {
       errorMessage += `${err.message}\n`;
     }
 
@@ -126,7 +126,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     try {
       await callbackHandler.handleSigninCallbackInternal();
       return;
-    } catch (err) {
+    } catch (err: any) {
       errorMessage += `${err.message}\n`;
     }
 

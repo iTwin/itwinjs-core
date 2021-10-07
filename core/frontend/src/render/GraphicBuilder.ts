@@ -6,11 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
-} from "@bentley/geometry-core";
-import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -108,12 +108,11 @@ export interface PickableGraphicOptions extends BatchOptions {
 }
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
+ * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
+ * @see [[CustomGraphicBuilderOptions]] to create a graphic builder unassociated with any [[Viewport]].
  * @public
  */
 export interface GraphicBuilderOptions {
-  /** The viewport in which the resultant [[RenderGraphic]] is to be drawn, used for calculating the graphic's level of detail. */
-  viewport: Viewport;
-
   /** The type of graphic to produce. */
   type: GraphicType;
 
@@ -132,9 +131,6 @@ export interface GraphicBuilderOptions {
    */
   preserveOrder?: boolean;
 
-  /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics. */
-  applyAspectRatioSkew?: boolean;
-
   /** Controls whether normals are generated for surfaces. Normals allow 3d geometry to receive lighting; without them the geometry will be unaffected by lighting.
    * By default, normals are generated only for graphics of type [[GraphicType.Scene]]; or for any type of graphic if [[GraphicBuilder.wantEdges]] is true, because
    * normals are required to prevent z-fighting between surfaces and their edges. This default can be overridden by explicitly specifying `true` or `false`.
@@ -145,7 +141,7 @@ export interface GraphicBuilderOptions {
   /** Controls whether edges are generated for surfaces.
    * Edges are only displayed if [ViewFlags.renderMode]($common) is not [RenderMode.SmoothShade]($common) or [ViewFlags.visibleEdges]($common) is `true`.
    * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics, and
-   * only if [ViewFlags.edgesRequired]($common) is true for the [[viewport]].
+   * - if a [[Viewport]] is supplied with the options - only if [ViewFlags.edgesRequired]($common) is true for the viewport.
    * That default can be overridden by explicitly specifying `true` or `false`. This can be useful for non-scene decorations contained in a [[GraphicBranch]] that applies [ViewFlagOverrides]($common)
    * that change the edge display settings; or for scene decorations that might be cached for reuse after the viewport's edge settings are changed.
    * @note Edges will tend to z-fight with their surfaces unless the graphic is [[pickable]].
@@ -153,8 +149,51 @@ export interface GraphicBuilderOptions {
   generateEdges?: boolean;
 }
 
-/** @internal */
-export type BuilderOptions = GraphicBuilderOptions & { placement: Transform };
+/** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] to be displayed in a specific [[Viewport]].
+ * The level of detail of the graphic will be computed from the position of its geometry within the viewport's [Frustum]($common).
+ * Default values for [[GraphicBuilderOptions.wantNormals]] and [[GraphicBuilderOptions.generateEdges]] will be determined by the viewport's [ViewFlags]($common).
+ * The [[GraphicBuilder.iModel]] will be set to the viewport's [[IModelConnection]].
+ * @public
+ */
+export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
+  /** The viewport in which the resultant [[RenderGraphic]] is to be drawn. */
+  viewport: Viewport;
+
+  /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics. */
+  applyAspectRatioSkew?: boolean;
+
+  iModel?: never;
+  computeChordTolerance?: never;
+}
+
+/** Arguments used to compute the chord tolerance (level of detail) of the [[RenderGraphic]]s produced by a [[GraphicBuilder]].
+ * Generally, the chord tolerance should be roughly equivalent to the size in meters of one pixel on screen where the graphic is to be displayed.
+ * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
+ * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
+ * @public
+ */
+export interface ComputeChordToleranceArgs {
+  /** The graphic builder being used to produce the graphics. */
+  readonly graphic: GraphicBuilder;
+  /** A function that computes a range enclosing all of the geometry that was added to the builder. */
+  readonly computeRange: () => Range3d;
+}
+
+/** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] that is not associated with any particular [[Viewport]] and may not be associated with
+ * any particular [[IModelConnection]].
+ * This is primarily useful when the same graphic is to be saved and reused for display in multiple viewports and for which a chord tolerance can be computed
+ * independently of each viewport's [Frustum]($common).
+ * @public
+ */
+export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
+  /** Optionally, the IModelConnection with which the graphic is associated. */
+  iModel?: IModelConnection;
+  /** A function that can compute the level of detail for the graphics produced by the builder. */
+  computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
+
+  applyAspectRatioSkew?: never;
+  viewport?: never;
+}
 
 /** Provides methods for constructing a [[RenderGraphic]] from geometric primitives.
  * GraphicBuilder is primarily used for creating [[Decorations]] to be displayed inside a [[Viewport]].
@@ -171,100 +210,87 @@ export type BuilderOptions = GraphicBuilderOptions & { placement: Transform };
  * @public
  */
 export abstract class GraphicBuilder {
-  /** @internal */
-  protected readonly _options: BuilderOptions;
-
-  /** @internal */
-  protected constructor(options: GraphicBuilderOptions) {
-    this._options = { ...options, placement: options.placement ?? Transform.createIdentity() };
-    if (undefined === this._options.preserveOrder)
-      this._options.preserveOrder = this.isOverlay || this.isViewBackground;
-  }
-
   /** The local coordinate system transform applied to this builder's geometry.
    * @see [[GraphicBuilderOptions.placement]].
    */
-  public get placement(): Transform {
-    return this._options.placement;
-  }
-  public set placement(transform: Transform) {
-    this._options.placement.setFrom(transform);
-  }
+  public readonly placement: Transform;
 
-  /** The viewport in which the resultant [[RenderGraphic]] will be drawn.
-   * @see [[GraphicBuilderOptions.viewport]].
-   */
-  public get viewport(): Viewport {
-    return this._options.viewport;
-  }
+  /** The iModel associated with this builder, if any. */
+  public readonly iModel?: IModelConnection;
 
   /** The type of graphic to be produced by this builder.
    * @see [[GraphicBuilderOptions.type]].
    */
-  public get type(): GraphicType {
-    return this._options.type;
+  public readonly type: GraphicType;
+
+  /** If the graphic is to be pickable, specifies the pickable Id and other options. */
+  public readonly pickable?: Readonly<PickableGraphicOptions>;
+
+  /** If true, the order in which geometry is added to the builder is preserved.
+   * @see [[GraphicBuilderOptions.preserveOrder]] for more details.
+   */
+  public readonly preserveOrder: boolean;
+
+  /** Controls whether normals are generated for surfaces.
+   * @note Normals are required for proper edge display, so by default they are always produced if [[wantEdges]] is `true`.
+   * @see [[GraphicBuilderOptions.wantNormals]] for more details.
+   */
+  public readonly wantNormals: boolean;
+
+  /** Controls whether edges are generated for surfaces.
+   * @see [[GraphicBuilderOptions.generateEdges]] for more details.
+   */
+  public readonly wantEdges: boolean;
+
+  /** @alpha */
+  public readonly analysisStyle?: AnalysisStyle;
+
+  protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
+  protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
+
+  /** @internal */
+  protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
+    // Stored for potential use later in creating a new GraphicBuilder from this one (see PrimitiveBuilder.finishGraphic).
+    this._options = options;
+
+    const vp = options.viewport;
+    this.placement = options.placement ?? Transform.createIdentity();
+    this.iModel = vp?.iModel ?? options.iModel;
+    this.type = options.type;
+    this.pickable = options.pickable;
+    this.wantEdges = options.generateEdges ?? (this.type === GraphicType.Scene && (!vp || vp.viewFlags.edgesRequired()));
+    this.wantNormals = options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
+    this.preserveOrder = options.preserveOrder ?? (this.isOverlay || this.isViewBackground);
+
+    if (!options.viewport) {
+      this._computeChordTolerance = options.computeChordTolerance;
+      return;
+    }
+
+    this.analysisStyle = options.viewport.displayStyle.settings.analysisStyle;
+
+    this._computeChordTolerance = (args: ComputeChordToleranceArgs) => {
+      let pixelSize = 1;
+      if (!this.isViewCoordinates) {
+        // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
+        pixelSize = options.viewport.getPixelSizeAtPoint(args.computeRange().center);
+        pixelSize = options.viewport.target.adjustPixelSizeForLOD(pixelSize);
+
+        // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
+        const skew = options.applyAspectRatioSkew ? options.viewport.view.getAspectRatioSkew() : 0;
+        if (skew > 1)
+          pixelSize /= skew;
+      }
+
+      return pixelSize * 0.25;
+    };
   }
 
   /** The Id to be associated with the graphic for picking.
    * @see [[GraphicBuilderOptions.pickable]] for more options.
    */
   public get pickId(): Id64String | undefined {
-    return this._options.pickable?.id;
-  }
-  public set pickId(id: Id64String | undefined) {
-    if (id === this.pickId)
-      return;
-
-    if (undefined === id) {
-      this._options.pickable = undefined;
-      return;
-    }
-
-    if (!this._options.pickable)
-      this._options.pickable = { id };
-    else
-      this._options.pickable.id = id;
-  }
-
-  /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics.
-   * @see [[GraphicBuilderOptions.applyAspectRatioSkew]].
-   */
-  public get applyAspectRatioSkew(): boolean {
-    return true === this._options.applyAspectRatioSkew;
-  }
-  public set applyAspectRatioSkew(apply: boolean) {
-    this._options.applyAspectRatioSkew = apply;
-  }
-
-  /** If true, the order in which geometry is added to the builder is preserved.
-   * @see [[GraphicBuilderOptions.preserveOrder]] for more details.
-   */
-  public get preserveOrder(): boolean {
-    return true === this._options.preserveOrder;
-  }
-  public set preserveOrder(preserve: boolean) {
-    this._options.preserveOrder = preserve;
-  }
-
-  /** Controls whether normals are generated for surfaces.
-   * @note Normals are required for proper edge display, so they are always produced if [[wantEdges]] is `true`.
-   * @see [[GraphicBuilderOptions.wantNormals]] for more details.
-   */
-  public get wantNormals(): boolean {
-    return this._options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
-  }
-  public set wantNormals(want: boolean) {
-    this._options.wantNormals = want;
-  }
-
-  /** Controls whether edges are generated for surfaces.
-   * @see [[GraphicBuilderOptions.generateEdges]] for more details.
-   */
-  public get wantEdges(): boolean {
-    return this._options.generateEdges ?? (this.type === GraphicType.Scene && this.viewport.viewFlags.edgesRequired());
-  }
-  public set wantEdges(want: boolean) {
-    this._options.generateEdges = want;
+    return this.pickable?.id;
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.View]] coordinates.
@@ -294,11 +320,6 @@ export abstract class GraphicBuilder {
   /** True if the builder produces a graphic of [[GraphicType.WorldOverlay]] or [[GraphicType.ViewOerlay]]. */
   public get isOverlay(): boolean {
     return this.type === GraphicType.ViewOverlay || this.type === GraphicType.WorldOverlay;
-  }
-
-  /** The iModel of the [[Viewport]] in which the [[RenderGraphic]] is to be drawn. */
-  public get iModel(): IModelConnection {
-    return this.viewport.iModel;
   }
 
   /**
@@ -375,14 +396,14 @@ export abstract class GraphicBuilder {
   /** Append a 3d planar region to the builder. */
   public abstract addLoop(loop: Loop): void;
 
-  /** Append a [CurvePrimitive]($geometry-core) to the builder. */
+  /** Append a [CurvePrimitive]($core-geometry) to the builder. */
   public addCurvePrimitive(curve: AnyCurvePrimitive): void {
     switch (curve.curvePrimitiveType) {
       case "lineString":
         this.addLineString(curve.points);
         break;
       case "lineSegment":
-        this.addLineString([ curve.startPoint(), curve.endPoint() ]);
+        this.addLineString([curve.startPoint(), curve.endPoint()]);
         break;
       case "arc":
         this.addArc(curve, false, false);

@@ -8,7 +8,7 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@bentley/bentleyjs-core";
+import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
@@ -34,7 +34,7 @@ export enum RenderMode {
    * Lighting (and by extension, shadows) is not applied.
    */
   SolidFill = 4,
-  /** Identical to [[RenderMode.SmoothShade]], except:
+  /** Identical to [[RenderMode.SolidFill]], except:
    *  - Surfaces are drawn using the [DisplayStyle]($backend)'s background color.
    *  - Edges are drawn using their surface's colors; this can be overridden using [[HiddenLine.Settings]].
    */
@@ -104,7 +104,9 @@ export interface ViewFlagProps {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   forceSurfaceDiscard?: boolean;
-  /** Disables the "white-on-white reversal" employed by some CAD applications. White-on-white reversal causes white geometry to be drawn as black if the view's background color is also white. */
+  /** Disables the "white-on-white reversal" employed by some CAD applications.
+   * @see [[ViewFlags.whiteOnWhiteReversal]].
+   */
   noWhiteOnWhiteReversal?: boolean;
 }
 
@@ -207,6 +209,7 @@ export class ViewFlags {
   public readonly forceSurfaceDiscard: boolean;
   /** Whether to apply white-on-white reversal.
    * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
+   * When enabled, the [[DisplayStyleSettings]]' [[WhiteOnWhiteReversalSettings]] control how white-on-white reversal is applied.
    * Default: true.
    */
   public readonly whiteOnWhiteReversal: boolean;

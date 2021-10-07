@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, using } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../imodeljs-backend";
+import { DbResult, using } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 describe("SqliteStatement", () => {
   const outDir = KnownTestLocations.outputDir;
@@ -17,7 +18,7 @@ describe("SqliteStatement", () => {
   const doubleVal = -2.5;
   const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
 
-  it("Create Table, Insert, Select with ECDb", () => {
+  it("create table, insert, select with ecdb", () => {
     using(ECDbTestHelper.createECDb(outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
@@ -102,7 +103,7 @@ describe("SqliteStatement", () => {
           assert.isFalse(blobSqlVal.isNull);
           assert.equal(blobSqlVal.type, SqliteValueType.Blob);
           assert.isDefined(blobSqlVal.value);
-          assert.equal(blobSqlVal.value.byteLength, blobVal.byteLength);
+          assert.equal((blobSqlVal.value as Uint8Array).byteLength, blobVal.byteLength);
           assert.equal(blobSqlVal.getBlob().byteLength, blobVal.byteLength);
           assert.equal(blobSqlVal.columnName, "blobcol");
         }
@@ -128,7 +129,7 @@ describe("SqliteStatement", () => {
           assert.equal(row.doublecol, doubleVal);
 
           assert.isDefined(row.blobcol);
-          assert.equal(row.blobcol.byteLength, blobVal.byteLength);
+          assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
         }
         assert.equal(rowCount, 4);
       });
@@ -151,14 +152,14 @@ describe("SqliteStatement", () => {
           assert.equal(row.doublecol, doubleVal);
 
           assert.isDefined(row.blobcol);
-          assert.equal(row.blobcol.byteLength, blobVal.byteLength);
+          assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
         }
         assert.equal(rowCount, 4);
       });
     });
   });
 
-  it("Null values", () => {
+  it("null values handling", () => {
     using(ECDbTestHelper.createECDb(outDir, "bindnull.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
@@ -234,7 +235,7 @@ describe("SqliteStatement", () => {
     });
   });
 
-  it("Ids and Guids", () => {
+  it("ids and guids", () => {
     using(ECDbTestHelper.createECDb(outDir, "idsandguids.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
@@ -305,7 +306,7 @@ describe("SqliteStatement", () => {
     });
   });
 
-  it("Run cached SQL", () => {
+  it("run cached sql", () => {
     const fileName = "sqlitesqlagainstreadonlyconnection.ecdb";
     const ecdbPath = path.join(outDir, fileName);
     using(ECDbTestHelper.createECDb(outDir, fileName), (ecdb: ECDb) => {
@@ -387,6 +388,41 @@ describe("SqliteStatement", () => {
       assert.isTrue(nested1?.isPrepared, "nested1 is cached");
       assert.isTrue(stmt2?.isPrepared, "stmt2 is in the cache");
       assert.isTrue(stmt5?.isPrepared, "stmt5 is in the cache");
+    });
+  });
+  // This test generate no log when run as suite but is successful when only this fixture run.
+  it.skip("check prepare logErrors flag", () => {
+    const fileName = "logErrors.ecdb";
+    const ecdbPath = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+    });
+    using(new ECDb(), (ecdb: ECDb) => {
+      ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
+      assert.isTrue(ecdb.isOpen);
+      // expect log message when statement fails
+      let slm = new SequentialLogMatcher();
+      slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
+      assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+      assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
+
+      // now pass suppress log error which mean we should not get the error
+      slm = new SequentialLogMatcher();
+      slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
+      assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
+      assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
+
+      // expect log message when statement fails
+      slm = new SequentialLogMatcher();
+      slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+      assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
+
+      // now pass suppress log error which mean we should not get the error
+      slm = new SequentialLogMatcher();
+      slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), ""); // BUG: we do not see error message
+      assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
     });
   });
 });

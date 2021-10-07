@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, loggerCategory, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, ToolAdmin } from "@bentley/imodeljs-frontend";
+import { Logger } from "@itwin/core-bentley";
+import { IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, ToolAdmin } from "@itwin/core-frontend";
 import { ResponseError } from "@bentley/itwin-client";
 
 export class ErrorHandling {
@@ -43,25 +43,25 @@ export class ErrorHandling {
       // Various special cases:
       const owner = this.parseChannelConstraintError(err);
       if (owner !== undefined) {
-        this.displayError(IModelApp.i18n.translate("SampleApp:error:ChannelConstraintViolation", { owner }));
+        this.displayError(IModelApp.localization.getLocalizedString("SampleApp:error:ChannelConstraintViolation", { owner }));
         return;
       }
 
       // General case:
       this.displayError(String(err), err.stack);
-      Logger.logException(loggerCategory, err);
+      Logger.logException("ui-test-app", err);
       return;
     }
 
     // ResponseError
     if (err.status === 403) {
-      alert(IModelApp.i18n.translate("error:missingPermission", { message: err.message }));
+      alert(IModelApp.localization.getLocalizedString("error:missingPermission", { message: err.message }));
     } else {
       if (err.status === 401) {
         if (err.message.includes("not active")) {
-          this.displayError(IModelApp.i18n.translate("error:expiredLogin"));
+          this.displayError(IModelApp.localization.getLocalizedString("error:expiredLogin"));
         } else {
-          alert(IModelApp.i18n.translate("error:authenticationFailure", { message: err.message }));
+          alert(IModelApp.localization.getLocalizedString("error:authenticationFailure", { message: err.message }));
         }
       } else {
         this.displayError(err.logMessage(), "");

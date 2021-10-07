@@ -5,9 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
-import { ElementResizeObserver, ResizableContainerObserver, useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
-import { createDOMRect } from "../../Utils";
+import * as ResizeObserverModule from "../../../core-react/utils/hooks/ResizeObserverPolyfill";
+import { ElementResizeObserver, ResizableContainerObserver, useResizeObserver } from "../../../core-react/utils/hooks/useResizeObserver";
 import TestUtils from "../../TestUtils";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
@@ -75,10 +74,10 @@ describe("useResizeObserver", () => {
     });
     await TestUtils.flushAsyncOperations();
     spy.resetHistory();
-    sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
+    sinon.stub(element, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 100 }));
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 100 }),
+      contentRect: DOMRect.fromRect({ width: 100 }),
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
     await TestUtils.flushAsyncOperations();
@@ -96,10 +95,10 @@ describe("useResizeObserver", () => {
     await TestUtils.flushAsyncOperations();
 
     spy.resetHistory();
-    sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ height: 100 }));
+    sinon.stub(element, "getBoundingClientRect").returns(DOMRect.fromRect({ height: 100 }));
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ height: 100 }),
+      contentRect: DOMRect.fromRect({ height: 100 }),
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
     await TestUtils.flushAsyncOperations();
@@ -117,10 +116,10 @@ describe("useResizeObserver", () => {
 
     await TestUtils.flushAsyncOperations();
     spy.resetHistory();
-    sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ width: 100, height: 100 }));
+    sinon.stub(element, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 100, height: 100 }));
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 100, height: 100 }),
+      contentRect: DOMRect.fromRect({ width: 100, height: 100 }),
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
     await TestUtils.flushAsyncOperations();
@@ -130,9 +129,9 @@ describe("useResizeObserver", () => {
 });
 
 describe("useLayoutResizeObserver", () => {
-  const size_0_0 = createDOMRect({ width: 0, height: 0 });
-  const size_100_50 = createDOMRect({ width: 100, height: 50 });
-  const size_300_100 = createDOMRect({ width: 300, height: 100 });
+  const size_0_0 = DOMRect.fromRect({ width: 0, height: 0 });
+  const size_100_50 = DOMRect.fromRect({ width: 100, height: 50 });
+  const size_300_100 = DOMRect.fromRect({ width: 300, height: 100 });
   let boundingClientRect = size_0_0;
   stubRaf();
   const sandbox = sinon.createSandbox();
@@ -196,7 +195,7 @@ describe("useLayoutResizeObserver", () => {
       if (this.classList.contains("sizer") || this.classList.contains("uicore-resizable-container")) {
         return boundingClientRect;
       }
-      return createDOMRect();
+      return new DOMRect();
     });
   });
 
@@ -218,7 +217,7 @@ describe("useLayoutResizeObserver", () => {
     boundingClientRect = size_300_100;
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
+      contentRect: DOMRect.fromRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
       target: container,
     }], resizeObserverSpy.firstCall.returnValue);
     await TestUtils.flushAsyncOperations();
@@ -244,7 +243,7 @@ describe("useLayoutResizeObserver", () => {
     boundingClientRect = size_300_100;
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
+      contentRect: DOMRect.fromRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
       target: container,
     }], resizeObserverSpy.firstCall.returnValue);
     await TestUtils.flushAsyncOperations();
@@ -277,7 +276,7 @@ describe("useLayoutResizeObserver", () => {
     boundingClientRect = size_300_100;
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
+      contentRect: DOMRect.fromRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
       target: container.parentElement,
     }], resizeObserverSpy.firstCall.returnValue);
     await TestUtils.flushAsyncOperations();

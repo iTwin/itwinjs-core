@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {
   it("should render", () => {
@@ -14,14 +14,14 @@ describe("FloatingWidget", () => {
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -31,14 +31,14 @@ describe("FloatingWidget", () => {
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -48,14 +48,14 @@ describe("FloatingWidget", () => {
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
@@ -72,7 +72,7 @@ describe("FloatingWidget", () => {
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true, isFloatingStateWindowResizable: true });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -80,7 +80,7 @@ describe("FloatingWidget", () => {
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
           widget={nineZone.widgets.w1}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const handle = container.getElementsByClassName("nz-widget-floatingWidget_handle")[0];
     act(() => {
@@ -100,7 +100,7 @@ describe("FloatingWidget", () => {
     nineZone = addFloatingWidget(nineZone, "toolSettings", ["nz-tool-settings-tab"], undefined, { minimized: true, isFloatingStateWindowResizable: false });
     nineZone = addTab(nineZone, "nz-tool-settings-tab");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -108,7 +108,7 @@ describe("FloatingWidget", () => {
           floatingWidget={nineZone.floatingWidgets.byId.toolSettings!}
           widget={nineZone.widgets.toolSettings}
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const handleList = container.getElementsByClassName("nz-widget-floatingWidget_handle");
     handleList.length.should.eq(0);

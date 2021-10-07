@@ -1,26 +1,27 @@
 {
-  "name": "@bentley/ecschema-editing",
-  "version": "3.0.0-dev.48",
+  "name": "@itwin/ecschema-editing",
+  "version": "3.0.0-dev.79",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
-  "main": "lib/ecschema-editing.js",
-  "typings": "lib/ecschema-editing",
+  "main": "lib/cjs/ecschema-editing.js",
+  "typings": "lib/cjs/ecschema-editing",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-editing"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run createLocalization && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-editing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test",
+    "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
-    "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs",
-    "createLocalization": "node ./scripts/createLocalization.js"
+    "cover": "nyc npm -s test",
+    "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs",
+    "createLocalization": "node ./scripts/createLocalization.js && cpx \"./public/locales/**/*\" ./lib/public"
   },
   "keywords": [
     "Bentley",
@@ -33,21 +34,21 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
-    "@types/i18next-node-fs-backend": "^2.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
-    "@types/xmldom": "^0.1.30",
+    "@xmldom/xmldom": "^0.7.0",
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -58,26 +59,24 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.3.0",
-    "xmldom": "^0.6.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.48",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.48",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.48"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.79",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.79"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn"

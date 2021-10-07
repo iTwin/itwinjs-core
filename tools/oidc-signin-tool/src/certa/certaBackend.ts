@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "fs";
 import * as path from "path";
-import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken } from "@itwin/core-bentley";
+import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
-import { getTokenCallbackName, serializeToken } from "./certaCommon";
-import * as fs from "fs";
+import { getTokenCallbackName } from "./certaCommon";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in.
 
@@ -45,11 +45,7 @@ loadEnv(path.join(process.cwd(), ".env"));
  * If the oidcConfig param is provided, it will always be used over the default.
  */
 async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
-  // Handle OIDC signin
-  // console.log("Starting OIDC signin...");
-  // console.time("Finished OIDC signin in");
-
-  let token: AccessToken;
+  let token: AccessToken | undefined;
   if (undefined === oidcConfig || null === oidcConfig) {
     token = await TestUtility.getAccessToken(user);
   } else {
@@ -60,12 +56,10 @@ async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthori
   if (undefined === token)
     throw new Error("Failed to get access token");
 
-  // console.timeEnd("Finished OIDC signin in");
-
   return token;
 }
 
 registerBackendCallback(getTokenCallbackName, async (user: any, oidcConfig?: any): Promise<string> => {
   const accessToken = await signin(user, oidcConfig);
-  return JSON.stringify(serializeToken(accessToken));
+  return accessToken?.toString() ?? "";
 });

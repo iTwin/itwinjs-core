@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { NativeApp } from "@bentley/imodeljs-frontend";
-import { NativeAppTest } from "../NativeAppTest";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { NativeApp } from "@itwin/core-frontend";
 import { usingOfflineScope } from "../HttpRequestHook";
+import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp startup", () => {
   before(async () => ElectronApp.startup());
@@ -37,7 +37,7 @@ describe("NativeApp Storage", () => {
       { key: "b", value: 11.22 },
       { key: "c", value: "Hello World" },
       { key: "d", value: Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) },
-      { key: "e", value: null },
+      { key: "e", value: undefined },
     ];
 
     for (const item of dataset) {
@@ -55,11 +55,13 @@ describe("NativeApp Storage", () => {
 
   it("Override and type check", async () => {
     const test1 = await NativeApp.openStorage("fronted_test_2");
-    await test1.setData("key1", null);
-    assert.isNull(await test1.getData("key1"));
+    await test1.setData("key1", undefined);
+    assert.isUndefined(await test1.getData("key1"));
+    assert.equal(await test1.getValueType("key1"), "null");
 
     await test1.removeData("key1");
     assert.isUndefined(await test1.getData("key1"));
+    assert.equal(await test1.getValueType("key1"), undefined);
 
     await test1.setData("key1", 2222);
     assert.isNumber(await test1.getData("key1"));

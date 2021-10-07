@@ -2,25 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { KeySet, Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "typemoq";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { I18N } from "@itwin/core-i18n";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import {
   FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
-} from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyData } from "@bentley/ui-components";
+} from "@itwin/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/components-react";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
-
-/* eslint-disable @typescript-eslint/promise-function-async */
 
 describe("FavoritePropertiesDataProvider", () => {
 
@@ -39,7 +36,7 @@ describe("FavoritePropertiesDataProvider", () => {
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setSelectionManager(selectionManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setI18nManager(new I18N("", {
+    Presentation.setLocalization(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
   });
@@ -76,12 +73,12 @@ describe("FavoritePropertiesDataProvider", () => {
 
     beforeEach(() => {
       const selectionScopesManager = moq.Mock.ofType<SelectionScopesManager>();
-      selectionScopesManager.setup((x) => x.computeSelection(moq.It.isAny(), elementId, moq.It.isAny())).returns(async () => new KeySet());
+      selectionScopesManager.setup(async (x) => x.computeSelection(moq.It.isAny(), elementId, moq.It.isAny())).returns(async () => new KeySet());
       selectionManagerMock.setup((x) => x.scopes).returns(() => selectionScopesManager.object);
     });
 
     it("passes `customRulesetId` to PropertyDataProvider if set", async () => {
-      presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => ({
+      presentationPropertyDataProviderMock.setup(async (x) => x.getData()).returns(async () => ({
         label: PropertyRecord.fromString(faker.random.word()),
         categories: [],
         records: {},
@@ -106,7 +103,7 @@ describe("FavoritePropertiesDataProvider", () => {
           ],
         },
       };
-      presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => dataToReturn);
+      presentationPropertyDataProviderMock.setup(async (x) => x.getData()).returns(async () => dataToReturn);
 
       const data = await provider.getData(imodelMock.object, elementId);
       expect(data.categories.length).to.eq(0);
@@ -134,7 +131,7 @@ describe("FavoritePropertiesDataProvider", () => {
           ],
         },
       };
-      presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => dataToReturn);
+      presentationPropertyDataProviderMock.setup(async (x) => x.getData()).returns(async () => dataToReturn);
 
       const data = await provider.getData(imodelMock.object, elementId);
       expect(data.categories.length).to.eq(1);

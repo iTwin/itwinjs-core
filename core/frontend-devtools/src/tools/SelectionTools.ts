@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { Id64Arg } from "@bentley/bentleyjs-core";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { Id64Arg } from "@itwin/core-bentley";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Replaces the contents of the selection set with the set of element Ids specified.
  * Element Ids are separated by whitespace.
@@ -19,7 +19,7 @@ export class SelectElementsByIdTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return undefined; }
 
-  public override run(ids?: Id64Arg): boolean {
+  public override async run(ids?: Id64Arg): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && undefined !== ids)
       vp.iModel.selectionSet.replace(ids);
@@ -27,7 +27,7 @@ export class SelectElementsByIdTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }

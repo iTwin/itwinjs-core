@@ -3,19 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
-
 import * as React from "react";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@itwin/core-frontend";
 import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { getQuantityFormatsSettingsManagerEntry } from "../../ui-framework/settings/quantityformatting/QuantityFormat";
-import { ModalDialogRenderer } from "../../ui-framework/dialog/ModalDialogManager";
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
+import { getQuantityFormatsSettingsManagerEntry } from "../../appui-react/settings/quantityformatting/QuantityFormat";
+import { ModalDialogRenderer } from "../../appui-react/dialog/ModalDialogManager";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import { UiFramework } from "../../appui-react/UiFramework";
 
 describe("QuantityFormatSettingsPage", () => {
 

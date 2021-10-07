@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
-} from "@bentley/geometry-core";
-import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@bentley/imodeljs-common";
-import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "../../render/GraphicBuilder";
+} from "@itwin/core-geometry";
+import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -39,7 +39,7 @@ describe("GraphicBuilder", () => {
     await IModelApp.shutdown();
   });
 
-  type BuilderOpts = Omit<GraphicBuilderOptions, "viewport" | "type">;
+  type BuilderOpts = Omit<ViewportGraphicBuilderOptions, "viewport" | "type">;
 
   function makeBuilder(type: GraphicType, options: BuilderOpts): GraphicBuilder {
     return IModelApp.renderSystem.createGraphic({ type, viewport, ...options });
@@ -185,8 +185,7 @@ describe("GraphicBuilder", () => {
         const pfBuilder = PolyfaceBuilder.create(options);
         pfBuilder.addTriangleFacet(createTriangle());
 
-        const gfBuilder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.WorldDecoration, viewport);
-        gfBuilder.wantNormals = requestNormals; // should have no effect - normals come from polyface only, we don't generate them.
+        const gfBuilder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals: requestNormals });
         gfBuilder.addPolyface(pfBuilder.claimPolyface(), false);
         const gf = gfBuilder.finish();
         gf.dispose();
@@ -204,8 +203,7 @@ describe("GraphicBuilder", () => {
         injectNormalsCheck(wantNormals);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.WorldDecoration, viewport);
-        builder.wantNormals = wantNormals;
+        const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals });
         builder.addShape(createTriangle());
         const gf = builder.finish();
         gf.dispose();
@@ -217,7 +215,7 @@ describe("GraphicBuilder", () => {
     });
 
     it("should produce edges", () => {
-      function expectEdges(expected: "silhouette" | "segment" | "both" | "none", addToGraphic: (builder: GraphicBuilder) => void): void {
+      function expectEdges(expected: "silhouette" | "segment" | "both" | "none", addToGraphic: (builder: GraphicBuilder) => void, generateEdges?: boolean): void {
         let expectSilhouettes = false;
         let expectSegments = false;
         switch (expected) {
@@ -246,11 +244,12 @@ describe("GraphicBuilder", () => {
         overrideCreateMesh(verifyParams);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, viewport);
-        expect(builder.wantEdges).to.be.true;
+        const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.Scene, viewport, generateEdges });
+        expect(builder.wantEdges).to.equal(generateEdges ?? true);
         addToGraphic(builder);
 
-        builder.finish();
+        const gf = builder.finish();
+        gf.dispose();
         expect(createMeshInvoked).to.be.true;
       }
 
@@ -269,9 +268,8 @@ describe("GraphicBuilder", () => {
       });
 
       expectEdges("none", (builder) => {
-        builder.wantEdges = false;
         builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
-      });
+      }, false);
     });
   });
 });

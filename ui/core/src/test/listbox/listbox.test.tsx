@@ -7,8 +7,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 
 import { fireEvent, render } from "@testing-library/react";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { Listbox, ListboxItem, ListboxValue } from "../../ui-core/listbox/Listbox";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { Listbox, ListboxItem, ListboxValue } from "../../core-react/listbox/Listbox";
 
 describe("<ListBox />", () => {
   const listItems = ["London", "Paris", "Stockholm", "Berlin", "Mumbai", "Christchurch", "Johannesburg", "Beijing", "New York"];

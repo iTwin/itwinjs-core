@@ -4,22 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
+import * as moq from "typemoq";
+import { BeEvent, Id64String, using } from "@itwin/core-bentley";
 import {
   IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import * as UiComponents from "@bentley/ui-components";
+} from "@itwin/core-frontend";
+import { ECInstancesNodeKey, StandardNodeTypes } from "@itwin/presentation-common";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import * as UiComponents from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
+
 import {
   Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,
-} from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+} from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
   return {
     type: StandardNodeTypes.ECInstancesNode,
+    version: 0,
     instanceKeys: [{ className: "MyDomain:SpatialCategory", id }],
     pathFromRoot: [],
   };

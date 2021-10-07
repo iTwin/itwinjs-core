@@ -6,7 +6,6 @@ import { RequestGlobalOptions } from "@bentley/itwin-client";
 import * as http from "http";
 import * as https from "https";
 import { HttpsProxyAgent, HttpsProxyAgentOptions } from "https-proxy-agent";
-import * as url from "url";
 
 /** Utility to configure all HTTP service requests make from the backend
  * @internal
@@ -35,7 +34,7 @@ export class HttpRequestHost {
       if (HttpRequestHost._proxyUrl === undefined)
         return undefined;
 
-      const proxyAgentOptions = url.parse(HttpRequestHost._proxyUrl);
+      const proxyAgentOptions = new URL(HttpRequestHost._proxyUrl);
       const mergedAgentOptions: HttpsProxyAgentOptions = additionalOptions !== undefined ? { ...additionalOptions, ...proxyAgentOptions } : { ...proxyAgentOptions };
       return new HttpsProxyAgent(mergedAgentOptions);
     };
@@ -56,7 +55,7 @@ export class HttpRequestHost {
     (httpsProxy as HttpsProxyAgent).protocol = "https:";
     (https.globalAgent as any) = httpsProxy;
 
-    const proxyUrlParts = url.parse(HttpRequestHost._proxyUrl);
+    const proxyUrlParts = new URL(HttpRequestHost._proxyUrl);
     if (this.isHttp(proxyUrlParts.protocol))
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     console.log(`Routing requests through HTTPS_PROXY: ${proxyUrl}`); // eslint-disable-line no-console
@@ -73,7 +72,7 @@ export class HttpRequestHost {
   /** Returns true if the supplied host URL is reachable */
   private static async isHostReachable(hostUrl: string): Promise<boolean> {
     return new Promise<boolean>(((resolve) => {
-      const urlParts = url.parse(hostUrl);
+      const urlParts = new URL(hostUrl);
       const protocol = urlParts.protocol;
       const parseResponse = (response: http.IncomingMessage) => {
         resolve(response.statusCode === 200);

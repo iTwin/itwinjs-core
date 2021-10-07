@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
-import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@bentley/geometry-core";
-import { ColorDef, RenderMode } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
+import { ColorDef, RenderMode } from "@itwin/core-common";
+import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
 class GeometryDecorator {

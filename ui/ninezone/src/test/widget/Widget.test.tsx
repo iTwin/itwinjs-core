@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { act, fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
   PanelStateContext, PanelWidget, PanelWidgetDragStartAction, Widget, WidgetIdContext, WidgetStateContext,
-} from "../../ui-ninezone";
-import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
-import { NineZoneProvider } from "../Providers";
+} from "../../appui-layout-react";
+import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
+import { TestNineZoneProvider } from "../Providers";
 import { defaultProps } from "./PanelWidget.test";
 
 describe("PanelWidget", () => {
@@ -22,7 +22,7 @@ describe("PanelWidget", () => {
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1");
       const { container } = render(
-        <NineZoneProvider
+        <TestNineZoneProvider
           state={nineZone}
           dispatch={dispatch}
         >
@@ -31,7 +31,7 @@ describe("PanelWidget", () => {
               <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
           </PanelStateContext.Provider>
-        </NineZoneProvider>,
+        </TestNineZoneProvider>,
       );
 
       const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
@@ -54,7 +54,7 @@ describe("PanelWidget", () => {
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1");
       const { container } = render(
-        <NineZoneProvider
+        <TestNineZoneProvider
           state={nineZone}
           dispatch={dispatch}
         >
@@ -63,7 +63,7 @@ describe("PanelWidget", () => {
               <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
           </PanelStateContext.Provider>
-        </NineZoneProvider>,
+        </TestNineZoneProvider>,
       );
 
       const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
@@ -95,7 +95,7 @@ describe("PanelWidget", () => {
         },
       });
       const { container } = render(
-        <NineZoneProvider
+        <TestNineZoneProvider
           state={nineZone}
           dispatch={dispatch}
         >
@@ -104,7 +104,7 @@ describe("PanelWidget", () => {
               <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
           </PanelStateContext.Provider>
-        </NineZoneProvider>,
+        </TestNineZoneProvider>,
       );
 
       const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
@@ -129,7 +129,7 @@ describe("PanelWidget", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
@@ -137,7 +137,7 @@ describe("PanelWidget", () => {
             <PanelWidget widgetId="w1" {...defaultProps} />
           </PanelSideContext.Provider>
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
 
     const widget = container.getElementsByClassName("nz-widget-panelWidget")[0];
@@ -157,7 +157,7 @@ describe("PanelWidget", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -168,7 +168,7 @@ describe("PanelWidget", () => {
             </FloatingWidgetIdContext.Provider>
           </WidgetIdContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
 
     const widgetElement = container.getElementsByClassName("nz-widget-widget")[0];

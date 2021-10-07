@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentViewManager, CoreTools, Frontstage,
   FrontstageManager, FrontstageProps, FrontstageProvider,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("ContentControl", () => {
@@ -33,25 +34,24 @@ describe("ContentControl", () => {
   it("activated", async () => {
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "myContentGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [
-        { classId: TestContentControl, applicationData: "data1" },
-        { classId: TestContentControl, applicationData: "data2" },
+        { id: "main", classId: TestContentControl, applicationData: "data1" },
+        { id: "secondary", classId: TestContentControl, applicationData: "data2" },
       ],
     });
 
-    const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-      id: "SingleContent",
-      descriptionKey: "UiFramework:tests.singleContent",
-      priority: 100,
-    });
-
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ContentFrontstage1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ContentFrontstage1"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout={myContentLayout}
             contentGroup={myContentGroup}
           />
         );
@@ -59,7 +59,7 @@ describe("ContentControl", () => {
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("ContentFrontstage1");
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -90,26 +90,24 @@ describe("ContentControl", () => {
   it("deactivated", async () => {
     const contentGroup2: ContentGroup = new ContentGroup({
       id: "contentGroup2",
+      layout: StandardContentLayouts.twoHorizontalSplit,
       contents: [
-        { classId: TestContentControl, applicationData: "data1" },
-        { classId: TestContentControl, applicationData: "data2" },
+        { id: "main", classId: TestContentControl, applicationData: "data1" },
+        { id: "secondary", classId: TestContentControl, applicationData: "data2" },
       ],
     });
 
-    const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
-      id: "TwoHalvesVertical",
-      descriptionKey: "App:ContentLayoutDef.TwoHalvesVertical",
-      priority: 60,
-      verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
-    });
-
     class Frontstage2 extends FrontstageProvider {
+      public static stageId = "ContentFrontstage2";
+      public get id(): string {
+        return Frontstage2.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ContentFrontstage2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout={contentLayout2}
             contentGroup={contentGroup2}
           />
         );
@@ -117,7 +115,7 @@ describe("ContentControl", () => {
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
 
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("ContentFrontstage2");
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage2.stageId);
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

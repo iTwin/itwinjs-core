@@ -6,12 +6,14 @@
  * @module IModelApp
  */
 
-import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@bentley/imodeljs-common";
+import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
-import { WebViewerApp, WebViewerAppOpts } from "./WebViewerApp";
+import { IModelAppOptions } from "./IModelApp";
 
 /** @internal */
-export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
+export interface LocalHostIpcAppOpts {
+  iModelApp?: IModelAppOptions;
+
   localhostIpcApp?: {
     socketPort?: number;
     socketPath?: string;
@@ -54,7 +56,6 @@ class LocalTransport extends IpcWebSocketTransport {
 
 /**
  * To be used only by test applications that want to test web-based editing using localhost.
- * This is both a `WebViewerApp` and an `IpcApp`, and it initializes both.
  *  @internal
  */
 export class LocalhostIpcApp {
@@ -62,6 +63,5 @@ export class LocalhostIpcApp {
     IpcWebSocket.transport = new LocalTransport(opts);
     const ipc = new IpcWebSocketFrontend();
     await IpcApp.startup(ipc, opts);
-    await WebViewerApp.startup(opts); // this also attempts to initialize IModelApp, that's ok.
   }
 }

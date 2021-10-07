@@ -7,8 +7,8 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import * as enableWs from "express-ws";
-import { Logger } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { LocalhostIpcHost } from "@bentley/imodeljs-backend";
 

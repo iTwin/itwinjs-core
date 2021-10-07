@@ -2,16 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as chai from "chai";
 import * as fs from "fs";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { Briefcase, ChangeSet, CheckpointV2, CheckpointV2ErrorId, CheckpointV2Query, CheckpointV2State, IModelClient } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import {
+  Briefcase, ChangeSet, CheckpointV2, CheckpointV2ErrorId, CheckpointV2Query, CheckpointV2State, IModelClient,
+} from "@bentley/imodelhub-client";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import * as utils from "./TestUtils";
 import { workDir } from "./TestConstants";
+import * as utils from "./TestUtils";
 
 chai.should();
 
@@ -94,26 +96,26 @@ function assertContainerAccessKey(checkpoint: CheckpointV2) {
 }
 
 describe("iModelHub CheckpointV2Handler", () => {
-  let contextId: string;
+
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   let changeSets: ChangeSet[];
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId, true, true);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
-    briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
+    briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
 
     // Ensure that at least 3 exist
-    changeSets = await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 3);
+    changeSets = await utils.createChangeSets(accessToken, imodelId, briefcase, 0, 3);
 
     if (!fs.existsSync(workDir)) {
       fs.mkdirSync(workDir);
@@ -122,7 +124,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
@@ -133,7 +135,7 @@ describe("iModelHub CheckpointV2Handler", () => {
   // CheckpointV2 not in QA yet, make unit tests until they can be reenabled as integration tests
   it("should query CheckpointsV2 with ContainerAccessKey (#unit)", async () => {
     mockGetCheckpointV2(imodelId, `?$select=*,HasContainer-forward-ContainerAccessKey.*`, mockCheckpointV2("", CheckpointV2State.Successful, "1", true));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().selectContainerAccessKey());
+    const checkpoints = await iModelClient.checkpointsV2.get(accessToken, imodelId, new CheckpointV2Query().selectContainerAccessKey());
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     assertContainerAccessKey(checkpoints[0]);
@@ -147,7 +149,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
     // Create InProgress CheckpointV2
     mockCreateCheckpointV2(imodelId, 2, createCheckpoint);
-    const createdCheckpoint = await iModelClient.checkpointsV2.create(requestContext, imodelId, createCheckpoint);
+    const createdCheckpoint = await iModelClient.checkpointsV2.create(accessToken, imodelId, createCheckpoint);
     chai.assert(createdCheckpoint);
     chai.expect(!!createdCheckpoint.wsgId);
     chai.expect(createdCheckpoint.changeSetId).to.be.eq(changeSetId);
@@ -159,14 +161,14 @@ describe("iModelHub CheckpointV2Handler", () => {
     checkpointToUpdate.wsgId = createdCheckpoint.wsgId;
     checkpointToUpdate.state = CheckpointV2State.Successful;
     mockUpdateCheckpointV2(imodelId, checkpointToUpdate);
-    const updatedCheckpoint = await iModelClient.checkpointsV2.update(requestContext, imodelId, checkpointToUpdate);
+    const updatedCheckpoint = await iModelClient.checkpointsV2.update(accessToken, imodelId, checkpointToUpdate);
     chai.assert(updatedCheckpoint);
     chai.expect(updatedCheckpoint.containerAccessKeyAccount).to.be.undefined;
     chai.expect(updatedCheckpoint.state).to.be.eq(CheckpointV2State.Successful);
 
     // Verify CheckpointV2 was updated
     mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSetId}%27`, mockCheckpointV2(changeSetId, CheckpointV2State.Successful, createdCheckpoint.wsgId));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId));
+    const checkpoints = await iModelClient.checkpointsV2.get(accessToken, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId));
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     chai.expect(checkpoints[0].wsgId).to.be.equal(createdCheckpoint.wsgId);
@@ -180,7 +182,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
   async function verifyPrecedingCheckpointV2(changeSetId: string, expectedPrecedingChangeSetId: string) {
     mockGetCheckpointV2(imodelId, `?$filter=PrecedingCheckpointV2-backward-ChangeSet.Id+eq+%27${changeSetId}%27`, mockCheckpointV2(expectedPrecedingChangeSetId, CheckpointV2State.Successful, "1"));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().precedingCheckpointV2(changeSetId));
+    const checkpoints = await iModelClient.checkpointsV2.get(accessToken, imodelId, new CheckpointV2Query().precedingCheckpointV2(changeSetId));
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     chai.expect(checkpoints[0].changeSetId).to.be.equal(expectedPrecedingChangeSetId);
@@ -195,7 +197,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
     // Create InProgress CheckpointV2
     mockCreateCheckpointV2(imodelId, 2, createCheckpoint);
-    const createdCheckpoint = await iModelClient.checkpointsV2.create(requestContext, imodelId, createCheckpoint);
+    const createdCheckpoint = await iModelClient.checkpointsV2.create(accessToken, imodelId, createCheckpoint);
     chai.assert(createdCheckpoint);
     chai.expect(!!createdCheckpoint.wsgId);
     chai.expect(createdCheckpoint.changeSetId).to.be.eq(changeSetId);
@@ -211,7 +213,7 @@ describe("iModelHub CheckpointV2Handler", () => {
     checkpointToUpdate.failureInfoJobId = "jobId";
     checkpointToUpdate.failureInfoJobRunDurationMS = "1500";
     mockUpdateCheckpointV2(imodelId, checkpointToUpdate);
-    const updatedCheckpoint = await iModelClient.checkpointsV2.update(requestContext, imodelId, checkpointToUpdate);
+    const updatedCheckpoint = await iModelClient.checkpointsV2.update(accessToken, imodelId, checkpointToUpdate);
     chai.assert(updatedCheckpoint);
     chai.expect(updatedCheckpoint.containerAccessKeyAccount).to.be.undefined;
     chai.expect(updatedCheckpoint.state).to.be.eq(CheckpointV2State.Failed);
@@ -222,7 +224,7 @@ describe("iModelHub CheckpointV2Handler", () => {
     mockGetCheckpointV2(imodelId, `?$filter=ChangeSetId+eq+%27${changeSetId}%27&$select=*,HasCheckpointV2FailureInfo-forward-CheckpointV2FailureInfo.*`,
       queryResultCheckpoint);
 
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId).selectFailureInfo());
+    const checkpoints = await iModelClient.checkpointsV2.get(accessToken, imodelId, new CheckpointV2Query().byChangeSetId(changeSetId).selectFailureInfo());
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     const queriedCheckpoint = checkpoints[0];

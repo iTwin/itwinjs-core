@@ -8,15 +8,16 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UserInfo } from "@bentley/itwin-client";
-import { PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { Localization } from "@itwin/core-common";
+import { I18N } from "@itwin/core-i18n";
+import { UserInfo } from "../appui-react/UserInfo";
+import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
 
 import {
-  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
+  ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
-} from "../ui-framework";
+} from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
 interface SampleAppState {
@@ -54,17 +55,17 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get i18n(): I18N {
-    if (!TestUtils._i18n) {
-      TestUtils._i18n = new I18N();
+  public static get localization(): Localization {
+    if (!TestUtils._localization) {
+      TestUtils._localization = new I18N();
     }
-    return TestUtils._i18n;
+    return TestUtils._localization;
   }
 
   public static async initializeUiFramework(testAlternateKey = false) {
@@ -91,12 +92,9 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.i18n, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.localization, "testDifferentFrameworkKey");
       else
-        await UiFramework.initialize(this.store, TestUtils.i18n);
-
-      TestUtils.defineContentGroups();
-      TestUtils.defineContentLayouts();
+        await UiFramework.initialize(this.store, TestUtils.localization);
 
       TestUtils._uiFrameworkInitialized = true;
     }
@@ -111,66 +109,58 @@ export class TestUtils {
 
   /** Define Content Layouts referenced by Frontstages.
    */
-  public static defineContentLayouts() {
-    const contentLayouts: ContentLayoutProps[] = TestUtils.getContentLayouts();
-    ConfigurableUiManager.loadContentLayouts(contentLayouts);
-  }
 
-  private static getContentLayouts(): ContentLayoutProps[] {
-    const fourQuadrants: ContentLayoutProps = {
-      id: "FourQuadrants",
-      descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
-      priority: 1000,
-      horizontalSplit: {
-        id: "FourQuadrants.MainHorizontal",
-        percentage: 0.50,
-        top: { verticalSplit: { id: "FourQuadrants.TopVert", percentage: 0.50, left: 0, right: 1 } },
-        bottom: { verticalSplit: { id: "FourQuadrants.BottomVert", percentage: 0.50, left: 2, right: 3 } },
-      },
-    };
-
-    const singleContent: ContentLayoutProps = {
-      id: "SingleContent",
-      descriptionKey: "SampleApp:ContentLayoutDef.SingleContent",
-      priority: 100,
-    };
-
-    const contentLayouts: ContentLayoutProps[] = [];
-    // in order to pick out by number of views for convenience.
-    contentLayouts.push(singleContent, fourQuadrants);
-    return contentLayouts;
-  }
+  public static fourQuadrants: ContentLayoutProps = {
+    id: "FourQuadrants",
+    description: "SampleApp:ContentLayoutDef.FourQuadrants",
+    horizontalSplit: {
+      id: "FourQuadrants.MainHorizontal",
+      percentage: 0.50,
+      top: { verticalSplit: { id: "FourQuadrants.TopVert", percentage: 0.50, left: 0, right: 1 } },
+      bottom: { verticalSplit: { id: "FourQuadrants.BottomVert", percentage: 0.50, left: 2, right: 3 } },
+    },
+  };
 
   /** Define Content Groups referenced by Frontstages.
    */
-  private static defineContentGroups() {
+  public static TestContentGroup1 = new ContentGroup({
+    id: "TestContentGroup1",
+    layout: StandardContentLayouts.fourQuadrants,
+    contents: [
+      {
+        id: "test:TestContentControl1",
+        classId: TestContentControl,
+        applicationData: { label: "Content 1a", bgColor: "black" },
+      },
+      {
+        id: "test:TestContentControl2",
+        classId: TestContentControl,
+        applicationData: { label: "Content 2a", bgColor: "black" },
+      },
+      {
+        id: "test:TestContentControl3",
+        classId: TestContentControl,
+        applicationData: { label: "Content 3a", bgColor: "black" },
+      },
+      {
+        id: "test:TestContentControl4",
+        classId: TestContentControl,
+        applicationData: { label: "Content 4a", bgColor: "black" },
+      },
+    ],
+  });
 
-    const testContentGroup1: ContentGroupProps = {
-      id: "TestContentGroup1",
-      contents: [
-        {
-          classId: TestContentControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          classId: TestContentControl,
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          classId: TestContentControl,
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          classId: TestContentControl,
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
-
-    const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(testContentGroup1);
-    ConfigurableUiManager.loadContentGroups(contentGroups);
-  }
+  public static TestContentGroup2 = new ContentGroup({
+    id: "TestContentGroup2",
+    layout: StandardContentLayouts.singleView,
+    contents: [
+      {
+        id: "test:TestContentControl2",
+        classId: TestContentControl,
+        applicationData: { label: "Content 1a", bgColor: "black" },
+      },
+    ],
+  });
 
   /** Waits until all async operations finish */
   public static async flushAsyncOperations() {

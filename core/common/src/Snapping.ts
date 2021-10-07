@@ -6,10 +6,11 @@
  * @module Geometry
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Matrix4dProps, XYZProps } from "@bentley/geometry-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { Matrix4dProps, XYZProps } from "@itwin/core-geometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { GeometryClass } from "./GeometryParams";
+import { ViewFlagProps } from "./ViewFlags";
 
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
  * @internal
@@ -28,7 +29,7 @@ export interface SnapRequestProps {
   testPoint: XYZProps;
   closePoint: XYZProps;
   worldToView: Matrix4dProps;
-  viewFlags?: any;
+  viewFlags?: ViewFlagProps;
   snapModes?: number[];
   snapAperture?: number;
   snapDivisor?: number;

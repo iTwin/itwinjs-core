@@ -6,14 +6,14 @@
  * @module Measure
  */
 
-import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
-} from "@bentley/imodeljs-common";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+} from "@itwin/core-common";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail, HitGeomType } from "../HitDetail";
@@ -122,7 +122,7 @@ interface Segment { distance: number, slope: number, start: Point3d, end: Point3
 
 /** @internal */
 function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: Array<Location>): Point3d {
-  // If the point was from a hit we must transform it by the model display tyransform of what got hit.
+  // If the point was from a hit we must transform it by the model display transform of what got hit.
   if (undefined === ev.viewport || undefined === ev.viewport.view.modelDisplayTransformProvider)
     return ev.point;
   if (undefined !== IModelApp.accuSnap.currHit && undefined !== IModelApp.accuSnap.currHit.modelId) {
@@ -181,9 +181,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   /** @internal */
-  public override onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend() { this.showPrompt(); }
 
   /** @internal */
   protected showPrompt(): void {
@@ -625,7 +625,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (0 === this._locationData.length) {
-      this.onReinitialize();
+      await this.onReinitialize();
       return EventHandled.No;
     }
     await this.acceptNewSegments();
@@ -647,7 +647,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     }
 
     if (0 === this._locationData.length && 0 === this._acceptedSegments.length) {
-      this.onReinitialize();
+      await this.onReinitialize();
     } else {
       await this.updateTotals();
       this.setupAndPromptForNextAction();
@@ -656,14 +656,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MeasureDistanceTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
-/** Report spatial coordinate at a point as well as cartegraphic location for geolocated models using current quantity formatters.
+/** Report spatial coordinate at a point as well as cartographic location for geolocated models using current quantity formatters.
  * @public
  */
 export class MeasureLocationTool extends PrimitiveTool {
@@ -680,9 +680,9 @@ export class MeasureLocationTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   /** @internal */
-  public override onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend() { this.showPrompt(); }
 
   /** @internal */
   protected showPrompt(): void {
@@ -787,7 +787,7 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   /** @internal */
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -798,7 +798,7 @@ export class MeasureLocationTool extends PrimitiveTool {
 
     this._acceptedLocations.pop();
     if (0 === this._acceptedLocations.length) {
-      this.onReinitialize();
+      await this.onReinitialize();
     } else {
       this.reportMeasurements();
       this.setupAndPromptForNextAction();
@@ -807,10 +807,10 @@ export class MeasureLocationTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MeasureLocationTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -880,12 +880,12 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === MeasureAreaByPointsTool._orientationName) {
       this._orientationValue = updatedValue.value;
       if (!this._orientationValue)
         return false;
-      this.onReinitialize();
+      await this.onReinitialize();
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
       return true;
     }
@@ -901,9 +901,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   /** @internal */
-  public override onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend() { this.showPrompt(); }
 
   /** @internal */
   protected showPrompt(): void {
@@ -1139,7 +1139,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       return EventHandled.No;
 
     if (this._isComplete)
-      this.onReinitialize();
+      await this.onReinitialize();
 
     if (this._points.length > 1 && !ev.isControlKey) {
       const points = this.getShapePoints(ev.point);
@@ -1175,12 +1175,12 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
   /** @internal */
-  public override onReinitialize(): void {
+  public override async onReinitialize(): Promise<void> {
     this._acceptedMeasurement = undefined;
     this._marker = undefined;
     this._isComplete = false;
@@ -1201,10 +1201,10 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MeasureAreaByPointsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -1234,11 +1234,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   /** @internal */
-  public override onCleanup(): void { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
+  public override async onCleanup() { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
   /** @internal */
-  public override onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend() { this.showPrompt(); }
 
   /** @internal */
   protected showPrompt(): void {
@@ -1483,17 +1483,15 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override onReinitialize(): void {
-    if (this._useSelection) {
-      this.exitTool();
-      return;
-    }
-    this.onRestartTool();
+  public override async onReinitialize(): Promise<void> {
+    if (this._useSelection)
+      return this.exitTool();
+    return this.onRestartTool();
   }
 
   /** @internal */
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -1505,7 +1503,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         if (0 !== this._acceptedMeasurements.length)
           return EventHandled.Yes;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
-        this.onReinitialize();
+        await this.onReinitialize();
       }
       return EventHandled.Yes;
     }
@@ -1543,7 +1541,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 
     this._acceptedMeasurements.pop();
     if (0 === this._acceptedMeasurements.length) {
-      this.onReinitialize();
+      await this.onReinitialize();
     } else {
       if (0 !== this._acceptedIds.length) { this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false); this._acceptedIds.pop(); }
       await this.updateTotals();
@@ -1562,10 +1560,10 @@ export class MeasureLengthTool extends MeasureElementTool {
   protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateLengths; }
 
   /** @internal */
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MeasureLengthTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -1578,10 +1576,10 @@ export class MeasureAreaTool extends MeasureElementTool {
   protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateAreas; }
 
   /** @internal */
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MeasureAreaTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -1594,9 +1592,9 @@ export class MeasureVolumeTool extends MeasureElementTool {
   protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateVolumes; }
 
   /** @internal */
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MeasureVolumeTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

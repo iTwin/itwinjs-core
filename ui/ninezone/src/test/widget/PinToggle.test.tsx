@@ -5,18 +5,18 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("PinToggle", () => {
   it("should render", () => {
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider>
+      <TestNineZoneProvider>
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PinToggle />
         </PanelStateContext.Provider>
-      </NineZoneProvider>
+      </TestNineZoneProvider>
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -30,7 +30,7 @@ describe("PinToggle", () => {
       }),
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         labels={{
           pinPanelTitle: "Pin panel",
         }}
@@ -38,7 +38,7 @@ describe("PinToggle", () => {
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PinToggle />
         </PanelStateContext.Provider>
-      </NineZoneProvider>
+      </TestNineZoneProvider>
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -46,11 +46,11 @@ describe("PinToggle", () => {
   it("should render `icon-chevron-down` for bottom pinned panel", () => {
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider>
+      <TestNineZoneProvider>
         <PanelStateContext.Provider value={nineZone.panels.bottom}>
           <PinToggle />
         </PanelStateContext.Provider>
-      </NineZoneProvider>
+      </TestNineZoneProvider>
     );
     const toggle = container.getElementsByClassName("nz-widget-pinToggle")[0];
     const icon = toggle.firstElementChild!;
@@ -61,14 +61,14 @@ describe("PinToggle", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PinToggle />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const button = container.getElementsByClassName("nz-widget-pinToggle")[0];
     fireEvent.click(button);

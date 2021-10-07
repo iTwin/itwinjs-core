@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { useOnOutsideClick } from "../../../ui-core";
+import { useOnOutsideClick } from "../../../core-react";
 
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
@@ -37,26 +37,24 @@ describe("useOnOutsideClick", () => {
     });
 
     it("should call onOutsideClick", () => {
-      const spy = sinon.stub<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>();
+      const spy = sinon.stub<[], void>();
       const { result } = renderHook(() => useOnOutsideClick(spy));
       const element = document.createElement("div");
       act(() => {
         setRefValue(result.current, element);
       });
 
-      const pointerDown = document.createEvent("HTMLEvents");
-      pointerDown.initEvent("pointerdown");
+      const pointerDown = new PointerEvent("pointerdown");
       document.dispatchEvent(pointerDown);
 
-      const pointerUp = document.createEvent("HTMLEvents");
-      pointerUp.initEvent("pointerup");
+      const pointerUp = new PointerEvent("pointerup");
       document.dispatchEvent(pointerUp);
 
       spy.calledOnceWithExactly().should.true;
     });
 
     it("should respect outside event predicate", () => {
-      const spy = sinon.stub<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>();
+      const spy = sinon.stub<[], void>();
       const predicate = sinon.spy<NonNullable<Parameters<typeof useOnOutsideClick>[1]>>(() => {
         return false;
       });
@@ -66,12 +64,10 @@ describe("useOnOutsideClick", () => {
         setRefValue(result.current, element);
       });
 
-      const pointerDown = document.createEvent("HTMLEvents") as PointerEvent;
-      pointerDown.initEvent("pointerdown");
+      const pointerDown = new PointerEvent("pointerdown");
       document.dispatchEvent(pointerDown);
 
-      const pointerUp = document.createEvent("HTMLEvents");
-      pointerUp.initEvent("pointerup");
+      const pointerUp = new PointerEvent("pointerup");
       document.dispatchEvent(pointerUp);
 
       predicate.calledOnceWithExactly(pointerDown).should.true;
@@ -79,7 +75,7 @@ describe("useOnOutsideClick", () => {
     });
 
     it("should respect outside event predicate", () => {
-      const spy = sinon.stub<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>();
+      const spy = sinon.stub<[], void>();
       const predicate = sinon.spy<NonNullable<Parameters<typeof useOnOutsideClick>[1]>>((ev) => {
         if (ev.type === "pointerup")
           return false;
@@ -91,12 +87,10 @@ describe("useOnOutsideClick", () => {
         setRefValue(result.current, element);
       });
 
-      const pointerDown = document.createEvent("HTMLEvents") as PointerEvent;
-      pointerDown.initEvent("pointerdown");
+      const pointerDown = new PointerEvent("pointerdown");
       document.dispatchEvent(pointerDown);
 
-      const pointerUp = document.createEvent("HTMLEvents") as PointerEvent;
-      pointerUp.initEvent("pointerup");
+      const pointerUp = new PointerEvent("pointerup");
       document.dispatchEvent(pointerUp);
 
       predicate.callCount.should.eq(2);
@@ -107,7 +101,7 @@ describe("useOnOutsideClick", () => {
   });
 
   it("should call onOutsideClick for touch", () => {
-    const spy = sinon.stub<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>();
+    const spy = sinon.stub<[], void>();
     const { result } = renderHook(() => useOnOutsideClick(spy));
     const element = document.createElement("div");
     act(() => {
@@ -130,7 +124,7 @@ describe("useOnOutsideClick", () => {
   });
 
   it("should not handle mouse event after touch event", () => {
-    const spy = sinon.stub<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>();
+    const spy = sinon.stub<[], void>();
     const { result } = renderHook(() => useOnOutsideClick(spy));
     const element = document.createElement("div");
     act(() => {
@@ -147,7 +141,7 @@ describe("useOnOutsideClick", () => {
 
   it("should continue handling mouse events after timeout", () => {
     const fakeTimers = sandbox.useFakeTimers();
-    const spy = sinon.stub<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>();
+    const spy = sinon.stub<[], void>();
     const { result } = renderHook(() => useOnOutsideClick(spy));
     const element = document.createElement("div");
     act(() => {

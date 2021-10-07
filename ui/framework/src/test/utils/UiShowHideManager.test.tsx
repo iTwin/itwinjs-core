@@ -10,10 +10,11 @@ import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
   UiShowHideSettingsProvider,
-} from "../../ui-framework";
+} from "../../appui-react";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
-import { LocalSettingsStorage } from "@bentley/ui-core";
+import { LocalSettingsStorage } from "@itwin/core-react";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("UiShowHideManager localStorage Wrapper", () => {
 
@@ -149,7 +150,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
         const frontstageProvider = new TestFrontstage();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
         await TestUtils.flushAsyncOperations();
         expect(UiShowHideManager.isUiVisible).to.eq(true);
@@ -167,13 +169,14 @@ describe("UiShowHideManager localStorage Wrapper", () => {
       }
 
       const myContentGroup: ContentGroup = new ContentGroup({
+        id: "test-group",
+        layout: StandardContentLayouts.singleView,
         contents: [{ id: "myContent", classId: TestContentControl }],
       });
 
       const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
         id: "SingleContent",
-        descriptionKey: "UiFramework:tests.singleContent",
-        priority: 100,
+        description: "UiFramework:tests.singleContent",
       });
 
       it("Mouse move in content view should show the UI then hide after inactivity", () => {
@@ -247,14 +250,14 @@ describe("UiShowHideManager localStorage Wrapper", () => {
   describe("UiShowHideSettingsProvider ", () => {
 
     it("should get and set defaults", async () => {
-      const settingsStorage = new LocalSettingsStorage ();
+      const settingsStorage = new LocalSettingsStorage();
       await UiShowHideSettingsProvider.storeAutoHideUi(false, settingsStorage);
-      await UiShowHideSettingsProvider.storeUseProximityOpacity (false, settingsStorage);
+      await UiShowHideSettingsProvider.storeUseProximityOpacity(false, settingsStorage);
       await UiShowHideSettingsProvider.storeSnapWidgetOpacity(false, settingsStorage);
       await TestUtils.initializeUiFramework();
 
-      const uiShowHideSettingsProvider = new UiShowHideSettingsProvider ();
-      await uiShowHideSettingsProvider.loadUserSettings (UiFramework.getUiSettingsStorage());
+      const uiShowHideSettingsProvider = new UiShowHideSettingsProvider();
+      await uiShowHideSettingsProvider.loadUserSettings(UiFramework.getUiSettingsStorage());
 
       expect(UiShowHideManager.autoHideUi).to.eq(false);
       expect(UiShowHideManager.useProximityOpacity).to.eq(false);

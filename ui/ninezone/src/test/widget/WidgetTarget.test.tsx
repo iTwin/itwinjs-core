@@ -5,15 +5,15 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
-import { createDragStartArgs, NineZoneProvider } from "../Providers";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../appui-layout-react";
+import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {
   it("should render with cursor type", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
       >
@@ -24,7 +24,7 @@ describe("WidgetTarget", () => {
             />
           </CursorTypeContext.Provider>
         </PanelSideContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -34,7 +34,7 @@ describe("WidgetTarget", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
         dragManagerRef={dragManager}
@@ -44,7 +44,7 @@ describe("WidgetTarget", () => {
             widgetIndex={0}
           />
         </PanelSideContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widget-widgetTarget")[0];
     sinon.stub(document, "elementFromPoint").returns(target);

@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+@mixin nz-widget-opacity {
+  opacity: $buic-widget-opacity;
+
+  &:hover {
+    opacity: 1.00;
+  }
+}

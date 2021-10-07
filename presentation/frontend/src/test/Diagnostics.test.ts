@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { DiagnosticsScopeLogs } from "@bentley/presentation-common";
+import { DiagnosticsScopeLogs } from "@itwin/presentation-common";
 import { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "../presentation-frontend/Diagnostics";
 
 describe("consoleDiagnosticsHandler", () => {

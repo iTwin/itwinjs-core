@@ -1,17 +1,8 @@
 {
-  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "outDir": "./lib"
+    "outDir": "lib/cjs"
   },
-  "include": [
-    "./src/**/*.ts"
-  ],
-  "exclude": [
-    "lib",
-    "node_modules"
-  ]
+  "include": ["./src/**/*.ts"]
 }

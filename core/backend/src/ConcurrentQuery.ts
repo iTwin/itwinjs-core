@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { QueryQuota } from "@bentley/imodeljs-common";
+import { QueryQuota } from "@itwin/core-common";
 
 /** Configuration for concurrent query manager
  * @internal

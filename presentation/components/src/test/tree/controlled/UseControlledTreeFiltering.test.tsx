@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodePathElement } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@bentley/ui-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodePathElement } from "@itwin/presentation-common";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   ControlledPresentationTreeFilteringProps, IPresentationTreeDataProvider, useControlledPresentationTreeFiltering,
@@ -227,7 +227,7 @@ describe("useControlledPresentationTreeFiltering", () => {
     expect((provider as FilteredPresentationTreeDataProvider).parentDataProvider).to.not.be.instanceOf(FilteredPresentationTreeDataProvider);
   });
 
-  it("returns `filteredNodeLoader` with `visibleNodes` whose `numRootNodes` are undefined and `loadNode` method returns result with an empty `loadedNodes` array when filtering", (done) => {
+  it("returns `filteredNodeLoader` with model whose root node's `numRootNodes` is undefined and `loadNode` method returns result with an empty `loadedNodes` array when filtering", (done) => {
     const testModelNode: TreeModelNode = {
       id: "test",
       checkbox: {
@@ -255,7 +255,7 @@ describe("useControlledPresentationTreeFiltering", () => {
 
     const nodeLoader = result.current.filteredNodeLoader;
     expect(result.current.isFiltering).to.be.true;
-    expect(nodeLoader.modelSource.getVisibleNodes().getNumRootNodes()).to.be.undefined;
+    expect(nodeLoader.modelSource.getModel().getRootNode().numChildren).to.be.undefined;
     nodeLoader.loadNode(testModelNode, 0).subscribe((res) => {
       expect(res).to.deep.eq({
         loadedNodes: [],

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelApp, SelectionTool } from "@bentley/imodeljs-frontend";
-import { ConditionalStringValue } from "@bentley/ui-abstract";
-import { Orientation, Size } from "@bentley/ui-core";
-import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../ui-framework";
+import { IModelApp, SelectionTool } from "@itwin/core-frontend";
+import { ConditionalStringValue } from "@itwin/appui-abstract";
+import { Orientation, Size } from "@itwin/core-react";
+import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { Tool1 } from "../tools/Tool1";
 

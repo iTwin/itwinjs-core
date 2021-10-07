@@ -7,10 +7,10 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
-import { RenderType } from "@bentley/webgl-compatibility";
+import { assert, dispose } from "@itwin/core-bentley";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
+import { RenderType } from "@itwin/webgl-compatibility";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
@@ -161,12 +161,12 @@ class Bundle implements WebGLDisposable {
     if (undefined === fboSM)
       return undefined;
 
-    const depthTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), depthTextureHandle);
+    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle });
     const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom)
       return undefined;
 
-    const shadowMapTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.Normal, true), shadowMapTextureHandle);
+    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle });
     const renderCommands = new RenderCommands(target, stack, batch);
     return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }

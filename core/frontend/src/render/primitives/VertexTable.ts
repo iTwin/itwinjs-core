@@ -6,12 +6,12 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d, Vector3d } from "@bentley/geometry-core";
+import { assert } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData, PolylineTypeFlags,
   QParams2d, QParams3d, QPoint2d, QPoint3dList, RenderMaterial, RenderTexture,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Corner, Point, Rectangle, RectangleProps } from "../../ui-core";
+import { Corner, Point, Rectangle, RectangleProps } from "../../core-react";
 
 // cSpell:ignore offsetted
 

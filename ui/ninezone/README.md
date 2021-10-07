@@ -1,10 +1,10 @@
-# @bentley/ui-ninezone
+# @itwin/appui-layout-react
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/ui-ninezone__ package contains React components for 9-Zone UI and other purposes.
+The __@itwin/appui-layout-react__ package contains React components for 9-Zone UI and other purposes.
 
 ## Documentation
 
@@ -15,13 +15,13 @@ See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
 ### Installation
 
 ```shell
-npm install @bentley/ui-ninezone
+npm install @itwin/appui-layout-react
 ```
 
 ### Basic Usage
 
 ```javascript
-import BackButton from "@bentley/ui-ninezone/lib/ui-ninezone/components/buttons/Back";
+import BackButton from "@itwin/appui-layout-react";
 
 <BackButton />
 ```

@@ -1,0 +1,95 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/expandable/list";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/itwinui-overrides";
+
+.components-virtualized-property-grid-loader {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.components-virtualized-property-grid {
+  user-select: none;
+
+  @include small-itwinui-expandable-block;
+}
+
+.components-property-grid-wrapper {
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
+}
+
+.virtualized-grid-node {
+  > :not(.virtualized-grid-node-category) {
+    background: var(--iui-color-background-1);
+  }
+
+  .nested-border-middle {
+    height: 100%;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-left: 1px solid var(--iui-color-background-4);
+    border-right: 1px solid var(--iui-color-background-4);
+  }
+
+  .nested-border-bottom {
+    border-bottom: 1px solid var(--iui-color-background-4);
+    padding-bottom: 4px;
+  }
+
+  .components--clickable {
+    cursor: pointer;
+    box-sizing: border-box;
+
+    &:not(.components--selected) {
+      &:hover {
+        // Highlight the whole row of inner-most expandable block
+        margin: 0 -4px;
+        // Compensate the negative margin by adding padding
+        padding: 0 12px;
+
+        background: $buic-row-hover;
+      }
+    }
+  }
+
+  .components--selected {
+    // Highlight the whole row of inner-most expandable block
+    margin: 0 -4px;
+    // Compensate the negative margin by adding padding (minus one for border)
+    padding: 0px 11px;
+
+    background-color: $buic-row-selection;
+    border: 1px solid $buic-foreground-primary;
+
+    &:hover {
+      background: $buic-row-hover;
+    }
+  }
+}
+
+.virtualized-grid-node-category {
+  padding-top: 4px;
+
+  .iui-expandable-content {
+    // We are rendering virtualized content below the expandable block
+    display: none;
+  }
+}
+
+.virtualized-grid-node-custom-category {
+  padding-top: 4px;
+
+  .iui-expandable-content>div {
+    padding: 0 4px 4px 4px;
+  }
+}
+
+.virtualized-grid-node-content {
+  height: 100%;
+}

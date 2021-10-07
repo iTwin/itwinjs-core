@@ -5,18 +5,17 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { MutableTreeModel, TreeModelNodeInput, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelChanges, TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { BeEvent } from "@itwin/core-bentley";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { MutableTreeModel, TreeModelNodeInput } from "../../../components-react/tree/controlled/TreeModel";
+import { TreeModelChanges, TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
+import { ITreeDataProvider, TreeDataChangesListener } from "../../../components-react/tree/TreeDataProvider";
 import TestUtils from "../../TestUtils";
 
 describe("TreeModelSource", () => {
   let modelSource: TreeModelSource;
   const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
   const mutableTreeModelMock = moq.Mock.ofType<MutableTreeModel>();
-  const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
 
   let onTreeNodeChanged: BeEvent<TreeDataChangesListener>;
 
@@ -32,17 +31,6 @@ describe("TreeModelSource", () => {
     // eslint-disable-next-line deprecation/deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChanged);
     modelSource = new TreeModelSource();
-  });
-
-  describe("constructor", () => {
-    it("listens for onModelChanged events", () => {
-      (modelSource as any)._model = mutableTreeModelMock.object;
-      mutableTreeModelMock.setup((x) => x.computeVisibleNodes()).returns(() => visibleNodesMock.object).verifiable(moq.Times.exactly(2));
-      modelSource.getVisibleNodes();
-      modelSource.onModelChanged.emit([mutableTreeModelMock.object, { addedNodeIds: [], modifiedNodeIds: [], removedNodeIds: [] }]);
-      modelSource.getVisibleNodes();
-      mutableTreeModelMock.verifyAll();
-    });
   });
 
   describe("modifyModel", () => {
@@ -102,11 +90,11 @@ describe("TreeModelSource", () => {
       modelSource.modifyModel((model) => {
         model.clearChildren(undefined);
       });
-      expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(0);
+      expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.eq(0);
       modelSource.modifyModel((model) => {
         model.setChildren(undefined, [createNodeInput("new_root1")], 0);
       });
-      expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(1);
+      expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.eq(1);
     });
 
     it("overrides existing children multiple times", () => {
@@ -256,22 +244,4 @@ describe("TreeModelSource", () => {
     });
   });
 
-  describe("getVisibleNodes", () => {
-    beforeEach(() => {
-      (modelSource as any)._model = mutableTreeModelMock.object;
-    });
-
-    it("computes visible nodes", () => {
-      mutableTreeModelMock.setup((x) => x.computeVisibleNodes()).returns(() => visibleNodesMock.object).verifiable(moq.Times.once());
-      modelSource.getVisibleNodes();
-      mutableTreeModelMock.verifyAll();
-    });
-
-    it("does not compute visible nodes second time", () => {
-      mutableTreeModelMock.setup((x) => x.computeVisibleNodes()).returns(() => visibleNodesMock.object).verifiable(moq.Times.once());
-      modelSource.getVisibleNodes();
-      modelSource.getVisibleNodes();
-      mutableTreeModelMock.verifyAll();
-    });
-  });
 });

@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BackgroundMapType } from "../BackgroundMapProvider";
+import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import {
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
@@ -16,12 +17,55 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { MapLayerSettings } from "../MapLayerSettings";
-
-/* eslint-disable deprecation/deprecation */
-//  - for DisplayStyleSettings.excludedElements.
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("DisplayStyleSettings", () => {
+  describe("whiteOnWhiteReversal", () => {
+    it("round-trips through JSON", () => {
+      function test(props: WhiteOnWhiteReversalProps | undefined, newSettings: WhiteOnWhiteReversalSettings, expected?: WhiteOnWhiteReversalProps | "input"): void {
+        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : {} };
+        const style = new DisplayStyle3dSettings(styleProps);
+        style.whiteOnWhiteReversal = newSettings;
+        const result = style.toJSON();
+        expect(result.whiteOnWhiteReversal).to.deep.equal(expected === "input" ? props : expected);
+      }
+
+      const ignore = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
+      const defaults = WhiteOnWhiteReversalSettings.fromJSON();
+
+      test(undefined, defaults, "input");
+      test({ ignoreBackgroundColor: false }, defaults, "input");
+      test(undefined, ignore, { ignoreBackgroundColor: true });
+      test({ ignoreBackgroundColor: true }, ignore, "input");
+      test({ ignoreBackgroundColor: true }, defaults, undefined);
+    });
+
+    it("raises event", () => {
+      const style = new DisplayStyle3dSettings({ styles: {} });
+      function test(expectEvent: boolean, newSettings: WhiteOnWhiteReversalSettings): void {
+        let eventRaised = false;
+        const remove = style.onWhiteOnWhiteReversalChanged.addListener((s) => {
+          expect(eventRaised).to.be.false;
+          eventRaised = true;
+          expect(s).to.equal(newSettings);
+        });
+
+        style.whiteOnWhiteReversal = newSettings;
+        remove();
+
+        expect(style.whiteOnWhiteReversal).to.equal(newSettings);
+        expect(eventRaised).to.equal(expectEvent);
+      }
+
+      test(false, style.whiteOnWhiteReversal);
+      test(false, WhiteOnWhiteReversalSettings.fromJSON());
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(false, style.whiteOnWhiteReversal);
+      test(false, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: false }));
+    });
+  });
+
   describe("plan projection settings", () => {
     interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
 
@@ -120,8 +164,8 @@ describe("DisplayStyleSettings", () => {
         expect(settings.compressedExcludedElementIds).to.equal(undefined === expectedExcludedElements ? "" : expectedExcludedElements);
 
         const excludedIds = Array.from(settings.excludedElementIds);
-        expect(settings.excludedElements.size).to.equal(excludedIds.length);
-        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElements));
+        expect(new Set<string>(settings.excludedElementIds).size).to.equal(excludedIds.length);
+        const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElementIds));
         expect(set).to.deep.equal(excludedIds);
       };
 
@@ -134,15 +178,15 @@ describe("DisplayStyleSettings", () => {
       test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
 
-      test("+3", (settings) => settings.excludedElements.add("0x3"));
-      test(undefined, (settings) => { settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x2"); });
-      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x1"); });
-      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.delete("0x2"); });
-      test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
+      test("+3", (settings) => settings.addExcludedElements("0x3"));
+      test(undefined, (settings) => { settings.addExcludedElements("0x2"); settings.dropExcludedElement("0x2"); });
+      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements("0x2"); settings.dropExcludedElements("0x1"); });
+      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements("0x2"); });
+      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.dropExcludedElements("0x1"); });
 
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.clear(); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.clearExcludedElements(); });
 
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
+      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.addExcludedElements("0x3"); settings.clearExcludedElements(); });
     });
   });
 
@@ -160,7 +204,7 @@ describe("DisplayStyleSettings", () => {
 
     it("initializes from JSON", () => {
       function expectMasks(json: DisplayStylePlanarClipMaskProps[] | undefined, expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>): void {
-        const styleProps = json ? { styles: { planarClipOvr: json } } : { };
+        const styleProps = json ? { styles: { planarClipOvr: json } } : {};
         const style = new DisplayStyleSettings(styleProps);
         expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
       }
@@ -184,7 +228,7 @@ describe("DisplayStyleSettings", () => {
         func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
         expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
         expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
-        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : { };
+        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : {};
         const style = new DisplayStyleSettings(styleProps);
 
         func(style.planarClipMasks, style);
@@ -249,27 +293,6 @@ describe("DisplayStyleSettings", () => {
       expectEvents([]);
     });
   });
-
-  // ###TODO @rbbentley
-  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
-    const style = new DisplayStyleSettings({});
-    expect(style.backgroundMap.providerName).to.equal("BingProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
-
-    let base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base).instanceOf(MapLayerSettings);
-    expect(base.formatId).to.equal("BingMaps");
-    expect(base.url.indexOf("AerialWithLabels")).least(1);
-
-    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
-    base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base.formatId).to.equal("MapboxImagery");
-    expect(base.url.indexOf("mapbox.streets/")).least(1);
-
-    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
-    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
-  });
 });
 
 describe("DisplayStyleSettings overrides", () => {
@@ -284,6 +307,7 @@ describe("DisplayStyleSettings overrides", () => {
     backgroundColor: ColorByName.aquamarine,
     monochromeColor: ColorByName.cyan,
     monochromeMode: MonochromeMode.Scaled,
+    whiteOnWhiteReversal: { ignoreBackgroundColor: false },
     environment: {
       sky: {
         display: true,
@@ -355,13 +379,27 @@ describe("DisplayStyleSettings overrides", () => {
       terrainSettings: {
         exaggeration: 2.5,
         heightOrigin: -42,
-        nonLocatable: true, // eslint-disable-line deprecation/deprecation
+        nonLocatable: true,
         heightOriginMode: 0,
+      },
+    },
+    mapImagery: {
+      backgroundBase: {
+        formatId: "BingMaps",
+        isBase: true,
+        name: "Bing Maps: Aerial Imagery",
+        provider: {
+          name: "BingProvider",
+          type: 2,
+        },
+        transparentBackground: false,
+        url: "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
+        visible: true,
       },
     },
   };
 
-  const projectProps: DisplayStyle3dSettingsProps = {
+  const iTwinProps: DisplayStyle3dSettingsProps = {
     timePoint: 12345,
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -441,7 +479,7 @@ describe("DisplayStyleSettings overrides", () => {
   };
 
   it("creates selective overrides", () => {
-    const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...projectProps, ...iModelProps } });
+    const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
 
     const roundTrip = (options: DisplayStyleOverridesOptions, expected: DisplayStyle3dSettingsProps) => {
       const output = settings.toOverrides(options);
@@ -464,14 +502,14 @@ describe("DisplayStyleSettings overrides", () => {
     roundTrip({ includeDrawingAids: true }, { ...baseProps, viewflags: vfNoMap });
     roundTrip({ includeBackgroundMap: true, includeDrawingAids: true }, { ...baseProps, ...mapProps, viewflags });
 
-    roundTrip({ includeProjectSpecific: true }, { ...baseProps, ...projectProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...projectProps, ...iModelProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...projectProps, ...iModelProps, viewflags });
+    roundTrip({ includeITwinSpecific: true }, { ...baseProps, ...iTwinProps, viewflags: vfNoMapNoDec });
+    roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...iTwinProps, ...iModelProps, viewflags: vfNoMapNoDec });
+    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps, viewflags });
   });
 
   it("overrides selected settings", () => {
     const test = (overrides: DisplayStyle3dSettingsProps) => {
-      const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...projectProps, ...iModelProps } });
+      const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
       const originalSettings = { ...settings.toJSON() };
       settings.applyOverrides(overrides);
       const output = settings.toJSON();
@@ -651,5 +689,7 @@ describe("DisplayStyleSettings overrides", () => {
         "0x8": { elevation: 2, transparency: 0.25, overlay: true, enforceDisplayPriority: true },
       },
     });
+
+    test({ viewflags, whiteOnWhiteReversal: { ignoreBackgroundColor: true } });
   });
 });

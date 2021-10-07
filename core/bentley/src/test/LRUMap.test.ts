@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LRUMap } from "../bentleyjs-core";
+import { LRUMap } from "../core-bentley";
 
 describe("LRUMap", () => {
 

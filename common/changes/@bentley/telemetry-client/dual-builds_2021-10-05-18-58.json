@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/telemetry-client",
+      "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/telemetry-client"
+}

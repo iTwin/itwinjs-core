@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ContentControl } from "@itwin/appui-react";
 import "./SampleContentControl.scss";
 
 export class SampleContentControl extends ContentControl {

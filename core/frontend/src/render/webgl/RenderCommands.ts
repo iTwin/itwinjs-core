@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
