@@ -25,43 +25,58 @@ export const buildElementsProperties = (content: Content | undefined): ElementPr
   return builder.items;
 };
 
+/** @internal */
 export function getElementsCount(db: IModelDb, classNames?: string[]) {
+  const { whereClause, bindings } = createElementsFilterClauseAndBindings("e", classNames);
   const query = `
     SELECT COUNT(e.ECInstanceId)
     FROM bis.Element e
-    ${createElementsFilterClause("e", classNames)}
+    ${whereClause}
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
+    stmt.bindValues(bindings);
     return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
   });
 }
 
+/** @internal */
 export function getElementIdsByClass(db: IModelDb, classNames?: string[], pageOptions?: PageOptions) {
+  const { whereClause, bindings } = createElementsFilterClauseAndBindings("e", classNames);
   const query = `
     SELECT e.ECInstanceId elId, eSchemaDef.Name || ':' || eClassDef.Name elClassName
     FROM bis.Element e
     LEFT JOIN meta.ECClassDef eClassDef ON eClassDef.ECInstanceId = e.ECClassId
     LEFT JOIN meta.ECSchemaDef eSchemaDef ON eSchemaDef.ECInstanceId = eClassDef.Schema.Id
-    ${createElementsFilterClause("e", classNames)}
+    ${whereClause}
     ORDER BY e.ECClassId, e.ECInstanceId
     ${createElementsLimitClause(pageOptions)}
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
+    stmt.bindValues(bindings);
     const ids = new Map<string, string[]>();
+    let currentClassName = "";
+    let currentIds: string[] = [];
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const row = stmt.getRow();
       if (!row.elId || !row.elClassName)
         continue;
-
-      const elementIds = ids.get(row.elClassName);
-      if (elementIds) {
-        elementIds.push(row.elId);
+      if (currentClassName === row.elClassName) {
+        currentIds.push(row.elId);
         continue;
       }
 
-      ids.set(row.elClassName, [row.elId]);
+      currentClassName = row.elClassName;
+      const existingIds = ids.get(row.elClassName);
+      if (!existingIds) {
+        currentIds = [];
+        ids.set(row.elClassName, currentIds);
+      } else {
+        currentIds = existingIds;
+      }
+
+      currentIds.push(row.elId);
     }
     return ids;
   });
@@ -74,11 +89,14 @@ function createElementsLimitClause(pageOptions?: PageOptions) {
   return `LIMIT ${pageOptions.size ?? -1} OFFSET ${pageOptions.start ?? 0}`;
 }
 
-function createElementsFilterClause(elementAlias: string, classNames?: string[]) {
+function createElementsFilterClauseAndBindings(elementAlias: string, classNames?: string[]) {
   if (classNames === undefined || classNames.length === 0)
-    return "";
+    return { whereClause: "", bindings: [] };
 
-  return `WHERE ${elementAlias}.ECClassId IS (${classNames.map((className) => `${className}`).join(",")})`;
+  return {
+    whereClause: `WHERE ${elementAlias}.ECClassId IS (${Array(classNames.length).fill("?").join(",")})`,
+    bindings: classNames,
+  };
 }
 
 interface IPropertiesAppender {

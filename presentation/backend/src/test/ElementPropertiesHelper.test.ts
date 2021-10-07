@@ -16,7 +16,7 @@ describe("buildElementsProperties", () => {
     expect(buildElementsProperties(undefined)).to.be.empty;
   });
 
-  it("returns empty array when given content with not items", () => {
+  it("returns empty array when given content with no items", () => {
     expect(buildElementsProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [],
@@ -33,7 +33,7 @@ describe("buildElementsProperties", () => {
           displayValues: {},
         }),
       ],
-    ))[0]).to.containSubset({ class: "Test label" });
+    ))).to.containSubset([{ class: "Test label" }]);
   });
 
   it("sets element label", () => {
@@ -46,7 +46,7 @@ describe("buildElementsProperties", () => {
           displayValues: {},
         }),
       ],
-    ))[0]).to.containSubset({ label: "Test label" });
+    ))).to.containSubset([{ label: "Test label" }]);
   });
 
   it("sets invalid element id when content item has not primary keys", () => {
@@ -59,7 +59,7 @@ describe("buildElementsProperties", () => {
           displayValues: {},
         }),
       ],
-    ))[0]).to.containSubset({ id: Id64.invalid });
+    ))).to.containSubset([{ id: Id64.invalid }]);
   });
 
   it("sets element id", () => {
@@ -72,7 +72,7 @@ describe("buildElementsProperties", () => {
           displayValues: {},
         }),
       ],
-    ))[0]).to.containSubset({ id: "0x123" });
+    ))).to.containSubset([{ id: "0x123" }]);
   });
 
   it("categorizes properties", () => {
@@ -98,26 +98,31 @@ describe("buildElementsProperties", () => {
           },
         }),
       ],
-    ))[0].items).to.deep.eq({
-      ["Parent Category"]: {
-        type: "category",
-        items: {
-          ["Child Category"]: {
-            type: "category",
-            items: {
-              ["Prop Two"]: {
-                type: "primitive",
-                value: "Value Two",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Parent Category"]: {
+          type: "category",
+          items: {
+            ["Child Category"]: {
+              type: "category",
+              items: {
+                ["Prop Two"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
               },
             },
-          },
-          ["Prop One"]: {
-            type: "primitive",
-            value: "Value One",
+            ["Prop One"]: {
+              type: "primitive",
+              value: "Value One",
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("does not include primitive property value when it's not set", () => {
@@ -127,32 +132,44 @@ describe("buildElementsProperties", () => {
         categories: [category],
         fields: [
           createTestSimpleContentField({ name: "emptyProp", label: "EmptyProp", category }),
+          createTestSimpleContentField({ name: "undefinedProps", label: "UndefinedProp", category }),
           createTestSimpleContentField({ name: "prop", label: "Prop", category }),
         ],
       }),
       [
         createTestContentItem({
           values: {
-            emptyProp: "value",
+            emptyProp: undefined,
+            undefinedProps: undefined,
             prop: "valid value",
           },
           displayValues: {
-            emptyProp: undefined,
+            emptyProp: "",
+            undefinedProps: undefined,
             prop: "valid value",
           },
         }),
       ],
-    ))[0].items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "primitive",
-            value: "valid value",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["EmptyProp"]: {
+              type: "primitive",
+              value: "",
+            },
+            ["Prop"]: {
+              type: "primitive",
+              value: "valid value",
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("does not include category when primitive property value is not set", () => {
@@ -174,7 +191,12 @@ describe("buildElementsProperties", () => {
           },
         }),
       ],
-    ))[0].items).to.deep.eq({});
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {},
+    }]);
   });
 
   it("sets property value to empty string when it's merged", () => {
@@ -197,17 +219,22 @@ describe("buildElementsProperties", () => {
           mergedFieldNames: ["prop"],
         }),
       ],
-    ))[0].items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "primitive",
-            value: "",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "primitive",
+              value: "",
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("handles struct properties", () => {
@@ -258,26 +285,31 @@ describe("buildElementsProperties", () => {
           },
         }),
       ],
-    ))[0].items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "struct",
-            members: {
-              ["Member One"]: {
-                type: "primitive",
-                value: "Value One",
-              },
-              ["Member Two"]: {
-                type: "primitive",
-                value: "Value Two",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "struct",
+              members: {
+                ["Member One"]: {
+                  type: "primitive",
+                  value: "Value One",
+                },
+                ["Member Two"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
               },
             },
           },
         },
       },
-    });
+    }]);
   });
 
   it("handles primitive array properties", () => {
@@ -311,18 +343,23 @@ describe("buildElementsProperties", () => {
           },
         }),
       ],
-    ))[0].items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "array",
-            valueType: "primitive",
-            values: ["Value One", "Value Two"],
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "array",
+              valueType: "primitive",
+              values: ["Value One", "Value Two"],
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("handles struct array properties", () => {
@@ -372,28 +409,33 @@ describe("buildElementsProperties", () => {
           },
         }),
       ],
-    ))[0].items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "array",
-            valueType: "struct",
-            values: [{
-              ["Test Member"]: {
-                type: "primitive",
-                value: "Value One",
-              },
-            }, {
-              ["Test Member"]: {
-                type: "primitive",
-                value: "Value Two",
-              },
-            }],
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "array",
+              valueType: "struct",
+              values: [{
+                ["Test Member"]: {
+                  type: "primitive",
+                  value: "Value One",
+                },
+              }, {
+                ["Test Member"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
+              }],
+            },
           },
         },
       },
-    });
+    }]);
   });
 
 });
@@ -426,8 +468,8 @@ describe("getElementsCount", () => {
     expect(getElementsCount(imodelMock.object)).to.be.eq(elementCount);
   });
 
-  it("adds WHERE clause with class names when class list is defined and not empty", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE") && query.includes("TestSchema:TestClass")), moq.It.isAny()))
+  it("adds WHERE clause when class list is defined and not empty", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE")), moq.It.isAny()))
       .returns(() => 0).verifiable();
     getElementsCount(imodelMock.object, ["TestSchema:TestClass"]);
     imodelMock.verifyAll();
@@ -455,6 +497,7 @@ describe("getElementIdsByClass", () => {
       { className: "TestSchema:TestClass", id: "0x1" },
       { className: "TestSchema:TestClass", id: "0x2" },
       { className: "TestSchema:TestClass2", id: "0x3" },
+      { className: "TestSchema:TestClass", id: "0x4" },
     ];
     imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
       const statementMock = moq.Mock.ofType<ECSqlStatement>();
@@ -466,7 +509,7 @@ describe("getElementIdsByClass", () => {
       return cb(statementMock.object);
     });
     const expectedResult = new Map<string, string[]>([
-      ["TestSchema:TestClass", ["0x1", "0x2"]],
+      ["TestSchema:TestClass", ["0x1", "0x2", "0x4"]],
       ["TestSchema:TestClass2", ["0x3"]],
     ]);
     expect(getElementIdsByClass(imodelMock.object)).to.be.deep.eq(expectedResult);
@@ -493,8 +536,8 @@ describe("getElementIdsByClass", () => {
     expect(getElementIdsByClass(imodelMock.object)).to.be.deep.eq(expectedResult);
   });
 
-  it("adds WHERE clause with class names when class list is defined and not empty", () => {
-    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE") && query.includes("TestSchema:TestClass")), moq.It.isAny()))
+  it("adds WHERE clause when class list is defined and not empty", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE")), moq.It.isAny()))
       .verifiable();
     getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass"]);
     imodelMock.verifyAll();
