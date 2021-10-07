@@ -144,7 +144,7 @@
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
