@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { I18N } from "../Localization";
+import { ITwinLocalization } from "../Localization";
 
 describe("ITwinLocalization tests", () => {
   it("registers ITwinLocalization namespaces", async () => {
-    const i18n = new I18N(["namespace1", "namespace2"]);
+    const i18n = new ITwinLocalization();
+    await i18n.registerNamespace("namespace1");
+    await i18n.registerNamespace("namespace2");
+
     assert.strictEqual((i18n as any)._namespaceRegistry.size, 2);
     assert.isDefined(i18n.getNamespace("namespace1"));
     assert.isDefined(i18n.getNamespace("namespace2"));
@@ -17,8 +20,8 @@ describe("ITwinLocalization tests", () => {
     assert.isDefined(i18n.getNamespace("namespace1"));
     assert.isUndefined(i18n.getNamespace("namespace2"));
 
-    // await i18n.registerNamespace("namespace2");
-    // assert.isDefined(i18n.getNamespace("namespace1"));
-    // assert.isDefined(i18n.getNamespace("namespace2"));
+    await i18n.registerNamespace("namespace2");
+    assert.isDefined(i18n.getNamespace("namespace1"));
+    assert.isDefined(i18n.getNamespace("namespace2"));
   });
 });
