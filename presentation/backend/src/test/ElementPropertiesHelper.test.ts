@@ -7,10 +7,7 @@ import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { Content, PropertyValueFormat } from "@itwin/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey } from "@itwin/presentation-common/lib/test/_helpers/EC";
+import { createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
 import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
 
 describe("buildElementsProperties", () => {

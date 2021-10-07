@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-common/lib/test/_helpers/Promises";
+import "@itwin/presentation-common/lib/cjs/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
@@ -22,14 +22,11 @@ import {
   VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSelectClassInfo, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "@itwin/presentation-common/lib/test/_helpers/EC";
-import {
-  createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
-  createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset,
-} from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey,
+  createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription,
+  createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo,
+  createTestRelationshipPath, createTestSelectClassInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import {

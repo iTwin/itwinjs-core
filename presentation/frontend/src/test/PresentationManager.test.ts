@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import * as moq from "typemoq";
 import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
@@ -18,12 +19,9 @@ import {
   LabelDefinition, Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable,
   SelectClassInfo, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import {
-  createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
-  createRandomRuleset, createRandomTransientId,
-} from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
+  createRandomTransientId, createTestContentDescriptor,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {

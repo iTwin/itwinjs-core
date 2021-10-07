@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
@@ -18,13 +19,10 @@ import {
   Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
   RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createTestContentDescriptor, createTestSelectClassInfo } from "@itwin/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElement, createRandomSelectionScope,
-} from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestSelectClassInfo, ResolvablePromise,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
