@@ -73,7 +73,7 @@ export class TestContext {
     }
 
     if (undefined !== this.settings.clientConfiguration)
-      this.clientAccessToken = await getClientAccessTokenFromBackend(this.settings.clientConfiguration);
+      this.clientAccessToken = await getClientAccessTokenFromBackend();
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
