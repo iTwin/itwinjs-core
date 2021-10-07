@@ -112,7 +112,7 @@ describe("RealityDataSource", () => {
     const forceProvider = RealityDataProvider.TilesetUrl;
     const rdSourceKey = RealityDataSource.createFromBlobUrl(blobUrl, forceProvider);
     expect(rdSourceKey.provider).to.equal(forceProvider);
-    expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
+    expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");
     expect(rdSourceKey.iTwinId).to.be.undefined;
   });

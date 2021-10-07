@@ -89,11 +89,12 @@ export class RealityDataSource {
   }
   public static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     let format = inputFormat ? inputFormat : RealityDataFormat.ThreeDTile;
+    let provider = inputProvider ? inputProvider : RealityDataProvider.TilesetUrl;
     const url = new URL(blobUrl);
 
     // If we cannot interpret that url pass in parameter we just fallback to old implementation
     if(!url.pathname)
-      return { provider: RealityDataProvider.TilesetUrl, format, id: blobUrl };
+      return { provider, format, id: blobUrl };
 
     // const accountName   = url.hostname.split(".")[0];
     let containerName= "";
@@ -105,8 +106,8 @@ export class RealityDataSource {
     // const blobFileName  = `/${pathSplit[2]}`;
     // const sasToken      = url.search.substr(1);
     const isOPC = url.pathname.match(".opc*") !== null;
-    const provider = inputProvider ? inputProvider : RealityDataProvider.ContextShare;
-    format = isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
+    provider = inputProvider ? inputProvider : RealityDataProvider.ContextShare;
+    format = inputFormat ? inputFormat : isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
     const contextShareKey: RealityDataSourceKey = { provider, format, id: containerName };
     return contextShareKey;
   }
