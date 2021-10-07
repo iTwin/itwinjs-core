@@ -311,6 +311,8 @@ A Connector must also relate each physical model that it creates to the source d
     const key = scope + sourceItem.id.toLowerCase();
 ```
 
+Also refer to [Provenence in iModels](./Provenence-in-iModels) for more information about ExternalSource and related classes.
+
 ###### Case 2 : Id mapping
 
 Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
