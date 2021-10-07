@@ -5,8 +5,8 @@
 
 // TODO: Before the 3.0 release this whole file needs to be removed from the repo.
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 /**
  * Object to be set as `IModelApp.authorizationClient` for the frontend of ElectronApps.
@@ -15,11 +15,11 @@ import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
  * @public
  */
 export class ElectronAppAuthorization implements AuthorizationClient {
-  private _cachedToken?: AccessToken;
+  private _cachedToken: AccessToken = "";
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
-  public get hasSignedIn() { return this._cachedToken !== undefined; }
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
+  public get hasSignedIn() { return this._cachedToken !== ""; }
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
   }
@@ -29,7 +29,7 @@ export class ElectronAppAuthorization implements AuthorizationClient {
    * in [NativeHostOpts]($backend)
    */
   public constructor() {
-    this.onUserStateChanged.addListener((token?: AccessToken) => {
+    this.onAccessTokenChanged.addListener((token: AccessToken) => {
       this._cachedToken = token;
     });
   }
@@ -64,6 +64,6 @@ export class ElectronAppAuthorization implements AuthorizationClient {
       this._refreshingToken = false;
     }
 
-    return this._cachedToken!;
+    return this._cachedToken ?? "";
   }
 }

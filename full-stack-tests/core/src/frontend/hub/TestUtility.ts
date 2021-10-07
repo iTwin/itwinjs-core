@@ -5,12 +5,13 @@
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, NativeApp  } from "@itwin/core-frontend";
+import { ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./ITwinPlatformEnv";
+import { AuthorizationClient } from "@bentley/itwin-client";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
@@ -59,21 +60,17 @@ export class TestUtility {
     if (!IModelApp.initialized)
       throw new Error("IModelApp must be initialized");
 
-    let authorizationClient: FrontendAuthorizationClient | undefined;
+    let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+      authorizationClient = new ElectronAppAuthorization ();
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await getAccessTokenFromBackend(user);
       if ("" === accessToken)
         throw new Error("no access token");
-
-      // TRICKY: when the tests run multiple times, it doesn't see the token change so doesn't send it to the frontend. Simulate logout.
-      await NativeApp.callNativeHost("setAccessToken", "");
-      await NativeApp.callNativeHost("setAccessToken", accessToken);
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
-      await authorizationClient.signIn();
+      await (authorizationClient as ElectronAppAuthorization).signIn();
     }
 
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
@@ -99,7 +96,9 @@ export class TestUtility {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
-    return iModelId!;
+    if (!iModelId)
+      throw new Error("no access token");
+    return iModelId;
   }
 
   /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */

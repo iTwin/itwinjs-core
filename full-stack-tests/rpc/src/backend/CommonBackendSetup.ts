@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { IModelHost } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
@@ -23,12 +23,12 @@ export async function commonSetup(): Promise<void> {
       "organization",
       "itwinjs",
     ];
-    const authConfig = {
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend({
       clientId: "imodeljs-spa-test",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: baseOidcScopes.join(" "),
-    };
-    await ElectronHost.startup({ electronHost: { rpcInterfaces, authConfig } });
+    });
+    await ElectronHost.startup({ electronHost: { rpcInterfaces } });
   } else
     await IModelHost.startup();
 

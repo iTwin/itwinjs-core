@@ -12,7 +12,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { AccessToken, assert, AuthStatus, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
-import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
+import { IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
   BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, StringMap,
@@ -23,7 +23,7 @@ import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient, DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
 
 const loggerCategory = "electron-auth";
 
@@ -31,7 +31,7 @@ const loggerCategory = "electron-auth";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @beta
  */
-export class ElectronAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+export class ElectronAuthorizationBackend implements AuthorizationClient {
   protected _accessToken?: AccessToken;
   public config?: NativeAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
@@ -44,13 +44,70 @@ export class ElectronAuthorizationBackend extends ImsAuthorizationClient impleme
   public get tokenStore() { return this._tokenStore!; }
   protected baseUrl?: string;
 
-  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  private static _defaultRequestOptionsProvider: DefaultRequestOptionsProvider;
+  protected _url?: string;
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super();
     this.config = config;
     this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
   }
+
+  /**
+   * Augments request options with defaults returned by the DefaultRequestOptionsProvider.
+   * @note The options passed in by clients override any defaults where necessary.
+   * @param options Options the caller wants to augment with the defaults.
+   * @returns Promise resolves after the defaults are setup.
+   */
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    if (!ElectronAuthorizationBackend._defaultRequestOptionsProvider)
+      ElectronAuthorizationBackend._defaultRequestOptionsProvider = new DefaultRequestOptionsProvider();
+    return ElectronAuthorizationBackend._defaultRequestOptionsProvider.assignOptions(options);
+  }
+
+  /**
+   * Gets the URL of the service. Uses the default URL provided by client implementations.
+   * If defined, the value of `IMJS_URL_PREFIX` will be used as a prefix to all urls provided
+   * by the client implementations.
+   *
+   * Note that for consistency sake, the URL is stripped of any trailing "/".
+   * @returns URL for the service
+   */
+  public async getUrl(): Promise<string> {
+    if (this._url)
+      return this._url;
+
+    if (!this.baseUrl) {
+      throw new Error("The client is missing a default url.");
+    }
+
+    const prefix = process.env.IMJS_URL_PREFIX;
+    if (prefix) {
+      const baseUrl = new URL(this.baseUrl);
+      baseUrl.hostname = prefix + baseUrl.hostname;
+      this._url = baseUrl.href;
+    } else {
+      this._url = this.baseUrl;
+    }
+
+    // Strip trailing '/'
+    this._url = this._url.replace(/\/$/, "");
+    return this._url;
+  }
+
+  /** used by clients to send delete requests */
+  protected async delete(accessToken: AccessToken, relativeUrlPath: string): Promise<void> {
+    const url: string = await this.getUrl() + relativeUrlPath;
+    Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
+    const options: RequestOptions = {
+      method: "DELETE",
+      headers: { authorization: accessToken },
+    };
+    await this.setupOptionDefaults(options);
+    await request(url, options);
+    Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
+  }
+
+  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
   public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
 
@@ -103,7 +160,7 @@ export class ElectronAuthorizationBackend extends ImsAuthorizationClient impleme
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
-      Logger.logError(loggerCategory, `Error refreshing access token`, () => getErrorProps(err));
+      Logger.logError(loggerCategory, `Error refreshing access token`, () => BentleyError.getErrorProps(err));
       return undefined;
     }
   }
@@ -232,10 +289,10 @@ export class ElectronAuthorizationBackend extends ImsAuthorizationClient impleme
     return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
   }
 
-  public async getAccessToken(): Promise<AccessToken | undefined> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this._hasExpired || !this._accessToken)
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken;
+    return this._accessToken ?? "";
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {

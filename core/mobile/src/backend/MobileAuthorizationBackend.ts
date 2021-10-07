@@ -88,10 +88,10 @@ export class MobileAuthorizationBackend extends ImsAuthorizationClient implement
     this._accessToken = token;
   }
 
-  public async getAccessToken(): Promise<AccessToken | undefined> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (!this._accessToken)
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken;
+    return this._accessToken ?? "";
   }
 
   /** return accessToken */

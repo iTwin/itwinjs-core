@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp, ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { I18N } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
@@ -49,15 +49,15 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+async function createOidcClient(): Promise<ElectronAppAuthorization | BrowserAuthorizationClient> {
   const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
-    await desktopClient.initialize(sessionProps);
+    // const clientId = "imodeljs-electron-test";
+    // const redirectUri = "http://localhost:3000/signin-callback";
+    // const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
+    const desktopClient = new ElectronAppAuthorization();
+    // await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
@@ -77,24 +77,11 @@ async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAu
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient = await createOidcClient({
-    applicationId: IModelApp.applicationId,
-    applicationVersion: IModelApp.applicationVersion,
-    sessionId: IModelApp.sessionId,
-  });
+  const oidcClient = await createOidcClient();
+  await oidcClient.signIn();
 
   IModelApp.authorizationClient = oidcClient;
-  if ((await oidcClient.getAccessToken()) !== undefined)
-    return true;
-
-  const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onAccessTokenChanged.addListener((token) => {
-      resolve(token !== "");
-    });
-  });
-
-  await oidcClient.signIn();
-  return retPromise;
+  return (await oidcClient.getAccessToken()) !== "";
 }
 
 async function main() {

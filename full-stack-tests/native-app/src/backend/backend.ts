@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
@@ -64,6 +64,7 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
       const region = "0";
       return { iTwinName, iModelHub: { region } };
     }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl();
     return { iTwinName, iModelBank: { url } };
   }
@@ -115,25 +116,12 @@ async function init() {
   iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.cacheDir = path.join(__dirname, "out");
 
-  await ElectronHost.startup({
-    electronHost: {
-      ipcHandlers: [TestIpcHandler],
-      authConfig: {
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-      },
-    },
-    iModelHost,
+  await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
+  IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
-
-  // TODO: Use this setup once the ElectronAuth is split out.
-  // await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
-  // IModelHost.authorizationClient = new ElectronAuthorizationBackend({
-  //   clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-  //   redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-  //   scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-  // });
 }
 
 module.exports = init();
