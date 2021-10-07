@@ -67,7 +67,7 @@ export interface ParticleProps extends XYAndZ {
   /** The transparency with which to draw the particle as an integer in [0,255]. If omitted, it defaults to the current value of [[ParticleCollectionBuilder.transparency]]. */
   transparency?: number;
 
-  /** A rotation matrix to orient the particle. */
+  /** A rotation matrix to orient the particle.  If supplied then the particles will not be automatically oriented towards the camera. */
   rotationMatrix?: Matrix3d;
 }
 
