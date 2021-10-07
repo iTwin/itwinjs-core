@@ -6,8 +6,8 @@
 import { assert } from "chai";
 import { I18N } from "../Localization";
 
-describe("I18N tests", () => {
-  it("registers I18N namespaces", async () => {
+describe("ITwinLocalization tests", () => {
+  it("registers ITwinLocalization namespaces", async () => {
     const i18n = new I18N(["namespace1", "namespace2"]);
     assert.strictEqual((i18n as any)._namespaceRegistry.size, 2);
     assert.isDefined(i18n.getNamespace("namespace1"));
