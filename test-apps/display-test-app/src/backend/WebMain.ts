@@ -10,7 +10,7 @@ import * as enableWs from "express-ws";
 import { Logger } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { LocalhostIpcHost } from "@bentley/imodeljs-backend";
+import { LocalhostIpcHost } from "@itwin/core-backend";
 
 /* eslint-disable no-console */
 

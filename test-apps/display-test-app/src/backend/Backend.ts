@@ -5,7 +5,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { AccessToken } from "@bentley/itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
@@ -161,7 +160,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   } else if (ProcessDetector.isAndroidAppBackend) {
     await AndroidHost.startup(opts);
   } else {
-    IModelHost.authorizationClient = { isAuthorized: false, getAccessToken: async () => new AccessToken() };
     await LocalhostIpcHost.startup(opts);
   }
 
