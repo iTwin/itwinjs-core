@@ -13,7 +13,7 @@ describe("GeoCoord", () => {
   let iModel: IModelConnection;
   const geoPointList: XYZProps[] = [];
   let wgs84Converter: GeoConverter;
-  let nad27Converter: GeoConverter;
+  let tokyoConverter: GeoConverter;
   let sameDatumConverter: GeoConverter;
   let wgs84Response: IModelCoordinatesResponseProps;
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
@@ -28,7 +28,7 @@ describe("GeoCoord", () => {
       }
     }
     wgs84Converter = iModel.geoServices.getConverter("WGS84")!;
-    nad27Converter = iModel.geoServices.getConverter("NAD27")!;
+    tokyoConverter = iModel.geoServices.getConverter("Tokyo-Grid")!;
     sameDatumConverter = iModel.geoServices.getConverter()!;
   });
 
@@ -53,20 +53,20 @@ describe("GeoCoord", () => {
       expect(GeoCoordStatus.Success === result.s);
     }
 
-    const nad27Response = await nad27Converter.getIModelCoordinatesFromGeoCoordinates(testPoints);
+    const tokyoResponse = await tokyoConverter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
-    expect(nad27Response.fromCache === 0).to.be.true;
+    expect(tokyoResponse.fromCache === 0).to.be.true;
 
-    for (const result of nad27Response.iModelCoords) {
+    for (const result of tokyoResponse.iModelCoords) {
       expect(GeoCoordStatus.Success === result.s).to.be.true;
     }
 
     // we expect the iModelCoord results from treating the geoCoords as WGS84 lat/longs to be different from what we get treating them as NAD27 lat/longs.
     for (let iPoint: number = 0; iPoint < wgs84Response.iModelCoords.length; ++iPoint) {
       const wgs84Point = Point3d.fromJSON(wgs84Response.iModelCoords[iPoint].p);
-      const nad27Point = Point3d.fromJSON(nad27Response.iModelCoords[iPoint].p);
-      expect(wgs84Point.isAlmostEqual(nad27Point)).to.be.false;
+      const tokyoPoint = Point3d.fromJSON(tokyoResponse.iModelCoords[iPoint].p);
+      expect(wgs84Point.isAlmostEqual(tokyoPoint)).to.be.false;
     }
 
     const sameDatumResponse = await sameDatumConverter.getIModelCoordinatesFromGeoCoordinates(testPoints);
@@ -182,8 +182,6 @@ describe("GeoCoord", () => {
       expect(response.geoCoords[0].s === outputCoord.s);
     };
 
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "LL84"}, verticalCRS: {id: "ELLIPSOID"} }, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: -32.352342418737663}, s: 0});
-
     await convertTest("BritishNatGrid-Ellipsoid.bim", "", {x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0}, {p: {x: -5.2020119082059511, y: 49.959453295440234, z: 0.0}, s: 0});
     await convertTest("BritishNatGrid-Ellipsoid.bim", "ETRF89", {x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0}, {p: {x: -5.2030365061523707, y: 49.960007477936202, z: 0.0}, s: 0});
     await convertTest("BritishNatGrid-Ellipsoid.bim", "OSGB", {x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0}, {p: {x: -5.2020119082059511, y: 49.959453295440234, z: 0.0}, s: 0});
@@ -198,7 +196,56 @@ describe("GeoCoord", () => {
 
     await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "LL84"}, verticalCRS: {id: "ELLIPSOID"} }, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: -32.352342418737663}, s: 0});
 
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "LL84"}, verticalCRS: {id: "ELLIPSOID"} }, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: -32.352342418737663}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "LL84"}, verticalCRS: {id: "GEOID"} }, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: 0.7621583779125531}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83-II"}, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83-II"}, verticalCRS: {id: "GEOID"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83-II"}, verticalCRS: {id: "NGVD29"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.0}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { epsg: 26942}, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { epsg: 6418}, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 6506524.158595133, y: 2353354.975796927, z: 0.745910484422781}, s: 0});
+    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83/2011-IIF" }, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 6506524.158595133, y: 2353354.975796927, z: 0.745910484422781}, s: 0});
+
+    await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: {id: "GEOID"} }, {x: 473327.251, y: 257049.636, z: 0.0}, {p: {x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336}, s: 0});
+
+    await convertTest("BritishNatGrid-Ellipsoid.bim",
+      {
+        horizontalCRS: {
+          id: "HS2-MOCK",
+          description : "USES CUSTOM DATUM",
+          source : "Test",
+          deprecated : false,
+          datumId : "TEST-GRID1",
+          datum : {
+            id: "TEST-GRID1",
+            source : "Emmo",
+            ellipsoidId : "WGS84",
+            transforms: [
+              {
+                method: "GridFiles",
+                sourceEllipsoid : {
+                  id: "WGS84"},
+                targetEllipsoid : {
+                  id: "GRS1980"},
+                gridFile: {
+                  files: [
+                    { fileName: "./UK//HS2/HS2TN15_NTv2.gsb", format: "NTv2", direction: "Direct" },
+                  ],
+                },
+              }]},
+          unit: "Meter",
+          projection : {
+            method: "TransverseMercator",
+            centralMeridian: -1.5,
+            latitudeOfOrigin: 52.30,
+            scaleFactor: 1.0,
+            falseEasting: 198873.0046,
+            falseNorthing: 375064.3871},
+        },
+        verticalCRS : {
+          id : "GEOID"}}
+      , {x: 473327.251, y: 257049.636, z: 0.0}, {p: {x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336}, s: 0});
+
+    await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: {id: "GEOID"} }, {x: 473327.251, y: 257049.636, z: 0.0}, {p: {x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457}, s: 0});
+
     await convertTest("UTM83-10-NGVD29.bim",
       {
         horizontalCRS: {
