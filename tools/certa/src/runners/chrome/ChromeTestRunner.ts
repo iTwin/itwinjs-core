@@ -72,7 +72,7 @@ async function loadScript(page: puppeteer.Page, scriptPath: string) {
   return page.addScriptTag({ path: `${scriptPath}` });
 }
 
-async function runTestsInPuppeteer(config: CertaConfig, _port: string) {
+async function runTestsInPuppeteer(config: CertaConfig, port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
       const page = (await browser.pages()).pop() || await browser.newPage();
