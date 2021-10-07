@@ -7,76 +7,57 @@
  */
 
 import { Localization } from "@itwin/core-common";
-import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
-import i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import HttpApi, { BackendOptions } from "i18next-http-backend";
+import { createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
+import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
+import * as HttpApi from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 
 /** @public */
-interface LocalizationInitOptions {
+interface LocalizationOptions {
   urlTemplate: string;
 }
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
-export class I18N implements Localization {
+export class ITwinLocalization implements Localization {
   private _i18next: i18n;
-  private readonly _namespaceRegistry: Map<string, Promise<void>> = new Map<string, Promise<void>>();
+  private readonly _namespaceRegistry = new Map<string, Promise<void>>();
 
   /** Constructor for I18N.
-   * @param nameSpaces either the name of the default namespace, an array of namespaces, or undefined. If an array, the first entry is the default.
    * @param options object with I18NOptions (optional)
-   * @param renderFunction optional i18next.Callback function
    */
-  public constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback) {
+  public constructor(options?: LocalizationOptions) {
     this._i18next = createInstance();
 
-    const backendOptions: BackendOptions = {
+    const backend: HttpApi.BackendOptions = {
       loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
     };
 
-    const detectionOptions: i18nextBrowserLanguageDetector.DetectorOptions = {
+    const detection: i18nextBrowserLanguageDetector.DetectorOptions = {
       order: ["querystring", "navigator", "htmlTag"],
       lookupQuerystring: "lng",
       caches: [],
     };
 
-    nameSpaces = nameSpaces ? ("string" === typeof nameSpaces ? [nameSpaces] : nameSpaces) : [""];
-
     const initOptions: InitOptions = {
       interpolation: { escapeValue: true },
+      ns: [],
+      defaultNS: "",
       fallbackLng: "en",
-      ns: nameSpaces,
-      defaultNS: nameSpaces[0],
-      backend: backendOptions,
-      detection: detectionOptions,
+      backend,
+      detection,
     };
 
     // if in a development environment, set to pseudo-localize, otherwise detect from browser.
-    const isDevelopment: boolean = process.env.NODE_ENV === "development";
-    if (isDevelopment) {
+    if (process.env.NODE_ENV === "development")
       initOptions.debug = true;
-    } else {
-      this._i18next = this._i18next.use(i18nextBrowserLanguageDetector);
-    }
 
-    const initPromise = new Promise<void>((resolve) => {
-      this._i18next.use(HttpApi)
-        .use(BentleyLogger)
-        .init(initOptions, (error, t) => {
-          if (renderFunction !== undefined)
-            renderFunction(error, t);
-          resolve();
-        })
-        .changeLanguage(isDevelopment ? "en" : undefined as any, undefined);
-      // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
-    });
-
-    for (const nameSpace of nameSpaces) {
-      this._namespaceRegistry.set(nameSpace, initPromise);
-    }
+    this._i18next.use(i18nextBrowserLanguageDetector)
+      .use(HttpApi.default ?? HttpApi)
+      .use(BentleyLogger)
+      .init(initOptions);
   }
 
   /** Replace all instances of `%{key}` within a string with the translations of those keys.
@@ -167,7 +148,10 @@ export class I18N implements Localization {
   }
 
   /** @internal */
-  public languageList(): string[] { return this._i18next.languages; }
+  public getLanguageList(): string[] { return this._i18next.languages; }
+
+  /** @internal */
+  public changeLanguage(language: string): void { this._i18next.changeLanguage(language); }
 
   /** Register a new Namespace and return it. If the namespace is already registered, it will be returned.
    * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.
@@ -177,10 +161,13 @@ export class I18N implements Localization {
    * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
    * @public
    */
-  public async registerNamespace(name: string): Promise<void> {
+  public async registerNamespace(name: string, setDefault?: true): Promise<void> {
     const existing = this._namespaceRegistry.get(name);
     if (existing !== undefined)
       return existing;
+
+    if (setDefault)
+      this._i18next.setDefaultNamespace(name);
 
     const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
       this.loadNamespace(name, (err: any, _t: any) => {
@@ -194,7 +181,7 @@ export class I18N implements Localization {
         // using i18next-http-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
         const errorList = err as string[];
-        let locales: string[] = this.languageList().map((thisLocale: any) => `/${thisLocale}/`);
+        let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
         for (const thisError of errorList) {
           if (!thisError.includes(name))
             continue;
@@ -220,9 +207,7 @@ export class I18N implements Localization {
 
 /** The class that represents a registered Localization Namespace
  * @note The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
- * @public
  */
-
 class BentleyLogger {
   public static readonly type = "logger";
   public log(args: string[]) { Logger.logInfo("i18n", this.createLogMessage(args)); }

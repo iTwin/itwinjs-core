@@ -29,7 +29,7 @@ import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
@@ -180,7 +180,7 @@ export class SampleAppIModelApp {
 
     const iModelAppOpts = {
       ...opts.iModelApp,
-      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+      localization: new ITwinLocalization( { urlTemplate: "locales/en/{{ns}}.json" }),
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
@@ -260,7 +260,7 @@ export class SampleAppIModelApp {
     // initialize Presentation
     await Presentation.initialize({
       presentation: {
-        activeLocale: IModelApp.localization.languageList()[0],
+        activeLocale: IModelApp.localization.getLanguageList()[0],
       },
       favorites: {
         storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings

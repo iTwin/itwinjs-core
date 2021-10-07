@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
@@ -16,14 +16,14 @@ import { TableFilterDescriptorCollection } from "../components-react/table/colum
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _i18n?: ITwinLocalization;
   private static _uiComponentsInitialized = false;
 
-  public static get i18n(): I18N {
+  public static get i18n(): ITwinLocalization {
     if (!TestUtils._i18n) {
       // const port = process.debugPort;
       // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new I18N();
+      TestUtils._i18n = new ITwinLocalization();
     }
     return TestUtils._i18n;
   }

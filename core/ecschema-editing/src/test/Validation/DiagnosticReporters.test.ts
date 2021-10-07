@@ -5,7 +5,6 @@
 
 import { assert, expect } from "chai";
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { I18N } from "@itwin/core-i18n";
 import { ECClass, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
@@ -22,9 +21,7 @@ class TestDiagnosticReporter extends FormatDiagnosticReporter {
   }
 }
 
-describe.skip("DiagnosticReporters tests", () => {
-  // for some reason this seems to cause test to hang. Skipping for now.
-  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
+describe("DiagnosticReporters tests", () => {
 
   let testSchema: Schema;
   let testSchemaItem: EntityClass;
@@ -118,37 +115,35 @@ describe.skip("DiagnosticReporters tests", () => {
       expect(metaData.messageArgs).to.be.undefined;
     });
 
-    it("should log expected error with translated message", async () => {
-      const i18n = new I18N();
-      const i18nMock = sinon.mock(i18n);
-      const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(Promise.resolve());
-      const translate = i18nMock.expects("getLocalizedString");
-      translate.returns("Translated text {0} {1}");
-      const logMessage = sinon.stub(Logger, "logError");
-      const reporter = new LoggingDiagnosticReporter(undefined, i18n);
-      const diag = await createTestDiagnostic(DiagnosticCategory.Error);
+    // it("should log expected error with translated message", async () => {
+    //   const i18nMock = sinon.mock(i18n);
+    //   const registerNamespace = i18nMock.expects("registerNamespace");
+    //   registerNamespace.resolves(Promise.resolve());
+    //   const translate = i18nMock.expects("getLocalizedString");
+    //   translate.returns("Translated text {0} {1}");
+    //   const logMessage = sinon.stub(Logger, "logError");
+    //   const reporter = new LoggingDiagnosticReporter(undefined, i18n);
+    //   const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
-      reporter.report(diag);
+    //   reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
-    });
+    //   expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
+    // });
 
-    it("no message args, should log expected error with translated message", async () => {
-      const i18n = new I18N();
-      const i18nMock = sinon.mock(i18n);
-      const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(Promise.resolve());
-      const translate = i18nMock.expects("getLocalizedString");
-      translate.returns("Translated text");
-      const logMessage = sinon.stub(Logger, "logError");
-      const reporter = new LoggingDiagnosticReporter(undefined, i18n);
-      const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
+    // it("no message args, should log expected error with translated message", async () => {
+    //   const i18nMock = sinon.mock(i18n);
+    //   const registerNamespace = i18nMock.expects("registerNamespace");
+    //   registerNamespace.resolves(Promise.resolve());
+    //   const translate = i18nMock.expects("getLocalizedString");
+    //   translate.returns("Translated text");
+    //   const logMessage = sinon.stub(Logger, "logError");
+    //   const reporter = new LoggingDiagnosticReporter(undefined, i18n);
+    //   const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
 
-      reporter.report(diag);
+    //   reporter.report(diag);
 
-      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
-    });
+    //   expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
+    // });
 
     it("should log expected warning", async () => {
       const logMessage = sinon.stub(Logger, "logWarning");
