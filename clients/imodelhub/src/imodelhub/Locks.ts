@@ -436,7 +436,7 @@ export class LockHandler {
   }
 
   /** Update multiple [[Lock]]s. This call can simultaneously acquire new Locks and update states of already owned Locks. If large amount of Locks are updated, they are split across multiple requests. See [[LockUpdateOptions.locksPerRequest]]. Default is 2000 Locks per request.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param locks Locks to acquire. Requires briefcaseId, seedFileId to be set for every
    * Lock instance. They must be consistent throughout all of the Locks.
@@ -499,7 +499,7 @@ export class LockHandler {
   }
 
   /** Get the [[Lock]]s that have been issued for the iModel.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Locks or select different data from them.
    * @returns Resolves to an array of Locks matching the query.
@@ -532,7 +532,7 @@ export class LockHandler {
   }
 
   /** Delete all [[Lock]]s owned by the specified [[Briefcase]].
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcase.
    * @throws [[IModelHubError]] with [IModelHubStatus.BriefcaseDoesNotExist]($bentley) if [[Briefcase]] with specified briefcaseId does not exist. This can happen if number was not given as a Briefcase id yet, or Briefcase with that id was already deleted.
@@ -549,7 +549,7 @@ export class LockHandler {
   }
 
   /** Helper method to iteratively delete chunks of [[Lock]]s for the specified [[Briefcase]] until there are no more left.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcase.
    */

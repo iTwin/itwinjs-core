@@ -174,7 +174,7 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets string url to fetch blob data from. Access is read-only.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns string url for blob data
@@ -195,7 +195,7 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets a tile access url URL object
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
    * @returns app URL object for blob url
    */
@@ -234,7 +234,7 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets a tileset's app data json
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns app data json object
@@ -248,7 +248,7 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets tile content
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns array buffer of tile content
@@ -262,7 +262,7 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets a reality data root document json
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @returns tile data json
    */
   public async getRootDocumentJson(accessToken: AccessToken): Promise<any> {
@@ -400,7 +400,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets reality data with all of its properties
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns The requested reality data.
@@ -445,7 +445,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets all reality data associated with the iTwin. Consider using getRealityDataInITwinOverlapping() if spatial extent is known.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param type  reality data type to query or all supported type if undefined
    * @returns an array of RealityData that are associated to the iTwin.
@@ -461,7 +461,7 @@ export class RealityDataAccessClient extends WsgClient {
   /**
    * Gets all reality data that has a footprint defined that overlaps the given area and that are associated with the iTwin. Reality Data returned must be accessible by user
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param minLongDeg The minimum longitude in degrees of a 2d range to search.
    * @param maxLongDeg The maximum longitude in degrees of a 2d range to search.
@@ -560,7 +560,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets reality datas with all of its properties
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin.
    * @param queryOptions RealityDataServicesRequestQueryOptions of the request.
    * @returns The requested reality data.
@@ -577,7 +577,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Creates a reality data with given properties
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param realityData The reality data to create. The Id of the reality data is usually left empty indicating for the service to assign
    * one. If set then the reality id must not exist on the server.
@@ -600,7 +600,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Updates a reality data with given properties
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param realityData The reality data to update. The Id must contain the identifier of the reality data to update.
    * NOTE: As a probable known defect some specific read-only attributes must be undefined prior to passing the reality data.
@@ -623,7 +623,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Deletes a reality data.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param realityDataId The identifier of the reality data to delete.
    * @returns a void Promise.
@@ -637,7 +637,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given iTwin.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. The requested reality data.
@@ -649,7 +649,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given iTwin.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. The requested reality data.
@@ -664,7 +664,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given iTwin.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. The requested reality data.
@@ -675,7 +675,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets a tile file access key
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @param iTwinId id of associated iTwin
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job.
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
@@ -724,7 +724,7 @@ export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Gets the list of all data locations supported by PW Context Share.
-   * @param accessToken The user access token string.
+   * @param accessToken The client access token string.
    * @returns The requested data locations list.
    */
   public async getDataLocation(accessToken: AccessToken): Promise<DataLocation[]> {
