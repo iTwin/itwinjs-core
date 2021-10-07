@@ -9,10 +9,11 @@
     "copy:config": "internal-tools copy-config",
     "build": "tsc 1>&2 && npm run -s webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
-    "cover": "npm run -s test",
+    "cover": "npm run -s test:chrome -- --cover",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s test:chrome && npm run -s test:electron",
+    "test:node": "certa -r node --grep \"#integration\" --invert",
     "test:chrome": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
     "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
@@ -73,9 +74,6 @@
     "webpack-cli": "^3.1.0",
     "webpack-core": "0.6.9",
     "serve-handler": "^6.1.2"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

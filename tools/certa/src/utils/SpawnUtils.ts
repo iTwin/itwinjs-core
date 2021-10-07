@@ -13,13 +13,13 @@ import * as inspector from "inspector";
  * @param env Environment vars to override in the child process.
  * @param useIpc Whether to enable an IPC channel when spawning.
  */
-export function spawnChildProcess(command: string, args: ReadonlyArray<string>, env?: NodeJS.ProcessEnv, useIpc = false): ChildProcess {
+export function spawnChildProcess(command: string, args: ReadonlyArray<string>, env?: NodeJS.ProcessEnv, useIpc = false, cwd = process.cwd()): ChildProcess {
   const childEnv = { ...process.env, ...(env || {}) };
 
   // FIXME: We should be able to remove the useIpc param and just always enable it,
   // but it's not safe to spawn electron with IPC enabled until https://github.com/electron/electron/issues/17044 is fixed.
   const stdio: StdioOptions = (useIpc) ? ["ipc", "pipe", "pipe"] : "pipe";
-  const childProcess = spawn(command, args, { stdio, cwd: process.cwd(), env: childEnv });
+  const childProcess = spawn(command, args, { stdio, cwd, env: childEnv });
   // For some reason, spawning using `stdio: "inherit"` results in some garbled output (for example, "✓" is printed as "ΓêÜ").
   // Using `stdio: "pipe"` and manually redirecting the output here seems to work though.
   childProcess.stdout!.on("data", (data: any) => process.stdout.write(data));

@@ -32,7 +32,7 @@ export class ChromeTestRunner {
     };
 
     if (config.debug)
-      options.args.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`);
+      options.args.push(`--disable-gpu`, `--remote-debugging-port=${config.ports.frontendDebugging}`, "--allow-file-access-from-files");
 
     browser = await puppeteer.launch(options);
 
@@ -69,10 +69,10 @@ export class ChromeTestRunner {
 }
 
 async function loadScript(page: puppeteer.Page, scriptPath: string) {
-  return page.addScriptTag({ url: `/@/${scriptPath}` });
+  return page.addScriptTag({ path: `${scriptPath}` });
 }
 
-async function runTestsInPuppeteer(config: CertaConfig, port: string) {
+async function runTestsInPuppeteer(config: CertaConfig, _port: string) {
   return new Promise<ChromeTestResults>(async (resolve, reject) => {
     try {
       const page = (await browser.pages()).pop() || await browser.newPage();
@@ -86,16 +86,9 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       // Expose some functions to the frontend that will execute _in the backend context_
       await page.exposeFunction("_CertaConsole", (type: ConsoleMethodName, args: any[]) => console[type](...args));
       await page.exposeFunction("_CertaSendToBackend", executeRegisteredCallback);
-      await page.exposeFunction("_CertaReportResults", (results) => {
-        setTimeout(async () => {
-          await browser.close();
-          resolve(results);
-        });
-      });
 
       // Now load the page (and requisite scripts)...
-      const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
-      await page.goto(`http://localhost:${port}`);
+      await page.goto(`file:///${path.join(__dirname, "../../../public/index.html").replace(/\\/g, "/")}`);
       await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
       await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
@@ -104,7 +97,26 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       await loadScript(page, require.resolve("./MochaSerializer.js"));
       await configureRemoteReporter(page);
       await loadScript(page, require.resolve("../../utils/initMocha.js"));
-      await loadScript(page, testBundle);
+
+      const session = await page.target().createCDPSession();
+      await session.send("Profiler.enable");
+      console.log(await session.send("Profiler.startPreciseCoverage", { callCount: true, detailed: true }));
+
+      await page.exposeFunction("_CertaReportResults", (results) => {
+        setTimeout(async () => {
+          const jsCoverage = await session.send("Profiler.takePreciseCoverage");
+          results.coverage = jsCoverage;
+          await session.send("Profiler.stopPreciseCoverage");
+          await session.send("Profiler.disable");
+          await session.detach();
+          await page.close();
+          await browser.close();
+          resolve(results);
+        });
+      });
+
+      // await loadScript(page, config.testBundle);
+      await page.addScriptTag({ url: `file:///${config.testBundle.replace(/\\/g, "/")}` });
 
       // ...and start the tests
       await page.evaluate(async () => {

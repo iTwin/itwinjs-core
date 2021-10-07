@@ -25,6 +25,26 @@ function loadEnv(envFile) {
 
 loadEnv(path.join(__dirname, ".env"));
 
+class FixSourceMapsPlugin {
+  constructor() { }
+
+  apply(compiler) {
+    compiler.hooks.compilation.tap("FixSourceMapsPlugin", (compilation) => {
+      compilation.hooks.buildModule.tap("FixSourceMapsPlugin", module => {
+        if (module.userRequest && module.userRequest.startsWith(path.resolve(__dirname, "../../"))) {
+          if (!module.userRequest.startsWith(path.resolve(__dirname, "../../common")))
+            return;
+        }
+        module.useSourceMap = false;
+      });
+    });
+    compiler.hooks.done.tap("FixSourceMapsPlugin", (file, content) => {
+      const bundlePath = path.resolve(__dirname, "lib/dist/bundled-tests.js");
+      fs.writeFileSync(bundlePath, fs.readFileSync(bundlePath, "utf8").replace(/\/\/# sourceMappingURL=data:/g, "//! STRIPPED_INLINE_SRCMAP"));
+    });
+  }
+}
+
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
@@ -32,9 +52,8 @@ function createConfig(shouldInstrument) {
     output: {
       path: path.resolve(__dirname, "lib/dist"),
       filename: "bundled-tests.js",
-      devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
-    devtool: "nosources-source-map",
+    devtool: false,
     resolve: { mainFields: ["main", "module"] },
     module: {
       noParse: [
@@ -69,6 +88,11 @@ function createConfig(shouldInstrument) {
       electron: "commonjs electron",
     },
     plugins: [
+      new webpack.SourceMapDevToolPlugin({
+        filename: "[file].map",
+        moduleFilenameTemplate: "file://[absolute-resource-path]"
+      }),
+      new FixSourceMapsPlugin(),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       new webpack.DefinePlugin({
@@ -79,6 +103,7 @@ function createConfig(shouldInstrument) {
           }, {
             IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
           }),
+        "//# sourceMappingURL=data:": "// IGNORED_sourceMappingURL was data:"
       }),
     ]
   };
@@ -109,3 +134,5 @@ module.exports = [
   // createConfig(true),
   createConfig(false)
 ]
+
+

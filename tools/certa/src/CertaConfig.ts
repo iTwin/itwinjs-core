@@ -60,12 +60,6 @@ export interface CertaConfig {
   readonly testBundle: string;
 
   /**
-   * An instanbul-instrumented version of the `testBundle`.
-   * This will be used instead of `testBundle` when running with `cover` enabled.
-   */
-  readonly instrumentedTestBundle?: string;
-
-  /**
    * The absolute path to a JavaScript module containing backend initialization logic.
    * This module will be required in Certa's "main" process ***before*** initializing a test runner.
    * If the file's `module.exports` is a Promise, that Promise will also be awaited before running tests.

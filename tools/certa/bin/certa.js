@@ -7,6 +7,10 @@
 
 "use strict";
 
+if (process.env.NYC_CWD) {
+  process.chdir(process.env.NYC_CWD);
+}
+
 const yargs = require("yargs");
 yargs.strict(true)
   .wrap(Math.min(150, yargs.terminalWidth()))

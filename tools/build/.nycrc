@@ -3,21 +3,6 @@
     "source-map-support/register",
     "ts-node/register"
   ],
-  "include": [
-    "src/**/*",
-    "lib/cjs/**/*"
-  ],
-  "exclude": [
-    "src/test/**/*",
-    "lib/cjs/test/**/*",
-    "lib/module/**/*",
-    "**/*.d.ts",
-    "**/*.d.tsx"
-  ],
-  "extension": [
-    ".ts",
-    ".tsx"
-  ],
   "temp-dir": "./lib/cjs/test/coverage/.nyc_output",
   "report-dir": "./lib/cjs/test/coverage",
   "reporter": [

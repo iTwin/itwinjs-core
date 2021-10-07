@@ -13,34 +13,20 @@ import { onExit, spawnChildProcess } from "./SpawnUtils";
  * Returns a promise that will be resolved with either 0 or the first non-zero child process exit code, once the reporter process terminates.
  */
 export async function relaunchForCoverage(): Promise<number> {
-  const nyc = require.resolve("nyc/bin/nyc");
+  const nyc = require.resolve("c8/bin/c8");
   const relaunchArgs = [
     nyc,
-    "--silent",
+    "--config",
+    path.join(process.cwd(), ".nycrc"),
     "--",
     ...process.argv,
   ];
 
   // By splitting "instrument/runTests" and "report coverage" into two steps, we allow test runners the option of
   // running separate (concurrent) instrumented processes that also write to `nyc`'s temp directory.
-  const instrumentedProcess = spawnChildProcess("node", relaunchArgs);
-  const instrumentedStatus = await onExit(instrumentedProcess);
-
-  // Now create a *combined* report for everything in `nyc`'s temp directory.
-  const reporterProcess = spawnChildProcess("node", [require.resolve("nyc/bin/nyc"), "report"]);
-  const reporterStatus = await onExit(reporterProcess);
-
-  // Certa should exit with an error code if _either_ step failed.
-  return instrumentedStatus || reporterStatus;
-}
-
-/** Gets the current effective nyc config from `process.env`. Assumes we're running as a child process of `nyc`. */
-function getNycConfig(): any {
-  const nycConfig = process.env.NYC_CONFIG;
-  if (!nycConfig)
-    throw new Error("NYC_CONFIG is not set in environment");
-
-  return JSON.parse(nycConfig);
+  // console.log("node " + relaunchArgs.join(" "));
+  const instrumentedProcess = spawnChildProcess("node", relaunchArgs, { ...process.env, NYC_CWD: process.cwd() }, false, path.join(process.cwd(), "../.."));
+  return await onExit(instrumentedProcess);
 }
 
 /**
@@ -49,13 +35,7 @@ function getNycConfig(): any {
  * @param coverageData The value of an nyc/istanbul-generated `__coverage__` object.
  */
 export function writeCoverageData(coverageData: any): void {
-  const nycConfig = getNycConfig();
-  const nycCWD = nycConfig.cwd;
-  const nycTempDir = nycConfig["temp-dir"] || nycConfig["temp-directory"];
-  if (!nycCWD || !nycTempDir)
-    throw new Error("Failed to determine nyc temp directory.");
-
-  const nycTempDirAbsolute = path.resolve(nycCWD, nycTempDir);
+  const nycTempDirAbsolute = process.env.NODE_V8_COVERAGE!;
   if (!fs.existsSync(nycTempDirAbsolute))
     throw new Error(`Cannot save coverage data - nyc temp directory "${nycTempDirAbsolute}" does not exist.`);
 

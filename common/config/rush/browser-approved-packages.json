@@ -315,6 +315,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "c8",
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -711,6 +715,10 @@
       "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
+      "name": "puppeteer-to-istanbul",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "qs",
       "allowedCategories": [ "common" ]
     },
@@ -945,6 +953,10 @@
     {
       "name": "uuid",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "v8-to-istanbul",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "webpack",

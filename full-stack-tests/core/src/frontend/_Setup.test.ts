@@ -17,7 +17,7 @@ if (ProcessDetector.isElectronAppFrontend) {
   });
 } else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
-  config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
+  config.protocol.pathPrefix = `http://localhost:${3010 + 2000}`;
 
   // This is a web-only test
   describe("Web Test Fixture", () => {

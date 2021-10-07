@@ -20,8 +20,7 @@ export class NodeTestRunner {
     require("../../utils/initSourceMaps");
 
     // Load tests
-    const frontendBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
-    require(frontendBundle);
+    require(config.testBundle);
 
     // Execute tests
     mocha.run((failedCount) => process.exit(failedCount));

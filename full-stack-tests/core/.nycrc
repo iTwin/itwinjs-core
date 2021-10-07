@@ -1,13 +1,7 @@
 {
-  "include": [
-    "core/backend/src/**/*",
-    "core/backend/lib/**/*",
-    "core/frontend/src/**/*",
-    "core/frontend/lib/**/*"
-  ],
   "exclude": [
-    "**/*.d.ts",
-    "**/*.d.tsx"
+    "tools/**/*",
+    "full-stack-tests/**/*"
   ],
   "extension": [
     ".ts",
@@ -20,6 +14,5 @@
     "lcov",
     "cobertura"
   ],
-  "cache": false,
-  "cwd": "../.."
+  "exclude-after-remap": true
 }
