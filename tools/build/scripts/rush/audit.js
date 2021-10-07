@@ -56,14 +56,9 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
 
       const severity = advisory.severity.toUpperCase();
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
-      // console.log(advisory)
-
-      console.log(typeof advisory.github_advisory_id);
-      console.log(excludedAdvisories.includes(advisory.github_advisory_id));
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
       if (!excludedAdvisories.includes(advisory.github_advisory_id) && (severity === "HIGH" || severity === "CRITICAL")) {
-        console.log(`failure ${advisory.github_advisory_id}`);
         logBuildError(message);
         shouldFailBuild = true;
       } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE") // Only warn on MODERATE severity items
