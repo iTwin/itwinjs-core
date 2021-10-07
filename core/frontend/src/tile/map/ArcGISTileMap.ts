@@ -13,10 +13,10 @@ import { QuadId } from "../internal";
 const nonVisibleChildren = [false, false, false, false];
 /** @internal */
 export class ArcGISTileMap {
-  private _callQueue = Promise.resolve<boolean[]>(nonVisibleChildren);
-  private _callQueues: Array<Promise<boolean[]>> | undefined;
   public  tileMapRequestSize = 32;
-  private _levelsCache = new Set<number>();
+  public  fallbackTileMapRequestSize = 2;
+
+  private _callQueues: Array<Promise<boolean[]>> | undefined;
   private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
   private _restBaseUrl: string;
   private _requestContext: ClientRequestContext;
@@ -47,12 +47,6 @@ export class ArcGISTileMap {
     return {allTilesFound, available};
   }
 
-  // If we never encountered this tile level before, then a tilemap request must be made to get tiles visibility.
-  // However, we dont want several overlapping large tilemap request being made simultaneously for tiles on the same level.
-  // To avoid this from happening, we 'serialize' async calls so that we wait until the first tilemap request has completed
-  // before making another one.
-  // The trade off here is that we slightly slow down the display of the first tiles in order to avoid
-  // flooding the server.
   public async getChildrenVisibility(parentQuadId: QuadId): Promise<boolean[]> {
 
     const childIds = parentQuadId.getChildIds();
@@ -64,48 +58,53 @@ export class ArcGISTileMap {
       return cacheInfo.available;
     }
 
+    // If we never encountered this tile level before, then a tilemap request must be made to get tiles visibility.
+    // However, we dont want several overlapping large tilemap request being made simultaneously for tiles on the same level.
+    // To avoid this from happening, we 'serialize' async calls so that we wait until the first tilemap request has completed
+    // before making another one.
     const childLevel = parentQuadId.level+1;
     if (this._callQueues && childLevel < this._callQueues.length ) {
-      const res = this._callQueues[childLevel].then(async () => this._getChildrenVisibilityFromServer(parentQuadId));
+      const res = this._callQueues[childLevel].then(async () => this.getChildrenVisibilityFromServer(parentQuadId));
       this._callQueues[childLevel] = res.catch(() => {return nonVisibleChildren;});
       return res;
     } else {
-      // We should not be in this case, probably because server info is missing lods?!
-      return this._getChildrenVisibilityFromServer(parentQuadId);
+      // We should not be in this case, probably because server info is missing LODs in the capabilities?!
+      return this.getChildrenVisibilityFromServer(parentQuadId);
     }
 
   }
 
-  private async _getChildrenVisibilityFromServer(parentQuadId: QuadId): Promise<boolean[]> {
-
-    const childIds = parentQuadId.getChildIds();
-
-    // We need to check cache again:
-    // Tiles we are looking for may have been added to cache while we were waiting in the call queue.
-    const cacheInfo = this.getAvailableTilesFromCache(childIds);
-    if (cacheInfo.allTilesFound) {
-      return cacheInfo.available;
+  // Query tiles are tiles that we need to check availability
+  // The array is assumed to be in in row major orientation, i.e.: [TileRow0Col0, TileRow0Col1, TileRow1Col0, TileRow1Col1,]
+  protected async fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number) {
+    let available: boolean[] = [];
+    if (queryTiles.length === 0) {
+      return available;
     }
 
-    const available = cacheInfo.available;
+    const row = queryTiles[0].row;
+    const column = queryTiles[0].column;
+    const level = queryTiles[0].level;
 
-    const row = parentQuadId.row * 2;
-    const column = parentQuadId.column * 2;
-    const level = parentQuadId.level + 1;
-
-    // If we reach this point, that means at least one child was not found in cache, so make a new server request.
-    try {
-      let tileMapWidth = this.tileMapRequestSize, tileMapHeight = this.tileMapRequestSize;
-
-      // Create offset that will place the current tile in the middle of the tilemap.
-      // If we place it in the top-left corner (i.e. without offset), any future tile slightly above or on the left
+    let reqRow, reqColumn;
+    if (reqWidth === this.fallbackTileMapRequestSize && reqHeight === this.fallbackTileMapRequestSize){
+      reqRow = row;
+      reqColumn = column;
+    } else {
+      // If tile map if big enough. create offset that will place the current tile in the middle of the tilemap.
+      // If we place the first query tile in the top-left corner (i.e. without offset), any query for a tile located above or on the left
       // will trigger a new request.
-      const offset = (this.tileMapRequestSize/2.0)-1;
+      const offsetRow = (reqHeight/2.0)-1;
+      const offsetColumn = (reqWidth/2.0)-1;
+      reqRow = Math.max(row - offsetRow, 0);
+      reqColumn = Math.max(column - offsetColumn, 0);
+    }
 
-      const requestRow = Math.max(row - offset, 0);
-      const requestColumn = Math.max(column - offset, 0);
-
-      const json = await this.fetchTileMapFromServer(level, requestRow, requestColumn, tileMapWidth, tileMapHeight);
+    try {
+      // console.log(`Tilemap request: ${level},${reqRow},${reqColumn},${reqWidth},${reqHeight}`);
+      const json = await this.fetchTileMapFromServer(level, reqRow, reqColumn, reqWidth, reqHeight);
+      let tileMapWidth = reqWidth;
+      let tileMapHeight = reqHeight;
       if (Array.isArray(json.data)){
 
         // The response width and height might be different than the requested dimensions.
@@ -123,43 +122,71 @@ export class ArcGISTileMap {
         for (let j = 0; j < tileMapWidth; j++) {
           for (let i = 0; i < tileMapHeight; i++) {
             const avail = json.data[(j*tileMapWidth)+i] !== 0;
-            const curColumn = requestColumn + i;
-            const curRow = requestRow + j;
+            const curColumn = reqColumn + i;
+            const curRow = reqRow + j;
+            // console.log(`Tilemap tile:: ${level},${curRow},${curColumn} => ${avail}`);
             this._tilesCache.set(QuadId.getTileContentId(level, curColumn, curRow), avail);
 
-            // Check if actual tile is among the children we are looking for, if so update the
-            // availability array.
-            if ( curColumn >= childIds[0].column && curColumn <= childIds[3].column
-              && curRow >= childIds[0].row && curRow <= childIds[3].row ) {
+            // Check if actual tile is among the children we are looking for, if so update the availability array.
+            if ( curColumn >= queryTiles[0].column && curColumn <= queryTiles[queryTiles.length-1].column
+                && curRow >= queryTiles[0].row && curRow <= queryTiles[queryTiles.length-1].row ) {
               available[k++] = avail;
             }
 
           }
         }
-        assert (k===4);
-      } else if (json?.error?.code === 422) {
-        // The tile map response returns error code 422 when the bundle or level does not exist.
-        // Ref: https://developers.arcgis.com/rest/services-reference/enterprise/tile-map.htm
+      } else {
+        // If server returns data (i.e. error 422), thats fine we assume all tiles of tilemap are not available.
+        available = queryTiles.map(()=>false);
+
+        // Mark all tilemap tiles to non-available in the cache too
         for (let j = 0; j < tileMapWidth; j++) {
           for (let i = 0; i < tileMapHeight; i++) {
-            this._tilesCache.set(QuadId.getTileContentId(level, requestColumn + i, requestRow + j), false);
+            this._tilesCache.set(QuadId.getTileContentId(level, reqColumn + i, reqRow + j), false);
           }
         }
       }
+    } catch (_error) {
+      available = queryTiles.map(()=>false);
     }
 
-    // if (Array.isArray(json.data))
-    //   for (let i = 0; i < 4; i++)
-    //     available[i] = json.data[i] !== 0;
-    catch  (_error) {
-    }
-
-    assert(available.length === 4);
     return available;
   }
 
-  // https://tiles.arcgis.com/tiles/IMCZpp2qXhYVmRXp/arcgis/rest/services/Stockholm_%C3%96P_Stadsutvecklingskartan/MapServer/tilemap/10/300/562/32/32?f=json
-  // protected async getTileMap(_level: number, _row: number, _column: number, _width: number, _height: number): Promise<any> {
-  //   return {adjusted:false,location:{left:562,top:300,width:32,height:32},data:[1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};
-  // }
+  protected async getChildrenVisibilityFromServer(parentQuadId: QuadId): Promise<boolean[]> {
+    const childIds = parentQuadId.getChildIds();
+
+    // We need to check cache again:
+    // Tiles we are looking for may have been added to cache while we were waiting in the call queue.
+    const cacheInfo = this.getAvailableTilesFromCache(childIds);
+    if (cacheInfo.allTilesFound) {
+      return cacheInfo.available;
+    }
+
+    let available;
+    try {
+      available = await this.fetchAndReadTilemap(childIds, this.tileMapRequestSize, this.tileMapRequestSize);
+      if (available.length !== childIds.length) {
+        if (this.tileMapRequestSize > this.fallbackTileMapRequestSize) {
+        // Maybe we were unlucky and the tilemap got adjusted our the tiles we are looking for got clipped,
+        // so let try we a smaller tilemap
+          available = await this.fetchAndReadTilemap(childIds, this.fallbackTileMapRequestSize, this.fallbackTileMapRequestSize);
+        }
+
+        if (available.length < childIds.length) {
+          // Could not all tiles children tiles, returns what we got and fill any gaps with false.
+          const tmpAvail = childIds.map(()=>false);
+          for (let i=0; i<available.length;i++ ) {
+            tmpAvail[i] = available[i];
+          }
+          available = tmpAvail;
+        }
+      }
+    } catch (_error) {
+      // if any error occurs, we assume tiles not to be visible
+      available = childIds.map(()=>false);
+    }
+
+    return available;
+  }
 }
