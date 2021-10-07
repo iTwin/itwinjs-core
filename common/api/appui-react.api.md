@@ -1187,7 +1187,6 @@ export class ConfigurableUiManager {
     // @internal (undocumented)
     static readonly activityTracker: ActivityTracker;
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
-    // @internal (undocumented)
     static closeUi(): void;
     static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined;
     // @internal

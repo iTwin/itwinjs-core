@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@itwin/core-bentley";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AuthorizationClient } from "@itwin/core-common";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.
  * @internal
  */
-export class TestFrontendAuthorizationClient implements FrontendAuthorizationClient {
+export class TestFrontendAuthorizationClient implements AuthorizationClient {
   private _activeToken: AccessToken = "";
 
   constructor(private _accessToken: AccessToken) {
