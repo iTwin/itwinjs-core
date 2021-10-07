@@ -114,7 +114,7 @@ describe("ECSql Query", () => {
     };
 
     const queries = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 100; i++) {
       queries.push(cb());
     }
     await Promise.all(queries);
