@@ -146,7 +146,9 @@ export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions
  * @beta
  */
 export interface ElementsPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
-  /** Classes of the elements to get properties for. */
+  /** Classes of the elements to get properties for. If `elementClasses` is undefined all classes
+   * are used.
+   */
   elementClasses?: string[];
 }
 
