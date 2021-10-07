@@ -4718,6 +4718,7 @@ export enum InputSource {
 export interface InstancedGraphicParams {
     readonly count: number;
     readonly featureIds?: Uint8Array;
+    readonly range?: Range3d;
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
@@ -6952,6 +6953,8 @@ export interface ParticleCollectionBuilderParams {
 
 // @public
 export interface ParticleProps extends XYAndZ {
+    // (undocumented)
+    rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
 }
