@@ -9,7 +9,7 @@ import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */

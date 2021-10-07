@@ -5,10 +5,10 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { EditTools } from "@itwin/editor-frontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 
 const expect = chai.expect;
 const assert = chai.assert;

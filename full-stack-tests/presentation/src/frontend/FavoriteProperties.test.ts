@@ -6,9 +6,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field, KeySet } from "@itwin/presentation-common";
-import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
-import { FAVORITES_CATEGORY_NAME } from "@itwin/presentation-components/lib/presentation-components/favorite-properties/DataProvider";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import {
   createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
 } from "@itwin/presentation-frontend";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { MobileRpcManager } from "@itwin/core-mobile/lib/MobileBackend";
+import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 

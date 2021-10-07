@@ -390,7 +390,7 @@ class GraphicsTile extends Tile {
     if (reader) {
       try {
         content = await reader.read();
-      } catch (_) {
+      } catch {
         //
       }
     }
