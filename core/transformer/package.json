@@ -1,20 +1,20 @@
 {
   "name": "@itwin/core-transformer",
-  "version": "3.0.0-dev.77",
+  "version": "3.0.0-dev.79",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
-  "main": "lib/core-transformer.js",
-  "typings": "lib/core-transformer",
+  "main": "lib/cjs/core-transformer.js",
+  "typings": "lib/cjs/core-transformer",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2 && npm run -s copy:assets && npm run -s copy:test-assets",
+    "build": "npm run -s build:cjs && npm run -s copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-transformer/file.json --tsIndexFile=./core-transformer.ts --onlyJson",
-    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "cover": "nyc npm -s test",
     "cover:integration": "nyc npm run -s test:integration",
     "extract-api": "betools extract-api --entry=core-transformer",
@@ -38,12 +38,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.77",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.77",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.77",
-    "@itwin/core-common": "workspace:^3.0.0-dev.77",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.77"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.79",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.79",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.79",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.79",
+    "@itwin/core-common": "workspace:^3.0.0-dev.79",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.79"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

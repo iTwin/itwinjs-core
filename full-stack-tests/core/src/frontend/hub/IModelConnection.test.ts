@@ -10,7 +10,7 @@ import {
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 

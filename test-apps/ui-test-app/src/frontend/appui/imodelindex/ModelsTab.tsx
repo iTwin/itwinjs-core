@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ModelsTab.scss";
 import * as React from "react";
-import { UiFramework } from "@itwin/appui-react";
 import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
 import { ModelProps, ModelQueryParams, QueryRowFormat } from "@itwin/core-common";
@@ -458,8 +457,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   private renderToastMessage() {
-    const toastTitle = UiFramework.translate("iModelIndex.toastTitle");
-    const toastMessage = UiFramework.translate("iModelIndex.toastMessage");
+    const toastTitle = IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.toastTitle");
+    const toastMessage = IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.toastMessage");
     return (
       <div className="toast slide">
         <div className="toast-image"><span className="icon icon-info-hollow"></span></div>
@@ -467,7 +466,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastTitle}</span>
           <span>{toastMessage}</span>
         </div>
-        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.translate("iModelIndex.learnMore")}</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.learnMore")}</a>
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );
@@ -477,7 +476,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     return (
       <div className="modelstab-container">
         {this.renderContent()}
-        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{UiFramework.translate("iModelIndex.enteriModel")}</Button>}
+        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.enteriModel")}</Button>}
         {this.state.showToast && this.renderToastMessage()}
       </div>
     );

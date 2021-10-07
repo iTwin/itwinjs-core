@@ -5,7 +5,7 @@
 
 import { join } from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
 
@@ -14,23 +14,15 @@ const mainWindowName = "mainWindow";
 /** Initializes Electron backend */
 export async function initializeElectron() {
 
-  const baseOidcScopes = [
-    "openid",
-    "email",
-    "profile",
-    "organization",
-    "itwinjs",
-  ];
-
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
       rpcInterfaces: getSupportedRpcs(),
       authConfig: {
-        clientId: "imodeljs-electron-test",
-        redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.join(" "),
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
       },
     },
     nativeHost: {
@@ -66,6 +58,6 @@ export async function initializeElectron() {
     ElectronHost.mainWindow.show();
   }
 
-  if ((undefined === process.env.IMJS_TESTAPP_NO_DEV_TOOLS))
+  if ((undefined === process.env.IMJS_NO_DEV_TOOLS))
     ElectronHost.mainWindow.webContents.toggleDevTools();
 }

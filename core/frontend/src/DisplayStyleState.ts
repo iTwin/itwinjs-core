@@ -126,7 +126,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
 
       return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

@@ -9,9 +9,8 @@ import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
+  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import {
   createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
 } from "../../presentation-frontend";

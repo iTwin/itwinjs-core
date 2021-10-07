@@ -1,9 +1,10 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "3.0.0-dev.77",
+  "version": "3.0.0-dev.79",
   "description": "iModel.js UI abstractions",
-  "main": "lib/appui-abstract.js",
-  "typings": "lib/appui-abstract",
+  "main": "lib/cjs/appui-abstract.js",
+  "module": "lib/esm/appui-abstract.js",
+  "typings": "lib/cjs/appui-abstract",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -12,16 +13,18 @@
   },
   "scripts": {
     "compile": "npm run -s build",
-    "copy:assets": "cpx \"./src/**/*.{*css,svg}\" ./lib && cpx \"./public/**/*\" ./lib/public",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "build": "npm run -s copy:assets && npm run -s pseudolocalize && tsc 1>&2",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
+    "copy:locale": "cpx \"./public/**/*\" ./lib/public",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:locale",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=appui-abstract",
-    "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
+    "test": "mocha --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "keywords": [
     "Bentley",
@@ -33,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.77",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.77"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.79",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.79"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

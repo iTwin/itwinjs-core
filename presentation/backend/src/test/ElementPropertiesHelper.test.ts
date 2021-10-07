@@ -5,10 +5,7 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Content, PropertyValueFormat } from "@itwin/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey } from "@itwin/presentation-common/lib/test/_helpers/EC";
+import { createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
 import { buildElementProperties } from "../presentation-backend/ElementPropertiesHelper";
 
 describe("buildElementProperties", () => {

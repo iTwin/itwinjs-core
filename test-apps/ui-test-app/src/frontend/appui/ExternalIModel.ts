@@ -9,67 +9,86 @@ import { IModelHubFrontend } from "@bentley/imodelhub-client";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
 
-/* eslint-disable deprecation/deprecation */
-export interface IModelInfo {
+export interface BasicIModelInfo {
   id: string;
   iTwinId: string;
   name: string;
+}
+export interface IModelInfo extends BasicIModelInfo {
   createdDate: Date;
 }
 
-/** Opens External IModel */
+/** Opens External iModel */
 export class ExternalIModel {
-  public viewId: Id64String | undefined;
-  public iModelConnection: IModelConnection | undefined;
+  public viewId?: Id64String;
+  public iModelConnection?: IModelConnection;
+  public iModelId: string;
+  public iTwinId: string;
+  public iTwinName?: string;
+  public iModelName?: string;
 
-  constructor(public iTwinName: string, public imodelName: string) {
+  private constructor(arg: { iTwinName?: string, iModelName?: string, iModelId?: string, iTwinId?: string }) {
+    this.iTwinId = arg.iTwinId!; // Should never be undefined, ensured by the create method
+    this.iTwinName = arg.iTwinName;
+    this.iModelId = arg.iModelId!; // Should never be undefined, ensured by the create method
+    this.iModelName = arg.iModelName;
+  }
+
+  public static async create(args: { iTwinName?: string, iModelName?: string, iModelId?: string, iTwinId?: string }): Promise<ExternalIModel> {
+    const accessToken = await IModelApp.getAccessToken();
+
+    // Set of vars to be passed to the constructor. By the time the constructor is called, all 4 members should be defined.
+    const createArgs = {
+      ...args,
+    };
+
+    if (!args.iTwinId && !args.iTwinName) {
+      throw new Error("An iTwin name or id is required to construct an External iModel");
+    } else if (!args.iTwinId && args.iTwinName) {
+      const iTwinClient = new ITwinAccessClient();
+      const iTwinList: ITwin[] = await iTwinClient.getAll(accessToken, {
+        search: {
+          searchString: args.iTwinName,
+          propertyName: ITwinSearchableProperty.Name,
+          exactMatch: true,
+        },
+      });
+
+      if (iTwinList.length === 0)
+        throw new Error(`iTwin ${args.iTwinName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${args.iTwinName} were found for the user.`);
+
+      // note: iTwinName is set in createArgs
+      createArgs.iTwinId = iTwinList[0].id;
+    }
+
+    if (!args.iModelId && !args.iModelName) {
+      throw new Error("An iModel name or id is required to construct an External iModel");
+    } else if (!args.iModelId && args.iModelName) {
+      const hubClient = new IModelHubFrontend();
+      const iModelId = await hubClient.queryIModelByName({
+        iModelName: args.iModelName,
+        iTwinId: createArgs.iTwinId!,
+        accessToken,
+      });
+      // note: iModelName is set in createArgs
+      createArgs.iModelId = iModelId;
+    }
+
+    return new ExternalIModel(createArgs);
   }
 
   /** Open IModelConnection and get ViewId */
   public async openIModel(): Promise<void> {
-    const info = await this.getIModelInfo();
+    if (this.iTwinId && this.iModelId) {
 
-    if (info.iTwinId && info.iModelId) {
-      // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `openIModel (external): iTwinId=${info.iTwinId}&iModelId=${info.iModelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `openIModel (external): iTwinId=${this.iTwinId}&iModelId=${this.iModelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      this.iModelConnection = await CheckpointConnection.openRemote(info.iTwinId, info.iModelId);
+      this.iModelConnection = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
-  }
-
-  /** Finds iTwin and iModel ids using their names */
-  private async getIModelInfo(): Promise<{ iTwinId: string, iModelId: string }> {
-    const iTwinName = this.iTwinName;
-    const iModelName = this.imodelName;
-
-    const accessToken = await IModelApp.getAccessToken();
-
-    const iTwinClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await iTwinClient.getAll(accessToken, {
-      search: {
-        searchString: iTwinName,
-        propertyName: ITwinSearchableProperty.Name,
-        exactMatch: true,
-      },
-    });
-
-    if (iTwinList.length === 0)
-      throw new Error(`ITwin ${iTwinName} was not found for the user.`);
-    else if (iTwinList.length > 1)
-      throw new Error(`Multiple iTwins named ${iTwinName} were found for the user.`);
-
-    const hubClient = new IModelHubFrontend();
-    const iModelId = await hubClient.queryIModelByName({
-      iModelName,
-      iTwinId: iTwinList[0].id,
-      accessToken,
-    });
-    if (undefined === iModelId) {
-      throw new Error(`iModel with name "${iModelName}" does not exist in project "${iTwinName}"`);
-    }
-    return { iTwinId: iTwinList[0].id, iModelId };
   }
 
   /** Handle iModel open event */

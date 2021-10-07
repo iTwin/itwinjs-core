@@ -13,7 +13,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -101,7 +101,7 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
-import * as Fuse from 'fuse.js';
+import Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
@@ -11600,7 +11600,7 @@ export interface ViewCreator2dOptions {
 // @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
-    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState>;
     }
 
 // @public

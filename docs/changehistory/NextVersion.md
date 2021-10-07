@@ -790,10 +790,14 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
 
-| Removed                             | Replacement                                  |
-| ----------------------------------- | -------------------------------------------- |
-| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
-| `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
+| Removed                             | Replacement                                                 |
+| ----------------------------------- | --------------------------------------------                |
+| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`                |
+| `OidcDelegationClient`              | `DelegationAuthorizationClient`                             |
+| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient  |
+| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
+| `DelegationAuthorizationClient`     | *removed*                                                   |
+| `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
 
 ### @itwin/appui-abstract
 
@@ -1039,6 +1043,18 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
+### @bentley/frontend-authorization-client
+
+| Removed                                          | Replacement                    |
+| -------------------------------------------------| ------------------------------ |
+| `FrontendAuthorizationClient`                    | *removed*                      |
+| `FrontendAuthorizationClientLoggerCategory`      | *removed*                      |
+| `BrowserAuthorizationCallbackHandler`            | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationBase`                       | *removed*                      |
+| `BrowserAuthorizationClient`                     | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationClientRedirectState`        | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationLogger`                     | Moved to iTwin/auth-clients    |
+
 <!---
 User Interface Changes - section to comment below
 -->
@@ -1077,6 +1093,10 @@ Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Flo
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
+
+### Removed user change monitoring from @itwin/appui-react
+
+Previously `UiFramework` would monitor the state of an access token and would close all UI popups if the token was found to be empty. This feature has been removed. It is now the applications responsibility to enable this capability if they want it. The method [ConfigurableUiManager.closeUi]($appui-react) is now public and can be called by application to close the popup items.
 
 ### `ControlledTree` API Changes
 
@@ -1323,6 +1343,7 @@ The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is mor
 ```
 
 Similarly, if your existing code passes an object instead of an array as the query parameter, change it as follows:
+
 ```ts
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
@@ -1338,3 +1359,7 @@ The parameters have changed in the same way as `query`, so they can be changed a
 ### Upgrading existing code to use the new `queryRowCount` methods
 
 The behavior of this method has not changed, but the parameters must be provided as a [QueryBinder]($common) object instead of an array or object. Upgrade your existing code as described for `query` above.
+
+## Remove ninezone-test-app
+
+The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.

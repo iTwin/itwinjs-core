@@ -15,10 +15,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -48,7 +44,7 @@
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "@bentley/reality-data-client",
@@ -77,6 +73,10 @@
     {
       "name": "@itwin/backend-webpack-tools",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/browser-authorization",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/build-tools",
@@ -233,6 +233,10 @@
     {
       "name": "@itwin/presentation-testing",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/service-authorization",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -539,10 +543,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "highlight.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "https-proxy-agent",
       "allowedCategories": [ "backend" ]
     },
@@ -668,7 +668,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",
@@ -681,10 +681,6 @@
     {
       "name": "object-hash",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "oidc-client",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "open",
@@ -717,10 +713,6 @@
     {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "raf-schd",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react",
@@ -767,20 +759,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-markdown",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "react-redux",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-resize-detector",
       "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
-      "name": "react-router-dom",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
@@ -892,7 +876,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "symlink-dir",
@@ -928,7 +912,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "typescript",

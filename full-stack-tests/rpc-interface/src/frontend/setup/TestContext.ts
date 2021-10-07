@@ -9,7 +9,7 @@ import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@itwin/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
@@ -61,9 +61,6 @@ export class TestContext {
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
-    // Setup environment
-    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(this.settings.env);
-
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
         email: this.settings.users[0].email,
@@ -76,7 +73,7 @@ export class TestContext {
     }
 
     if (undefined !== this.settings.clientConfiguration)
-      this.clientAccessToken = await getClientAccessTokenFromBackend(this.settings.clientConfiguration);
+      this.clientAccessToken = await getClientAccessTokenFromBackend();
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 

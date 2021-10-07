@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx";
@@ -12,9 +12,7 @@ import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool/lib/TestBrowserAuthorizationClient";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "@itwin/oidc-signin-tool/lib/TestUtility";
+import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
@@ -45,7 +43,7 @@ const copyITwinBackendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
   fs.readdirSync(iTwinPackagesPath).map((packageName) => {
     const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "assets");
+    return path.join(packagePath, "lib", "cjs", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
   }).forEach((src) => {

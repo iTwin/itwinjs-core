@@ -9,7 +9,7 @@ import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */
@@ -58,7 +58,7 @@ describe("IModel Connection", () => {
   });
 });
 
-describe("IModel Connection with client credentials", () => {
+describe.skip("IModel Connection with client credentials", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -68,7 +68,6 @@ describe("IModel Connection with client credentials", () => {
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
     if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
       this.skip();
-
     accessToken = testContext.clientAccessToken!;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });

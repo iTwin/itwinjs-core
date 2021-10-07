@@ -1836,7 +1836,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
           viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
-        } catch (_) {
+        } catch {
           //
         }
 
@@ -1851,7 +1851,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
               drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
             };
           }
-        } catch (_) {
+        } catch {
           //
         }
       }
