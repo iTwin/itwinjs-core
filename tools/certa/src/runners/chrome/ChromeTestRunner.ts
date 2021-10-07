@@ -88,7 +88,7 @@ async function runTestsInPuppeteer(config: CertaConfig, _port: string) {
       await page.exposeFunction("_CertaSendToBackend", executeRegisteredCallback);
 
       // Now load the page (and requisite scripts)...
-      await page.goto(`file:///${path.join(__dirname, "../../../public/index.html").replace(/\\/g, "/")}`);
+      await page.goto(`http://localhost:${port}`);
       await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
       await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
@@ -99,24 +99,36 @@ async function runTestsInPuppeteer(config: CertaConfig, _port: string) {
       await loadScript(page, require.resolve("../../utils/initMocha.js"));
 
       const session = await page.target().createCDPSession();
-      await session.send("Profiler.enable");
-      console.log(await session.send("Profiler.startPreciseCoverage", { callCount: true, detailed: true }));
+      if (config.cover) {
+        await session.send("Profiler.enable");
+        await session.send("Profiler.startPreciseCoverage", { callCount: true, detailed: true });
+      }
 
-      await page.exposeFunction("_CertaReportResults", (results) => {
+      await page.exposeFunction("_CertaReportResults", (failures) => {
         setTimeout(async () => {
-          const jsCoverage = await session.send("Profiler.takePreciseCoverage");
-          results.coverage = jsCoverage;
-          await session.send("Profiler.stopPreciseCoverage");
-          await session.send("Profiler.disable");
+          let coverage: any = undefined;
+          if (config.cover) {
+            coverage = await session.send("Profiler.takePreciseCoverage");
+            const bundlePath = config.testBundle.replace(/\\/g, "/");
+            for (const script of coverage.result) {
+              if (script.url.endsWith(bundlePath)) {
+                script.url = `file:///${bundlePath}`;
+                coverage.result = [script];
+                break;
+              }
+            }
+
+            await session.send("Profiler.stopPreciseCoverage");
+            await session.send("Profiler.disable");
+          }
           await session.detach();
           await page.close();
           await browser.close();
-          resolve(results);
+          resolve({ failures, coverage });
         });
       });
 
-      // await loadScript(page, config.testBundle);
-      await page.addScriptTag({ url: `file:///${config.testBundle.replace(/\\/g, "/")}` });
+      await loadScript(page, config.testBundle);
 
       // ...and start the tests
       await page.evaluate(async () => {
@@ -124,8 +136,7 @@ async function runTestsInPuppeteer(config: CertaConfig, _port: string) {
         Mocha.reporters.Base.color = true as any;
         const globals = window as any;
         mocha.run((failures) => {
-          const coverage = globals.__coverage__;
-          globals._CertaReportResults({ failures, coverage }); // This will close the browser
+          globals._CertaReportResults(failures); // This will close the browser
         });
       });
     } catch (error) {

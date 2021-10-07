@@ -24,7 +24,6 @@ export async function relaunchForCoverage(): Promise<number> {
 
   // By splitting "instrument/runTests" and "report coverage" into two steps, we allow test runners the option of
   // running separate (concurrent) instrumented processes that also write to `nyc`'s temp directory.
-  // console.log("node " + relaunchArgs.join(" "));
   const instrumentedProcess = spawnChildProcess("node", relaunchArgs, { ...process.env, NYC_CWD: process.cwd() }, false, path.join(process.cwd(), "../.."));
   return await onExit(instrumentedProcess);
 }

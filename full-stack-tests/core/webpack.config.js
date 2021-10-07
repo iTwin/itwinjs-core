@@ -38,10 +38,6 @@ class FixSourceMapsPlugin {
         module.useSourceMap = false;
       });
     });
-    compiler.hooks.done.tap("FixSourceMapsPlugin", (file, content) => {
-      const bundlePath = path.resolve(__dirname, "lib/dist/bundled-tests.js");
-      fs.writeFileSync(bundlePath, fs.readFileSync(bundlePath, "utf8").replace(/\/\/# sourceMappingURL=data:/g, "//! STRIPPED_INLINE_SRCMAP"));
-    });
   }
 }
 
@@ -89,7 +85,6 @@ function createConfig(shouldInstrument) {
     },
     plugins: [
       new webpack.SourceMapDevToolPlugin({
-        filename: "[file].map",
         moduleFilenameTemplate: "file://[absolute-resource-path]"
       }),
       new FixSourceMapsPlugin(),
