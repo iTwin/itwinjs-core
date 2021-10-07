@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
@@ -25,14 +25,14 @@ describe("Presentation", () => {
   };
 
   const mockI18N = () => {
-    const mock = moq.Mock.ofType<I18N>();
+    const mock = moq.Mock.ofType<ITwinLocalization>();
     mock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
     return mock;
   };
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup({ localization: new I18N("iModelJs") });
+    await NoRenderApp.startup({ localization: new ITwinLocalization() });
     Presentation.terminate();
   });
 
@@ -72,7 +72,7 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
       const i18nMock = mockI18N();
-      i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
+      i18nMock.setup((x) => x.getLanguageList()).returns(() => ["test-locale"]).verifiable();
       Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize();
@@ -84,7 +84,7 @@ describe("Presentation", () => {
 
     it("initializes PresentationManager with i18 locale if no activeLocale set in props", async () => {
       const i18nMock = mockI18N();
-      i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
+      i18nMock.setup((x) => x.getLanguageList()).returns(() => ["test-locale"]).verifiable();
       Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
@@ -94,9 +94,9 @@ describe("Presentation", () => {
       i18nMock.verifyAll();
     });
 
-    it("initializes PresentationManager with undefined locale if i18n.languageList() returns empty array", async () => {
+    it("initializes PresentationManager with undefined locale if i18n.getLanguageList() returns empty array", async () => {
       const i18nMock = mockI18N();
-      i18nMock.setup((x) => x.languageList()).returns(() => []).verifiable();
+      i18nMock.setup((x) => x.getLanguageList()).returns(() => []).verifiable();
       Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
@@ -230,14 +230,14 @@ describe("Presentation", () => {
   describe("setLocalization", () => {
 
     it("overwrites i18n instance before initialization", async () => {
-      const i18n = new I18N();
+      const i18n = new ITwinLocalization();
       Presentation.setLocalization(i18n);
       await Presentation.initialize();
       expect(Presentation.localization).to.eq(i18n);
     });
 
     it("overwrites i18n instance after initialization", async () => {
-      const i18n = new I18N();
+      const i18n = new ITwinLocalization();
       await Presentation.initialize();
       expect(Presentation.localization).to.be.not.null;
       expect(Presentation.localization).to.not.eq(i18n);

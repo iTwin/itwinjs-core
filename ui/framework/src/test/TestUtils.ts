@@ -9,7 +9,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
 import { Localization } from "@itwin/core-common";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
@@ -63,7 +63,7 @@ export class TestUtils {
 
   public static get localization(): Localization {
     if (!TestUtils._localization) {
-      TestUtils._localization = new I18N();
+      TestUtils._localization = new ITwinLocalization();
     }
     return TestUtils._localization;
   }

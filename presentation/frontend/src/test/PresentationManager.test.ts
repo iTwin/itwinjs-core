@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
@@ -18,7 +18,8 @@ import {
   FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
   PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
+import {
+  createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
   createRandomTransientId, createTestContentDescriptor,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
@@ -36,7 +37,7 @@ describe("PresentationManager", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManagerImpl>();
   const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
   let manager: PresentationManager;
-  const i18nMock = moq.Mock.ofType<I18N>();
+  const i18nMock = moq.Mock.ofType<ITwinLocalization>();
   const testData = {
     imodelToken: moq.Mock.ofType<IModelRpcProps>().object,
     imodelMock: moq.Mock.ofType<IModelConnection>(),

@@ -20,10 +20,12 @@ export interface Localization {
   getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
   getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
   getLocalizedKeys(inputString: string): string;
-  registerNamespace(namespace: string): Promise<void>;
+  registerNamespace(namespace: string, setDefault?: true): Promise<void>;
   unregisterNamespace(namespace: string): void;
   getNamespace(name: string): Promise<void> | undefined;
-  languageList(): string[];
+  getLanguageList(): string[];
+  changeLanguage(language: string): void;
+
 }
 
 /** The default [[Localization]] used in the event that an implementation is not provided to [[IModelApp]]. Does not perform localizations.
@@ -37,5 +39,6 @@ export class EmptyLocalization implements Localization {
   public async registerNamespace(): Promise<void> { return; }
   public unregisterNamespace(): void { }
   public getNamespace(): Promise<void> | undefined { return; }
-  public languageList(): string[] { return []; }
+  public getLanguageList(): string[] { return []; }
+  public changeLanguage(): void { }
 }

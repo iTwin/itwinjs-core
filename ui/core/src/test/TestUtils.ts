@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { UiCore } from "../core-react/UiCore";
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _i18n?: ITwinLocalization;
   private static _uiCoreInitialized = false;
 
-  public static get i18n(): I18N {
+  public static get i18n(): ITwinLocalization {
     if (!TestUtils._i18n) {
       // const port = process.debugPort;
       // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new I18N();
+      TestUtils._i18n = new ITwinLocalization();
     }
     return TestUtils._i18n;
   }
