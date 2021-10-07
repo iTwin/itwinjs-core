@@ -8,7 +8,7 @@
 
 import { request, RequestOptions } from "@bentley/itwin-client";
 import {
-  assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String,
+  assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -868,7 +868,6 @@ export class RealityModelTileClient {
       }
     }
   }
-
 
   // ###TODO temporary means of extracting the tileId and projectId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
