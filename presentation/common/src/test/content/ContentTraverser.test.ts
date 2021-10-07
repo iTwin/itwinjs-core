@@ -1048,12 +1048,12 @@ describe("ContentTraverser", () => {
       });
       traverseContentItem(visitor, descriptor, item);
 
-      expect(startArraySpy).to.not.be.calledOnce;
-      expect(startArraySpy).to.not.be.calledOnce;
-      expect(processPrimitiveValueSpy).to.not.be.calledOnce;
+      expect(startArraySpy).to.not.be.called;
+      expect(startArraySpy).to.not.be.called;
+      expect(processPrimitiveValueSpy).to.not.be.called;
     });
 
-    it("doesn't processes primitive value deeply nested under empty nested content item", () => {
+    it("doesn't process primitive value deeply nested under empty nested content item", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
       const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
@@ -1081,9 +1081,9 @@ describe("ContentTraverser", () => {
       });
       traverseContentItem(visitor, descriptor, item);
 
-      expect(startArraySpy).to.not.be.calledOnce;
-      expect(startArraySpy).to.not.be.calledOnce;
-      expect(processPrimitiveValueSpy).to.not.be.calledOnce;
+      expect(startArraySpy).to.not.be.called;
+      expect(startArraySpy).to.not.be.called;
+      expect(processPrimitiveValueSpy).to.not.be.called;
     });
 
   });
