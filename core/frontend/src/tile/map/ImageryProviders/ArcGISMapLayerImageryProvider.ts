@@ -131,8 +131,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     void (async () => {
       try {
         if (this._tileMap) {
-          const available = await this._tileMap.getChildrenVisibility(tile.quadId);
-          // const available = await this._tileMap.getChildrenVisibility(QuadId.createFromContentId("9_281_150"));
+          const available = await this._tileMap.getChildrenAvailability(tile.quadId);
           resolveChildren(available);
         }
       } catch {

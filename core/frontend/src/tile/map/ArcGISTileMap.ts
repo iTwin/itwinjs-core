@@ -47,7 +47,7 @@ export class ArcGISTileMap {
     return {allTilesFound, available};
   }
 
-  public async getChildrenVisibility(parentQuadId: QuadId): Promise<boolean[]> {
+  public async getChildrenAvailability(parentQuadId: QuadId): Promise<boolean[]> {
 
     const childIds = parentQuadId.getChildIds();
 
@@ -64,12 +64,12 @@ export class ArcGISTileMap {
     // before making another one.
     const childLevel = parentQuadId.level+1;
     if (this._callQueues && childLevel < this._callQueues.length ) {
-      const res = this._callQueues[childLevel].then(async () => this.getChildrenVisibilityFromServer(parentQuadId));
+      const res = this._callQueues[childLevel].then(async () => this.getChildrenAvailabilityFromServer(parentQuadId));
       this._callQueues[childLevel] = res.catch(() => {return nonVisibleChildren;});
       return res;
     } else {
       // We should not be in this case, probably because server info is missing LODs in the capabilities?!
-      return this.getChildrenVisibilityFromServer(parentQuadId);
+      return this.getChildrenAvailabilityFromServer(parentQuadId);
     }
 
   }
@@ -153,7 +153,7 @@ export class ArcGISTileMap {
     return available;
   }
 
-  protected async getChildrenVisibilityFromServer(parentQuadId: QuadId): Promise<boolean[]> {
+  protected async getChildrenAvailabilityFromServer(parentQuadId: QuadId): Promise<boolean[]> {
     const childIds = parentQuadId.getChildIds();
 
     // We need to check cache again:
