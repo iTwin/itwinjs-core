@@ -7,6 +7,9 @@
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient } from "@bentley/itwin-client";
+import { ipcRenderer } from "electron";
+
+export const electronIPCChannelName = "itwinjs.electron.auth"; // TODO: Come up with something better
 
 /**
  * Object to be set as `IModelApp.authorizationClient` for the frontend of ElectronApps.
@@ -24,6 +27,8 @@ export class ElectronAppAuthorization implements AuthorizationClient {
     return this.hasSignedIn;
   }
 
+  // TODO: Need some way of keeping the expiration time
+
   /** ctor for NativeAppAuthorization
    * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
    * in [NativeHostOpts]($backend)
@@ -36,14 +41,12 @@ export class ElectronAppAuthorization implements AuthorizationClient {
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   public async signIn(): Promise<void> {
-    // Needs to call something setup directly in
-    // return NativeApp.callNativeHost("signIn");
+    await ipcRenderer.invoke(`${electronIPCChannelName}.signIn`);
   }
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
   public async signOut(): Promise<void> {
-    // Needs to be implemented in  call something setup directly using the Electron IPC
-    // return NativeApp.callNativeHost("signOut");
+    await ipcRenderer.invoke(`${electronIPCChannelName}.signOut`);
   }
 
   /** Returns a promise that resolves to the AccessToken if signed in.
@@ -60,7 +63,7 @@ export class ElectronAppAuthorization implements AuthorizationClient {
       }
 
       this._refreshingToken = true;
-      // this._cachedToken = (await NativeApp.callNativeHost("getAccessToken"));
+      this._cachedToken = await ipcRenderer.invoke(`${electronIPCChannelName}.getAccessToken`); // need to await and store this token properly
       this._refreshingToken = false;
     }
 

@@ -24,6 +24,8 @@ import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequ
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
 import { AuthorizationClient, DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
+import { ipcMain } from "electron";
+import { electronIPCChannelName } from "../frontend/ElectronAuthorizationFrontend";
 
 const loggerCategory = "electron-auth";
 
@@ -50,6 +52,25 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
   public constructor(config?: NativeAppAuthorizationConfiguration) {
     this.config = config;
     this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
+    this.setupIPCHandlers();
+  }
+
+  private setupIPCHandlers(): void {
+    // SignIn
+    ipcMain.handle(`${electronIPCChannelName}.signIn`, async () => {
+      await this.signIn();
+    });
+
+    // SignOut
+    ipcMain.handle(`${electronIPCChannelName}.signOut`, async () => {
+      await this.signOut();
+    });
+
+    // GetAccessToken
+    ipcMain.handle(`${electronIPCChannelName}.getAccessToken`, async () => {
+      const accessToken = await this.getAccessToken();
+      return accessToken;
+    });
   }
 
   /**
