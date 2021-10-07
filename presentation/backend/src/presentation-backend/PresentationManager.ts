@@ -639,17 +639,19 @@ export class PresentationManager {
 
     const elementProperties: ElementProperties[] = [];
     for (const entry of elementIds) {
-      const keys = new KeySet(entry[1].map((id) => ({ id, className: entry[0] })));
-      const content = await this.getContent({
-        ...optionsNoElementClasses,
-        descriptor: {
-          displayType: DefaultContentDisplayTypes.PropertyPane,
-          contentFlags: ContentFlags.ShowLabels,
-        },
-        rulesetOrId: "ElementProperties",
-        keys,
+      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+        const content = await this.getContent({
+          ...optionsNoElementClasses,
+          descriptor: {
+            displayType: DefaultContentDisplayTypes.PropertyPane,
+            contentFlags: ContentFlags.ShowLabels,
+          },
+          rulesetOrId: "ElementProperties",
+          keys,
+        });
+        return buildElementsProperties(content);
       });
-      elementProperties.push(...buildElementsProperties(content));
+      elementProperties.push(...properties);
     }
 
     return { total: elementsCount, items: elementProperties };
@@ -905,3 +907,15 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
+
+const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
+  const elementProperties: ElementProperties[] = [];
+  const elementIds = [...ids];
+  while (elementIds.length > 0) {
+    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
+    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
+    elementProperties.push(...(await getter(keys)));
+  }
+  return elementProperties;
+}
