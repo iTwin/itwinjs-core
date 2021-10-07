@@ -419,7 +419,7 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Retrieves property data in a simplified format for a all elements or all elements of
+   * Retrieves property data in a simplified format for all elements or all elements of
    * specified classes.
    * @beta
    */
