@@ -56,13 +56,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/frontend-authorization-client",
-      "projectFolder": "clients/frontend-authorization",
-      "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodelhub-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
@@ -509,12 +502,6 @@
     {
       "packageName": "imodel-from-orbitgt-pointcloud",
       "projectFolder": "test-apps/imodel-from-orbitgt",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "ninezone-test-app",
-      "projectFolder": "test-apps/ninezone-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

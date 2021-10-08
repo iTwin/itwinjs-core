@@ -9,10 +9,10 @@
 import { join } from "path";
 import { AccessToken, AuthStatus, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel,
+  AuthorizationClient, BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel,
   NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, SessionProps, StorageValue,
 } from "@itwin/core-common";
-import { AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
