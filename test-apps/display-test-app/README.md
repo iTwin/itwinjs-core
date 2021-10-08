@@ -76,12 +76,20 @@ The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n agai
 
 ## Debugging
 
-Debugging display-test-app can be accomplished using the following procedures, depending on which packages of iTwin.js you would like to step through:
-
-* frontend
-  * The frontend and common iTwin.js core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
-* backend
-  * Calls to the imodeljs-backend functionality may be debugged by opening Visual Studio Code to the root of this repository, navigating to the debug tab, and selecting either 'display-test-app Electron (backend)' or 'display-test-app Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
+* Frontend
+  * Debugging the front-end is easy: simply use the developer tools built into your browser or Electron.
+* Backend
+  * Open the root imodeljs directory in Visual Studio Code.
+  * Open a Javascript Debug Terminal (command palette > "Debug: Javascript Debug Terminal").
+  * In the debug terminal:
+    * Set any IMJS_ environment variables you need.
+    * `cd test-apps/display-test-app`
+    * Either:
+      * `npm run start` to debug Electron; or
+      * `npm run start:servers` to debug the browser.
+    * Set breakpoints in backend code if desired.
+    * Wait for the development server to start (see output in debug terminal).
+    * If running in browser, navigate to localhost:3000.
 
 ## Dependencies
 
