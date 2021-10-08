@@ -9,9 +9,8 @@
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import * as os from "os";
 import * as path from "path";
