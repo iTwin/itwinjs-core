@@ -8,25 +8,27 @@
 
 import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Frustum, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  Constant, Range3d, Transform, TransformProps, Vector3d,
+} from "@itwin/core-geometry";
+import {
+  AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
-import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
-import { CategorySelectorState } from "./CategorySelectorState";
-import { CoordSystem } from "./CoordSystem";
-import { DisplayStyle2dState } from "./DisplayStyleState";
-import { Frustum2d } from "./Frustum2d";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { MockRender } from "./render/MockRender";
-import { RenderGraphic } from "./render/RenderGraphic";
-import { Scene } from "./render/Scene";
-import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { SceneContext } from "./ViewContext";
-import { OffScreenViewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
+import { Frustum2d } from "./Frustum2d";
 import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
+import { IModelConnection } from "./IModelConnection";
+import { IModelApp } from "./IModelApp";
+import { CategorySelectorState } from "./CategorySelectorState";
+import { DisplayStyle2dState } from "./DisplayStyleState";
+import { CoordSystem } from "./CoordSystem";
+import { OffScreenViewport } from "./Viewport";
+import { SceneContext } from "./ViewContext";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { Scene } from "./render/Scene";
+import { MockRender } from "./render/MockRender";
+import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
+import { RenderGraphic } from "./render/RenderGraphic";
+import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 
 /** Strictly for testing.
  * @internal
@@ -353,7 +355,7 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
-      for await (const row of this.iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of this.iModel.query(ecsql)) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;
         try {

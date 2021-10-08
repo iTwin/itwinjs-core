@@ -7,8 +7,8 @@
  */
 
 import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
-import { ColorDef, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
@@ -432,7 +432,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     try {
       const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (${id}))`;
-      for await (const row of this.iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of this.iModel.query(ecsql)) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);
       }

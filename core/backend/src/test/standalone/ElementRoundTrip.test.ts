@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, QueryRowFormat, SubCategoryAppearance,
-} from "@itwin/core-common";
 import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
+import {
+  BriefcaseIdValue,
+  Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+} from "@itwin/core-common";
 import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -65,13 +66,13 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
   if (expectedValue.dt) assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
   if (expectedValue.s) assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
   if (expectedValue.p2d) {
-    assert.equal(actualValue.p2d?.x, expectedValue.p2d?.x, "'Point2d.x' type property did not roundtrip as expected");
-    assert.equal(actualValue.p2d?.y, expectedValue.p2d?.y, "'Point2d.y' type property did not roundtrip as expected");
+    assert.equal(actualValue.p2d!.x, expectedValue.p2d.x, "'Point2d.x' type property did not roundtrip as expected");
+    assert.equal(actualValue.p2d!.y, expectedValue.p2d.y, "'Point2d.y' type property did not roundtrip as expected");
   }
   if (expectedValue.p3d) {
-    assert.equal(actualValue.p3d?.x, expectedValue.p3d?.x, "'Point3d.x' type property did not roundtrip as expected");
-    assert.equal(actualValue.p3d?.y, expectedValue.p3d?.y, "'Point3d.y' type property did not roundtrip as expected");
-    assert.equal(actualValue.p3d?.z, expectedValue.p3d?.z, "'Point3d.z' type property did not roundtrip as expected");
+    assert.equal(actualValue.p3d!.x, expectedValue.p3d.x, "'Point3d.x' type property did not roundtrip as expected");
+    assert.equal(actualValue.p3d!.y, expectedValue.p3d.y, "'Point3d.y' type property did not roundtrip as expected");
+    assert.equal(actualValue.p3d!.z, expectedValue.p3d.z, "'Point3d.z' type property did not roundtrip as expected");
   }
   if (expectedValue.bin) assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
   if (expectedValue.g) expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
@@ -404,7 +405,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     dt: "2017-01-01T00:00:00.000",
     s: "Test string Inst1",
     bin: new Uint8Array([1, 2, 3]),
-    g: GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false)),
+    g: GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false) as Cone),
     p2d: new Point2d(1.034, 2.034),
     p3d: new Point3d(-1.0, 2.3, 3.0001),
   };
@@ -417,7 +418,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     dt: "2010-01-01T11:11:11.000",
     s: "Test string Inst2",
     bin: new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
-    g: GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false)),
+    g: GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false) as Cone),
     p2d: new Point2d(1111.11, 2222.22),
     p3d: new Point3d(-111.11, -222.22, -333.33),
   };
@@ -433,8 +434,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     array_p2d: [new Point2d(1, 2), new Point2d(2, 4)],
     array_p3d: [new Point3d(1, 2, 3), new Point3d(4, 5, 6)],
     array_g: [
-      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 2), 0.5, 0.5, false)),
-      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 1), Point3d.create(0, 0, 2), 0.5, 0.5, false)),
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 1), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
     ],
   };
 
@@ -449,8 +450,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     array_p2d: [new Point2d(-123, 244.23232), new Point2d(232, 324.2323), new Point2d(322, 2324.23322)],
     array_p3d: [new Point3d(133, 2333, 333), new Point3d(4123, 5123, 6123)],
     array_g: [
-      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 2), 0.5, 0.5, false)),
-      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 1), Point3d.create(0, 0, 2), 0.5, 0.5, false)),
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 1), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
     ],
   };
 
@@ -498,7 +499,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElement")) {
       verifyTestElement(row as TestElement, expectedValue);
       rowCount++;
     }
@@ -529,7 +530,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElement")) {
       verifyTestElement(row as TestElement, actualValue);
       rowCount++;
     }
@@ -577,7 +578,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect")) {
       verifyTestElementAspect(row as TestElementAspect, expectedAspectValue);
       rowCount++;
     }
@@ -609,7 +610,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect")) {
       verifyTestElementAspect(row as TestElementAspect, actualAspectValue[0]);
       rowCount++;
     }
@@ -669,14 +670,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements")) {
       const val = row as TestElementRefersToElements;
       verifyTestElementRefersToElements(val, expectedRelationshipValue);
       rowCount++;
     }
     assert.equal(rowCount, 1);
 
-    // verify via ecsql statement614
+    // verify via ecsql statement
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
@@ -702,7 +703,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements")) {
       verifyTestElementRefersToElements(row as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;
     }

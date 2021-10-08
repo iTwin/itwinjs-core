@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as path from "path";
 import { SnapshotDb } from "@itwin/core-backend";
 import { HierarchyCacheMode, PresentationManagerMode } from "@itwin/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
@@ -32,7 +33,7 @@ describe("NativePlatform", () => {
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,
-      cacheConfig: { mode: HierarchyCacheMode.Memory },
+      cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join(__dirname, "lib/cache") },
     });
     nativePlatform = new TNativePlatform();
   });

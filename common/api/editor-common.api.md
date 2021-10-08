@@ -120,16 +120,6 @@ export interface FlatBufferGeometryPartData {
 }
 
 // @alpha (undocumented)
-export interface LocateSubEntityProps {
-    filter?: SubEntityFilter;
-    hiddenEdgesVisible: boolean;
-    maxDistance?: number;
-    maxEdge: number;
-    maxFace: number;
-    maxVertex: number;
-}
-
-// @alpha (undocumented)
 export interface OffsetFacesProps {
     distances: number | number[];
     faces: SubEntityProps | SubEntityProps[];
@@ -146,8 +136,6 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     // (undocumented)
     getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
     // (undocumented)
-    locateSubEntities(id: Id64String, spacePoint: XYZProps, direction: XYZProps, opts: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
-    // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
 }
 
@@ -159,15 +147,6 @@ export interface SubEntityAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
-}
-
-// @alpha (undocumented)
-export interface SubEntityFilter {
-    laminarEdges?: true;
-    nonLinearEdges?: true;
-    nonPlanarFaces?: true;
-    smoothEdges?: true;
-    smoothVertices?: true;
 }
 
 // @alpha (undocumented)

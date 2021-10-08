@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { DbResult } from "@itwin/core-bentley";
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;
@@ -31,7 +30,7 @@ describe("ECSql Query", () => {
     if (imodel5) await imodel5.close();
     await IModelApp.shutdown();
   });
-  it.skip("Restart query", async () => {
+  it("Restart query", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -57,7 +56,7 @@ describe("ECSql Query", () => {
     };
 
     const queries = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 20; i++) {
       queries.push(cb());
     }
     await Promise.all(queries);
@@ -97,15 +96,15 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
-        assert.equal(result.length, rowPerPage[k]);
+        const result = await db.queryRows(query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
+        assert.equal(result.rows.length, rowPerPage[k]);
       }
     }
 
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of db.query(query)) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -124,17 +123,17 @@ describe("ECSql Query", () => {
   it("Query with Abbreviated Blobs", async function () {
     const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
     const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
-    let row1: any;
-    let row2: any;
-    let row3: any;
-    for await (const row of imodel2.query(query1, undefined, QueryRowFormat.UseJsPropertyNames))
+    let row1;
+    let row2;
+    let row3;
+    for await (const row of imodel2.query(query1))
       row1 = row;
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: false }))
+    for await (const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, false))
       row2 = row;
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: true }))
+    for await (const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, true))
       row3 = row;
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);
