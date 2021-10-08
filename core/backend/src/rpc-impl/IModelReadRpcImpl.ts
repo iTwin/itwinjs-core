@@ -35,13 +35,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
-    const user = RpcTrace.currentActivity!;
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
-    const user = RpcTrace.currentActivity!;
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
   }
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {

@@ -1347,6 +1347,7 @@ The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is mor
 ```
 
 Similarly, if your existing code passes an object instead of an array as the query parameter, change it as follows:
+
 ```ts
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});

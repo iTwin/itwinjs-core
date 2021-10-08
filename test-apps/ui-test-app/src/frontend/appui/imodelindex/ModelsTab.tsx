@@ -358,8 +358,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       viewedModels = this._getModelsFromDocCodes();
     } else {
       this.state.models.forEach((model: ModelInfo) => {
-        if (model.checked) {
-          viewedModels.push(model.modelProps!.id!);
+        if (model.checked && model.modelProps) {
+          viewedModels.push(model.modelProps.id!);
         }
       });
     }

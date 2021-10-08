@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module iModels
+ */
 import { BentleyError, CompressedId64Set, DbResult, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 
