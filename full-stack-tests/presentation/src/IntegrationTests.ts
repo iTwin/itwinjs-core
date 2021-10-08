@@ -83,6 +83,10 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const libDir = path.resolve("lib");
+  const hierarchiesCacheDir = path.join(libDir, "cache");
+  if (!fs.existsSync(hierarchiesCacheDir))
+    fs.mkdirSync(hierarchiesCacheDir);
+
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
@@ -92,7 +96,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     caching: {
       hierarchies: {
         mode: HierarchyCacheMode.Disk,
-        directory: path.join(libDir, "cache"),
+        directory: hierarchiesCacheDir,
       },
     },
   };

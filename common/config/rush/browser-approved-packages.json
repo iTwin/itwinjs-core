@@ -15,10 +15,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -547,10 +543,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "highlight.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "https-proxy-agent",
       "allowedCategories": [ "backend" ]
     },
@@ -691,10 +683,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "oidc-client",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "open",
       "allowedCategories": [ "backend" ]
     },
@@ -725,10 +713,6 @@
     {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "raf-schd",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react",
@@ -775,20 +759,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-markdown",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "react-redux",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-resize-detector",
       "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
-      "name": "react-router-dom",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
