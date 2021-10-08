@@ -65,7 +65,7 @@ export const getConfig = (): DtaConfiguration => {
     return configuration;
 
   configuration = {};
-  if (ProcessDetector.isMobileAppBackend)
+  if (ProcessDetector.isMobileAppBackend || ProcessDetector.isMobileAppFrontend)
     return configuration;
 
   // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
