@@ -9,7 +9,7 @@ import * as path from "path";
 import { AccessToken, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools";
 import { StandaloneDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { IModelTestUtils } from "../test/IModelTestUtils";

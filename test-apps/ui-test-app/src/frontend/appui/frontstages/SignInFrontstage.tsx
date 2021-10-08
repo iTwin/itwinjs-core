@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { BrowserAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@itwin/appui-react";
 import { IModelApp, NativeAppAuthorization } from "@itwin/core-frontend";
@@ -16,7 +16,7 @@ class SignInControl extends ContentControl {
     super(info, options);
 
     const client = IModelApp.authorizationClient;
-    if (isFrontendAuthorizationClient(client)) {
+    if ((client as BrowserAuthorizationClient).signIn !== undefined) {
       this.reactNode = <SignIn onSignIn={this._onSignIn} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     } else {
       this.reactNode = <Centered>{"No authorization client available"}</Centered>;

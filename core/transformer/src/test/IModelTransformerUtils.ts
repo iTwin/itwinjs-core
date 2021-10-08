@@ -15,7 +15,7 @@ import {
   OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/test/IModelTestUtils";
+import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
   GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType,

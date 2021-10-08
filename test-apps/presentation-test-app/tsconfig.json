@@ -16,6 +16,11 @@
     "noEmit": true,
     "types": [
       "@bentley/react-scripts"
+    ],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ]
   },
   "include": [

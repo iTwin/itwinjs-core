@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelDb, IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { V1CheckpointManager } from "@itwin/core-backend/lib/CheckpointManager";
+import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";

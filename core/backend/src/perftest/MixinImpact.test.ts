@@ -9,7 +9,7 @@ import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools";
 import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";

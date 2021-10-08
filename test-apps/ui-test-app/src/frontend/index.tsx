@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
@@ -24,14 +24,14 @@ import {
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
-import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/MobileFrontend";
+import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";

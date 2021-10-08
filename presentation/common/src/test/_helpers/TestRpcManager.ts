@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 
+/**
+ * @internal Used for testing only.
+ */
 export class TestRpcManager {
   public static initializeClient(interfaces: RpcInterfaceDefinition[]) {
     const config = class extends RpcDefaultConfiguration {

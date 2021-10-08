@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
 import { PresentationError } from "@itwin/presentation-common";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import * as selection from "../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
+import "./_helpers/MockFrontendEnvironment";
 
 describe("Presentation", () => {
 
