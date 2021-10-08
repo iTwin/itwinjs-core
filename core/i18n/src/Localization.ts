@@ -6,17 +6,18 @@
  * @module Localization
  */
 
-import { Localization } from "@itwin/core-common";
 import { createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import * as HttpApi from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
+import { Localization } from "@itwin/core-common";
 
 /** @public */
 interface LocalizationOptions {
   urlTemplate: string;
 }
-/** Supplies Internationalization services.
+
+/** Supplies localizations for iTwin.js
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
@@ -24,14 +25,14 @@ export class ITwinLocalization implements Localization {
   private _i18next: i18n;
   private readonly _namespaceRegistry = new Map<string, Promise<void>>();
 
-  /** Constructor for I18N.
+  /**
    * @param options object with I18NOptions (optional)
    */
   public constructor(options?: LocalizationOptions) {
     this._i18next = createInstance();
 
     const backend: HttpApi.BackendOptions = {
-      loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
+      loadPath: options?.urlTemplate ?? "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
     };
 
@@ -50,13 +51,13 @@ export class ITwinLocalization implements Localization {
       detection,
     };
 
-    // if in a development environment, set to pseudo-localize, otherwise detect from browser.
+    // if in a development environment, set debugging
     if (process.env.NODE_ENV === "development")
       initOptions.debug = true;
 
     this._i18next.use(i18nextBrowserLanguageDetector)
       .use(HttpApi.default ?? HttpApi)
-      .use(BentleyLogger)
+      .use(TranslationLogger)
       .init(initOptions);
   }
 
@@ -76,7 +77,9 @@ export class ITwinLocalization implements Localization {
    * @returns The line with all %{keys} translated
    * @public
    */
-  public getLocalizedKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.getLocalizedString(tag)); }
+  public getLocalizedKeys(line: string): string {
+    return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.getLocalizedString(tag));
+  }
 
   /** Return the translated value of a key.
    * @param key - the key that matches a property in the JSON localization file.
@@ -137,7 +140,9 @@ export class ITwinLocalization implements Localization {
   }
 
   /** @internal */
-  public loadNamespace(name: string, i18nCallback: any) { this._i18next.loadNamespaces(name, i18nCallback); }
+  public loadNamespace(name: string, i18nCallback: any) {
+    this._i18next.loadNamespaces(name, i18nCallback);
+  }
 
   /** Get the promise for an already registered Namespace.
    * @param name - the name of the namespace
@@ -148,10 +153,15 @@ export class ITwinLocalization implements Localization {
   }
 
   /** @internal */
-  public getLanguageList(): string[] { return this._i18next.languages; }
+  public getLanguageList(): string[] {
+    return this._i18next.languages;
+  }
 
-  /** @internal */
-  public changeLanguage(language: string): void { this._i18next.changeLanguage(language); }
+  /** override the language detected in the browser
+   * @internal */
+  public changeLanguage(language: string): void {
+    this._i18next.changeLanguage(language);
+  }
 
   /** Register a new Namespace and return it. If the namespace is already registered, it will be returned.
    * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.
@@ -205,10 +215,7 @@ export class ITwinLocalization implements Localization {
 
 }
 
-/** The class that represents a registered Localization Namespace
- * @note The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
- */
-class BentleyLogger {
+class TranslationLogger {
   public static readonly type = "logger";
   public log(args: string[]) { Logger.logInfo("i18n", this.createLogMessage(args)); }
   public warn(args: string[]) { Logger.logWarning("i18n", this.createLogMessage(args)); }
@@ -218,7 +225,7 @@ class BentleyLogger {
     for (let i = 1; i < args.length; ++i) {
       message += "\n";
       for (let j = 0; j < i; ++j)
-        message += "    ";
+        message += "  ";
       message += args[i];
     }
     return message;
