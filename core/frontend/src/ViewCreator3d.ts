@@ -14,7 +14,7 @@ Either takes in a list of modelIds, or displays all 3D models by default.
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
+  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
   RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
