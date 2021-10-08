@@ -11,7 +11,7 @@ import { RealityDataSource, realityDataSourceKeyToString } from "./RealityDataSo
 
 /**
  * This interface provide methods used to access a reality data from ContextShare
- * @alpha
+ * @internal
  */
 export interface RealityDataConnection {
   /** Metatdata on the reality data source */
@@ -28,11 +28,11 @@ export interface RealityDataConnection {
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
 }
 
-/** @alpha */
+/** @internal */
 export namespace RealityDataConnection {
   /** Return an instance of a RealityDataConnection from a source key.
    * There will aways be only one reality data connection for a corresponding reality data source key.
-   * @alpha
+   * @internal
    */
   export async function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
     return RealityDataConnectionImpl.fromSourceKey(rdSourceKey, iTwinId);
@@ -42,7 +42,7 @@ export namespace RealityDataConnection {
 /**
  * This class encapsulates access to a reality data from ContextShare
  * There is a one to one relationship between a reality data and the instances of present class.
- * @alpha
+ * @internal
  */
 class RealityDataConnectionImpl implements RealityDataConnection {
   private static _realityDataConnections = new Map<string, RealityDataConnection>();

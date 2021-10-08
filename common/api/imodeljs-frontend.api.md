@@ -7496,7 +7496,7 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @alpha
+// @internal
 export interface RealityDataConnection {
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
     readonly realityData: RealityData | undefined;
@@ -7504,7 +7504,7 @@ export interface RealityDataConnection {
     readonly source: RealityDataSource;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export namespace RealityDataConnection {
     export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
 }
