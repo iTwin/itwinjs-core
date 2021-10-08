@@ -62,20 +62,17 @@ export function getElementIdsByClass(db: IModelDb, classNames?: string[], pageOp
       const row = stmt.getRow();
       if (!row.elId || !row.elClassName)
         continue;
-      if (currentClassName === row.elClassName) {
-        currentIds.push(row.elId);
-        continue;
-      }
 
-      currentClassName = row.elClassName;
-      const existingIds = ids.get(row.elClassName);
-      if (!existingIds) {
-        currentIds = [];
-        ids.set(row.elClassName, currentIds);
-      } else {
-        currentIds = existingIds;
+      if (currentClassName !== row.elClassName) {
+        currentClassName = row.elClassName;
+        const existingIds = ids.get(row.elClassName);
+        if (!existingIds) {
+          currentIds = [];
+          ids.set(row.elClassName, currentIds);
+        } else {
+          currentIds = existingIds;
+        }
       }
-
       currentIds.push(row.elId);
     }
     return ids;
