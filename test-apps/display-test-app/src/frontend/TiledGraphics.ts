@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { QueryRowFormat } from "@itwin/core-common";
 import {
   FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
 } from "@itwin/core-frontend";
@@ -73,7 +72,7 @@ class Provider implements TiledGraphicsProvider {
     // Enable all categories (and subcategories thereof)
     const ecsql = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const catIds: string[] = [];
-    for await (const catId of iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const catId of iModel.query(ecsql))
       catIds.push(catId.categoryId);
 
     const subcatsRequest = iModel.subcategories.load(catIds);

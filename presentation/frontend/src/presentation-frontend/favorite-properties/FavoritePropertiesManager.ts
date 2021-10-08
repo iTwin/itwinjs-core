@@ -7,7 +7,6 @@
  */
 
 import { BeEvent, IDisposable, isIDisposable } from "@itwin/core-bentley";
-import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
@@ -371,7 +370,7 @@ export class FavoritePropertiesManager implements IDisposable {
     INNER JOIN ECDbMeta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
     INNER JOIN ECDbMeta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
     WHERE (derivedSchema.Name || ':' || derivedClass.Name) IN (${[...missingClasses].map((className) => `'${className}'`).join(",")})`;
-    for await (const row of imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query(query)) {
       if (!(row.classFullName in baseClasses))
         baseClasses[row.classFullName] = [];
       baseClasses[row.classFullName].push(row.baseClassFullName);

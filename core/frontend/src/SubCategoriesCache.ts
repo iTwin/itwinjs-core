@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
+import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -151,8 +151,8 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
       try {
         const ecsql = this._ecsql[this._curECSqlIndex];
-        for await (const row of this._imodel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
-          this._result.push(row as ResultRow);
+        for await (const row of this._imodel.query(ecsql)) {
+          this._result.push(row);
           if (this.wasCanceled)
             return undefined;
         }

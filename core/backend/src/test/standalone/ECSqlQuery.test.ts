@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../core-backend";
+import { IModelDb, IModelHost, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
@@ -13,7 +12,7 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs })) {
+  for await (const row of iModel.query(ecsql, bindings, undefined, undefined, undefined, abbreviateBlobs)) {
     rows.push(row);
   }
   return rows;
@@ -114,7 +113,7 @@ describe("ECSql Query", () => {
     };
 
     const queries = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 20; i++) {
       queries.push(cb());
     }
     await Promise.all(queries);
@@ -155,23 +154,23 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
-        assert.equal(rs.length, rowPerPage[k]);
+        const rs = await db.queryRows(IModelHost.sessionId, query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
+        assert.equal(rs.rows.length, rowPerPage[k]);
       }
     }
 
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of db.query(query)) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
           assert.isTrue(Reflect.has(row, "parentId"));
-          const parentId: string = row.parentId as string;
+          const parentId: string = row.parentId;
           assert.isTrue(Id64.isValidId64(parentId));
         }
-        const id: string = row.id as string;
+        const id: string = row.id;
         assert.isTrue(Id64.isValidId64(id));
       }
       const entry = dbs.indexOf(db);

@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as path from "path";
+import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import * as React from "react";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
@@ -18,6 +17,8 @@ import { Presentation, PresentationManager, RulesetVariablesManager, SelectionCh
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@itwin/presentation-testing";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../appui-react/imodel-components/models-tree/ModelsTree";
 import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
@@ -356,7 +357,8 @@ describe("ModelsTree", () => {
         backendProps: {
           caching: {
             hierarchies: {
-              mode: HierarchyCacheMode.Memory,
+              mode: HierarchyCacheMode.Disk,
+              directory: path.join("lib", "test", "cache"),
             },
           },
         },
