@@ -4889,6 +4889,7 @@ export interface LocalHostIpcAppOpts {
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
+        socketPath?: string;
     };
 }
 
