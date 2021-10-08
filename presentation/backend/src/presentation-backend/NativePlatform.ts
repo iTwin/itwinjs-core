@@ -6,11 +6,11 @@
  * @module Core
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { IDisposable } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
-  DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs, NodeKeyJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
 
@@ -49,6 +49,12 @@ export interface NativePresentationDefaultUnitFormats {
     unitSystems: NativePresentationUnitSystem[];
     format: FormatProps;
   };
+}
+
+/** @internal */
+export interface NativePresentationKeySetJSON {
+  instanceKeys: Array<[string, string[]]>;
+  nodeKeys: NodeKeyJSON[];
 }
 
 /** @internal */

@@ -95,7 +95,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * @internal
    */
-  public formatContextIdForUrl(contextId: string) { return contextId; }
+  public formatITwinIdForUrl(iTwinId: string) { return iTwinId; }
 
   /**
    * @internal

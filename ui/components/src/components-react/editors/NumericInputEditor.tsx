@@ -32,7 +32,7 @@ interface NumericInputEditorState {
 }
 
 /** NumericInputEditor React component that is a property editor with numeric input & up/down buttons
- * @beta
+ * @public
  */
 export class NumericInputEditor extends React.PureComponent<PropertyEditorProps, NumericInputEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -181,7 +181,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
 /** Numeric Input Property Editor registered for the "number" type name and "numeric-input" editor name.
  * It uses the [[NumericInputEditor]] React component.
- * @beta
+ * @public
  */
 export class NumericInputPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {

@@ -7,7 +7,7 @@ import { AccessToken } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
@@ -21,15 +21,12 @@ class IModelOpenControl extends ContentControl {
   }
 
   // called when an imodel has been selected on the IModelOpen
-  private _onOpenIModel = async (iModelInfo: IModelInfo) => {
-    await SampleAppIModelApp.showIModelIndex(iModelInfo.iTwinId, iModelInfo.wsgId);
+  private _onOpenIModel = async (arg: { iTwinId: string, id: string }) => {
+    await SampleAppIModelApp.showIModelIndex(arg.iTwinId, arg.id);
   };
 
-  private _getAccessToken = async (): Promise<AccessToken | undefined> => {
-    if (IModelApp.authorizationClient)
-      return IModelApp.authorizationClient.getAccessToken();
-
-    return undefined;
+  private _getAccessToken = async (): Promise<AccessToken> => {
+    return IModelApp.getAccessToken();
   };
 }
 
@@ -55,6 +52,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}
+        isIModelIndependent={true}
         usage={StageUsage.Private}
       />
     );

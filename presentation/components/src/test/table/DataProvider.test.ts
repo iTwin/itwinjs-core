@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { I18N } from "@itwin/core-i18n";
 import {
@@ -15,11 +16,8 @@ import {
   SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
 } from "@itwin/presentation-common";
 import {
-  createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer } from "@itwin/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstanceKey } from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField, PromiseContainer,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { RowItem } from "@itwin/components-react";
 import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
@@ -53,7 +51,7 @@ describe("TableDataProvider", () => {
     const mocks = mockPresentationManager();
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
-    Presentation.setI18nManager(new I18N("", {
+    Presentation.setLocalization(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
     await initializeLocalization();

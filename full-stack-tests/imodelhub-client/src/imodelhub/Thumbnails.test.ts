@@ -24,8 +24,8 @@ function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, { response });
 }
 
-function mockDownloadLatestThumbnail(_contextId: string, imodelId: GuidString, size: ThumbnailSize) {
-  const requestPath = utils.createRequestUrl(ScopeType.Context, _contextId, `${size}Thumbnail`, `${imodelId}/$file`);
+function mockDownloadLatestThumbnail(iTwinId: string, imodelId: GuidString, size: ThumbnailSize) {
+  const requestPath = utils.createRequestUrl(ScopeType.Context, iTwinId, `${size}Thumbnail`, `${imodelId}/$file`);
   mockDownloadThumbnail(requestPath, size);
 }
 
@@ -39,13 +39,13 @@ interface TestParameters {
   size: ThumbnailSize;
 }
 
-async function getIModelId(accessToken: AccessToken, name: string, projectId: string): Promise<string> {
-  return utils.getIModelId(accessToken, name, projectId);
+async function getIModelId(accessToken: AccessToken, name: string, iTwinId: string): Promise<string> {
+  return utils.getIModelId(accessToken, name, iTwinId);
 }
 
 describe("iModelHub ThumbnailHandler (#unit)", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
-  let projectId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let versions: Version[];
   let imodelHubClient: IModelClient;
@@ -56,9 +56,9 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
 
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    projectId = await utils.getProjectId(accessToken);
-    await utils.createIModel(accessToken, utils.sharedimodelName, projectId);
-    imodelId = await getIModelId(accessToken, utils.sharedimodelName, projectId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    imodelId = await getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();
 
     if (TestConfig.enableMocks) {
@@ -99,7 +99,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     }
 
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(accessToken, projectId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
@@ -115,7 +115,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
       params.thumbnails = await imodelHubClient.thumbnails.get(accessToken, imodelId, params.size);
 
       if (params.thumbnails.length < 3) {
-        await utils.deleteIModelByName(accessToken, projectId, utils.sharedimodelName);
+        await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
         chai.expect(params.thumbnails.length).to.be.gte(3);
       }
     });
@@ -146,8 +146,8 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
 
   test.forEach((params: TestParameters) => {
     it(`should download latest iModel's ${params.size}Thumbnail as a PNG file`, async () => {
-      mockDownloadLatestThumbnail(projectId, imodelId, params.size);
-      const image: string = await imodelHubClient.thumbnails.download(accessToken, imodelId, { contextId: projectId, size: params.size });
+      mockDownloadLatestThumbnail(iTwinId, imodelId, params.size);
+      const image: string = await imodelHubClient.thumbnails.download(accessToken, imodelId, { iTwinId, size: params.size });
       chai.assert(image);
       chai.expect(image.length).greaterThan(getThumbnailLength(params.size));
       chai.assert(image.startsWith(pngPrefixStr));

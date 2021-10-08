@@ -11,11 +11,6 @@ import * as https from 'https';
 import { HttpStatus } from '@itwin/core-bentley';
 
 // @beta
-export interface AuthorizationClient {
-    getAccessToken(): Promise<AccessToken | undefined>;
-}
-
-// @beta
 export interface CancelRequest {
     cancel: () => boolean;
 }

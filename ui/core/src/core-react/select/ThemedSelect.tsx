@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Select
  */
@@ -30,6 +31,7 @@ type FormatOptionLabelMeta = {
 
 /** OptionType for react-select 2.0 and above. which only accepts pairs of value & label strings
  * @beta
+ * @deprecated use Select from @itwin/itwinui-react
  */
 export interface OptionType {
   value: any;
@@ -37,11 +39,13 @@ export interface OptionType {
 }
 /** OptionsType to match label/value pair OptionType
  * @beta
- */
+ * @deprecated use Select from @itwin/itwinui-react
+*/
 export type OptionsType = Array<OptionType>;
 
 /** ThemedSelectProps to control specific features of ThemedSelect
  * @beta
+ * @deprecated use Select from @itwin/itwinui-react
  */
 export type ThemedSelectProps = {
   /* Aria label (for assistive tech) */
@@ -203,6 +207,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // eslint-disable-line @typescri
 };
 /** ThemedSelect is a wrapper for react-select with iModel.js UI theming applied
  * @beta
+ * @deprecated use Select from @itwin/itwinui-react
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function ThemedSelect(props: ThemedSelectProps) {

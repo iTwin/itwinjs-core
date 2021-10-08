@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@itwin/core-i18n";
+import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@itwin/browser-authorization";
+import { I18N } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -24,7 +24,7 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.localization = new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" });
     iModelApp.tileAdmin = {
       minimumSpatialTolerance: 0,
       cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
@@ -46,6 +46,15 @@ export class DisplayPerfTestApp {
     await HyperModeling.initialize({ markerHandler: new MarkerHandler() });
 
     IModelApp.animationInterval = undefined;
+  }
+
+  public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<void> {
+    const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
+    const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
+    const client = DisplayPerfRpcInterface.getClient();
+    await client.consoleLog(msg);
+    if (logFile)
+      await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
   }
 }
 
@@ -88,8 +97,8 @@ async function signIn(): Promise<boolean> {
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onUserStateChanged.addListener((token) => {
-      resolve(token !== undefined);
+    oidcClient.onAccessTokenChanged.addListener((token) => {
+      resolve(token !== "");
     });
   });
 
@@ -108,7 +117,9 @@ async function main() {
     const runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
-    alert(err.toString());
+    await DisplayPerfTestApp.logException(err);
+  } finally {
+    await DisplayPerfRpcInterface.getClient().terminate();
   }
 
   return IModelApp.shutdown();

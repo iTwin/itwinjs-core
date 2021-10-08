@@ -162,14 +162,14 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
 
   public get label(): string {
     if (!this._label) {
-      this._label = IModelApp.i18n.translate(this._labelKey);
+      this._label = IModelApp.localization.getLocalizedString(this._labelKey);
     }
     return this._label;
   }
 
   public get description(): string {
     if (!this._description) {
-      this._description = IModelApp.i18n.translate(this._descriptionKey);
+      this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
     }
     return this._description;
   }

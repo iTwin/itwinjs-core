@@ -96,7 +96,8 @@ function assertContainerAccessKey(checkpoint: CheckpointV2) {
 }
 
 describe("iModelHub CheckpointV2Handler", () => {
-  let contextId: string;
+
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
@@ -107,9 +108,9 @@ describe("iModelHub CheckpointV2Handler", () => {
     this.timeout(0);
     accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    contextId = await utils.getProjectId(accessToken);
-    await utils.createIModel(accessToken, utils.sharedimodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId, true, true);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
 
@@ -123,7 +124,7 @@ describe("iModelHub CheckpointV2Handler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(accessToken, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 

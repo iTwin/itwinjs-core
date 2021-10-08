@@ -12,7 +12,7 @@ import { FilteredType, IPropertyDataFilterer, PropertyDataFiltererBase, Property
 
 /**
  * Logical operator for composite filterer.
- * @beta
+ * @public
  */
 export enum CompositeFilterType {
   And,
@@ -21,7 +21,7 @@ export enum CompositeFilterType {
 
 /**
  * Composite PropertyData filter which can join two filters using logic operators
- * @beta
+ * @public
  */
 export class CompositePropertyDataFilterer extends PropertyDataFiltererBase {
   public constructor(private _leftFilterer: IPropertyDataFilterer, private _operator: CompositeFilterType, private _rightFilterer: IPropertyDataFilterer) {

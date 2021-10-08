@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelDb, IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { V1CheckpointManager } from "@itwin/core-backend/lib/CheckpointManager";
+import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -25,7 +25,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async getCloudEnv(): Promise<CloudEnvProps> {
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
+      const region = "0";
       return { iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl();

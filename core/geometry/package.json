@@ -1,21 +1,24 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.80",
   "description": "iTwin.js Core Geometry library",
-  "main": "lib/core-geometry.js",
-  "typings": "lib/core-geometry",
+  "main": "lib/cjs/core-geometry.js",
+  "module": "lib/esm/core-geometry.js",
+  "typings": "lib/cjs/core-geometry",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
     "test": "mocha",
     "extract-api": "betools extract-api --entry=core-geometry",
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
@@ -31,7 +34,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.80"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

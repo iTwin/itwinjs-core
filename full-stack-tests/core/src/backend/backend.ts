@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
-import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
@@ -116,12 +116,12 @@ async function init() {
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
 class BackendTestAssetResolver extends FileNameResolver {
-  /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
+  /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
+    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {

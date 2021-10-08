@@ -76,12 +76,12 @@ class Tool1UiProvider extends ToolUiProvider {
       { labelNode: "Red", editorNode: <Tool1ColorSwatch color={ColorDef.red} /> },
       { labelNode: "Blue", editorNode: <Tool1ColorSwatch color={ColorDef.blue} /> },
       { labelNode: "Active", editorNode: <Tool1Color /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool1.date"), editorNode: <input type="date" /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool1.number"), editorNode: <input type="number" min="10" max="20" /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool1.password"), editorNode: <input type="password" /> },
-      { labelNode: <label htmlFor="radio">{IModelApp.i18n.translate("SampleApp:tool1.radio")}</label>, editorNode: <input name="radio" type="radio" /> },
-      { labelNode: <label htmlFor="range">{IModelApp.i18n.translate("SampleApp:tool1.range")}</label>, editorNode: <input name="range" type="range" min="1" max="100" step="5" /> },
-      { labelNode: <label htmlFor="month">{IModelApp.i18n.translate("SampleApp:tool1.month")}</label>, editorNode: <input name="month" type="month" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool1.date"), editorNode: <input type="date" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool1.number"), editorNode: <input type="number" min="10" max="20" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool1.password"), editorNode: <input type="password" /> },
+      { labelNode: <label htmlFor="radio">{IModelApp.localization.getLocalizedString("SampleApp:tool1.radio")}</label>, editorNode: <input name="radio" type="radio" /> },
+      { labelNode: <label htmlFor="range">{IModelApp.localization.getLocalizedString("SampleApp:tool1.range")}</label>, editorNode: <input name="range" type="range" min="1" max="100" step="5" /> },
+      { labelNode: <label htmlFor="month">{IModelApp.localization.getLocalizedString("SampleApp:tool1.month")}</label>, editorNode: <input name="month" type="month" /> },
     ];
   }
 }

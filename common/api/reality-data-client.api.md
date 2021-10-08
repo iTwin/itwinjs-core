@@ -5,7 +5,11 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { CartographicRange } from '@itwin/core-common';
 import { Client } from '@bentley/itwin-client';
+import { ContextRealityModelProps } from '@itwin/core-common';
+import { GuidString } from '@itwin/core-bentley';
+import { IModelConnection } from '@itwin/core-frontend';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
@@ -19,6 +23,20 @@ export class DataLocation extends WsgInstance {
     location?: string;
     // (undocumented)
     provider?: string;
+}
+
+// @internal
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
 }
 
 // @internal
@@ -42,7 +60,7 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     classification?: string;
     // (undocumented)
-    client: undefined | RealityDataClient;
+    client: undefined | RealityDataAccessClient;
     containerName?: string;
     // (undocumented)
     copyright?: string;
@@ -78,6 +96,8 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     id?: string;
     // (undocumented)
+    iTwinId: undefined | string;
+    // (undocumented)
     lastAccessedTimestamp?: string;
     // (undocumented)
     listable?: boolean;
@@ -93,8 +113,6 @@ export class RealityData extends WsgInstance {
     ownedBy?: string;
     // (undocumented)
     ownerId?: string;
-    // (undocumented)
-    projectId: undefined | string;
     // (undocumented)
     referenceElevation?: number;
     // (undocumented)
@@ -124,22 +142,31 @@ export class RealityData extends WsgInstance {
 }
 
 // @internal
-export class RealityDataClient extends WsgClient {
+export class RealityDataAccessClient extends WsgClient {
     constructor();
-    createRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
-    createRealityDataRelationship(accessToken: AccessToken, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
-    deleteRealityData(accessToken: AccessToken, projectId: string | undefined, realityDataId: string): Promise<void>;
-    deleteRealityDataRelationship(accessToken: AccessToken, projectId: string, relationshipId: string): Promise<void>;
+    createRealityData(accessToken: AccessToken, iTwinId: string | undefined, realityData: RealityData): Promise<RealityData>;
+    createRealityDataRelationship(accessToken: AccessToken, iTwinId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
+    deleteRealityData(accessToken: AccessToken, iTwinId: string | undefined, realityDataId: string): Promise<void>;
+    deleteRealityDataRelationship(accessToken: AccessToken, iTwinId: string, relationshipId: string): Promise<void>;
     getDataLocation(accessToken: AccessToken): Promise<DataLocation[]>;
-    getFileAccessKey(accessToken: AccessToken, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
-    getRealityData(accessToken: AccessToken, projectId: string | undefined, tilesId: string): Promise<RealityData>;
+    getFileAccessKey(accessToken: AccessToken, iTwinId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
+    getRealityData(accessToken: AccessToken, iTwinId: string | undefined, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
-    getRealityDataInProject(accessToken: AccessToken, projectId: string, type?: string): Promise<RealityData[]>;
-    getRealityDataInProjectOverlapping(accessToken: AccessToken, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
-    getRealityDataRelationships(accessToken: AccessToken, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
-    getRealityDatas(accessToken: AccessToken, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
-    getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string>;
-    updateRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+    getRealityDataInITwin(accessToken: AccessToken, iTwinId: string, type?: string): Promise<RealityData[]>;
+    getRealityDataInITwinOverlapping(accessToken: AccessToken, iTwinId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
+    getRealityDataRelationships(accessToken: AccessToken, iTwinId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
+    getRealityDatas(accessToken: AccessToken, iTwinId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
+    getRealityDataUrl(iTwinId: string | undefined, tilesId: string): Promise<string>;
+    // @public
+    queryRealityData(accessToken: AccessToken, criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
+    updateRealityData(accessToken: AccessToken, iTwinId: string | undefined, realityData: RealityData): Promise<RealityData>;
+}
+
+// @public
+export interface RealityDataQueryCriteria {
+    filterIModel?: IModelConnection;
+    iTwinId: GuidString;
+    range?: CartographicRange;
 }
 
 // @internal
@@ -159,22 +186,8 @@ export class RealityDataRelationship extends WsgInstance {
 // @internal
 export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     action?: string;
+    iTwin?: string;
     polygon?: string;
-    project?: string;
-}
-
-// @internal
-export enum RealityDataType {
-    // (undocumented)
-    CESIUM_3DTILE = "Cesium3DTiles",
-    // (undocumented)
-    OMR = "OMR",
-    // (undocumented)
-    OPC = "OPC",
-    // (undocumented)
-    REALITYMESH3DTILES = "RealityMesh3DTiles",
-    // (undocumented)
-    TERRAIN3DTILE = "Terrain3DTiles"
 }
 
 

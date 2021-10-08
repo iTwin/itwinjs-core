@@ -16,7 +16,7 @@ import { Omit } from "../utils/typeUtils";
 import { ExpansionToggle } from "./ExpansionToggle";
 
 /** Props for node Checkbox renderer
- * @beta
+ * @public
  */
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
   onChange: (checked: boolean) => void;
@@ -24,7 +24,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 };
 
 /** Type for node Checkbox renderer
- * @beta
+ * @public
  */
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
@@ -36,7 +36,7 @@ export const LEVEL_OFFSET = 20;
 const EXPANSION_TOGGLE_WIDTH = 24;
 
 /** Properties for Tree Node CheckBox
- * @beta
+ * @public
  */
 export interface NodeCheckboxProps {
   /** State of the checkbox */
@@ -57,7 +57,7 @@ export interface TreeNodeProps extends CommonProps {
   level: number;
   icon?: React.ReactChild;
   /** Properties for the checkbox.
-   * @beta */
+   * @public */
   checkboxProps?: NodeCheckboxProps;
   isLeaf?: boolean;
   isLoading?: boolean;
@@ -75,8 +75,7 @@ export interface TreeNodeProps extends CommonProps {
 
   /** Contains render overrides for different pieces of the node component. */
   renderOverrides?: {
-    /** Callback to render a checkbox. Only called when checkbox is displayed.
-     * @beta */
+    /** Callback to render a checkbox. Only called when checkbox is displayed. */
     renderCheckbox?: NodeCheckboxRenderer;
   };
   ["data-testid"]?: string;

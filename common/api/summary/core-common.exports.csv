@@ -16,6 +16,7 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
+beta;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
 public;AuxCoordSystemProps 
@@ -39,10 +40,10 @@ beta;BaseMapLayerProps
 beta;BaseMapLayerSettings 
 beta;BaseReaderOptions
 public;BatchType
-public;class BentleyCloudRpcConfiguration 
-public;BentleyCloudRpcManager 
-public;BentleyCloudRpcParams
-public;class BentleyCloudRpcProtocol 
+internal;class BentleyCloudRpcConfiguration 
+internal;BentleyCloudRpcManager 
+internal;BentleyCloudRpcParams
+internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
@@ -201,6 +202,7 @@ public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
 public;EmphasizeElementsProps
+public;EmptyLocalization 
 public;EntityIdAndClassId
 public;EntityIdAndClassIdIterable = Iterable
 beta;EntityMetaData 
@@ -316,7 +318,7 @@ public;HorizontalCRSProps
 public;HSLColor
 public;HSVColor
 public;HSVConstants
-public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
+internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
 public;HttpServerResponse 
 internal;I3dmHeader 
@@ -386,6 +388,7 @@ public;LocalAlignedBox3d = Range3d
 public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
+public;Localization
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
@@ -531,14 +534,15 @@ public;RenderTimelineLoadProps
 public;RenderTimelineProps 
 public;RepositoryLinkProps 
 public;RequestNewBriefcaseProps
-public;ResponseLike 
+internal;ResponseLike 
 public;RgbColor
 public;RgbColorProps
 public;RgbFactorProps = number[]
 public;RootSubjectProps
 public;RpcActivity 
-public;class RpcConfiguration
-public;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
+internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
+internal;class RpcConfiguration
+internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
@@ -547,60 +551,59 @@ internal;RpcDirectProtocol
 internal;RpcDirectRequest 
 public;RpcEndpoint
 public;class RpcInterface
-public;RpcInterfaceDefinition
-public;RpcInterfaceEndpoints
-public;RpcInterfaceImplementation
-public;RpcInvocation
-public;RpcInvocationCallback = (invocation: RpcInvocation) => void
-public;RpcManager
+internal;RpcInterfaceDefinition
+internal;RpcInterfaceEndpoints
+internal;RpcInterfaceImplementation
+internal;RpcInvocation
+internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
 public;RpcNotFoundResponse 
 internal;RpcOpenAPIDescription
-public;RpcOperation
-public;RpcOperation
-public;RpcOperationPolicy
-public;RpcOperationPolicyProps = Partial
-public;RpcOperationsProfile
+internal;RpcOperation
+internal;RpcOperation
+internal;RpcOperationPolicy
+internal;RpcOperationPolicyProps = Partial
+internal;RpcOperationsProfile
 internal;RpcPendingQueue
 public;RpcPendingResponse 
-public;class RpcProtocol
+internal;class RpcProtocol
 public;RpcProtocolEvent
-public;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
-alpha;RpcPushChannel
-alpha;class RpcPushConnection
-alpha;RpcPushMessageListener
-alpha;RpcPushService
-alpha;RpcPushSubscription
-alpha;class RpcPushTransport
+internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcPushChannel
+internal;class RpcPushConnection
+internal;RpcPushMessageListener
+internal;RpcPushService
+internal;RpcPushSubscription
+internal;class RpcPushTransport
 internal;RpcRegistry
-public;class RpcRequest
-public;RpcRequestCallback_T = (request: RpcRequest) => void
-public;RpcRequestContext
+internal;class RpcRequest
+internal;RpcRequestCallback_T = (request: RpcRequest) => void
+internal;RpcRequestContext
 public;RpcRequestEvent
-public;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
-public;RpcRequestFulfillment
-public;RpcRequestFulfillment
-public;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
-public;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
+internal;RpcRequestFulfillment
+internal;RpcRequestFulfillment
+internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
+internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
 public;RpcRequestStatus
 public;RpcRequestStatus
-public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
+internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
-public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
-alpha;RpcRoutingMap 
-alpha;RpcRoutingMap
-public;RpcRoutingToken
-public;RpcSerializedValue
-public;RpcSerializedValue
+internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+internal;RpcRoutingMap 
+internal;RpcRoutingMap
+internal;RpcRoutingToken
+internal;RpcSerializedValue
+internal;RpcSerializedValue
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
 public;SectionType
 public;SerializedRpcActivity
-public;SerializedRpcOperation
-public;SerializedRpcRequest 
+internal;SerializedRpcOperation
+internal;SerializedRpcRequest 
 public;ServerError 
 public;ServerTimeoutError 
 public;SessionProps
@@ -718,8 +721,8 @@ public;ViewQueryParams
 public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
-public;class WebAppRpcProtocol 
-public;WebAppRpcRequest 
+internal;class WebAppRpcProtocol 
+internal;WebAppRpcRequest 
 public;WhiteOnWhiteReversalProps
 public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 

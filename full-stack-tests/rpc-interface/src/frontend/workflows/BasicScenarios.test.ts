@@ -7,7 +7,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { QueryRowFormat } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;

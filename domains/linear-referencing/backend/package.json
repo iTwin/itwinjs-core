@@ -1,18 +1,18 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "3.0.0-dev.71",
-  "main": "lib/linear-referencing-backend.js",
-  "typings": "lib/linear-referencing-backend",
+  "version": "3.0.0-dev.80",
+  "main": "lib/cjs/linear-referencing-backend.js",
+  "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "nyc npm test",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
+    "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.71",
-    "@itwin/core-common": "workspace:^3.0.0-dev.71",
-    "@itwin/linear-referencing-common": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.80",
+    "@itwin/core-common": "workspace:^3.0.0-dev.80",
+    "@itwin/linear-referencing-common": "workspace:^3.0.0-dev.80"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

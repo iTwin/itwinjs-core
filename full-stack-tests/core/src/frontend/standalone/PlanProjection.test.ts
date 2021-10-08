@@ -11,7 +11,7 @@ import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
 } from "@itwin/core-frontend";
 import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("Plan projections", () => {

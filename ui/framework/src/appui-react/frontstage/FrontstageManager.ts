@@ -360,11 +360,37 @@ export class FrontstageManager {
     FrontstageManager._frontstageDefs.clear();
   }
 
+  private static getFrontstageKey(frontstageId: string) {
+    const provider = FrontstageManager._frontstageProviders.get(frontstageId);
+    let isIModelIndependent = false;
+    if (provider) {
+      isIModelIndependent = !!provider.frontstage.props.isIModelIndependent;
+    }
+    const imodelId = UiFramework.getIModelConnection()?.iModelId ?? "noImodel";
+    const key = isIModelIndependent ? frontstageId : `[${imodelId}]${frontstageId}`;
+    return key;
+  }
+
   /** Add a Frontstage via a definition.
    * @param frontstageDef  Definition of the Frontstage to add
    */
   private static addFrontstageDef(frontstageDef: FrontstageDef): void {
-    FrontstageManager._frontstageDefs.set(frontstageDef.id, frontstageDef);
+    const key = FrontstageManager.getFrontstageKey(frontstageDef.id);
+    FrontstageManager._frontstageDefs.set(key, frontstageDef);
+  }
+
+  /** @internal */
+  public static clearFrontstageDefsForIModelId(iModelId: string | undefined) {
+    if (!iModelId)
+      return;
+    const keysToRemove: string[] = [];
+    FrontstageManager._frontstageDefs.forEach((_: FrontstageDef, key: string) => {
+      if (key.startsWith(`[${iModelId}]`))
+        keysToRemove.push(key);
+    });
+    keysToRemove.forEach((keyValue) => {
+      FrontstageManager._frontstageDefs.delete(keyValue);
+    });
   }
 
   /** Add a Frontstage via a [[FrontstageProvider]].
@@ -380,10 +406,9 @@ export class FrontstageManager {
    * @param id  Id of the Frontstage to find
    * @returns  FrontstageDef with a given id if found, or undefined if not found.
    */
-  private static findFrontstageDef(id?: string): FrontstageDef | undefined {
-    if (!id)
-      return FrontstageManager.activeFrontstageDef;
-    const frontstageDef = FrontstageManager._frontstageDefs.get(id);
+  private static findFrontstageDef(id: string): FrontstageDef | undefined {
+    const key = FrontstageManager.getFrontstageKey(id);
+    const frontstageDef = FrontstageManager._frontstageDefs.get(key);
     if (frontstageDef instanceof FrontstageDef)
       return frontstageDef;
     return undefined;
@@ -394,12 +419,15 @@ export class FrontstageManager {
   }
 
   /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned. If
-   * no cached FrontstageDef is found but a FrontstageProvider is registered a FronstageDef will be created, cached, and
+   * no cached FrontstageDef is found but a FrontstageProvider is registered a FrontstageDef will be created, cached, and
    * returned.
    * @param id  Id of the Frontstage to find
    * @returns  FrontstageDef with a given id if found, or undefined if not found.
    */
   public static async getFrontstageDef(id?: string): Promise<FrontstageDef | undefined> {
+    if (!id)
+      return FrontstageManager.activeFrontstageDef;
+
     let frontstageDef = FrontstageManager.findFrontstageDef(id);
     if (frontstageDef)
       return frontstageDef;
@@ -410,8 +438,10 @@ export class FrontstageManager {
       if (frontstageProvider) {
         frontstageDef = await FrontstageDef.create(frontstageProvider);
         // istanbul ignore else
-        if (frontstageDef)
-          FrontstageManager._frontstageDefs.set(id, frontstageDef);
+        if (frontstageDef) {
+          const key = FrontstageManager.getFrontstageKey(frontstageDef.id);
+          FrontstageManager._frontstageDefs.set(key, frontstageDef);
+        }
         return frontstageDef;
       }
     }
@@ -468,7 +498,7 @@ export class FrontstageManager {
 
     const deactivatedFrontstageDef = FrontstageManager._activeFrontstageDef;
     if (deactivatedFrontstageDef) {
-      deactivatedFrontstageDef.onDeactivated();
+      await deactivatedFrontstageDef.onDeactivated();
 
       const timeTracker = deactivatedFrontstageDef.timeTracker;
       FrontstageManager.onFrontstageDeactivatedEvent.emit({
@@ -483,7 +513,7 @@ export class FrontstageManager {
     FrontstageManager._activeFrontstageDef = frontstageDef;
 
     if (frontstageDef) {
-      frontstageDef.onActivated();
+      await frontstageDef.onActivated();
 
       FrontstageManager.onFrontstageActivatedEvent.emit({ activatedFrontstageDef: frontstageDef, deactivatedFrontstageDef });
 
@@ -495,7 +525,7 @@ export class FrontstageManager {
 
       frontstageDef.startDefaultTool();
 
-      frontstageDef.setActiveContent();
+      await frontstageDef.setActiveContent();
     }
 
     FrontstageManager._isLoading = false;
@@ -560,7 +590,7 @@ export class FrontstageManager {
       await activeFrontstageDef.waitUntilReady();
       FrontstageManager._isLoading = false;
 
-      activeFrontstageDef.setActiveContent();
+      await activeFrontstageDef.setActiveContent();
     }
   }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/speed";
-@import "~@itwin/core-react/lib/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 
 @mixin rotate($amount) {
   -webkit-transform: rotate($amount);

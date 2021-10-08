@@ -26,7 +26,7 @@ interface TileLoadingIndicatorState {
 }
 
 /** TileLoadingIndicator React component
- * @beta
+ * @public
  */
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
   private _removeViewOpenListener?: () => void;

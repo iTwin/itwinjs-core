@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { RpcActivity, SerializedRpcActivity } from "./RpcInvocation";
+import { SerializedRpcActivity } from "./RpcInvocation";
 import { RpcRequest } from "./RpcRequest";
 
 /** Interface to enable passing application-specific context with each RPC request.
- * @public
+ * @internal
  */
 export interface RpcRequestContext {
   /** Used to get the id of the request at the frontend */
@@ -17,7 +17,4 @@ export interface RpcRequestContext {
 
   /** Used at frontend to serialize client specified context */
   serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
-
-  /** Used at backend to deserialize client specified context */
-  deserialize: (request: SerializedRpcActivity) => RpcActivity;
 }

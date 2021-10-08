@@ -15,7 +15,7 @@ export class TestUtils {
 
   public static get i18n(): I18N {
     if (!TestUtils._i18n) {
-      TestUtils._i18n = new I18N();
+      TestUtils._i18n = new I18N("iModelJs");
     }
     return TestUtils._i18n;
   }

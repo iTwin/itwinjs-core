@@ -16,7 +16,7 @@ import {
 import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
-import { AcquireNewBriefcaseIdArg, UserArg } from "../core-backend";
+import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -160,18 +160,18 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
-  private static async getAccessToken(arg: UserArg) {
-    return arg.user ?? await IModelHost.getAccessToken() ?? "";
+  private static async getAccessToken(arg: TokenArg) {
+    return arg.accessToken ?? await IModelHost.getAccessToken();
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const user = await this.getAccessToken(arg);
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user);
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(accessToken);
   }
 
   public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
-    const user = await this.getAccessToken(arg);
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user, arg.briefcaseAlias);
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(accessToken, arg.briefcaseAlias);
   }
 
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */

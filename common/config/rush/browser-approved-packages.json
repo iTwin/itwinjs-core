@@ -4,995 +4,1830 @@
   "packages": [
     {
       "name": "@axe-core/react",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/backend-itwin-client",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@bentley/icons-generic",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/icons-generic-webfont",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@bentley/itwin-client",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
+    },
+    {
+      "name": "@bentley/itwin-registry-client",
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend", "integration-testing" ]
+      "allowedCategories": [
+        "backend",
+        "frontend",
+        "integration-testing"
+      ]
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "@itwin/appui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "edit",
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/appui-layout-react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/appui-react",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/backend-webpack-tools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
+    },
+    {
+      "name": "@itwin/browser-authorization",
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/build-tools",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "common",
+        "edit",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/components-react",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "edit",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-bentley",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-common",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
+    },
+    {
+      "name": "@itwin/core-electron",
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-frontend",
-      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-geometry",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/core-i18n",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-markup",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
+    },
+    {
+      "name": "@itwin/core-mobile",
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-orbitgt",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-quantity",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-transformer",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@itwin/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing"
+      ]
     },
     {
       "name": "@itwin/editor-backend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/editor-common",
-      "allowedCategories": [ "edit", "internal" ]
+      "allowedCategories": [
+        "edit",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/editor-frontend",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@itwin/electron-manager",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/eslint-plugin",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/express-server",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/frontend-devtools",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/hypermodeling-frontend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/imodel-components-react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/itwinui-css",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/itwinui-react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/linear-referencing-common",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@itwin/map-layers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@itwin/mobile-manager",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/perf-tools",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/presentation-backend",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/presentation-common",
-      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/presentation-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/presentation-frontend",
-      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "@itwin/presentation-testing",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
+    },
+    {
+      "name": "@itwin/service-authorization",
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "@itwin/webgl-compatibility",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@microsoft/api-extractor",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@openid/appauth",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "@svgdotjs/svg.js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend"
+      ]
     },
     {
       "name": "@testing-library/react-hooks",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "@testing-library/user-event",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "@typescript-eslint/eslint-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@typescript-eslint/typescript-estree",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "@ungap/url-search-params",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend"
+      ]
     },
     {
       "name": "@xmldom/xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "tools"
+      ]
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "applicationinsights",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "autoprefixer",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "azurite",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "benchmark",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend",
+        "common"
+      ]
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "cache-require-paths",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "callable-instance2",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "case-sensitive-paths-webpack-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-jest-snapshot",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "chai-spies",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend"
+      ]
     },
     {
       "name": "chai-string",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "chalk",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "child_process",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "chrome-launcher",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "classnames",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "commander",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "concurrently",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "copy-webpack-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "cpx",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "cross-env",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "cross-spawn",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "debug",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "backend", "common", "integration-testing" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing"
+      ]
     },
     {
       "name": "deep-equal",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "detect-port",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "dompurify",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "electron",
-      "allowedCategories": [ "backend", "edit", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "edit",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "enzyme",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend"
+      ]
     },
     {
       "name": "enzyme-to-json",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend"
+      ]
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "eslint-import-resolver-node",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-import-resolver-typescript",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-deprecation",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-import",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-jam3",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-jsdoc",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-jsx-a11y",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-prefer-arrow",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-react",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "event-stream",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "eventemitter2",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "express",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "faker",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "fast-deep-equal",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "fast-sort",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "file-saver",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "findup",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "flatbuffers",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "form-data",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "fs-write-stream-atomic",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "fuse.js",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "edit",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "got",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "highlight.js",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "https-proxy-agent",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "ignore-styles",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "immer",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "immutable",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "inspire-tree",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions" ]
+      "allowedCategories": [
+        "extensions"
+      ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "json-schema-faker",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "jsonc-parser",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "jsonpath",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "jsonwebtoken",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "linkify-it",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [
+        "common",
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "lolex",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "lorem-ipsum",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "make-dir",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "memfs",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "micro-memoize",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "mkdirp",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "mocha",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "mocha-junit-reporter",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "multiparty",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "nock",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "nodemon",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "frontend",
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "object-hash",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "oidc-client",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "open",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "backend", "integration-testing", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "integration-testing",
+        "tools"
+      ]
     },
     {
       "name": "postcss-flexbugs-fixes",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "postcss-loader",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "puppeteer",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [
+        "integration-testing",
+        "tools"
+      ]
     },
     {
       "name": "qs",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "raf",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "raf-schd",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "react",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "react-autosuggest",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-beautiful-dnd",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "react-data-grid",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-dnd",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-dnd-html5-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-dnd-test-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-dnd-test-utils",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-dom",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "react-dom-instance",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-highlight-words",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-markdown",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "react-redux",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "react-router-dom",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "react-select",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "react-select-event",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-split-pane",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-table",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "react-test-renderer",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "react-virtualized",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "react-window",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "readline",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "redux",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "require-dir",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "resize-observer-polyfill",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "resolve",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "rimraf",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "rxjs",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "save",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "serve-handler",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "shortid",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "edit", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "edit",
+        "tools"
+      ]
     },
     {
       "name": "spdy",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "stream-buffers",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "supertest",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
     },
     {
       "name": "symlink-dir",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "tree-kill",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "ts-key-enum",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "typedoc",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "typedoc-plugin-internal-external",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "typescript",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "edit",
+        "extensions",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "typescript-json-schema",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "username",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "uuid",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [
+        "frontend",
+        "tools"
+      ]
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "frontend",
+        "integration-testing",
+        "internal",
+        "tools"
+      ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [
+        "integration-testing",
+        "internal"
+      ]
     },
     {
       "name": "webpack-core",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "webpack-filter-warnings-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "webpack-sources",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "wms-capabilities",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "ws",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [
+        "backend"
+      ]
     },
     {
       "name": "xml-js",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
+        "internal"
+      ]
     },
     {
       "name": "xpath",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [
+        "common"
+      ]
     },
     {
       "name": "yargonaut",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [
+        "tools"
+      ]
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "internal", "tools" ]
+      "allowedCategories": [
+        "common",
+        "internal",
+        "tools"
+      ]
     }
   ]
 }

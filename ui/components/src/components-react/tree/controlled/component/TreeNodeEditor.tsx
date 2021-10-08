@@ -11,8 +11,9 @@ import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appu
 import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
 import { TreeModelNode } from "../TreeModel";
 
-/** Properties for [[TreeNodeEditor]] component
- * @beta
+/**
+ * Properties for [[TreeNodeEditor]] component.
+ * @public
  */
 export interface TreeNodeEditorProps {
   /** Tree node which is in editing mode. */
@@ -21,20 +22,22 @@ export interface TreeNodeEditorProps {
   onCommit: (node: TreeModelNode, newValue: string) => void;
   /** Callback that is called when editing is canceled. */
   onCancel: () => void;
-
   /** Editor style. */
   style?: React.CSSProperties;
+
   /** @internal */
   ignoreEditorBlur?: boolean;
 }
 
-/** Type for tree node editor renderer
- * @beta
+/**
+ * Type for tree node editor renderer.
+ * @public
  */
 export type TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode;
 
-/** React component for displaying tree node editor
- * @beta
+/**
+ * React component for displaying tree node editor.
+ * @public
  */
 export function TreeNodeEditor(props: TreeNodeEditorProps) {
   const onCommit = (args: PropertyUpdatedArgs) => {
