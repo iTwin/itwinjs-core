@@ -156,6 +156,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "openid email profile organization itwinjs",
     });
+    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);

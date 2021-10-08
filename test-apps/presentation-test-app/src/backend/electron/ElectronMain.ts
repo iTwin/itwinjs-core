@@ -26,6 +26,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
   });
+  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
   await ElectronHost.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__
