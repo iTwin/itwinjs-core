@@ -37,12 +37,18 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // for development dependencies only.
   // All security issues should be addressed asap.
   const excludedAdvisories = [
-    1700, // https://npmjs.com/advisories/1700
-    1754, // https://npmjs.com/advisories/1754. Waiting for fix, https://github.com/svg/svgo/pull/1485.
-    1755, // https://npmjs.com/advisories/1755. Waiting for fix, https://github.com/sindresorhus/normalize-url/issues/135
-    1779, // https://npmjs.com/advisories/1779. Waiting for fix in @bentley/react-scripts
-    1780, // https://npmjs.com/advisories/1780. Waiting for fix in @bentley/react-scripts
-    1781, // https://npmjs.com/advisories/1781. Waiting for fix in @bentley/react-scripts
+    "GHSA-8p5q-j9m2-g8wr", // https://github.com/advisories/GHSA-8p5q-j9m2-g8wr.
+    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6.
+    "GHSA-8v27-2fg9-7h62", // https://github.com/advisories/GHSA-8v27-2fg9-7h62.
+    "GHSA-33f9-j839-rf8h", // https://github.com/advisories/GHSA-33f9-j839-rf8h.
+    "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx.
+    "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr.
+    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9.
+    "GHSA-9r2w-394v-53qc", // https://github.com/advisories/GHSA-9r2w-394v-53qc.
+    "GHSA-5955-9wpr-37jh", // https://github.com/advisories/GHSA-5955-9wpr-37jh.
+    "GHSA-qq89-hq3f-393p", // https://github.com/advisories/GHSA-qq89-hq3f-393p.
+    "GHSA-cph5-m8f7-6c5x", // need to investigate updating azurite. https://github.com/advisories/GHSA-cph5-m8f7-6c5x.
+    "GHSA-w5p7-h5w8-2hfq", // Ignored, test app dependency. https://github.com/advisories/GHSA-w5p7-h5w8-2hfq.
   ];
 
   let shouldFailBuild = false;
@@ -57,10 +63,11 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (!excludedAdvisories.includes(advisory.id) && (severity === "HIGH" || severity === "CRITICAL")) {
+      if (!excludedAdvisories.includes(advisory.github_advisory_id) && (severity === "HIGH" || severity === "CRITICAL")) {
+        console.log(advisory.github_advisory_id);
         logBuildError(message);
         shouldFailBuild = true;
-      } else if (excludedAdvisories.includes(advisory.id) || severity === "MODERATE") // Only warn on MODERATE severity items
+      } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE") // Only warn on MODERATE severity items
         logBuildWarning(message);
     }
   }
