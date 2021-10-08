@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp, ElectronAppAuthorization, ElectronAppOpts } from "@itwin/core-electron/lib/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -46,6 +46,7 @@ import { SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { IModelAppOptions } from "../../../../core/frontend/lib/IModelApp";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -220,6 +221,7 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
+      // const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);

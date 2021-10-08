@@ -26,6 +26,7 @@ import { LoopbackWebServer } from "./LoopbackWebServer";
 import { AuthorizationClient, DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
 import { ipcMain } from "electron";
 import { electronIPCChannelName } from "../frontend/ElectronAuthorizationFrontend";
+import { ElectronHost } from "./ElectronHost";
 
 const loggerCategory = "electron-auth";
 
@@ -34,7 +35,7 @@ const loggerCategory = "electron-auth";
  * @beta
  */
 export class ElectronAuthorizationBackend implements AuthorizationClient {
-  protected _accessToken?: AccessToken;
+  protected _accessToken: AccessToken = "";
   public config?: NativeAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public issuerUrl?: string;
@@ -71,6 +72,15 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
       const accessToken = await this.getAccessToken();
       return accessToken;
     });
+  }
+
+  /**
+   * Notifies ElectronAppAuthorization that the access token has changed so it can raise
+   * an event for anything subscribed to its listener
+   */
+  private notifyFrontendAccessTokenChange(token: AccessToken): void {
+    const window = ElectronHost.mainWindow ?? ElectronHost.electron.BrowserWindow.getAllWindows()[0];
+    window?.webContents.send(`${electronIPCChannelName}.onAccessTokenChanged`, token);
   }
 
   /**
@@ -128,14 +138,15 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 
-  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public static readonly onUserStateChanged = new BeEvent<(token: AccessToken) => void>();
 
   public get redirectUri() { return this.config?.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri; }
 
-  public setAccessToken(token?: AccessToken) {
+  public setAccessToken(token: AccessToken) {
     if (token === this._accessToken)
       return;
     this._accessToken = token;
+    this.notifyFrontendAccessTokenChange(this._accessToken);
   }
 
   /**
@@ -174,15 +185,15 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
-  private async loadAccessToken(): Promise<AccessToken | undefined> {
+  private async loadAccessToken(): Promise<AccessToken> {
     const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
-      return undefined;
+      return "";
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
       Logger.logError(loggerCategory, `Error refreshing access token`, () => BentleyError.getErrorProps(err));
-      return undefined;
+      return "";
     }
   }
 
@@ -288,7 +299,7 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
   private async clearTokenResponse() {
     this._tokenResponse = undefined;
     await this.tokenStore.delete();
-    this.setAccessToken(undefined);
+    this.setAccessToken("");
   }
 
   private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
@@ -313,7 +324,7 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
   public async getAccessToken(): Promise<AccessToken> {
     if (this._hasExpired || !this._accessToken)
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken ?? "";
+    return this._accessToken;
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {
@@ -341,7 +352,14 @@ export class ElectronAuthorizationBackend implements AuthorizationClient {
     const tokenRequest = new TokenRequest(tokenRequestJson);
     const tokenRequestor = new NodeRequestor();
     const tokenHandler: TokenRequestHandler = new BaseTokenRequestHandler(tokenRequestor);
-    return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
+    try {
+      // eslint-disable-next-line @typescript-eslint/return-await
+      return tokenHandler.performTokenRequest(this._configuration, tokenRequest);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(err);
+      throw err;
+    }
   }
 
   private async makeRefreshAccessTokenRequest(refreshToken: string): Promise<TokenResponse> {

@@ -7,7 +7,7 @@
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient } from "@bentley/itwin-client";
-import { ipcRenderer } from "electron";
+// import { ipcRenderer } from "electron";
 
 export const electronIPCChannelName = "itwinjs.electron.auth"; // TODO: Come up with something better
 
@@ -26,6 +26,7 @@ export class ElectronAppAuthorization implements AuthorizationClient {
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
   }
+  private _ipcAuthAPI: any = (window as any).frontendElectronAuthApi;
 
   // TODO: Need some way of keeping the expiration time
 
@@ -37,16 +38,21 @@ export class ElectronAppAuthorization implements AuthorizationClient {
     this.onAccessTokenChanged.addListener((token: AccessToken) => {
       this._cachedToken = token;
     });
+    this._ipcAuthAPI.addAccessTokenChangeListener((_event: any, token: AccessToken) => {
+      this.onAccessTokenChanged.raiseEvent(token);
+    });
   }
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   public async signIn(): Promise<void> {
-    await ipcRenderer.invoke(`${electronIPCChannelName}.signIn`);
+    // await ipcRenderer.invoke(`${electronIPCChannelName}.signIn`);
+    await this._ipcAuthAPI.signIn();
   }
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
   public async signOut(): Promise<void> {
-    await ipcRenderer.invoke(`${electronIPCChannelName}.signOut`);
+    // await ipcRenderer.invoke(`${electronIPCChannelName}.signOut`);
+    await this._ipcAuthAPI.signOut();
   }
 
   /** Returns a promise that resolves to the AccessToken if signed in.
@@ -63,7 +69,13 @@ export class ElectronAppAuthorization implements AuthorizationClient {
       }
 
       this._refreshingToken = true;
-      this._cachedToken = await ipcRenderer.invoke(`${electronIPCChannelName}.getAccessToken`); // need to await and store this token properly
+      // this._cachedToken = await ipcRenderer.invoke(`${electronIPCChannelName}.getAccessToken`);
+      try{
+        this._cachedToken =  await this._ipcAuthAPI.getAccessToken() ?? "";
+      } catch (err){
+        // eslint-disable-next-line no-console
+        console.log("Had an error: ", err);
+      }
       this._refreshingToken = false;
     }
 

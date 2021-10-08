@@ -48,5 +48,24 @@ const frontendApi: ITwinElectronApi = {
   },
 };
 
+const electronIPCChannelName = "itwinjs.electron.auth";
+
+const frontendElectronAuthApi = {
+  async signIn() {
+    await ipcRenderer.invoke(`${electronIPCChannelName}.signIn`);
+  },
+  async signOut() {
+    await ipcRenderer.invoke(`${electronIPCChannelName}.signOut`);
+  },
+  async getAccessToken(): Promise<string> {
+    const token = await ipcRenderer.invoke(`${electronIPCChannelName}.getAccessToken`);
+    return token;
+  },
+  async addAccessTokenChangeListener(callback: any) {
+    ipcRenderer.on(`${electronIPCChannelName}.onAccessTokenChanged`, callback);
+  },
+};
+
 // this adds the frontendApi object under the name `window.itwinjs` in the frontend Electron process.
 contextBridge.exposeInMainWorld("itwinjs", frontendApi);
+contextBridge.exposeInMainWorld("frontendElectronAuthApi", frontendElectronAuthApi);

@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
@@ -151,6 +151,11 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup(opts);
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+      clientId: "imodeljs-electron-test",
+      redirectUri: "http://localhost:3000/signin-callback",
+      scope: "openid email profile organization itwinjs",
+    });
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);

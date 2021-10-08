@@ -5,9 +5,10 @@
 
 import { join } from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
+import { IModelHost } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 
@@ -31,6 +32,12 @@ export async function initializeElectron() {
   };
 
   await ElectronHost.startup(opt);
+  IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+  });
+  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts

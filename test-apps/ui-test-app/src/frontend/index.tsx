@@ -184,6 +184,8 @@ export class SampleAppIModelApp {
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      iModelAppOpts.authorizationClient = authClient;
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
