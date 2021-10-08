@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added AuthorizationClient",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

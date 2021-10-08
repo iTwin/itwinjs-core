@@ -463,7 +463,7 @@ export class Viewer extends Window {
     try {
       await this.resetIModel(filename);
       setTitle(this._imodel);
-    } catch (_) {
+    } catch {
       alert("Error - could not open file.");
     }
   }

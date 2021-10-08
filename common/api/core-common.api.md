@@ -321,6 +321,11 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export interface AuthorizationClient {
+    getAccessToken(): Promise<AccessToken>;
+}
+
 export { AuthStatus }
 
 // @public
