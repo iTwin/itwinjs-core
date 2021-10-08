@@ -213,6 +213,7 @@ import { ViewFlags } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateLoadProps } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
+import * as ws from 'ws';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
 import { YawPitchRollAngles } from '@itwin/core-geometry';
@@ -2873,12 +2874,20 @@ export class LinkPartition extends InformationPartitionElement {
 // @internal (undocumented)
 export class LocalhostIpcHost {
     // (undocumented)
+    static connect(connection: ws): void;
+    // (undocumented)
     static startup(opts?: {
-        localhostIpcHost?: {
-            socketPort?: number;
-        };
+        localhostIpcHost?: LocalhostIpcHostOpts;
         iModelHost?: IModelHostConfiguration;
     }): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface LocalhostIpcHostOpts {
+    // (undocumented)
+    noServer?: boolean;
+    // (undocumented)
+    socketPort?: number;
 }
 
 // @beta

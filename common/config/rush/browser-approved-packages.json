@@ -491,6 +491,10 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
+      "name": "express-ws",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "faker",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -956,7 +960,7 @@
     },
     {
       "name": "ws",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "xml-js",

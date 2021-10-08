@@ -189,6 +189,10 @@ export class DisplayTestApp {
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
+    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl.protocol = "ws";
+    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
+
     const opts = {
       iModelApp: {
         localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
@@ -213,7 +217,7 @@ export class DisplayTestApp {
         /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPort: 3002,
+        socketPath: socketUrl.toString(),
       },
     };
 
