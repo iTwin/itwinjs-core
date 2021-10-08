@@ -770,7 +770,7 @@
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"

@@ -604,7 +604,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
@@ -884,7 +884,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "edit", "tools" ]
+      "allowedCategories": [ "backend", "edit", "frontend", "tools" ]
     },
     {
       "name": "spdy",
