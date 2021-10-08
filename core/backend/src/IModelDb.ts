@@ -487,7 +487,7 @@ export abstract class IModelDb extends IModel {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.query(`select count(*) from (${ecsql})`, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }

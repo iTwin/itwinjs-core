@@ -31,7 +31,7 @@ describe("ECSql Query", () => {
     if (imodel5) await imodel5.close();
     await IModelApp.shutdown();
   });
-  it("Restart query", async () => {
+  it.skip("Restart query", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -57,7 +57,7 @@ describe("ECSql Query", () => {
     };
 
     const queries = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 100; i++) {
       queries.push(cb());
     }
     await Promise.all(queries);
