@@ -1,6 +1,6 @@
 {
   "name": "@itwin/oidc-signin-tool",
-  "version": "3.0.0-dev.79",
+  "version": "3.0.0-dev.80",
   "description": "OIDC Signin Helper",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
@@ -34,7 +34,6 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
@@ -44,6 +43,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",

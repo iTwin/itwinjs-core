@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { AuthorizationClient } from "@itwin/core-common";
 
-export class IModelHubUserMgr implements FrontendAuthorizationClient {
+export class IModelHubUserMgr implements AuthorizationClient {
   private _token: AccessToken = "";
 
   public constructor(private _userCredentials: any) {
