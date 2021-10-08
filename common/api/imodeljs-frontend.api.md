@@ -235,6 +235,11 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { ReadonlySortedArray } from '@bentley/bentleyjs-core';
+import { RealityData } from '@bentley/reality-data-client';
+import { RealityDataFormat } from '@bentley/imodeljs-common';
+import { RealityDataProvider } from '@bentley/imodeljs-common';
+import { RealityDataSourceKey } from '@bentley/imodeljs-common';
+import { RealityDataSourceProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { RemoveFunction } from '@bentley/imodeljs-common';
@@ -1930,6 +1935,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
+    readonly rdSourceKey: RealityDataSourceKey;
     get treeRef(): TileTreeReference;
     }
 
@@ -3368,7 +3374,9 @@ export enum FrontendLoggerCategory {
     MobileAuthorizationClient = "imodeljs-frontend.MobileAuthorizationClient",
     NativeApp = "imodeljs-frontend.NativeApp",
     // (undocumented)
-    Package = "imodeljs-frontend"
+    Package = "imodeljs-frontend",
+    // @alpha
+    RealityData = "imodeljs-frontend.RealityData"
 }
 
 // @public
@@ -6905,13 +6913,13 @@ export class OrbitGtTileTree extends TileTree {
 // @internal (undocumented)
 export namespace OrbitGtTileTree {
     // (undocumented)
-    export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
         modelId?: Id64String;
         // (undocumented)
-        orbitGtBlob: OrbitGtBlobProps;
+        orbitGtBlob?: OrbitGtBlobProps;
     }
 }
 
@@ -7488,6 +7496,19 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
+// @internal
+export interface RealityDataConnection {
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    readonly realityData: RealityData | undefined;
+    readonly realityDataType: string | undefined;
+    readonly source: RealityDataSource;
+}
+
+// @internal (undocumented)
+export namespace RealityDataConnection {
+    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+}
+
 // @public
 export interface RealityDataQueryCriteria {
     contextId: GuidString;
@@ -7495,12 +7516,36 @@ export interface RealityDataQueryCriteria {
     range?: CartographicRange;
 }
 
+// @alpha
+export class RealityDataSource {
+    protected constructor(props: RealityDataSourceProps);
+    // (undocumented)
+    static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    static fromProps(props: RealityDataSourceProps): RealityDataSource;
+    // (undocumented)
+    getAccessToken(): Promise<AccessToken | undefined>;
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // (undocumented)
+    get isContextShare(): boolean;
+    // (undocumented)
+    get iTwinId(): string | undefined;
+    // (undocumented)
+    readonly rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    get realityDataId(): string | undefined;
+    }
+
+// @alpha
+export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;
+
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, contextId?: string);
+    constructor(rdConnection: RealityDataConnection, contextId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
@@ -7522,7 +7567,7 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7577,6 +7622,8 @@ export namespace RealityModelTileTree {
         // (undocumented)
         planarClipMask?: PlanarClipMaskSettings;
         // (undocumented)
+        rdSourceKey: RealityDataSourceKey;
+        // (undocumented)
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
@@ -7588,7 +7635,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         requestAuthorization?: string;
         // (undocumented)
-        url: string;
+        url?: string;
     }
 }
 

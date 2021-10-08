@@ -1656,6 +1656,8 @@ export class ContextRealityModel {
     set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
     // (undocumented)
     protected readonly _props: ContextRealityModelProps;
+    // @alpha
+    readonly rdSourceKey?: RealityDataSourceKey;
     readonly realityDataId?: string;
     toJSON(): ContextRealityModelProps;
     readonly url: string;
@@ -1670,6 +1672,8 @@ export interface ContextRealityModelProps {
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
     planarClipMask?: PlanarClipMaskProps;
+    // @alpha
+    rdSourceKey?: RealityDataSourceKey;
     realityDataId?: string;
     tilesetUrl: string;
 }
@@ -6226,6 +6230,32 @@ export interface ReadableFormData extends Readable {
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
+
+// @alpha
+export enum RealityDataFormat {
+    OPC = "OPC",
+    ThreeDTile = "ThreeDTile"
+}
+
+// @alpha
+export enum RealityDataProvider {
+    CesiumIonAsset = "CesiumIonAsset",
+    ContextShare = "ContextShare",
+    TilesetUrl = "TilesetUrl"
+}
+
+// @alpha
+export interface RealityDataSourceKey {
+    format: string;
+    id: string;
+    iTwinId?: string;
+    provider: string;
+}
+
+// @alpha
+export interface RealityDataSourceProps {
+    sourceKey: RealityDataSourceKey;
+}
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
