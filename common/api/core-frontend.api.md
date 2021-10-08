@@ -6961,7 +6961,6 @@ export interface ParticleCollectionBuilderParams {
 
 // @public
 export interface ParticleProps extends XYAndZ {
-    // (undocumented)
     rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
