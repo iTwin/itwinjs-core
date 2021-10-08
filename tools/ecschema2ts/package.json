@@ -2,7 +2,7 @@
   "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.80",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -12,16 +12,17 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2ts"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema2ts",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "docs": "",
     "test": "mocha",
-    "cli:dev": "npm run clean & npm run build & npm link",
-    "cover": "nyc npm test"
+    "cli:dev": "npm run -s clean & npm run -s build & npm link",
+    "cover": "nyc npm -s test"
   },
   "keywords": [
     "Bentley",
@@ -57,12 +58,9 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@xmldom/xmldom": "^0.7.0",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",

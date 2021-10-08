@@ -54,7 +54,8 @@ export interface FrontstageProps extends CommonProps {
    * Version increase is required when widgets are added/removed.
    */
   version?: number;
-
+  /** if isIModelIndependent then frontstage is independent from any iModel. */
+  isIModelIndependent?: boolean;
   /** The Zone in the top-left corner.
    * @deprecated Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;
@@ -80,37 +81,27 @@ export interface FrontstageProps extends CommonProps {
    * @deprecated Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
-  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.
-   * @beta */
+  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition. */
   contentManipulationTools?: React.ReactElement<ZoneProps>;
-  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition.
-   * @beta */
+  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. */
   toolSettings?: React.ReactElement<ZoneProps>;
-  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.
-   * @beta */
+  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition */
   viewNavigationTools?: React.ReactElement<ZoneProps>;
-  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.
-   * @beta */
+  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition. */
   statusBar?: React.ReactElement<ZoneProps>;
 
-  /** The StagePanel on the top of the 9-zone area.
-   * @beta */
+  /** The StagePanel on the top of the AppUi container. */
   topPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very top across the full width.
-   * @beta
    * @deprecated Only topPanel is supported in UI 2.0 */
   topMostPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the left.
-   * @beta  */
+  /** The StagePanel on the left.  */
   leftPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the right.
-   * @beta  */
+  /** The StagePanel on the right.  */
   rightPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the bottom of the 9-zone area.
-   * @beta  */
+  /** The StagePanel on the bottom of the AppUi container.  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
   /** The StagePanel on the very bottom across the full width.
-   * @beta
    * @deprecated Only bottomPanel is supported in UI 2.0  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
@@ -651,7 +642,7 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
 };
 
 /** Hook that returns active frontstage id.
- * @beta
+ * @public
  */
 export const useActiveFrontstageId = () => {
   const def = useActiveFrontstageDef();

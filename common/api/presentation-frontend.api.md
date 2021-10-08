@@ -25,7 +25,6 @@ import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentatio
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
-import { I18N } from '@itwin/core-i18n';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -36,6 +35,7 @@ import { Key } from '@itwin/presentation-common';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
+import { Localization } from '@itwin/core-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
@@ -60,17 +60,17 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
         localStorage?: Storage;
     });
     // (undocumented)
-    createFavoritesSettingItemKey(projectId?: string, imodelId?: string): string;
+    createFavoritesSettingItemKey(iTwinId?: string, imodelId?: string): string;
     // (undocumented)
-    createOrderSettingItemKey(projectId?: string, imodelId?: string): string;
+    createOrderSettingItemKey(iTwinId?: string, imodelId?: string): string;
     // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     // (undocumented)
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
     // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -136,7 +136,7 @@ export enum FavoritePropertiesScope {
     // (undocumented)
     IModel = 2,
     // (undocumented)
-    Project = 1
+    ITwin = 1
 }
 
 // @internal (undocumented)
@@ -172,22 +172,22 @@ export interface HiliteSetProviderProps {
 
 // @public
 export interface IFavoritePropertiesStorage {
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     // (undocumented)
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
     // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @alpha
@@ -221,13 +221,13 @@ export interface NodeIdentifier {
 // @internal (undocumented)
 export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
-    loadProperties(_projectId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     // (undocumented)
-    loadPropertiesOrder(_projectId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     // (undocumented)
-    saveProperties(_properties: Set<PropertyFullName>, _projectId?: string, _imodelId?: string): Promise<void>;
+    saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string): Promise<void>;
     // (undocumented)
-    savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _projectId: string | undefined, _imodelId: string): Promise<void>;
+    savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -238,13 +238,13 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     // (undocumented)
     get impl(): IFavoritePropertiesStorage;
     // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<string> | undefined>;
+    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<string> | undefined>;
     // (undocumented)
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
     // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -258,8 +258,8 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
 // @public
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
-    static get i18n(): I18N;
     static initialize(props?: PresentationProps): Promise<void>;
+    static get localization(): Localization;
     static get presentation(): PresentationManager;
     // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
@@ -267,7 +267,7 @@ export class Presentation {
     // @internal (undocumented)
     static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
     // @internal (undocumented)
-    static setI18nManager(value: I18N): void;
+    static setLocalization(value: Localization): void;
     // @internal (undocumented)
     static setPresentationManager(value: PresentationManager): void;
     // @internal (undocumented)

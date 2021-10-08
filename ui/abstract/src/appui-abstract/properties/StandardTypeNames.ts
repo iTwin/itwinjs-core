@@ -10,7 +10,7 @@
 
 /**
  * Standard Type Names for converters and editors.
- * @beta
+ * @public
  */
 export enum StandardTypeNames {
   Text = "text",

@@ -1959,7 +1959,6 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
     constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
-    // (undocumented)
     compareByName(rhs: SchemaKey | string | undefined): boolean;
     compareByVersion(rhs: SchemaKey): number;
     static fromJSON(props: SchemaKeyProps): SchemaKey;

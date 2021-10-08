@@ -6,17 +6,18 @@
   "description": "Converter to import IModelJson files into bim files.",
   "main": "./lib/main.js",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "test": "",
     "cover": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "blint": "npm run build && npm run lint",
+    "blint": "npm run -s build && npm run -s lint",
     "main1": "node lib/main.js",
     "byDirectory": "node lib/byDirectory.js --input=CurveFactory --output=abc",
-    "test1": "npm run test1:unit ",
+    "test1": "npm run -s test1:unit ",
     "test1:unit": "mocha --config ./test/unit/.mocharc.json \"test/unit/**/*.test.ts*\""
   },
   "author": {

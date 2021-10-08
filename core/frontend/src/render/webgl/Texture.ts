@@ -16,6 +16,7 @@ import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
+import { TextureOwnership } from "../RenderTexture";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -133,17 +134,31 @@ interface TextureImageProperties {
   anisotropicFilter: TextureAnisotropicFilter;
 }
 
+/** @internal */
+export interface TextureParams {
+  type: RenderTexture.Type;
+  ownership?: TextureOwnership;
+  // ###TODO transparency: TextureTransparency;
+  handle: TextureHandle;
+}
+
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
 export class Texture extends RenderTexture implements WebGLDisposable {
   public readonly texture: TextureHandle;
+  public readonly ownership?: TextureOwnership;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
+  public get hasOwner(): boolean { return undefined !== this.ownership; }
+  public get key(): string | undefined {
+    return typeof this.ownership !== "string" && typeof this.ownership?.key === "string" ? this.ownership.key : undefined;
+  }
 
-  public constructor(params: RenderTexture.Params, texture: TextureHandle) {
-    super(params);
-    this.texture = texture;
+  public constructor(params: TextureParams) {
+    super(params.type);
+    this.ownership = params.ownership;
+    this.texture = params.handle;
   }
 
   public get isDisposed(): boolean { return this.texture.isDisposed; }

@@ -6,7 +6,7 @@ import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@itwi
 import { SampleAppIModelApp } from "../index";
 import { IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 
 // cSpell:ignore TESTAPP FILEPATH
 
@@ -17,7 +17,7 @@ export class LocalFileSupport {
       return true;
 
     if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath) {
-      alert("IMJS_TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
+      alert("IMJS_UITESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
+import { ServiceAuthorizationClient, ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 import { AccessToken, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
 
@@ -14,18 +14,18 @@ if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
 if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
   throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
 
-const clientConfig: BackendAuthorizationClientConfiguration = {
+const clientConfig: ServiceAuthorizationClientConfiguration = {
   clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
   clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
   scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
 };
 
-const authorizationClient = new AgentAuthorizationClient(clientConfig);
+const authorizationClient = new ServiceAuthorizationClient(clientConfig);
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: GuidString = Guid.createValue();
 
 // __PUBLISH_EXTRACT_START__ EventHandler.createListener.authenticate.example-code
-async function authenticate(): Promise<AccessToken | undefined> {
+async function authenticate(): Promise<AccessToken> {
   return authorizationClient.getAccessToken();
 }
 // __PUBLISH_EXTRACT_END__

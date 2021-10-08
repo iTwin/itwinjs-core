@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
-import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/webgl";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
+import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "./TestUtility";
 
 describe("external texture requests (#integration)", () => {
@@ -35,12 +35,11 @@ describe("external texture requests (#integration)", () => {
   let totalLoadTextureCalls = 0;
 
   before(async () => {
-    await IModelApp.startup();
-    IModelApp.authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
-    IModelHubFrontend.setIModelClient(TestUtility.imodelCloudEnv.imodelClient);
-
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.smallTex);
+    await IModelApp.shutdown();
+    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
+    const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });
 

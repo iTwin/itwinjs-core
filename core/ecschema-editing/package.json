@@ -1,26 +1,27 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.80",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
-  "main": "lib/ecschema-editing.js",
-  "typings": "lib/ecschema-editing",
+  "main": "lib/cjs/ecschema-editing.js",
+  "typings": "lib/cjs/ecschema-editing",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-editing"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run createLocalization && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s createLocalization && npm run -s copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-editing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
-    "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs",
-    "createLocalization": "node ./scripts/createLocalization.js"
+    "cover": "nyc npm -s test",
+    "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs",
+    "createLocalization": "node ./scripts/createLocalization.js && cpx \"./public/locales/**/*\" ./lib/public"
   },
   "keywords": [
     "Bentley",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
@@ -43,7 +45,6 @@
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
-    "@types/i18next-node-fs-backend": "^2.1.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
@@ -62,9 +63,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.71",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.80"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

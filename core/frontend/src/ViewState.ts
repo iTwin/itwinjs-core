@@ -735,7 +735,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
     return status;
   }
 
@@ -2145,7 +2145,6 @@ export abstract class ViewState3d extends ViewState {
    * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
    * @public
    */
-
   public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;

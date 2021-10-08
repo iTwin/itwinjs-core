@@ -36,14 +36,14 @@ export class RpcBriefcaseUtility {
 
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
-    const user = activity.accessToken;
+    const accessToken = activity.accessToken;
     const iModelId = tokenProps.iModelId!;
     let myBriefcaseIds: number[];
     if (args.syncMode === SyncMode.PullOnly) {
       myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
-      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ user, iModelId });
+      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
     }
 
     const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
@@ -63,14 +63,14 @@ export class RpcBriefcaseUtility {
               const db = await BriefcaseDb.open({ fileName });
               if (db.changeset.id !== tokenProps.changeset?.id) {
                 const toIndex = tokenProps.changeset?.index ??
-                  (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset!.id) })).index;
-                await BriefcaseManager.pullAndApplyChangesets(db, { user, toIndex });
+                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset!.id) })).index;
+                await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
               }
               return db;
             } catch (error: any) {
               if (!(error.errorNumber === IModelStatus.AlreadyOpen))
                 // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-                await BriefcaseManager.deleteBriefcaseFiles(fileName, user);
+                await BriefcaseManager.deleteBriefcaseFiles(fileName, accessToken);
             }
           }
         }
@@ -79,7 +79,7 @@ export class RpcBriefcaseUtility {
 
     // no local briefcase available. Download one and open it.
     const request: RequestNewBriefcaseArg = {
-      user,
+      accessToken,
       iTwinId: tokenProps.iTwinId!,
       iModelId,
       briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
@@ -112,7 +112,8 @@ export class RpcBriefcaseUtility {
     if (undefined === iModelDb)
       throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
 
-    await iModelDb.reattachDaemon(accessToken); // just in case this is a V2 checkpoint whose accessToken is about to expire.
+    // call reattach, just in case this is a V2 checkpoint whose accessToken is about to expire.
+    await iModelDb.reattachDaemon(accessToken);
     return iModelDb;
   }
 
@@ -140,7 +141,7 @@ export class RpcBriefcaseUtility {
       iModelId: tokenProps.iModelId!,
       iTwinId: tokenProps.iTwinId!,
       changeset: tokenProps.changeset!,
-      user: activity.accessToken,
+      accessToken: activity.accessToken,
     };
 
     // opening a checkpoint, readonly.

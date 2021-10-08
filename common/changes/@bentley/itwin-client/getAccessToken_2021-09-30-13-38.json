@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "getAccessToken always returns a token",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client"
+}

@@ -16,7 +16,7 @@ import { DefaultDialogGridContainer } from "../uiprovider/DefaultDialogGridConta
 import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
 
 /** Props for [[UiDataProvidedDialog]] component.
- * @beta
+ * @public
  */
 export interface UiDataProvidedDialogProps {
   /** Dialog title */
@@ -46,7 +46,7 @@ export interface UiDataProvidedDialogProps {
 }
 
 /** Component to show dialog populated from properties supplied via uiDataProvider
- * @beta
+ * @public
  */
 export function UiDataProvidedDialog({ uiDataProvider, id, isModal, ...dialogProps }: UiDataProvidedDialogProps) {
   const dialogId = React.useRef(id ? id : getUniqueId());

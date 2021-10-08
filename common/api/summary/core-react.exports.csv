@@ -1,13 +1,13 @@
 sep=;
 Release Tag;API Item
-beta;ActivateSettingsTabEvent 
-beta;ActivateSettingsTabEventArgs
+public;ActivateSettingsTabEvent 
+public;ActivateSettingsTabEventArgs
 internal;AnnularSector
 internal;Annulus
-beta;AsyncGetAutoSuggestDataFunc = (value: string) => Promise
-beta;AutoSuggest 
-beta;AutoSuggestData
-beta;AutoSuggestProps 
+public;AsyncGetAutoSuggestDataFunc = (value: string) => Promise
+public;AutoSuggest 
+public;AutoSuggestData
+public;AutoSuggestProps 
 internal;Badge 
 internal;BadgeProps 
 internal;BadgeUtilities
@@ -79,12 +79,12 @@ public;ExpansionToggle
 public;ExpansionToggleProps 
 beta;FeaturedTile(props: TileProps): JSX.Element
 deprecated;FeaturedTile(props: TileProps): JSX.Element
-beta;Field 
-beta;FieldDef
-beta;FieldDefinitions
-beta;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
-beta;FieldProps 
-beta;FieldValues
+public;Field 
+public;FieldDef
+public;FieldDefinitions
+public;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
+public;FieldProps 
+public;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
 alpha;FilteredText(props: FilteredTextProps): JSX.Element
 alpha;FilteredTextProps 
@@ -93,13 +93,13 @@ public;FlexWrapContainer(props: CommonDivProps): JSX.Element
 internal;focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject
 internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
 internal;FocusTrapProps 
-beta;Form 
-beta;FormContext: React.Context
-beta;FormContextState 
-beta;FormProps
+public;Form 
+public;FormContext: React.Context
+public;FormContextState 
+public;FormProps
 public;Gap(props: GapProps): JSX.Element
 public;GapProps 
-beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
+public;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
 internal;getButtonTypeClassName(buttonType?: ButtonType): string
 public;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
@@ -154,7 +154,9 @@ deprecated;LabeledTextarea(props: LabeledTextareaProps): JSX.Element
 public;LabeledTextareaProps 
 deprecated;LabeledTextareaProps 
 beta;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
+deprecated;LabeledThemedSelect(props: LabeledThemedSelectProps): JSX.Element
 beta;LabeledThemedSelectProps 
+deprecated;LabeledThemedSelectProps 
 public;LabeledToggle 
 deprecated;LabeledToggle 
 public;LabeledToggleProps 
@@ -189,8 +191,8 @@ public;MessageBoxProps
 public;MessageContainer 
 public;MessageContainerProps 
 public;MessagedComponentProps
-beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
-beta;MessageRendererProps 
+public;MessageRenderer(props: MessageRendererProps): JSX.Element | null
+public;MessageRendererProps 
 public;MessageSeverity
 deprecated;MessageSeverity
 public;MessageType = string | HTMLElement | ReactMessage
@@ -201,15 +203,17 @@ deprecated;MinimalTile(props: TileProps): JSX.Element
 public;MutedText(props: TextProps): JSX.Element
 internal;NewBadge(props: CommonProps): JSX.Element
 public;NoChildrenProps
-beta;NodeCheckboxProps
-beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
-beta;NodeCheckboxRenderProps = Omit
-beta;NumberInput: (props: NumberInputProps) => JSX.Element | null
-beta;NumberInputProps 
+public;NodeCheckboxProps
+public;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
+public;NodeCheckboxRenderProps = Omit
+public;NumberInput: (props: NumberInputProps) => JSX.Element | null
+public;NumberInputProps 
 public;Omit
 public;OmitChildrenProp
 beta;OptionsType = Array
+deprecated;OptionsType = Array
 beta;OptionType
+deprecated;OptionType
 public;Orientation
 public;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
 internal;percentInRange(percent: number): number
@@ -218,13 +222,13 @@ internal;Point
 public;PointProps
 deprecated;PointProps
 public;Popup 
-beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
-beta;PopupContextMenuProps 
+public;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
+public;PopupContextMenuProps 
 public;PopupProps 
-beta;ProcessSettingsContainerCloseEvent 
-beta;ProcessSettingsContainerCloseEventArgs
-beta;ProcessSettingsTabActivationEvent 
-beta;ProcessSettingsTabActivationEventArgs
+public;ProcessSettingsContainerCloseEvent 
+public;ProcessSettingsContainerCloseEventArgs
+public;ProcessSettingsTabActivationEvent 
+public;ProcessSettingsTabActivationEventArgs
 beta;ProgressBar(props: ProgressBarProps): JSX.Element
 deprecated;ProgressBar(props: ProgressBarProps): JSX.Element
 beta;ProgressBarProps 
@@ -234,10 +238,10 @@ deprecated;ProgressSpinner(props: ProgressSpinnerProps): JSX.Element
 beta;ProgressSpinnerProps 
 deprecated;ProgressSpinnerProps 
 internal;PROXIMITY_THRESHOLD_DEFAULT = 100
-beta;RadialButton 
-beta;RadialButtonProps 
-beta;RadialMenu 
-beta;RadialMenuProps 
+public;RadialButton 
+public;RadialButtonProps 
+public;RadialMenu 
+public;RadialMenuProps 
 public;RadialSizeType = ProgressRadialProps["size"]
 public;Radio 
 deprecated;Radio 
@@ -251,7 +255,7 @@ public;RenderPropsArgs
 public;ResizableContainerObserver({ onResize, children }:
 internal;ResizeObserver: ResizeObserverType
 internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
-beta;ScrollPositionMaintainer 
+public;ScrollPositionMaintainer 
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 
@@ -264,13 +268,13 @@ deprecated;SelectProps
 public;SessionSettingsStorage 
 beta;SessionUiSettings 
 deprecated;SessionUiSettings 
-beta;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
-beta;SettingsContainerProps
-beta;SettingsManager
-beta;SettingsProvidersChangedEvent 
-beta;SettingsProvidersChangedEventArgs
-beta;SettingsTabEntry
-beta;SettingsTabsProvider
+public;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
+public;SettingsContainerProps
+public;SettingsManager
+public;SettingsProvidersChangedEvent 
+public;SettingsProvidersChangedEventArgs
+public;SettingsTabEntry
+public;SettingsTabsProvider
 internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
@@ -291,7 +295,7 @@ deprecated;SplitButton
 internal;SplitButtonActionType
 public;SplitButtonProps 
 deprecated;SplitButtonProps 
-beta;StepFunctionProp = number | ((direction: string) => number | undefined)
+public;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StyledText(props: StyledTextProps): JSX.Element
 public;StyledTextProps 
 public;Subheading(props: TextProps): JSX.Element
@@ -302,7 +306,7 @@ public;SvgPath
 public;SvgPathProps 
 public;SvgSprite 
 public;SvgSpriteProps 
-beta;TabLabel
+public;TabLabel
 public;Tabs 
 public;TabsProps 
 public;Textarea: (props: TextareaProps) => JSX.Element | null
@@ -311,7 +315,9 @@ public;TextareaProps
 deprecated;TextareaProps 
 public;TextProps 
 beta;ThemedSelect(props: ThemedSelectProps): JSX.Element
+deprecated;ThemedSelect(props: ThemedSelectProps): JSX.Element
 beta;ThemedSelectProps =
+deprecated;ThemedSelectProps =
 beta;Tile 
 deprecated;Tile 
 internal;TileDefaultProps = Pick
@@ -366,8 +372,8 @@ internal;useRefEffect
 internal;useRefs
 internal;useRefState
 internal;useResizeObserver
-beta;useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void
-beta;useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void
+public;useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void
+public;useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void
 internal;useTargeted: (ref: React.RefObject
 internal;useWidgetOpacityContext(): WidgetOpacityContextProps
 public;VerticalAlignment

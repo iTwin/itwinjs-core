@@ -4,19 +4,34 @@ This article discusses RPC communication in iTwin.js. See also [RPC vs IPC](./Rp
 
 Table of Contents:
 
-- [Overview](#overview)
-- Implementing RpcInterfaces
-  - [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
-  - [RpcInterface Performance](#rpcinterface-performance)
-  - [Define the Interface](#define-the-interface)
-  - [Client Stub](#client-stub)
-  - [Server Implementation](#server-implementation)
-- Configuring RpcInterfaces
+- [RpcInterface](#rpcinterface)
+  - [Overview](#overview)
+  - [Implementing an RpcInterface](#implementing-an-rpcinterface)
+    - [RpcInterfaces are TypeScript Classes](#rpcinterfaces-are-typescript-classes)
+    - [Parameter and Return Types](#parameter-and-return-types)
+    - [RpcInterface Performance](#rpcinterface-performance)
+    - [Define the Interface](#define-the-interface)
+    - [Client Stub](#client-stub)
+    - [Server Implementation](#server-implementation)
+    - [RPC Configuration](#rpc-configuration)
+    - [Web RPC configuration](#web-rpc-configuration)
+    - [Desktop RPC configuration](#desktop-rpc-configuration)
+    - [In-process RPC configuration](#in-process-rpc-configuration)
   - [Server-side Configuration](#server-side-configuration)
-  - [Client-side Configuration](#client-side-configuration)
-- [Serve the Interfaces](#serve-the-interfaces)
-- [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
-- [Logging and ActivityIds](#logging-and-activityids)
+    - [Register Impls](#register-impls)
+    - [Choose Interfaces](#choose-interfaces)
+  - [Configure Interfaces](#configure-interfaces)
+    - [Serve the Interfaces](#serve-the-interfaces)
+    - [Client-side Configuration](#client-side-configuration)
+    - [Desktop Configuration](#desktop-configuration)
+    - [Web Configuration](#web-configuration)
+      - [Same Server](#same-server)
+      - [Different Servers](#different-servers)
+  - [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
+  - [Logging and ActivityIds](#logging-and-activityids)
+  - [RpcInterface Versioning](#rpcinterface-versioning)
+  - [Non-Zero Major Versions (released)](#non-zero-major-versions-released)
+  - [Zero Major Versions (prerelease)](#zero-major-versions-prerelease)
 
 ## Overview
 
@@ -151,7 +166,7 @@ A server must expose the RpcInterfaces that it implements or imports, so that cl
 
 ### Register Impls
 
-The server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
+The backend code must call `RpcManager.registerImpl` to register the classes for the interfaces that it implements, if any.
 
 *Example:*
 

@@ -29,7 +29,7 @@ interface TextEditorState {
 }
 
 /** TextEditor React component that is a property editor with text input
- * @beta
+ * @public
  */
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _isMounted = false;

@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 describe("BriefcaseTxns", () => {
@@ -24,7 +24,7 @@ describe("BriefcaseTxns", () => {
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 

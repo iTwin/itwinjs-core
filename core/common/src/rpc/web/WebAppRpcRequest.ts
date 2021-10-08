@@ -19,11 +19,11 @@ import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 import { SerializedRpcActivity } from "../core/RpcInvocation";
 
-/** @public */
+/** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
 
 /** A web application RPC request.
- * @public
+ * @internal
  */
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;

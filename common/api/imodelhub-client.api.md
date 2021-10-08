@@ -5,17 +5,22 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
+import { BriefcaseId } from '@itwin/core-common';
 import { CancelRequest } from '@bentley/itwin-client';
+import { ChangesetId } from '@itwin/core-common';
 import { Client } from '@bentley/itwin-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
+import { FrontendHubAccess } from '@itwin/core-frontend';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { HttpStatus } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelHubStatus } from '@itwin/core-bentley';
-import { ITwin } from '@bentley/context-registry-client';
+import { IModelIdArg } from '@itwin/core-frontend';
+import { IModelVersion } from '@itwin/core-common';
+import { ITwin } from '@bentley/itwin-registry-client';
 import { LogFunction } from '@itwin/core-bentley';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
@@ -130,6 +135,12 @@ export class BriefcaseHandler {
     download(accessToken: AccessToken, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     get(accessToken: AccessToken, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
     update(accessToken: AccessToken, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase>;
+}
+
+// @internal (undocumented)
+export interface BriefcaseIdArg extends IModelIdArg {
+    // (undocumented)
+    readonly briefcaseId: BriefcaseId;
 }
 
 // @internal
@@ -455,12 +466,6 @@ export function constructorFromEventType(type: IModelHubEventType): EventConstru
 export type ConstructorType = new () => any;
 
 // @internal
-export interface ContextManagerClient {
-    // (undocumented)
-    getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
-}
-
-// @internal
 export class DefaultCodeUpdateOptionsProvider {
     constructor();
     assignOptions(options: CodeUpdateOptions): Promise<void>;
@@ -673,14 +678,14 @@ export class IModelBankClient extends IModelClient {
 }
 
 // @internal (undocumented)
-export class IModelBankFileSystemContextClient implements ContextManagerClient {
+export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     constructor(baseUri: string);
     // (undocumented)
     baseUri: string;
     // (undocumented)
-    createContext(accessToken: AccessToken, name: string): Promise<void>;
+    createITwin(accessToken: AccessToken, name: string): Promise<void>;
     // (undocumented)
-    deleteContext(accessToken: AccessToken, contextId: string): Promise<void>;
+    deleteITwin(accessToken: AccessToken, iTwinId: string): Promise<void>;
     // (undocumented)
     getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
     }
@@ -704,7 +709,7 @@ export class IModelBaseHandler extends WsgClient {
     // (undocumented)
     protected _fileHandler: FileHandler | undefined;
     // (undocumented)
-    formatContextIdForUrl(contextId: string): string;
+    formatITwinIdForUrl(iTwinId: string): string;
     getAgent(): any;
     getCustomRequestOptions(): CustomRequestOptions;
     // (undocumented)
@@ -750,13 +755,13 @@ export abstract class IModelClient {
 // @internal
 export interface IModelCloudEnvironment {
     // (undocumented)
-    readonly contextMgr: ContextManagerClient;
-    // (undocumented)
     getAuthorizationClient(userCredentials: any): AuthorizationClient;
     // (undocumented)
     readonly imodelClient: IModelClient;
     // (undocumented)
     readonly isIModelHub: boolean;
+    // (undocumented)
+    readonly iTwinMgr: ITwinManagerClient;
     // (undocumented)
     shutdown(): Promise<number>;
     // (undocumented)
@@ -784,7 +789,7 @@ export class IModelDeletedEvent extends IModelHubEvent {
 }
 
 // @internal (undocumented)
-export interface IModelFileSystemContextProps {
+export interface IModelFileSystemITwinProps {
     // (undocumented)
     description: string;
     // (undocumented)
@@ -796,12 +801,12 @@ export interface IModelFileSystemContextProps {
 // @internal
 export class IModelHandler {
     constructor(handler: IModelsHandler);
-    create(accessToken: AccessToken, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
-    delete(accessToken: AccessToken, contextId: string): Promise<void>;
-    download(accessToken: AccessToken, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void>;
-    get(accessToken: AccessToken, contextId: string): Promise<HubIModel>;
-    getInitializationState(accessToken: AccessToken, contextId: string): Promise<InitializationState>;
-    update(accessToken: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel>;
+    create(accessToken: AccessToken, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
+    delete(accessToken: AccessToken, iTwinId: string): Promise<void>;
+    download(accessToken: AccessToken, iTwinId: string, path: string, progressCallback?: ProgressCallback): Promise<void>;
+    get(accessToken: AccessToken, iTwinId: string): Promise<HubIModel>;
+    getInitializationState(accessToken: AccessToken, iTwinId: string): Promise<InitializationState>;
+    update(accessToken: AccessToken, iTwinId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
 // @internal
@@ -870,11 +875,42 @@ export enum IModelHubEventType {
 }
 
 // @internal
+export class IModelHubFrontend implements FrontendHubAccess {
+    // (undocumented)
+    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
+        versionName: string;
+    }): Promise<ChangesetId>;
+    // (undocumented)
+    getChangesetIdFromVersion(arg: IModelIdArg & {
+        version: IModelVersion;
+    }): Promise<ChangesetId>;
+    // (undocumented)
+    getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
+    // (undocumented)
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    // (undocumented)
+    readonly hubClient: IModelHubClient;
+    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    // (undocumented)
+    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+}
+
+// @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
-    contextId?: string;
     fromJson(obj: any): void;
     iModelId?: GuidString;
+    iTwinId?: string;
     projectId?: string;
+}
+
+// @internal (undocumented)
+export interface IModelNameArg {
+    // (undocumented)
+    readonly accessToken: AccessToken;
+    // (undocumented)
+    readonly iModelName: string;
+    // (undocumented)
+    readonly iTwinId: GuidString;
 }
 
 // @internal
@@ -895,12 +931,12 @@ export class IModelQuery extends InstanceIdQuery {
 // @internal
 export class IModelsHandler {
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    create(accessToken: AccessToken, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
-    delete(accessToken: AccessToken, contextId: string, iModelId: GuidString): Promise<void>;
+    create(accessToken: AccessToken, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
+    delete(accessToken: AccessToken, iTwinId: string, iModelId: GuidString): Promise<void>;
     download(accessToken: AccessToken, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void>;
-    get(accessToken: AccessToken, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
+    get(accessToken: AccessToken, iTwinId: string, query?: IModelQuery): Promise<HubIModel[]>;
     getInitializationState(accessToken: AccessToken, iModelId: GuidString): Promise<InitializationState>;
-    update(accessToken: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel>;
+    update(accessToken: AccessToken, iTwinId: string, imodel: HubIModel): Promise<HubIModel>;
     }
 
 // @public
@@ -926,6 +962,12 @@ export class InstanceIdQuery extends WsgQuery {
     // (undocumented)
     protected _byId?: GuidString;
     getId(): string | undefined;
+}
+
+// @internal
+export interface ITwinManagerClient {
+    // (undocumented)
+    getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
 }
 
 // @internal
@@ -1111,7 +1153,7 @@ export type ThumbnailSize = "Small" | "Large";
 
 // @public
 export interface TipThumbnail {
-    contextId: string;
+    iTwinId: string;
     size: ThumbnailSize;
 }
 

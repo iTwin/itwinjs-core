@@ -229,7 +229,7 @@ export class MapLayerSources {
       try {
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
       }
     }
 

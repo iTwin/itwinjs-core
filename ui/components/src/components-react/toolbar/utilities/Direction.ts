@@ -7,7 +7,7 @@
  */
 
 /** Available directions.
- * @beta
+ * @public
  */
 export enum Direction {
   Left = 1,

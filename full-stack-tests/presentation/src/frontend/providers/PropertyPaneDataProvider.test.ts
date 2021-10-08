@@ -8,8 +8,7 @@ import { using } from "@itwin/core-bentley";
 import { ModelProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, RuleTypes } from "@itwin/presentation-common";
-import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 import { PropertyCategory } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
@@ -168,7 +167,11 @@ describe("PropertyDataProvider", async () => {
 
     // re-initialize
     Presentation.terminate();
-    await Presentation.initialize();
+    await Presentation.initialize({
+      presentation: {
+        activeLocale: "en-pseudo",
+      },
+    });
 
     // repeat request
     await checkDataProvider();

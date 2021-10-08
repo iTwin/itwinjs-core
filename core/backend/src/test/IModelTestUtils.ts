@@ -157,7 +157,7 @@ export class IModelTestUtils {
 
   /** get an AuthorizedClientRequestContext for a [[TestUserType]].
      * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
-     * but with different credentials. This can be useful for simulating more than one user of the same type on the same project.
+     * but with different credentials. This can be useful for simulating more than one user of the same type on the same iTwin.
      * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
      */
   public static async getAccessToken(user: TestUserType): Promise<AccessToken> {
@@ -190,8 +190,8 @@ export class IModelTestUtils {
     return BriefcaseDb.open({ fileName: props.fileName });
   }
 
-  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { user: AccessToken, deleteFirst?: boolean }): Promise<BriefcaseDb> {
+  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
+  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { accessToken: AccessToken, deleteFirst?: boolean }): Promise<BriefcaseDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -199,9 +199,9 @@ export class IModelTestUtils {
       tokenProps: {
         iTwinId: args.iTwinId,
         iModelId: args.iModelId,
-        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
       },
-      activity: { accessToken: args.user, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
+      activity: { accessToken: args.accessToken, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
       forceDownload: args.deleteFirst,
     };
@@ -218,33 +218,33 @@ export class IModelTestUtils {
   }
 
   /** Downloads and opens a v1 checkpoint */
-  public static async downloadAndOpenCheckpoint(args: { user: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
+  public static async downloadAndOpenCheckpoint(args: { accessToken: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
     const checkpoint: CheckpointProps = {
       iTwinId: args.iTwinId,
       iModelId: args.iModelId,
-      user: args.user,
-      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+      accessToken: args.accessToken,
+      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
   }
 
-  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { user: AccessToken, deleteFirst?: boolean }): Promise<SnapshotDb> {
+  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
+  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { accessToken: AccessToken, deleteFirst?: boolean }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
+    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
         iTwinId: args.iTwinId,
         iModelId: args.iModelId,
         changeset,
       },
-      activity: { accessToken: args.user, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
+      activity: { accessToken: args.accessToken, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
       syncMode: SyncMode.FixedVersion,
       forceDownload: args.deleteFirst,
     };
@@ -259,12 +259,12 @@ export class IModelTestUtils {
     }
   }
 
-  public static async closeAndDeleteBriefcaseDb(user: AccessToken, briefcaseDb: IModelDb) {
+  public static async closeAndDeleteBriefcaseDb(accessToken: AccessToken, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
     const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
 
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, user);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, accessToken);
 
     // try to clean up empty briefcase directories, and empty iModel directories.
     if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {

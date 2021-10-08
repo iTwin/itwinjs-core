@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
 export interface BrowserFileSelector {

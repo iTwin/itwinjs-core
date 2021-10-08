@@ -10,7 +10,7 @@ import * as React from "react";
 import { CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager } from "@itwin/appui-abstract";
 
 /** Hook that returns items from [[StatusBarItemsManager]].
- * @beta
+ * @public
  */
 export const useDefaultStatusBarItems = (manager: StatusBarItemsManager): readonly CommonStatusBarItem[] => {
   const [items, setItems] = React.useState(manager.items);

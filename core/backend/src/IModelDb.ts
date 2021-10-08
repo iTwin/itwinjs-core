@@ -281,7 +281,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_user: AccessToken): Promise<void> { }
+  public async reattachDaemon(_accessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -310,6 +310,7 @@ export abstract class IModelDb extends IModel {
 
     db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
     db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
+
     db.onProjectExtentsChanged.addListener(() => IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON()));
     db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
     db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
@@ -1835,7 +1836,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
           viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
-        } catch (_) {
+        } catch {
           //
         }
 
@@ -1850,7 +1851,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
               drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
             };
           }
-        } catch (_) {
+        } catch {
           //
         }
       }
@@ -1989,12 +1990,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 }
 
 /**
- * Argument to a function that can accept an authenticated user.
+ * Argument to a function that can accept a valid access token.
  * @public
  */
-export interface UserArg {
-  /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  readonly user?: AccessToken;
+export interface TokenArg {
+  /** If present, the access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
+  readonly accessToken?: AccessToken;
 }
 
 /**
@@ -2163,6 +2164,53 @@ export class BriefcaseDb extends IModelDb {
   }
 }
 
+/** Used to reattach Daemon from a user's accessToken for V2 checkpoints.
+ * @note Reattach only happens if the previous access token either has expired or is about to expire within an application-supplied safety duration.
+ */
+class DaemonReattach {
+  /** the time at which the current token should be refreshed (its expiry minus safetySeconds) */
+  private _timestamp = 0;
+  /** while a refresh is happening, all callers get this promise. */
+  private _promise: Promise<void> | undefined;
+  /** Time, in seconds, before the current token expires to obtain a new token. Default is 1 hour. */
+  private _safetySeconds: number;
+
+  constructor(expiry: number, safetySeconds?: number) {
+    this._safetySeconds = safetySeconds ?? 60 * 60; // default to 1 hour
+    this.setTimestamp(expiry);
+  }
+  private async performReattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+    this._timestamp = 0; // everyone needs to wait until token is valid
+
+    // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's storage account.
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
+    try {
+      // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId!, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
+      this.setTimestamp(response.expiryTimestamp);
+    } finally {
+      this._promise = undefined;
+    }
+  }
+
+  private setTimestamp(expiryTimestamp: number) {
+    this._timestamp = expiryTimestamp - (this._safetySeconds * 1000);
+    if (this._timestamp < Date.now())
+      Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
+  }
+
+  public async reattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+    if (this._timestamp > Date.now())
+      return; // current token is fine
+
+    if (undefined === this._promise) // has reattach already begun?
+      this._promise = this.performReattach(accessToken, iModel); // no, start it
+
+    return this._promise;
+  }
+
+}
 /** A *snapshot* iModel database file that is used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -2170,7 +2218,7 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
-  private _reattachDueTimestamp: number | undefined;
+  private _daemonReattach: DaemonReattach | undefined;
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
@@ -2293,6 +2341,7 @@ export class SnapshotDb extends IModelDb {
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
     snapshot._iTwinId = checkpoint.iTwinId;
+
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
@@ -2300,25 +2349,15 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot.setReattachDueTimestamp(expiryTimestamp);
+    snapshot._daemonReattach = new DaemonReattach(expiryTimestamp, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
-   * @throws [[IModelError]] If the db is not a checkpoint.
+  /** Used to refresh the daemon's accessToken if this is a V2 checkpoint.
    * @internal
    */
-  public override async reattachDaemon(user: AccessToken): Promise<void> {
-    if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
-      this.setReattachDueTimestamp(expiryTimestamp);
-    }
-  }
-
-  private setReattachDueTimestamp(expiryTimestamp: number) {
-    const now = Date.now();
-    const expiresIn = expiryTimestamp - now;
-    this._reattachDueTimestamp = now + (expiresIn / 2);
+  public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
+    return this._daemonReattach?.reattach(accessToken, this);
   }
 
   /** @internal */
@@ -2336,7 +2375,7 @@ export class SnapshotDb extends IModelDb {
 }
 
 /**
- * Standalone iModels are read/write files that are not associated with an Itwin or managed by iModelHub.
+ * Standalone iModels are read/write files that are not associated with an iTwin or managed by iModelHub.
  * They are relevant only for testing, or for small-scale single-user scenarios.
  * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.

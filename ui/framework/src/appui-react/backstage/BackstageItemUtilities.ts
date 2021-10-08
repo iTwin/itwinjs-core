@@ -38,7 +38,7 @@ export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
 }
 
 /** Utilities for creating and maintaining backstage items
- * @beta
+ * @beta @deprecated
  */
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item

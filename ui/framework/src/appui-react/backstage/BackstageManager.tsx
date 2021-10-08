@@ -14,14 +14,14 @@ import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
 
 /** Arguments of [[BackstageManager.onToggled]].
- * @beta
+ * @public
  */
 export interface BackstageToggledArgs {
   readonly isOpen: boolean;
 }
 
 /** Controls backstage.
- * @beta
+ * @public
  */
 export class BackstageManager {
   private _isOpen = false;
@@ -69,7 +69,7 @@ export class BackstageManager {
 }
 
 /** Hook that returns isOpen flag of the backstage.
- * @beta
+ * @public
  */
 export const useIsBackstageOpen = (manager: BackstageManager) => {
   const [isOpen, setIsOpen] = React.useState(manager.isOpen);
@@ -87,7 +87,7 @@ export const useIsBackstageOpen = (manager: BackstageManager) => {
 };
 
 /** Hook that returns backstage manager.
- * @beta
+ * @public
  */
 export const useBackstageManager = () => {
   const [manager] = React.useState(UiFramework.backstageManager);

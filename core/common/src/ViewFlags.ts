@@ -34,7 +34,7 @@ export enum RenderMode {
    * Lighting (and by extension, shadows) is not applied.
    */
   SolidFill = 4,
-  /** Identical to [[RenderMode.SmoothShade]], except:
+  /** Identical to [[RenderMode.SolidFill]], except:
    *  - Surfaces are drawn using the [DisplayStyle]($backend)'s background color.
    *  - Edges are drawn using their surface's colors; this can be overridden using [[HiddenLine.Settings]].
    */

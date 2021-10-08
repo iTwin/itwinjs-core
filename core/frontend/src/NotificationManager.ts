@@ -177,10 +177,10 @@ export class ActivityMessageDetails {
 export class NotificationManager implements MessagePresenter {
   public readonly toolTipLocation = new Point2d();
 
-  /** Output a prompt, given an i18n key.
+  /** Output a prompt, given a localization key.
    * @param key The key of the localized string with the prompt message.
    */
-  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.i18n.translate(key)); }
+  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.localization.getLocalizedString(key)); }
 
   /** Output a localized prompt to the user. A 'prompt' indicates an action the user should take to proceed.
    * @param _prompt The localized string with the prompt message.

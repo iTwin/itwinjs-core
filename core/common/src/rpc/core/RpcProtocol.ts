@@ -17,7 +17,7 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
 
 /** A serialized RPC operation descriptor.
- * @public
+ * @internal
  */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
@@ -27,7 +27,7 @@ export interface SerializedRpcOperation {
 }
 
 /** A serialized RPC operation request.
- * @public
+ * @internal
  */
 export interface SerializedRpcRequest extends SerializedRpcActivity {
   operation: SerializedRpcOperation;
@@ -40,7 +40,7 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
 }
 
 /** An RPC operation request fulfillment.
- * @public
+ * @internal
  */
 export interface RpcRequestFulfillment {
   /** The RPC interface for the request. */
@@ -62,7 +62,7 @@ export interface RpcRequestFulfillment {
   retry?: string;
 }
 
-/** @public */
+/** @internal */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
     const result = await RpcMarshaling.serialize(undefined, error);
@@ -78,12 +78,12 @@ export namespace RpcRequestFulfillment {
 }
 
 /** Handles RPC protocol events.
- * @public
+ * @internal
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
 /** An application protocol for an RPC interface.
- * @public
+ * @internal
  */
 export abstract class RpcProtocol {
   /** Events raised by all protocols. See [[RpcProtocolEvent]] */

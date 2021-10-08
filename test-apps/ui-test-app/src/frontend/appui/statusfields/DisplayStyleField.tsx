@@ -26,8 +26,8 @@ interface DisplayStyleFieldState {
  * It is used to enable/disable display of shadows.
  */
 export class DisplayStyleField extends React.Component<StatusFieldProps, DisplayStyleFieldState> {
-  private _label = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.label");
-  private _tooltip = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.tooltip");
+  private _label = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.label");
+  private _tooltip = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.tooltip");
 
   constructor(props: StatusFieldProps) {
     super(props);
@@ -37,7 +37,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
 
   private async setStateFromActiveContent(contentControl?: ContentControl): Promise<void> {
     if (contentControl && contentControl.viewport) {
-      const unnamedPrefix = IModelApp.i18n.translate("SampleApp:statusFields.unnamedDisplayStyle");
+      const unnamedPrefix = IModelApp.localization.getLocalizedString("SampleApp:statusFields.unnamedDisplayStyle");
       const displayStyles = new Map<Id64String, DisplayStyleState>();
       const view = contentControl.viewport.view;
       const is3d = view.is3d();

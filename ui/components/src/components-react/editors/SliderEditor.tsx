@@ -37,7 +37,7 @@ interface SliderEditorState {
 }
 
 /** SliderEditor React component that is a property editor with numeric input & up/down buttons
- * @beta
+ * @public
  */
 export class SliderEditor extends React.PureComponent<PropertyEditorProps, SliderEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -279,7 +279,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
 
 /** Slider Property Editor registered for the "number" type name and "slider" editor name.
  * It uses the [[SliderEditor]] React component.
- * @beta
+ * @public
  */
 export class SliderPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {

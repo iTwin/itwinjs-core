@@ -22,7 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { RenderSystem } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
@@ -126,7 +126,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
 
       return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -142,8 +142,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
-  /** @internal */
-  public get backgroundMapBase(): BaseLayerSettings | undefined { return this.settings.mapImagery.backgroundBase; }
+  /** @beta */
+  public get backgroundMapBase(): BaseLayerSettings {
+    return this.settings.mapImagery.backgroundBase;
+  }
+  public set backgroundMapBase(base: BaseLayerSettings) {
+    this.settings.mapImagery.backgroundBase = base;
+    this._synchBackgroundMapImagery();
+  }
 
   /** @internal */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
@@ -324,7 +330,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (!model) {
-      const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
+      const name = IModelApp.localization.getLocalizedString("iModelJs:RealityModelNames.OSMBuildings");
       model = this.attachRealityModel({ tilesetUrl: url, name });
       this.onOSMBuildingDisplayChanged.raiseEvent(true);
     }
@@ -408,24 +414,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
-  /** @internal */
-  public changeBaseMapProps(props: MapLayerProps | ColorDef) {
-    if (props instanceof ColorDef) {
-      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
-    } else {
-      if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
-        this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
-      else {
-        const backgroundLayerSettings = BaseMapLayerSettings.fromJSON(props);
-        if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
-      }
-    }
-
-    this._synchBackgroundMapImagery();
-  }
-
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
@@ -437,14 +425,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
-      this._synchBackgroundMapImagery();
     } else {
-      this.changeBaseMapProps({ transparency });
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
     }
+    this._synchBackgroundMapImagery();
   }
 
   /** @internal */
-  public changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean) {
+  public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
@@ -460,7 +448,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  public changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
+  public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return;
@@ -1027,7 +1015,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
-    const promises = new Array<Promise<TextureImage | undefined>>();
+    const promises = [];
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 
@@ -1043,6 +1031,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
           idToImage.set(textureId, image.image);
       }
 
+      // eslint-disable-next-line deprecation/deprecation
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
       const textureImages = [
         idToImage.get(this.front)!, idToImage.get(this.back)!, idToImage.get(this.top)!,

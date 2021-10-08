@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Toolbar
  */
@@ -15,7 +16,7 @@ import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProvid
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
- * @beta
+ * @public
  */
 export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): readonly CommonToolbarItem[] => {
   const uiItemsProviderIds = useAvailableUiItemsProviders();

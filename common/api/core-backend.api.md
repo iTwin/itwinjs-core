@@ -6,7 +6,7 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
 import { AuxCoordSystemProps } from '@itwin/core-common';
@@ -430,7 +430,7 @@ export enum BriefcaseLocalValue {
 export class BriefcaseManager {
     static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
-    static deleteBriefcaseFiles(filePath: LocalFileName, user?: AccessToken): Promise<void>;
+    static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
@@ -453,7 +453,7 @@ export class BriefcaseManager {
     static pullAndApplyChangesets(db: IModelDb, arg: ToChangesetArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
-    static releaseBriefcase(user: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
     }
 
 // @public
@@ -519,8 +519,8 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(user: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
-    processChangesetsAndRoll(user: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesets(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @public
@@ -572,10 +572,10 @@ export class ChangeSummaryManager {
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
-    static createChangeSummary(user: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
+    static createChangeSummary(accessToken: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
     // @deprecated
-    static extractChangeSummaries(user: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
+    static extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
@@ -615,12 +615,13 @@ export class CheckpointManager {
 }
 
 // @public
-export interface CheckpointProps extends UserArg {
+export interface CheckpointProps extends TokenArg {
     readonly changeset: ChangesetIdWithIndex;
     // (undocumented)
     readonly expectV2?: boolean;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
+    readonly reattachSafetySeconds?: number;
 }
 
 // @public
@@ -736,7 +737,7 @@ export interface CrashReportingConfigNameValuePair {
 }
 
 // @beta
-export interface CreateChangeSummaryArgs extends UserArg {
+export interface CreateChangeSummaryArgs extends TokenArg {
     iModelId: GuidString;
     iTwinId: GuidString;
     range: ChangesetRange;
@@ -2219,7 +2220,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
-    reattachDaemon(_user: AccessToken): Promise<void>;
+    reattachDaemon(_accessToken: AccessToken): Promise<void>;
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
@@ -2349,7 +2350,7 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal (undocumented)
     static flushLog(): void;
-    static getAccessToken(): Promise<AccessToken | undefined>;
+    static getAccessToken(): Promise<AccessToken>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @beta
@@ -2492,7 +2493,7 @@ export class IModelHubBackend {
 }
 
 // @public
-export interface IModelIdArg extends UserArg {
+export interface IModelIdArg extends TokenArg {
     // (undocumented)
     readonly iModelId: GuidString;
 }
@@ -2542,7 +2543,7 @@ export class IModelJsFsStats {
 export { IModelJsNative }
 
 // @public
-export interface IModelNameArg extends UserArg, ITwinIdArg {
+export interface IModelNameArg extends TokenArg, ITwinIdArg {
     // (undocumented)
     readonly iModelName: string;
 }
@@ -3009,13 +3010,13 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
     protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
-    protected _accessToken?: AccessToken;
+    protected _accessToken: AccessToken;
     // (undocumented)
     config?: NativeAppAuthorizationConfiguration;
     // (undocumented)
     expireSafety: number;
     // (undocumented)
-    getAccessToken(): Promise<AccessToken | undefined>;
+    getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
@@ -3023,7 +3024,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     protected abstract refreshToken(): Promise<AccessToken>;
     // (undocumented)
-    setAccessToken(token?: AccessToken): void;
+    setAccessToken(token: AccessToken): void;
     // (undocumented)
     abstract signIn(): Promise<void>;
     // (undocumented)
@@ -3065,8 +3066,8 @@ export class NativeHost {
     // (undocumented)
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
+    static readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    static readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static get settingsStore(): NativeAppStorage;
@@ -3306,7 +3307,7 @@ export type ProgressFunction = (loaded: number, total: number) => number;
 export type PullChangesArgs = ToChangesetArgs;
 
 // @public
-export interface PushChangesArgs extends UserArg {
+export interface PushChangesArgs extends TokenArg {
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;
@@ -3440,7 +3441,7 @@ export class RepositoryModel extends DefinitionModel {
 }
 
 // @public
-export interface RequestNewBriefcaseArg extends UserArg, RequestNewBriefcaseProps {
+export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
     onProgress?: ProgressFunction;
 }
 
@@ -3599,7 +3600,7 @@ export class SnapshotDb extends IModelDb {
     // @internal
     static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb;
     // @internal
-    reattachDaemon(user: AccessToken): Promise<void>;
+    reattachDaemon(accessToken: AccessToken): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
@@ -3966,8 +3967,13 @@ export class TitleText extends DetailingSymbol {
 }
 
 // @public
-export interface ToChangesetArgs extends UserArg {
+export interface ToChangesetArgs extends TokenArg {
     toIndex?: ChangesetIndex;
+}
+
+// @public
+export interface TokenArg {
+    readonly accessToken?: AccessToken;
 }
 
 // @public
@@ -4085,11 +4091,6 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
     url?: string;
 }
 
-// @public
-export interface UserArg {
-    readonly user?: AccessToken;
-}
-
 // @internal
 export class V1CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
@@ -4107,11 +4108,9 @@ export interface V2CheckpointAccessProps {
     readonly auth: string;
     // (undocumented)
     readonly container: string;
-    // (undocumented)
     readonly dbAlias: string;
     // (undocumented)
     readonly storageType: string;
-    // (undocumented)
     readonly user: string;
 }
 
