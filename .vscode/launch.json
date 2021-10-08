@@ -1097,6 +1097,88 @@
       ]
     },
     { /* PARTIAL */
+      "name": "[BACKEND] display-test-app (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/display-test-app",
+      "type": "pwa-node",
+      "request": "launch",
+      "env": {
+        "IMJS_LOG_LEVEL": "TRACE"
+      },
+      "program": "${workspaceFolder}/test-apps/display-test-app/lib/backend/WebMain.js",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] display-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] display-test-app (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] display-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BACKEND] display-test-app (electron)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/display-test-app/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/test-apps/display-test-app/lib/backend/DtaElectronMain.js",
+        "--remote-debugging-port=9223"
+      ],
+      "env": {
+        "IMJS_LOG_LEVEL": "TRACE",
+        "IMJS_NO_DEV_TOOLS": "1",
+        "NODE_ENV": "development"
+      },
+      "outFiles": [
+        "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] display-test-app (electron)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] display-test-app (electron)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223,
+      "outFiles": [
+        "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] display-test-app (electron)"
+      ]
+    },
+    { /* PARTIAL */
       "name": "[BACKEND] display-performance-test-app (chrome)",
       "presentation": {
         "hidden": true
@@ -1589,6 +1671,28 @@
       "configurations": [
         "[BROWSER] Markup Tests",
         "[NODE] Certa Test Runner for Markup Tests"
+      ]
+    },
+    {
+      "name": "display-test-app (chrome)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] display-test-app (chrome)",
+        "[FRONTEND] display-test-app (chrome)"
+      ]
+    },
+    {
+      "name": "display-test-app (electron)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] display-test-app (electron)",
+        "[FRONTEND] display-test-app (electron)"
       ]
     },
     {
