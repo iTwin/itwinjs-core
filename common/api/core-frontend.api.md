@@ -230,6 +230,10 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
 import { ReadonlySortedArray } from '@itwin/core-bentley';
+import { RealityDataFormat } from '@itwin/core-common';
+import { RealityDataProvider } from '@itwin/core-common';
+import { RealityDataSourceKey } from '@itwin/core-common';
+import { RealityDataSourceProps } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -1898,6 +1902,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
+    readonly rdSourceKey: RealityDataSourceKey;
     get treeRef(): TileTreeReference;
     }
 
@@ -3213,7 +3218,9 @@ export enum FrontendLoggerCategory {
     MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
     NativeApp = "core-frontend.NativeApp",
     // (undocumented)
-    Package = "core-frontend"
+    Package = "core-frontend",
+    // @alpha
+    RealityData = "core-frontend.RealityData"
 }
 
 // @public
@@ -4717,6 +4724,7 @@ export enum InputSource {
 export interface InstancedGraphicParams {
     readonly count: number;
     readonly featureIds?: Uint8Array;
+    readonly range?: Range3d;
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
@@ -6814,13 +6822,14 @@ export class OrbitGtTileTree extends TileTree {
 // @internal (undocumented)
 export namespace OrbitGtTileTree {
     // (undocumented)
-    export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
         modelId?: Id64String;
         // (undocumented)
-        orbitGtBlob: OrbitGtBlobProps;
+        orbitGtBlob?: OrbitGtBlobProps;
     }
 }
 
@@ -6951,6 +6960,7 @@ export interface ParticleCollectionBuilderParams {
 
 // @public
 export interface ParticleProps extends XYAndZ {
+    rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
 }
@@ -7386,12 +7396,47 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
+// @internal
+export interface RealityDataConnection {
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    readonly realityData: RealityData | undefined;
+    readonly realityDataType: string | undefined;
+    readonly source: RealityDataSource;
+}
+
+// @internal (undocumented)
+export namespace RealityDataConnection {
+    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+}
+
+// @alpha
+export class RealityDataSource {
+    protected constructor(props: RealityDataSourceProps);
+    // (undocumented)
+    static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    static fromProps(props: RealityDataSourceProps): RealityDataSource;
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // (undocumented)
+    get isContextShare(): boolean;
+    // (undocumented)
+    get iTwinId(): string | undefined;
+    // (undocumented)
+    readonly rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    get realityDataId(): string | undefined;
+    }
+
+// @alpha
+export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;
+
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, iTwinId?: string);
+    constructor(rdConnection: RealityDataConnection, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
@@ -7413,7 +7458,7 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7468,6 +7513,8 @@ export namespace RealityModelTileTree {
         // (undocumented)
         planarClipMask?: PlanarClipMaskSettings;
         // (undocumented)
+        rdSourceKey: RealityDataSourceKey;
+        // (undocumented)
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
@@ -7479,7 +7526,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         requestAuthorization?: string;
         // (undocumented)
-        url: string;
+        url?: string;
     }
 }
 
