@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 01 Oct 2021 13:07:03 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Oct 2021 16:44:23 GMT and should not be manually modified.
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
 
 ## 2.19.14
 Fri, 01 Oct 2021 13:07:03 GMT

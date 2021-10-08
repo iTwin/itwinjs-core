@@ -1,6 +1,13 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 01 Oct 2021 13:07:03 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Oct 2021 16:44:23 GMT and should not be manually modified.
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+### Updates
+
+- Add clonePartialCurve for spirals. Proper length computation for partial spirals.
 
 ## 2.19.14
 Fri, 01 Oct 2021 13:07:03 GMT
