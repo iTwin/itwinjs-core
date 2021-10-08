@@ -89,20 +89,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "check-coverage": true,
-    "statements": 100,
-    "functions": 100,
-    "branches": 98,
-    "lines": 100,
-    "require": [
-      "jsdom-global/register"
-    ],
-    "exclude": [
-      "src/presentation-frontend.ts",
-      "src/test/**",
-      "lib/cjs/test/**"
-    ]
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
