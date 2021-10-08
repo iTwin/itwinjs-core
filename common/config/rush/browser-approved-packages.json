@@ -604,11 +604,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "backend", "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",

@@ -10,7 +10,10 @@ import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
 import { FormatDiagnosticReporter } from "../../ecschema-editing";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import sinon = require("sinon");
+
+(global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
 /* eslint-disable-next-line deprecation/deprecation */
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
@@ -115,35 +118,37 @@ describe("DiagnosticReporters tests", () => {
       expect(metaData.messageArgs).to.be.undefined;
     });
 
-    // it("should log expected error with translated message", async () => {
-    //   const i18nMock = sinon.mock(i18n);
-    //   const registerNamespace = i18nMock.expects("registerNamespace");
-    //   registerNamespace.resolves(Promise.resolve());
-    //   const translate = i18nMock.expects("getLocalizedString");
-    //   translate.returns("Translated text {0} {1}");
-    //   const logMessage = sinon.stub(Logger, "logError");
-    //   const reporter = new LoggingDiagnosticReporter(undefined, i18n);
-    //   const diag = await createTestDiagnostic(DiagnosticCategory.Error);
+    it("should log expected error with translated message", async () => {
+      const i18n = new ITwinLocalization();
+      const i18nMock = sinon.mock(i18n);
+      const registerNamespace = i18nMock.expects("registerNamespace");
+      registerNamespace.resolves(Promise.resolve());
+      const translate = i18nMock.expects("getLocalizedString");
+      translate.returns("Translated text {0} {1}");
+      const logMessage = sinon.stub(Logger, "logError");
+      const reporter = new LoggingDiagnosticReporter(undefined, i18n);
+      const diag = await createTestDiagnostic(DiagnosticCategory.Error);
 
-    //   reporter.report(diag);
+      reporter.report(diag);
 
-    //   expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
-    // });
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text Param1 Param2")).to.be.true;
+    });
 
-    // it("no message args, should log expected error with translated message", async () => {
-    //   const i18nMock = sinon.mock(i18n);
-    //   const registerNamespace = i18nMock.expects("registerNamespace");
-    //   registerNamespace.resolves(Promise.resolve());
-    //   const translate = i18nMock.expects("getLocalizedString");
-    //   translate.returns("Translated text");
-    //   const logMessage = sinon.stub(Logger, "logError");
-    //   const reporter = new LoggingDiagnosticReporter(undefined, i18n);
-    //   const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
+    it("no message args, should log expected error with translated message", async () => {
+      const i18n = new ITwinLocalization();
+      const i18nMock = sinon.mock(i18n);
+      const registerNamespace = i18nMock.expects("registerNamespace");
+      registerNamespace.resolves(Promise.resolve());
+      const translate = i18nMock.expects("getLocalizedString");
+      translate.returns("Translated text");
+      const logMessage = sinon.stub(Logger, "logError");
+      const reporter = new LoggingDiagnosticReporter(undefined, i18n);
+      const diag = await createTestDiagnostic(DiagnosticCategory.Error, []);
 
-    //   reporter.report(diag);
+      reporter.report(diag);
 
-    //   expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
-    // });
+      expect(logMessage.calledOnceWith("ecschema-metadata", "Translated text")).to.be.true;
+    });
 
     it("should log expected warning", async () => {
       const logMessage = sinon.stub(Logger, "logWarning");
@@ -203,3 +208,4 @@ describe("DiagnosticReporters tests", () => {
     });
   });
 });
+
