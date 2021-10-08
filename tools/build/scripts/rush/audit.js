@@ -44,6 +44,11 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx.
     "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr.
     "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9.
+    "GHSA-9r2w-394v-53qc", // https://github.com/advisories/GHSA-9r2w-394v-53qc.
+    "GHSA-5955-9wpr-37jh", // https://github.com/advisories/GHSA-5955-9wpr-37jh.
+    "GHSA-qq89-hq3f-393p", // https://github.com/advisories/GHSA-qq89-hq3f-393p.
+    "GHSA-cph5-m8f7-6c5x", // need to investigate updating azurite. https://github.com/advisories/GHSA-cph5-m8f7-6c5x.
+    "GHSA-w5p7-h5w8-2hfq", // Ignored, test app dependency. https://github.com/advisories/GHSA-w5p7-h5w8-2hfq.
   ];
 
   let shouldFailBuild = false;
@@ -59,6 +64,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
       if (!excludedAdvisories.includes(advisory.github_advisory_id) && (severity === "HIGH" || severity === "CRITICAL")) {
+        console.log(advisory.github_advisory_id);
         logBuildError(message);
         shouldFailBuild = true;
       } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE") // Only warn on MODERATE severity items
