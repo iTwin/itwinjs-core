@@ -43,6 +43,7 @@
   ],
   "devDependencies": {
     "@axe-core/react": "^4.1.1",
+    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
