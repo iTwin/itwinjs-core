@@ -8,7 +8,7 @@ import * as path from "path";
 import { AccessToken, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools";
 import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -33,6 +33,7 @@ describe("ElementAspectPerformance", () => {
   before(async () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
+    // TODO: Update config to use iTwin terminology
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     const iTwinId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;

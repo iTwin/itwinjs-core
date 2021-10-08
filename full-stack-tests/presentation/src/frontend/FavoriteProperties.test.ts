@@ -6,9 +6,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Field, KeySet } from "@itwin/presentation-common";
-import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
-import { FAVORITES_CATEGORY_NAME } from "@itwin/presentation-components/lib/presentation-components/favorite-properties/DataProvider";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import {
   createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
 } from "@itwin/presentation-frontend";
@@ -58,7 +56,7 @@ describe("Favorite properties", () => {
       // note: Presentation is initialized without client services, so favorite properties are stored locally - clearing
       // them doesn't affect what's stored in user settings service
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
-      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
+      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.ITwin);
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
     });
 
@@ -154,7 +152,7 @@ describe("Favorite properties", () => {
       // note: Presentation is initialized without client services, so favorite properties are stored locally - clearing
       // them doesn't affect what's stored in user settings service
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
-      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
+      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.ITwin);
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
     });
 

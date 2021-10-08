@@ -1,5 +1,6 @@
 {
   "name": "example-code-app",
+  "version": "0.0.0",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
@@ -19,7 +20,6 @@
   "repository": {},
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
@@ -43,6 +43,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",

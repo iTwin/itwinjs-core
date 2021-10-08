@@ -6,16 +6,15 @@
  * @module IModelHost
  */
 
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -255,7 +254,7 @@ export class IModelHost {
   }
 
   private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
+    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
@@ -307,7 +306,7 @@ export class IModelHost {
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
-    this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
     if (this._platform === undefined) {
@@ -386,7 +385,7 @@ export class IModelHost {
       if (serviceNameComponents.length === 7) {
         startupInfo = {
           ...startupInfo,
-          contextId: serviceNameComponents[4],
+          iTwinId: serviceNameComponents[4],
           iModelId: serviceNameComponents[5],
           changeSetId: serviceNameComponents[6],
         };

@@ -23,6 +23,7 @@ import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives"
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { TextureTransparency } from "../render/RenderTexture";
 import { TileContent } from "./internal";
 
 // eslint-disable-next-line prefer-const
@@ -887,7 +888,7 @@ export abstract class GltfReader {
       if (undefined !== samplerJson &&
         (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapT))
         textureType = RenderTexture.Type.TileSection;
-      const textureParams = new RenderTexture.Params(undefined, textureType);
+
       const offset = bufferView.byteOffset;
 
       /* -----------------------------------
@@ -897,7 +898,7 @@ export abstract class GltfReader {
           try {
             const imageBitmap = await GltfReader.webWorkerManager.queueOperation(workerOp)
             return this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
-          } catch (_) {
+          } catch {
             return undefined;
           }
         ------------------------------------- */
@@ -906,8 +907,17 @@ export abstract class GltfReader {
       const imageSource = new ImageSource(bytes, format);
       try {
         const image = await imageElementFromImageSource(imageSource);
-        return this._isCanceled ? undefined : this._system.createTextureFromImage(image, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams);
-      } catch (_) {
+        if (this._isCanceled)
+          return undefined;
+
+        return this._system.createTexture({
+          type: textureType,
+          image: {
+            source: image,
+            transparency: isTransparent && ImageSourceFormat.Png === format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+          },
+        });
+      } catch {
         return undefined;
       }
     } catch (e) {

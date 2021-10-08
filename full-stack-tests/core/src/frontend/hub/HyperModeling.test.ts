@@ -11,7 +11,7 @@ import {
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { ProcessDetector } from "@itwin/core-bentley";
@@ -32,10 +32,10 @@ describe("HyperModeling (#integration)", () => {
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
-    const testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
+    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.sectionDrawingLocations);
 
-    hypermodel = await CheckpointConnection.openRemote(testContextId, testIModelId);
+    hypermodel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
 
   after(async () => {

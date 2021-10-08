@@ -15,10 +15,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
       "name": "@bentley/frontend-authorization-client",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -43,16 +39,20 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/itwin-registry-client",
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/telemetry-client",
@@ -79,6 +79,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/browser-authorization",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@itwin/build-tools",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -103,6 +107,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/core-electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -112,11 +120,15 @@
     },
     {
       "name": "@itwin/core-i18n",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/core-markup",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-mobile",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/core-orbitgt",
@@ -136,7 +148,7 @@
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
@@ -160,10 +172,6 @@
     },
     {
       "name": "@itwin/editor-frontend",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@itwin/core-electron",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -203,10 +211,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/core-mobile",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
@@ -233,6 +237,10 @@
     {
       "name": "@itwin/presentation-testing",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/service-authorization",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -556,7 +564,7 @@
     },
     {
       "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -668,7 +676,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",
@@ -892,7 +900,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "symlink-dir",
@@ -928,7 +936,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "typescript",

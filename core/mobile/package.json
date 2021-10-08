@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "3.0.0-dev.73",
+  "version": "3.0.0-dev.80",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-mobile/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
@@ -31,13 +32,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.73",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.73",
-    "@itwin/core-common": "workspace:^3.0.0-dev.73",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.73",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.73",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.73",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.80",
+    "@itwin/core-common": "workspace:^3.0.0-dev.80",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.80",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.80",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.80",
     "js-base64": "^3.6.1",
     "ws": "^7.5.3"
   },
@@ -45,7 +45,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",

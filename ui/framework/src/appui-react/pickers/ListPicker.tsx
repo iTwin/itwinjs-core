@@ -6,7 +6,6 @@
  * @module Picker
  */
 
-import "@itwin/appui-layout-react/lib/appui-layout-react/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
 import classnames from "classnames";
 import * as React from "react";

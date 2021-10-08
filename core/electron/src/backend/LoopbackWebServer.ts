@@ -9,7 +9,6 @@
  */
 
 import * as Http from "http";
-import * as Url from "url";
 import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
@@ -76,8 +75,8 @@ export class LoopbackWebServer {
       return;
 
     // Parse the request URL to determine the authorization code, state and errors if any
-    const urlParts: URL = new URL(httpRequest.url);
-    const searchParams = new Url.URLSearchParams(urlParts.search || "");
+    const redirectedUrl = new URL(httpRequest.url, ElectronAuthorizationBackend.defaultRedirectUri);
+    const searchParams = redirectedUrl.searchParams;
 
     const state = searchParams.get("state") || undefined;
     const code = searchParams.get("code");

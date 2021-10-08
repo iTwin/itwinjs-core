@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
+import { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestUserCredentials } from "@itwin/oidc-signin-tool";
@@ -24,9 +24,9 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  useProjectName: boolean;
-  projectId?: string;
-  projectName?: string;
+  useITwinName: boolean;
+  iTwinId?: string;
+  iTwinName?: string;
   changeSetId?: string;
 }
 
@@ -62,7 +62,7 @@ export class Settings {
   public gprid?: string;
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
-  public clientConfiguration?: BackendAuthorizationClientConfiguration;
+  public clientConfiguration?: ServiceAuthorizationClientConfiguration;
 
   public iModels: IModelData[] = [];
   public get iModel(): IModelData { return this.iModels[0]; }
@@ -138,9 +138,9 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
-      useProjectName: !process.env.IMODEL_PROJECTID,
-      projectId: process.env.IMODEL_PROJECTID,
-      projectName: process.env.IMODEL_PROJECTNAME,
+      useITwinName: !process.env.IMODEL_PROJECTID,
+      iTwinId: process.env.IMODEL_PROJECTID,
+      iTwinName: process.env.IMODEL_PROJECTNAME,
 
       // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       changeSetId: process.env.IMODEL_CHANGESETID,
@@ -158,9 +158,9 @@ export class Settings {
         useName: !process.env.IMODEL_WRITE_IMODELID,
         id: process.env.IMODEL_WRITE_IMODELID,
         name: process.env.IMODEL_WRITE_IMODELNAME,
-        useProjectName: !process.env.IMODEL_WRITE_PROJECTID,
-        projectId: process.env.IMODEL_WRITE_PROJECTID,
-        projectName: process.env.IMODEL_WRITE_PROJECTNAME,
+        useITwinName: !process.env.IMODEL_WRITE_PROJECTID,
+        iTwinId: process.env.IMODEL_WRITE_PROJECTID,
+        iTwinName: process.env.IMODEL_WRITE_PROJECTNAME,
       });
     }
 

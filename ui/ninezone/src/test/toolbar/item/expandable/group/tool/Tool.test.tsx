@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as useTargetedModule from "@itwin/core-react/lib/core-react/utils/hooks/useTargeted";
+import * as useTargetedModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/useTargeted";
 import { GroupTool } from "../../../../../../appui-layout-react";
 import { mount } from "../../../../../Utils";
 

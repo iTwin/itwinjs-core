@@ -1,20 +1,23 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "3.0.0-dev.73",
+  "version": "3.0.0-dev.80",
   "description": "iModel.js frontend components",
-  "main": "lib/editor-frontend.js",
-  "typings": "lib/editor-frontend",
+  "main": "lib/cjs/editor-frontend.js",
+  "module": "lib/esm/editor-frontend.js",
+  "typings": "lib/cjs/editor-frontend",
   "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {
     "compile": "npm run -s build",
-    "build": "npm run -s copy:assets && npm run -s pseudolocalize && tsc 1>&2",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:locale",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
+    "copy:locale": "cpx \"./src/public/**/*\" ./lib/public",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=editor-frontend",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "",
     "cover": ""
   },
@@ -34,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.73",
-    "@itwin/core-common": "workspace:^3.0.0-dev.73",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.73"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
+    "@itwin/core-common": "workspace:^3.0.0-dev.80",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.80"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

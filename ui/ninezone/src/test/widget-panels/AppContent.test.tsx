@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../appui-layout-react";
-import { NineZoneProvider, setRefValue } from "../Providers";
+import { setRefValue, TestNineZoneProvider } from "../Providers";
 
 describe("usePanelsAutoCollapse", () => {
   it("should collapse unpinned panels", () => {
@@ -20,7 +20,7 @@ describe("usePanelsAutoCollapse", () => {
       }),
     });
     const { result } = renderHook(() => usePanelsAutoCollapse(), {
-      wrapper: (props: any) => <NineZoneProvider // eslint-disable-line react/display-name
+      wrapper: (props: any) => <TestNineZoneProvider // eslint-disable-line react/display-name
         dispatch={dispatch}
         state={nineZone}
         {...props}

@@ -25,9 +25,8 @@ packageClassification:  [
      "order":"2",
      "header": "Client Packages",
      "packages": [
-       "context-registry-client",
+       "itwin-registry-client",
        "extension-client",
-       "frontend-authorization-client",
        "imodelhub-client",
        "itwin-client",
        "product-settings-client",

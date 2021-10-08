@@ -135,7 +135,8 @@ export class BackgroundMapDrape extends TextureDrape {
         assert(false, "Failed to create planar texture");
         return;
       }
-      this._texture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
+
+      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle });
       this._fbo = FrameBuffer.create([colorTextureHandle]);
     }
     if (undefined === this._fbo) {

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/context-registry-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { ITwin } from "@bentley/itwin-registry-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./ITwinPlatformEnv";
 
 export class TestUtility {
-  public static testContextName = "iModelJsIntegrationTest";
+  public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
@@ -34,14 +34,14 @@ export class TestUtility {
   };
 
   private static iTwinId: GuidString | undefined = undefined;
-  /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
-  public static async getTestContextId(): Promise<GuidString> {
+  /** Returns the iTwinId if an iTwin with the name exists. Otherwise, returns undefined. */
+  public static async getTestITwinId(): Promise<GuidString> {
     if (undefined !== TestUtility.iTwinId)
       return TestUtility.iTwinId;
-    return TestUtility.queryContextIdByName(TestUtility.testContextName);
+    return TestUtility.queryITwinIdByName(TestUtility.testITwinName);
   }
 
-  public static itwinPlatformEnv: ITwinPlatformAbstraction;
+  public static iTwinPlatformEnv: ITwinPlatformAbstraction;
 
   public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken> {
     return getAccessTokenFromBackend(user);
@@ -59,7 +59,7 @@ export class TestUtility {
     if (!IModelApp.initialized)
       throw new Error("IModelApp must be initialized");
 
-    let authorizationClient: FrontendAuthorizationClient | undefined;
+    let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
       authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
       IModelApp.authorizationClient = authorizationClient;
@@ -73,31 +73,31 @@ export class TestUtility {
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
-      await authorizationClient.signIn();
+      await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank)
-      this.itwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
+      this.iTwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
     else
-      this.itwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
+      this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
 
-    ((IModelApp as any)._hubAccess) = this.itwinPlatformEnv.hubAccess;
+    ((IModelApp as any)._hubAccess) = this.iTwinPlatformEnv.hubAccess;
   }
 
-  public static async queryContextIdByName(contextName: string): Promise<string> {
+  public static async queryITwinIdByName(iTwinName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       throw new Error("no access token");
 
-    const iTwin: ITwin = await this.itwinPlatformEnv.contextMgr.getITwinByName(accessToken, contextName);
+    const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }
 
-  public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
+  public static async queryIModelIdByName(iTwinId: string, iModelName: string): Promise<string> {
     const accessToken = await IModelApp.getAccessToken();
-    const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
     return iModelId!;
   }
@@ -105,14 +105,14 @@ export class TestUtility {
   /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
     const accessToken = await IModelApp.getAccessToken();
-    const briefcaseIds = await this.itwinPlatformEnv.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
+    const briefcaseIds = await this.iTwinPlatformEnv.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
 
     if (briefcaseIds.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       for (const briefcaseId of briefcaseIds)
-        promises.push(this.itwinPlatformEnv.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
+        promises.push(this.iTwinPlatformEnv.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
       await Promise.all(promises);
     }
   }

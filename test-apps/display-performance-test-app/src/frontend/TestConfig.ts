@@ -115,7 +115,7 @@ export interface TestConfigProps {
    * Default: "*"
    */
   iModelName?: string;
-  /** The name of the iModelHub project from which to obtain iModels. Currently not supported.
+  /** The name of the iTwin from which to obtain iModels. Currently not supported.
    * Default: "iModel Testing"
    */
   iModelHubProject?: string;
@@ -153,6 +153,12 @@ export interface TestConfigProps {
   hyperModeling?: HyperModelingProps;
   /** Specifies if EXT_disjoint_timer_query extension is used to collect GPU data */
   useDisjointTimer?: boolean;
+  /** Describes how to react to an otherwise uncaught exception during a test.
+   *  - "terminate" => log the exception and terminate immediately.
+   *  - undefined => log the exception and continue to next test.
+   * Logged exceptions will include the string "DPTA_EXCEPTION" for easy grepping.
+   */
+  onException?: "terminate";
 }
 
 export const defaultHilite = new Hilite.Settings();
@@ -172,7 +178,7 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
-  public readonly iModelHubProject: string;
+  public readonly iTwin: string;
   public viewName: string;
   public readonly testType: TestType;
   public readonly csvFormat: string;
@@ -193,6 +199,7 @@ export class TestConfig {
   public readonly filenameOptsToIgnore?: string[] | string;
   public readonly backgroundMap?: BackgroundMapProps;
   public readonly hyperModeling?: HyperModelingProps;
+  public readonly onException?: "terminate";
 
   /** Construct a new TestConfig with properties initialized by following priority:
    *  As defined by `props`; or
@@ -207,7 +214,7 @@ export class TestConfig {
     this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
-    this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
+    this.iTwin = props.iModelHubProject ?? prevConfig?.iTwin ?? "iModel Testing";
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";
     this.extViewName = props.extViewName;
@@ -218,6 +225,7 @@ export class TestConfig {
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
     this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
+    this.onException = props.onException ?? prevConfig?.onException;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {

@@ -97,7 +97,7 @@ export class MeshData implements WebGLDisposable {
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
-    return undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned;
+    return undefined !== this.texture && !this.texture?.hasOwner;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -168,7 +168,7 @@ export class MeshGraphic extends Graphic {
       if (instances instanceof PatternBuffers) {
         buffers = instances;
       } else {
-        const instancesRange = InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
+        const instancesRange = instances.range ?? InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
         buffers = InstanceBuffers.create(instances, instancesRange);
         if (!buffers)
           return undefined;

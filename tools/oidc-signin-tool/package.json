@@ -1,9 +1,9 @@
 {
   "name": "@itwin/oidc-signin-tool",
-  "version": "3.0.0-dev.73",
+  "version": "3.0.0-dev.80",
   "description": "OIDC Signin Helper",
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "main": "lib/cjs/index.js",
+  "typings": "lib/cjs/index",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
   },
   "scripts": {
     "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
@@ -33,7 +34,6 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
@@ -43,6 +43,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",

@@ -7,11 +7,9 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { InternetConnectivityStatus } from "@itwin/core-common";
+import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { configureForPromiseResult } from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
+import { configureForPromiseResult, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
@@ -24,14 +22,14 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
   let storage: IModelAppFavoritePropertiesStorage;
   let settingsAdminMock: moq.IMock<SettingsAdmin>;
-  let authorizationClientMock: moq.IMock<FrontendAuthorizationClient>;
+  let authorizationClientMock: moq.IMock<AuthorizationClient>;
 
   beforeEach(async () => {
     const requestConextMock = moq.Mock.ofType<AccessToken>();
     configureForPromiseResult(requestConextMock);
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
-    authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
+    authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
     const accessToken: AccessToken = "TestToken";
     authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
@@ -134,7 +132,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         setting: [orderInfo],
       }));
 
-      const properties = await storage.loadPropertiesOrder("projectId", "imodelId");
+      const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
       expect(properties!.length).to.eq(1);
       expect(properties![0]).to.eq(orderInfo);
@@ -147,14 +145,14 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       }));
       sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
-      const properties = await storage.loadPropertiesOrder("projectId", "imodelId");
+      const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.undefined;
     });
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
-      await expect(storage.loadPropertiesOrder("projectId", "imodelId")).to.eventually.be.rejected;
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 
   });
@@ -173,14 +171,14 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         orderedTimestamp: new Date(),
       };
 
-      await storage.savePropertiesOrder([orderInfo], "projectId", "imodelId");
+      await storage.savePropertiesOrder([orderInfo], "iTwinId", "imodelId");
       settingsAdminMock.verify(async (x) => x.saveUserSetting(moq.It.isAny(), moq.It.isAny(), "imodeljs.presentation", "FavoritePropertiesOrderInfo", moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
     });
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
-      await expect(storage.savePropertiesOrder([], "projectId", "imodelId")).to.eventually.be.rejected;
+      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
     });
 
   });

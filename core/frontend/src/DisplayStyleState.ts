@@ -22,7 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { RenderSystem } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
@@ -126,7 +126,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
 
       return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -1015,7 +1015,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
-    const promises = new Array<Promise<TextureImage | undefined>>();
+    const promises = [];
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 
@@ -1031,6 +1031,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
           idToImage.set(textureId, image.image);
       }
 
+      // eslint-disable-next-line deprecation/deprecation
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
       const textureImages = [
         idToImage.get(this.front)!, idToImage.get(this.back)!, idToImage.get(this.top)!,

@@ -26,7 +26,7 @@ const loggerCategory = FrontendLoggerCategory.IModelConnection;
  * @public
  */
 export class CheckpointConnection extends IModelConnection {
-  /** The Guid that identifies the *context* that owns this iModel. */
+  /** The Guid that identifies the iTwin that owns this iModel. */
   public override get iTwinId(): GuidString { return super.iTwinId!; }
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; }

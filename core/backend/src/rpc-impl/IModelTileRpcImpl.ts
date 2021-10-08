@@ -13,13 +13,14 @@ import {
   TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcTrace } from "../RpcBackend";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface TileRequestProps {
-  accessToken: AccessToken;
+  accessToken?: AccessToken;
   tokenProps: IModelRpcProps;
   treeId: string;
 }
@@ -93,6 +94,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 }
 
 async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTreeProps> {
+  assert(undefined !== props.accessToken);
   const db = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, props.tokenProps);
   return db.tiles.requestTileTreeProps(props.treeId);
 }
@@ -125,6 +127,7 @@ interface TileContentRequestProps extends TileRequestProps {
 }
 
 async function getTileContent(props: TileContentRequestProps): Promise<TileContentSource> {
+  assert(undefined !== props.accessToken);
   const db = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, props.tokenProps);
   const tile = await db.tiles.requestTileContent(props.treeId, props.contentId);
 
@@ -228,8 +231,8 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
 /** @internal */
 export async function cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
-  const props: TileContentRequestProps = { accessToken: RpcTrace.currentActivity!.accessToken, tokenProps, treeId: "", contentId: "" };
-  const iModel = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, tokenProps);
+  const iModel = IModelDb.findByKey(tokenProps.key);
+  const props: TileContentRequestProps = { tokenProps, treeId: "", contentId: "" };
 
   for (const entry of contentIds) {
     props.treeId = entry.treeId;

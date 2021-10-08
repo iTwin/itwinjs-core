@@ -219,6 +219,7 @@ describe("Transparency", async () => {
       bytes.push(alpha);
 
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
+    // eslint-disable-next-line deprecation/deprecation
     const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
     expect(texture).not.to.be.undefined;
     return texture!;

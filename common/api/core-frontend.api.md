@@ -13,7 +13,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -100,7 +100,7 @@ import { FormatProps } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
-import * as Fuse from 'fuse.js';
+import Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
 import { GeographicCRSProps } from '@itwin/core-common';
 import { GeometricModel2dProps } from '@itwin/core-common';
@@ -230,6 +230,10 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
 import { ReadonlySortedArray } from '@itwin/core-bentley';
+import { RealityDataFormat } from '@itwin/core-common';
+import { RealityDataProvider } from '@itwin/core-common';
+import { RealityDataSourceKey } from '@itwin/core-common';
+import { RealityDataSourceProps } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -1898,6 +1902,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
+    readonly rdSourceKey: RealityDataSourceKey;
     get treeRef(): TileTreeReference;
     }
 
@@ -1975,7 +1980,7 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
-export function createMaskTreeReference(model: GeometricModelState): TileTreeReference;
+export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
 
 // @internal (undocumented)
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
@@ -1988,6 +1993,23 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 
 // @internal (undocumented)
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
+
+// @public
+export interface CreateTextureArgs {
+    image: TextureImage;
+    ownership?: TextureOwnership;
+    type?: RenderTexture.Type;
+}
+
+// @public
+export interface CreateTextureFromSourceArgs {
+    ownership?: TextureCacheOwnership & {
+        key: string;
+    } | "external";
+    source: ImageSource;
+    transparency?: TextureTransparency;
+    type?: RenderTexture.Type;
+}
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -2947,7 +2969,15 @@ export namespace FeatureSymbology {
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
-        }
+        // @alpha (undocumented)
+        get source(): Source | undefined;
+        // @alpha
+        static withSource(source: Source, view?: ViewState | Viewport): Overrides;
+    }
+    // @alpha
+    export interface Source {
+        readonly onSourceDisposed: BeEvent<() => void>;
+    }
 }
 
 // @public
@@ -3188,7 +3218,9 @@ export enum FrontendLoggerCategory {
     MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
     NativeApp = "core-frontend.NativeApp",
     // (undocumented)
-    Package = "core-frontend"
+    Package = "core-frontend",
+    // @alpha
+    RealityData = "core-frontend.RealityData"
 }
 
 // @public
@@ -4693,6 +4725,7 @@ export enum InputSource {
 export interface InstancedGraphicParams {
     readonly count: number;
     readonly featureIds?: Uint8Array;
+    readonly range?: Range3d;
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
@@ -5268,17 +5301,17 @@ export interface MapLayerSetting {
 // @internal (undocumented)
 export class MapLayerSettingsService {
     // (undocumented)
-    static deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static deleteSharedSettings(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
-    static getSettingFromUrl(accessToken: AccessToken, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
-    static getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
+    static getSettingFromUrl(accessToken: AccessToken, url: string, iTwinId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
+    static getSourcesFromSettingsService(iTwinId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
     // (undocumented)
     static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
     // (undocumented)
-    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
     // (undocumented)
     static get SourceNamespace(): string;
-    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean>;
+    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
 }
 
 // @internal
@@ -6695,6 +6728,12 @@ export interface OffScreenViewportOptions {
     viewRect: ViewRect;
 }
 
+// @internal
+export interface OldTextureImage {
+    format: ImageSourceFormat;
+    image: HTMLImageElement;
+}
+
 // @public
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
@@ -6784,13 +6823,14 @@ export class OrbitGtTileTree extends TileTree {
 // @internal (undocumented)
 export namespace OrbitGtTileTree {
     // (undocumented)
-    export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
         modelId?: Id64String;
         // (undocumented)
-        orbitGtBlob: OrbitGtBlobProps;
+        orbitGtBlob?: OrbitGtBlobProps;
     }
 }
 
@@ -6921,6 +6961,7 @@ export interface ParticleCollectionBuilderParams {
 
 // @public
 export interface ParticleProps extends XYAndZ {
+    rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
 }
@@ -7356,12 +7397,47 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
+// @internal
+export interface RealityDataConnection {
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    readonly realityData: RealityData | undefined;
+    readonly realityDataType: string | undefined;
+    readonly source: RealityDataSource;
+}
+
+// @internal (undocumented)
+export namespace RealityDataConnection {
+    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+}
+
+// @alpha
+export class RealityDataSource {
+    protected constructor(props: RealityDataSourceProps);
+    // (undocumented)
+    static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    static fromProps(props: RealityDataSourceProps): RealityDataSource;
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // (undocumented)
+    get isContextShare(): boolean;
+    // (undocumented)
+    get iTwinId(): string | undefined;
+    // (undocumented)
+    readonly rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    get realityDataId(): string | undefined;
+    }
+
+// @alpha
+export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;
+
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, iTwinId?: string);
+    constructor(rdConnection: RealityDataConnection, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
@@ -7383,7 +7459,7 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7438,6 +7514,8 @@ export namespace RealityModelTileTree {
         // (undocumented)
         planarClipMask?: PlanarClipMaskSettings;
         // (undocumented)
+        rdSourceKey: RealityDataSourceKey;
+        // (undocumented)
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
@@ -7449,7 +7527,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         requestAuthorization?: string;
         // (undocumented)
-        url: string;
+        url?: string;
     }
 }
 
@@ -8109,12 +8187,18 @@ export abstract class RenderSystem implements IDisposable {
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+    // (undocumented)
+    createTexture(_args: CreateTextureArgs): RenderTexture | undefined;
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
-    createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined;
-    createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
-    createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
+    // @deprecated
+    createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined;
+    // @deprecated
+    createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
+    // @deprecated
+    createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
+    createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -8130,7 +8214,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
-    findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
+    findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     get isMobile(): boolean;
@@ -8139,7 +8223,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
     // @internal
-    loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
+    loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined>;
     // @internal (undocumented)
     get maxRealityImageryLayers(): number;
     // @internal (undocumented)
@@ -9617,7 +9701,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
-    // (undocumented)
     reset(): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
@@ -9794,13 +9877,35 @@ export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSp
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
+// @public
+export type TextureCacheKey = string | Gradient.Symb;
+
+// @public
+export interface TextureCacheOwnership {
+    iModel: IModelConnection;
+    key: string | Gradient.Symb;
+}
+
 // @internal (undocumented)
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
-// @internal
+// @public
 export interface TextureImage {
-    format: ImageSourceFormat | undefined;
-    image: HTMLImageElement | undefined;
+    source: TextureImageSource;
+    transparency?: TextureTransparency;
+}
+
+// @public
+export type TextureImageSource = HTMLImageElement | ImageBuffer;
+
+// @public
+export type TextureOwnership = TextureCacheOwnership | "external";
+
+// @public
+export enum TextureTransparency {
+    Mixed = 2,
+    Opaque = 0,
+    Translucent = 1
 }
 
 // @internal (undocumented)
@@ -11543,7 +11648,7 @@ export interface ViewCreator2dOptions {
 // @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
-    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState>;
     }
 
 // @public

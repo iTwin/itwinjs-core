@@ -321,6 +321,11 @@ export namespace AreaPattern {
     }
 }
 
+// @beta
+export interface AuthorizationClient {
+    getAccessToken(): Promise<AccessToken>;
+}
+
 export { AuthStatus }
 
 // @public
@@ -1703,6 +1708,8 @@ export class ContextRealityModel {
     set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
     // (undocumented)
     protected readonly _props: ContextRealityModelProps;
+    // @alpha
+    readonly rdSourceKey?: RealityDataSourceKey;
     readonly realityDataId?: string;
     toJSON(): ContextRealityModelProps;
     readonly url: string;
@@ -1717,6 +1724,8 @@ export interface ContextRealityModelProps {
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
     planarClipMask?: PlanarClipMaskProps;
+    // @alpha
+    rdSourceKey?: RealityDataSourceKey;
     realityDataId?: string;
     tilesetUrl: string;
 }
@@ -1946,7 +1955,7 @@ export interface DisplayStyleOverridesOptions {
     includeBackgroundMap?: true;
     includeDrawingAids?: true;
     includeIModelSpecific?: true;
-    includeProjectSpecific?: true;
+    includeITwinSpecific?: true;
 }
 
 // @public
@@ -6261,6 +6270,32 @@ export interface ReadableFormData extends Readable {
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
+// @alpha
+export enum RealityDataFormat {
+    OPC = "OPC",
+    ThreeDTile = "ThreeDTile"
+}
+
+// @alpha
+export enum RealityDataProvider {
+    CesiumIonAsset = "CesiumIonAsset",
+    ContextShare = "ContextShare",
+    TilesetUrl = "TilesetUrl"
+}
+
+// @alpha
+export interface RealityDataSourceKey {
+    format: string;
+    id: string;
+    iTwinId?: string;
+    provider: string;
+}
+
+// @alpha
+export interface RealityDataSourceProps {
+    sourceKey: RealityDataSourceKey;
+}
+
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
@@ -6632,26 +6667,24 @@ export namespace RenderSchedule {
 
 // @public
 export abstract class RenderTexture implements IDisposable {
-    protected constructor(params: RenderTexture.Params);
+    protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
-    readonly isOwned: boolean;
     // (undocumented)
     get isSkyBox(): boolean;
     // (undocumented)
     get isTileSection(): boolean;
-    readonly key: string | undefined;
     readonly type: RenderTexture.Type;
 }
 
 // @public (undocumented)
 export namespace RenderTexture {
+    // @deprecated
     export class Params {
-        constructor(key?: string, type?: Type, isOwned?: boolean);
-        static readonly defaults: Params;
+        constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
         // (undocumented)
         get isGlyph(): boolean;
         readonly isOwned: boolean;
@@ -6660,7 +6693,7 @@ export namespace RenderTexture {
         // (undocumented)
         get isTileSection(): boolean;
         readonly key?: string;
-        readonly type: Type;
+        readonly type: RenderTexture.Type;
     }
     export enum Type {
         FilteredTileSection = 4,

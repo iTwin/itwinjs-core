@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyError, GetMetaDataFunction, Guid, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;
@@ -21,7 +21,6 @@ export const requestIdHeaderName = "X-Correlation-Id";
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
-  // sendImmediately deprecated, user -> userName
 }
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
@@ -65,7 +64,6 @@ export interface RequestQueryOptions {
 export interface RequestQueryStringifyOptions {
   delimiter?: string;
   encode?: boolean;
-  // sep -> delimiter, eq deprecated, encode -> encode
 }
 
 /** Option to control the time outs
@@ -284,6 +282,10 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (options.headers)
     sareq = sareq.set(options.headers);
 
+  // Add an x-correlation-id header with a new GUID if one doesn't already exist.
+  if (!options.headers || !options.headers.hasOwnProperty(requestIdHeaderName))
+    sareq = sareq.set(requestIdHeaderName, Guid.createValue());
+
   let queryStr: string = "";
   let fullUrl: string = "";
   if (options.qs && Object.keys(options.qs).length > 0) {
@@ -402,7 +404,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   // console.log("%s %s %s", url, options.method, queryStr);
 
-  /*
+  /**
   * Note:
   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
   * Fetch only rejects if there's some network issue (permissions issue or similar)

@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@itwin/core-react/lib/core-react/expandable/list";
-@import "~@itwin/core-react/lib/core-react/scrollbar";
-@import "~@itwin/core-react/lib/core-react/style/itwinui-overrides";
+@import "~@itwin/core-react/lib/cjs/core-react/expandable/list";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/itwinui-overrides";
 
 .components-virtualized-property-grid-loader {
   height: 100%;
