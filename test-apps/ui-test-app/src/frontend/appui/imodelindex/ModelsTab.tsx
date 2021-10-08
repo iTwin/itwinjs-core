@@ -7,7 +7,7 @@ import * as React from "react";
 import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
 import { ModelProps, ModelQueryParams, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
 import { Button, Checkbox } from "@itwin/itwinui-react";
 import { RegisteredRuleset } from "@itwin/presentation-common";
@@ -358,8 +358,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       viewedModels = this._getModelsFromDocCodes();
     } else {
       this.state.models.forEach((model: ModelInfo) => {
-        if (model.checked) {
-          viewedModels.push(model.modelProps!.id!);
+        if (model.checked && model.modelProps) {
+          viewedModels.push(model.modelProps.id!);
         }
       });
     }

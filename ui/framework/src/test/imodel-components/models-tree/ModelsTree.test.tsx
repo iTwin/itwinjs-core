@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import * as React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
