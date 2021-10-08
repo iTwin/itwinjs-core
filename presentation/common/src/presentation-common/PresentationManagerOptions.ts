@@ -133,21 +133,28 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 }
 
 /**
- * Request type for element properties requests.
+ * Request type for element properties requests
  * @beta
  */
-export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
+
+/**
+ * Request type for single element properties requests.
+ * @beta
+ */
+export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
   /** ID of the element to get properties for. */
   elementId: Id64String;
 }
 
 /**
- * Request type for all elements properties requests.
+ * Request type for multiple elements properties requests.
  * @beta
  */
-export interface ElementsPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+export interface MultiElementPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
   /** Classes of the elements to get properties for. If `elementClasses` is undefined all classes
-   * are used.
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>",
+   * "<schema name or alias>:<class_name>".
    */
   elementClasses?: string[];
 }
@@ -221,3 +228,11 @@ export type Prioritized<TOptions extends {}> = TOptions & {
   /** Optional priority */
   priority?: number;
 };
+
+/**
+ * Checks if supplied request options are for single or multiple element properties.
+ * @beta
+ */
+export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel> {
+  return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;
+}

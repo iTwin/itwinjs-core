@@ -12,10 +12,10 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey,
-  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
-  SelectClassInfo, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  HierarchyUpdateInfo, InstanceKey, isSingleElementPropertiesRequestOptions, Item, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions,
+  Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -413,20 +413,23 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
-    await this.onConnection(requestOptions.imodel);
-    return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
-  }
-
+  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
   /**
-   * Retrieves property data in a simplified format for all elements or all elements of
-   * specified classes.
-   * @beta
+   * Retrieves property data in a simplified format for multiple elements specified by class
+   * or all elements.
+   * @alpha
    */
-  public async getElementsProperties(requestOptions: ElementsPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>> {
+  public async getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
     await this.onConnection(requestOptions.imodel);
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    }
+
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
-    return buildPagedResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getElementsProperties({ ...rpcOptions, paging: partialPageOptions }));
+    return buildPagedResponse(requestOptions.paging, async (partialPageOptions) => {
+      return this._requestsHandler.getElementProperties({ ...rpcOptions, paging: partialPageOptions });
+    });
   }
 
   /** Retrieves display label definition of specific item. */

@@ -761,12 +761,13 @@ export interface ElementPropertiesPropertyItemBase extends ElementPropertiesItem
 export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct";
 
 // @beta
-export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
-    elementId: Id64String;
-}
+export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
 
 // @beta
 export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
+
+// @beta
+export type ElementPropertiesRpcResult = ElementProperties | PagedResponse<ElementProperties> | undefined;
 
 // @beta
 export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
@@ -783,14 +784,6 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     };
     type: "struct";
 }
-
-// @beta
-export interface ElementsPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
-    elementClasses?: string[];
-}
-
-// @beta
-export type ElementsPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementsPropertiesRequestOptions<never>>;
 
 // @public
 export interface EnumerationChoice {
@@ -1298,6 +1291,9 @@ export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
     value: number[];
 }
 
+// @beta
+export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel>;
+
 // @public
 export class Item {
     constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: {
@@ -1481,6 +1477,14 @@ export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 
 // @public
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
+
+// @beta
+export interface MultiElementPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+    elementClasses?: string[];
+}
+
+// @beta
+export type MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<MultiElementPropertiesRequestOptions<never>>;
 
 // @public
 export interface MultiSchemaClassesSpecification {
@@ -1881,9 +1885,9 @@ export class PresentationRpcInterface extends RpcInterface {
     // (undocumented)
     getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON>;
     // @beta (undocumented)
-    getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties>;
-    // @beta (undocumented)
-    getElementsProperties(_token: IModelRpcProps, _options: ElementsPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
+    getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
+    // @alpha (undocumented)
+    getElementProperties(_token: IModelRpcProps, _options: MultiElementPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
@@ -2413,9 +2417,9 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
     // (undocumented)
-    getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
+    getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
     // (undocumented)
-    getElementsProperties(options: ElementsPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
+    getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
     // (undocumented)
     getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
     // (undocumented)
@@ -2637,6 +2641,14 @@ export interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
     // (undocumented)
     variable: TVariable;
 }
+
+// @beta
+export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+    elementId: Id64String;
+}
+
+// @beta
+export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
 
 // @public
 export interface SingleSchemaClassSpecification {

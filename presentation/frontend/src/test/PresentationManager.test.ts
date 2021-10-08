@@ -14,13 +14,14 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
   DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet,
-  LabelDefinition, Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable,
-  SelectClassInfo, UpdateInfo, VariableValueTypes,
+  FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  InstanceKey, Item, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents,
+  RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
-  createRandomTransientId, createTestContentDescriptor,
+import {
+  createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
+  createRandomRuleset, createRandomTransientId, createTestContentDescriptor,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
@@ -971,7 +972,7 @@ describe("PresentationManager", () => {
 
   describe("getElementProperties", () => {
 
-    it("requests element properties", async () => {
+    it("requests single element properties", async () => {
       const elementId = "0x123";
       const result: ElementProperties = {
         class: "test class",
@@ -979,7 +980,7 @@ describe("PresentationManager", () => {
         label: "test label",
         items: {},
       };
-      const options: ElementPropertiesRequestOptions<IModelConnection> = {
+      const options: SingleElementPropertiesRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         elementId,
       };
@@ -992,11 +993,7 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
-  });
-
-  describe("getElementsProperties", () => {
-
-    it("requests elements properties", async () => {
+    it("requests multiple elements properties", async () => {
       const elementClasses = ["TestSchema:TestClass"];
       const result = {
         total: 1,
@@ -1007,21 +1004,21 @@ describe("PresentationManager", () => {
           items: {},
         }],
       };
-      const options: ElementsPropertiesRequestOptions<IModelConnection> = {
+      const options: MultiElementPropertiesRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         elementClasses,
         paging: { start: 0, size: 0 },
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementsProperties(toIModelTokenOptions(options)))
+        .setup(async (x) => x.getElementProperties(toIModelTokenOptions(options)))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getElementsProperties(options);
+      const actualResult = await manager.getElementProperties(options);
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
 
-    it("requests elements properties through multiple requests when getting partial responses", async () => {
+    it("requests multiple elements properties through multiple requests when getting partial responses", async () => {
       const elementClasses = ["TestSchema:TestClass"];
       const element1: ElementProperties = {
         class: "test class",
@@ -1035,21 +1032,21 @@ describe("PresentationManager", () => {
         label: "test label 2",
         items: {},
       };
-      const managerOptions: ElementsPropertiesRequestOptions<IModelConnection> = {
+      const managerOptions: MultiElementPropertiesRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         elementClasses,
         paging: undefined,
       };
       const rpcHandlerOptions = toIModelTokenOptions(managerOptions);
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementsProperties({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
+        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
         .returns(async () => ({ total: 2, items: [element1] }))
         .verifiable();
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementsProperties({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
+        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
         .returns(async () => ({ total: 2, items: [element2] }))
         .verifiable();
-      const actualResult = await manager.getElementsProperties(managerOptions);
+      const actualResult = await manager.getElementProperties(managerOptions);
       rpcRequestsHandlerMock.verifyAll();
       expect(actualResult).to.deep.eq({ total: 2, items: [element1, element2] });
     });

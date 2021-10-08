@@ -106,10 +106,9 @@ beta;ElementPropertiesPropertyItemBase
 beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
+beta;ElementPropertiesRpcResult = ElementProperties | PagedResponse
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
-beta;ElementsPropertiesRequestOptions
-beta;ElementsPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -177,6 +176,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+beta;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
 public;Key = Readonly
@@ -199,6 +199,8 @@ public;LabelGroupingNodeKeyJSON
 public;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+beta;MultiElementPropertiesRequestOptions
+beta;MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
@@ -343,6 +345,8 @@ public;SelectionScope
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
+beta;SingleElementPropertiesRequestOptions
+beta;SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule

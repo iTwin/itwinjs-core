@@ -9,12 +9,13 @@ import { Id64String, using } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, ElementPropertiesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged,
-  PresentationRpcInterface, SelectionScopeRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,
+  SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  ElementsPropertiesRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, MultiElementPropertiesRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -170,19 +171,19 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards getElementProperties call", async () => {
-      const options: ElementPropertiesRpcRequestOptions = {
+    it("forwards getElementProperties call with single element options", async () => {
+      const options: SingleElementPropertiesRpcRequestOptions = {
         elementId: "0x1",
       };
       await rpcInterface.getElementProperties(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards getElementsProperties call", async () => {
-      const options: ElementsPropertiesRpcRequestOptions = {
+    it("forwards getElementProperties call with multi element options", async () => {
+      const options: MultiElementPropertiesRpcRequestOptions = {
         elementClasses: ["TestSchema:TestClass"],
       };
-      await rpcInterface.getElementsProperties(token, options);
+      await rpcInterface.getElementProperties(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 

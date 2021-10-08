@@ -13,11 +13,11 @@ import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions,
   ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs,
   DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ElementPropertiesRpcRequestOptions, ElementsPropertiesRequestOptions, ElementsPropertiesRpcRequestOptions, FieldDescriptor, FieldDescriptorType,
+  DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
-  Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
-  RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes,
+  Item, KeySet, MultiElementPropertiesRequestOptions, MultiElementPropertiesRpcRequestOptions, Node, NodeKey, NodePathElement, Paged, PageOptions,
+  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
+  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
@@ -1081,7 +1081,7 @@ describe("PresentationRpcImpl", () => {
 
     describe("getElementProperties", () => {
 
-      it("calls manager", async () => {
+      it("calls manager with single element options", async () => {
         const testElementProperties: ElementProperties = {
           class: "Test Class",
           id: "0x123",
@@ -1098,12 +1098,12 @@ describe("PresentationRpcImpl", () => {
             },
           },
         };
-        const managerOptions: ElementPropertiesRequestOptions<IModelDb> = {
+        const managerOptions: SingleElementPropertiesRequestOptions<IModelDb> = {
           imodel: testData.imodelMock.object,
           elementId: "0x123",
         };
         const managerResponse = testElementProperties;
-        const rpcOptions: PresentationRpcRequestOptions<ElementPropertiesRpcRequestOptions> = {
+        const rpcOptions: PresentationRpcRequestOptions<SingleElementPropertiesRpcRequestOptions> = {
           ...defaultRpcParams,
           elementId: "0x123",
         };
@@ -1117,11 +1117,7 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.eq(expectedRpcResponse);
       });
 
-    });
-
-    describe("getElementsProperties", () => {
-
-      it("calls manager", async () => {
+      it("calls manager with multi element options", async () => {
         const testElementsProperties: ElementProperties[] = [{
           class: "Test Class",
           id: "0x123",
@@ -1138,23 +1134,23 @@ describe("PresentationRpcImpl", () => {
             },
           },
         }];
-        const managerOptions: ElementsPropertiesRequestOptions<IModelDb> = {
+        const managerOptions: MultiElementPropertiesRequestOptions<IModelDb> = {
           imodel: testData.imodelMock.object,
           elementClasses: ["TestSchema:TestClass"],
           paging: testData.pageOptions,
         };
         const managerResponse = { total: 1, items: testElementsProperties };
-        const rpcOptions: PresentationRpcRequestOptions<ElementsPropertiesRpcRequestOptions> = {
+        const rpcOptions: PresentationRpcRequestOptions<MultiElementPropertiesRpcRequestOptions> = {
           ...defaultRpcParams,
           elementClasses: ["TestSchema:TestClass"],
           paging: testData.pageOptions,
         };
         const expectedRpcResponse = { total: 1, items: testElementsProperties };
         presentationManagerMock
-          .setup(async (x) => x.getElementsProperties(managerOptions))
+          .setup(async (x) => x.getElementProperties(managerOptions))
           .returns(async () => managerResponse)
           .verifiable();
-        const actualResult = await impl.getElementsProperties(testData.imodelToken, rpcOptions);
+        const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(expectedRpcResponse);
       });

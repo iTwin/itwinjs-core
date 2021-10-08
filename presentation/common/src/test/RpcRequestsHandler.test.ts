@@ -20,13 +20,14 @@ import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ElementsPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  MultiElementPropertiesRequestOptions, SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult,
-  DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, ElementPropertiesRpcRequestOptions, ElementsPropertiesRpcRequestOptions,
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions,
+  DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, MultiElementPropertiesRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
@@ -458,13 +459,13 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards getElementProperties call", async () => {
+    it("forwards getElementProperties call with single element options", async () => {
       const elementId = "0x123";
-      const handlerOptions: ElementPropertiesRequestOptions<IModelRpcProps> = {
+      const handlerOptions: SingleElementPropertiesRequestOptions<IModelRpcProps> = {
         imodel: token,
         elementId,
       };
-      const rpcOptions: ElementPropertiesRpcRequestOptions = {
+      const rpcOptions: SingleElementPropertiesRpcRequestOptions = {
         clientId,
         elementId,
       };
@@ -479,13 +480,13 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
-    it("forwards getElementsProperties call", async () => {
+    it("forwards getElementProperties call with multi element options", async () => {
       const elementClasses = ["TestSchema:TestClass"];
-      const handlerOptions: ElementsPropertiesRequestOptions<IModelRpcProps> = {
+      const handlerOptions: MultiElementPropertiesRequestOptions<IModelRpcProps> = {
         imodel: token,
         elementClasses,
       };
-      const rpcOptions: ElementsPropertiesRpcRequestOptions = {
+      const rpcOptions: MultiElementPropertiesRpcRequestOptions = {
         clientId,
         elementClasses,
       };
@@ -504,8 +505,8 @@ describe("RpcRequestsHandler", () => {
           items: {},
         }],
       };
-      rpcInterfaceMock.setup(async (x) => x.getElementsProperties(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.getElementsProperties(handlerOptions)).to.deep.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.getElementProperties(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
