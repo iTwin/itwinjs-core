@@ -76,20 +76,31 @@ The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n agai
 
 ## Debugging
 
-* Frontend
-  * Debugging the front-end is easy: simply use the developer tools built into your browser or Electron.
-* Backend
-  * Open the root imodeljs directory in Visual Studio Code.
-  * Open a Javascript Debug Terminal (command palette > "Debug: Javascript Debug Terminal").
-  * In the debug terminal:
-    * Set any IMJS_ environment variables you need.
-    * `cd test-apps/display-test-app`
-    * Either:
-      * `npm run start` to debug Electron; or
-      * `npm run start:servers` to debug the browser.
-    * Set breakpoints in backend code if desired.
-    * Wait for the development server to start (see output in debug terminal).
-    * If running in browser, navigate to localhost:3000.
+Debugging display-test-app can be accomplished using the following procedures to easily debug both the backend and frontend of the app.
+
+In addition, the configuration allows setting breakpoints in any dependent package that lives within this monorepo (i.e. core-frontend or core-backend).
+
+1. Make sure the backend is built `npm run build:backend`
+1. Run `npm run start:webserver`
+    * Launches the react-scripts dev server, providing hot-module reloading of the frontend
+1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
+
+A more advanced debug experience will give you more quick turn around time for both backend and frontend changes:
+
+1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
+    * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
+    * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
+1. Run `npm run start:webserver` in a separate terminal
+    * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
+1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
+
+### What if a change is made in a dependent package in the monorepo?
+
+The display-test-app is part of a monorepo which is setup to link all packages with symlinks so any time you make a change in a dependent package, and run that package's `npm run build` script, the output will automatically be picked up by the application. The steps to pick up that change is different depending on if it was a backend or frontend change.
+
+For the frontend, if the page doesn't automatically refresh just refresh the page and the updated source will be available.
+
+For the backend, restart the debugger config to pick up the changes.
 
 ## Dependencies
 
