@@ -13,8 +13,6 @@ import { FormatDiagnosticReporter } from "../../ecschema-editing";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import sinon = require("sinon");
 
-(global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
 /* eslint-disable-next-line deprecation/deprecation */
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {
