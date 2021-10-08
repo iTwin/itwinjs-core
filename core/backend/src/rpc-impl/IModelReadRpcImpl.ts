@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
