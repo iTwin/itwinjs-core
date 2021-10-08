@@ -5,32 +5,8 @@ importers:
   .:
     specifiers: {}
 
-  ../../clients/frontend-authorization:
-    specifiers:
-      '@bentley/itwin-client': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@types/node': 14.14.31
-      eslint: ^7.11.0
-      oidc-client: ^1.9.1
-      rimraf: ^3.0.2
-      typescript: ~4.4.0
-    dependencies:
-      oidc-client: 1.11.5
-    devDependencies:
-      '@bentley/itwin-client': link:../itwin
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/node': 14.14.31
-      eslint: 7.32.0
-      rimraf: 3.0.2
-      typescript: 4.4.3
-
   ../../clients/imodelhub:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
       '@itwin/build-tools': workspace:*
@@ -52,7 +28,6 @@ importers:
       js-base64: 3.7.2
       lodash: 4.17.21
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../frontend-authorization
       '@bentley/itwin-client': link:../itwin
       '@bentley/itwin-registry-client': link:../itwin-registry
       '@itwin/build-tools': link:../../tools/build
@@ -442,7 +417,6 @@ importers:
 
   ../../core/backend-itwin-client:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -503,7 +477,6 @@ importers:
       proper-lockfile: 4.1.2
       semver: 5.7.1
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/itwin-registry-client': link:../../clients/itwin-registry
@@ -907,7 +880,6 @@ importers:
 
   ../../core/frontend:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/telemetry-client': workspace:*
@@ -950,7 +922,6 @@ importers:
       wms-capabilities: 0.4.0
       xml-js: 1.6.11
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/telemetry-client': link:../../clients/telemetry
@@ -1186,7 +1157,6 @@ importers:
 
   ../../core/mobile:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
@@ -1212,7 +1182,6 @@ importers:
       typescript: ~4.4.0
       ws: ^7.5.3
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
@@ -1774,6 +1743,7 @@ importers:
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/service-authorization': ^0.2.0
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1809,6 +1779,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
+      '@itwin/service-authorization': 0.2.0
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 14.1.0
@@ -1993,11 +1964,11 @@ importers:
   ../../full-stack-tests/core:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
       '@bentley/product-settings-client': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-backend': workspace:*
@@ -2044,6 +2015,7 @@ importers:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
+      '@itwin/browser-authorization': 0.2.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2062,7 +2034,6 @@ importers:
       electron: 14.1.0
       fs-extra: 8.1.0
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/build-tools': link:../../tools/build
@@ -2183,7 +2154,6 @@ importers:
   ../../full-stack-tests/imodelhub-client:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -2212,7 +2182,6 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-bentley': link:../../core/bentley
@@ -2244,7 +2213,6 @@ importers:
   ../../full-stack-tests/native-app:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -2283,7 +2251,6 @@ importers:
       webpack-cli: ^3.1.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
@@ -2518,9 +2485,7 @@ importers:
 
   ../../full-stack-tests/rpc-interface:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
-      '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/build-tools': workspace:*
@@ -2538,6 +2503,7 @@ importers:
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/service-authorization': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2561,9 +2527,7 @@ importers:
       webpack: 4.42.0
       webpack-cli: ^3.1.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -2577,6 +2541,7 @@ importers:
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/service-authorization': 0.2.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -2875,7 +2840,6 @@ importers:
 
   ../../presentation/frontend:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@itwin/build-tools': workspace:*
@@ -2913,7 +2877,6 @@ importers:
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/build-tools': link:../../tools/build
@@ -3039,12 +3002,12 @@ importers:
   ../../test-apps/display-performance-test-app:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/reality-data-client': workspace:*
       '@itwin/appui-abstract': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -3079,11 +3042,11 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/browser-authorization': 0.2.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3122,7 +3085,6 @@ importers:
   ../../test-apps/display-test-app:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
@@ -3131,6 +3093,7 @@ importers:
       '@bentley/reality-data-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -3142,6 +3105,7 @@ importers:
       '@itwin/core-markup': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
@@ -3172,13 +3136,13 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/browser-authorization': 0.2.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3200,6 +3164,7 @@ importers:
       '@bentley/react-scripts': 4.0.3_typescript@4.4.3
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/express': 4.17.13
       '@types/express-ws': 3.0.1
@@ -3555,7 +3520,6 @@ importers:
     specifiers:
       '@axe-core/react': ^4.1.1
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
@@ -3566,6 +3530,7 @@ importers:
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
       '@itwin/core-backend': workspace:*
@@ -3579,6 +3544,7 @@ importers:
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
@@ -3628,7 +3594,6 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -3637,6 +3602,7 @@ importers:
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/appui-layout-react': link:../../ui/ninezone
       '@itwin/appui-react': link:../../ui/framework
+      '@itwin/browser-authorization': 0.2.0
       '@itwin/components-react': link:../../ui/components
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3679,6 +3645,7 @@ importers:
       '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.3
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 14.14.31
@@ -4010,11 +3977,11 @@ importers:
 
   ../../tools/oidc-signin-tool:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -4033,7 +4000,6 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/certa': link:../certa
       '@itwin/core-bentley': link:../../core/bentley
@@ -4043,6 +4009,7 @@ importers:
       puppeteer: 5.3.1
     devDependencies:
       '@itwin/build-tools': link:../build
+      '@itwin/core-common': link:../../core/common
       '@itwin/eslint-plugin': link:../eslint-plugin
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -4510,13 +4477,13 @@ importers:
 
   ../../ui/framework:
     specifiers:
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/product-settings-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -4592,6 +4559,7 @@ importers:
     dependencies:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
+      '@itwin/browser-authorization': 0.2.0
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.21.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
@@ -4603,7 +4571,6 @@ importers:
       react-split-pane: 0.1.92_react-dom@17.0.2+react@17.0.2
       rxjs: 6.6.7
     devDependencies:
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/appui-abstract': link:../abstract
@@ -6635,6 +6602,22 @@ packages:
     requiresBuild: true
     dev: false
 
+  /@bentley/itwin-client/3.0.0-dev.79_@itwin+core-bentley@3.0.0-dev.79:
+    resolution: {integrity: sha512-o85FyZ2LnySHMKRbbrGpEzlDPm4aznrGTWz8vvYDXemlna7DvdVL2cjQ4vn1XqCEak+t3DSgFgJKmm3s5tAcQA==}
+    peerDependencies:
+      '@itwin/core-bentley': ^3.0.0-dev.79
+    dependencies:
+      '@itwin/core-bentley': 3.0.0-dev.79
+      deep-assign: 2.0.0
+      js-base64: 3.7.2
+      lodash: 4.17.21
+      qs: 6.10.1
+      superagent: 5.3.1
+      xpath: 0.0.27
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@bentley/react-scripts/4.0.3_react@17.0.2+typescript@4.4.3:
     resolution: {integrity: sha512-gET4e/0PWe/FVvSJR3QKi+m1ct9CND6ZwNdZcAoTvLlkrb/6i/SexR3ZjOIMFXgKKBsCVjf2c83BZBzjAsRCWg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -7056,6 +7039,20 @@ packages:
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
 
+  /@itwin/browser-authorization/0.2.0:
+    resolution: {integrity: sha512-mds+oVFelKQ/u2jWzLUxHQUHLu5PwnzGA98PE2Nwlti3LVEMq1R9BGPyXobFAA6sXmgdHJ0VkaZLTBjvaicgZw==}
+    dependencies:
+      '@bentley/itwin-client': 3.0.0-dev.79_@itwin+core-bentley@3.0.0-dev.79
+      '@itwin/core-bentley': 3.0.0-dev.79
+      oidc-client: 1.11.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@itwin/core-bentley/3.0.0-dev.79:
+    resolution: {integrity: sha512-YOx0H7keFZBTi9sLGAIMaJnp5SWs0yq41A+ZBzfmMBAoZAmtfwcSz3RxGbyEHAbbVZ+jhy7OOTCB7hsaoCjfhw==}
+    dev: false
+
   /@itwin/itwinui-css/0.27.3:
     resolution: {integrity: sha512-2kiak9/KX1QHv+aB1bcK3MjM6H2oF2QzrgRzYWfuBY/6uWWoIKLDzsCDJEplNCEbDHZTuYeojw2Ac/e9ieVVAg==}
 
@@ -7134,6 +7131,16 @@ packages:
       react-table: 7.7.0_react@17.0.2
       react-transition-group: 4.4.2_react@17.0.2
     dev: true
+
+  /@itwin/service-authorization/0.2.0:
+    resolution: {integrity: sha512-4YGRLZAcMbwDJoQhx19Uqfztmp87X4BnWQf/8lE9Y9ZhjywdIy86gQ0jWqzN/Pgv08RsCZI3tTqmV19heaQ2hQ==}
+    dependencies:
+      '@bentley/itwin-client': 3.0.0-dev.79_@itwin+core-bentley@3.0.0-dev.79
+      '@itwin/core-bentley': 3.0.0-dev.79
+      openid-client: 4.9.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /@jest/console/26.6.2:
     resolution: {integrity: sha512-IY1R2i2aLsLr7Id3S6p2BA82GNWryt4oSvEXLAKc+L2zdi89dSkE8xC1C+0kpATG4JhBJREnQOH7/zmccM2B0g==}

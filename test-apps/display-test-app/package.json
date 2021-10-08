@@ -47,7 +47,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
@@ -64,10 +63,12 @@
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@bentley/reality-data-client": "workspace:*",
+    "@itwin/browser-authorization": "^0.2.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
     "@itwin/backend-webpack-tools": "workspace:*",
+    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",

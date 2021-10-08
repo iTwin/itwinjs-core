@@ -1,7 +1,0 @@
-{
-  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
-  "compilerOptions": {
-    "experimentalDecorators": true
-  },
-  "include": ["./src/**/*.ts"]
-}
