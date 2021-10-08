@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -15,7 +15,6 @@ import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../pr
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import * as selection from "../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
-import "./_helpers/MockFrontendEnvironment";
 
 describe("Presentation", () => {
 
@@ -24,9 +23,10 @@ describe("Presentation", () => {
       await IModelApp.shutdown();
   };
 
-  const mockI18N = () => {
+  const mockI18N = (languages: string[] = ["en"]) => {
     const mock = moq.Mock.ofType<ITwinLocalization>();
     mock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
+    mock.setup((x) => x.getLanguageList()).returns(() => languages);
     return mock;
   };
 
@@ -71,39 +71,33 @@ describe("Presentation", () => {
     });
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
-      const i18nMock = mockI18N();
-      i18nMock.setup((x) => x.getLanguageList()).returns(() => ["test-locale"]).verifiable();
+      const i18nMock = mockI18N(["test-locale"]);
       Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize();
       expect(constructorSpy).to.be.calledWith({
         activeLocale: "test-locale",
       });
-      i18nMock.verifyAll();
     });
 
     it("initializes PresentationManager with i18 locale if no activeLocale set in props", async () => {
-      const i18nMock = mockI18N();
-      i18nMock.setup((x) => x.getLanguageList()).returns(() => ["test-locale"]).verifiable();
+      const i18nMock = mockI18N(["test-locale"]);
       Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
         activeLocale: "test-locale",
       });
-      i18nMock.verifyAll();
     });
 
     it("initializes PresentationManager with undefined locale if i18n.getLanguageList() returns empty array", async () => {
-      const i18nMock = mockI18N();
-      i18nMock.setup((x) => x.getLanguageList()).returns(() => []).verifiable();
+      const i18nMock = mockI18N([]);
       Presentation.setLocalization(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
         activeLocale: undefined,
       });
-      i18nMock.verifyAll();
     });
 
     it("initializes FavoritePropertiesManager with given props", async () => {
@@ -230,19 +224,19 @@ describe("Presentation", () => {
   describe("setLocalization", () => {
 
     it("overwrites i18n instance before initialization", async () => {
-      const i18n = new ITwinLocalization();
-      Presentation.setLocalization(i18n);
+      const i18nMock = mockI18N();
+      Presentation.setLocalization(i18nMock.object);
       await Presentation.initialize();
-      expect(Presentation.localization).to.eq(i18n);
+      expect(Presentation.localization).to.eq(i18nMock.object);
     });
 
     it("overwrites i18n instance after initialization", async () => {
-      const i18n = new ITwinLocalization();
+      const i18nMock = mockI18N();
       await Presentation.initialize();
       expect(Presentation.localization).to.be.not.null;
-      expect(Presentation.localization).to.not.eq(i18n);
-      Presentation.setLocalization(i18n);
-      expect(Presentation.localization).to.eq(i18n);
+      expect(Presentation.localization).to.not.eq(i18nMock.object);
+      Presentation.setLocalization(i18nMock.object);
+      expect(Presentation.localization).to.eq(i18nMock.object);
     });
 
   });
