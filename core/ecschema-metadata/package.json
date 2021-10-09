@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "3.0.0-dev.78",
+  "version": "3.0.0-dev.81",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -59,7 +59,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.78"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.81"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

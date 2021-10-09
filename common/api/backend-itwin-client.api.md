@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+<<<<<<< HEAD
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
 import { ClientTelemetryEvent } from '@bentley/telemetry-client';
@@ -45,6 +46,31 @@ export interface BackendAuthorizationClientConfiguration {
     readonly scope: string;
 }
 
+=======
+import { CancelRequest } from '@bentley/itwin-client';
+import { FileHandler } from '@bentley/itwin-client';
+import * as https from 'https';
+import { ProgressCallback } from '@bentley/itwin-client';
+import { Transform } from 'stream';
+import { TransformCallback } from 'stream';
+
+// @internal
+export class AzureFileHandler implements FileHandler {
+    constructor(useDownloadBuffer?: boolean, threshold?: number, config?: ConfigData);
+    // (undocumented)
+    agent?: https.Agent;
+    basename(filePath: string): string;
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
+    join(...paths: string[]): string;
+    unlink(filePath: string): void;
+    uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+    }
+
+>>>>>>> master
 // @public
 export enum BackendITwinClientLoggerCategory {
     Authorization = "backend-itwin-client.Authorization",
@@ -52,6 +78,7 @@ export enum BackendITwinClientLoggerCategory {
     Telemetry = "backend-itwin-client.Telemetry"
 }
 
+<<<<<<< HEAD
 // @alpha
 export abstract class BackendTelemetryClient implements TelemetryClient {
     constructor(_backendMachineName?: string | undefined, _backendApplicationId?: string | undefined, _backendApplicationVersion?: string | undefined, _clientAuthManager?: ClientAuthIntrospectionManager | undefined);
@@ -113,11 +140,49 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 // @beta
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
+=======
+// @internal
+export class BlobDownloader {
+    // (undocumented)
+    static downloadFile(downloadUrl: string, downloadFile: string, config?: ConfigData, onProgress?: (data: ProgressData) => void, cancelRequest?: CancelRequest): Promise<void>;
+    // (undocumented)
+    static formatBytes(bytes: number): string;
+    // (undocumented)
+    static formatRate(bytePerSec: number): string;
+    }
+
+// @internal
+export class BufferedStream extends Transform {
+    constructor(bufferSize: number);
+    _flush(callback: TransformCallback): void;
+    _transform(chunk: any, encoding: string, callback: TransformCallback): void;
+}
+
+// @internal
+export interface ConfigData {
+    // (undocumented)
+    blockSize?: number;
+    // (undocumented)
+    checkMD5AfterDownload?: boolean;
+    // (undocumented)
+    downloadRateWindowSize?: number;
+    // (undocumented)
+    enableResumableDownload?: boolean;
+    // (undocumented)
+    ignoreResumeData?: boolean;
+    // (undocumented)
+    progressReportAfter?: number;
+    // (undocumented)
+    simultaneousDownloads?: number;
+}
+
+>>>>>>> master
 // @internal
 export class HttpRequestHost {
     static initialize(): Promise<void>;
     }
 
+<<<<<<< HEAD
 // @internal (undocumented)
 export class ImsClientAuthDetail extends ClientAuthDetail {
     constructor(response: ImsIntrospectionResponse);
@@ -207,6 +272,64 @@ export class MemoryIntrospectionResponseCache extends IntrospectionResponseCache
     protected getResponse(key: string): Promise<IntrospectionResponse | undefined>;
     // (undocumented)
     protected storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
+=======
+// @internal
+export class LocalhostHandler implements FileHandler {
+    // (undocumented)
+    agent?: https.Agent;
+    basename(filePath: string): string;
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    join(...paths: string[]): string;
+    unlink(filePath: string): void;
+    uploadFile(_accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+}
+
+// @internal
+export interface ProgressData {
+    // (undocumented)
+    blocksDownloaded: number;
+    // (undocumented)
+    blocksDownloading: number;
+    // (undocumented)
+    blocksPending: number;
+    // (undocumented)
+    bytesDone: number;
+    // (undocumented)
+    bytesTotal: number;
+    // (undocumented)
+    downloadRateBytesPerSec: number;
+    // (undocumented)
+    percentage: number;
+    // (undocumented)
+    windowRateBytesPerSec: number;
+}
+
+// @internal
+export class StorageServiceFileHandler extends UrlFileHandler {
+    constructor();
+}
+
+// @internal
+export class UrlFileHandler implements FileHandler {
+    constructor();
+    // (undocumented)
+    agent?: https.Agent;
+    basename(filePath: string): string;
+    // (undocumented)
+    downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    join(...paths: string[]): string;
+    unlink(filePath: string): void;
+    // (undocumented)
+    uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+    // (undocumented)
+    protected _uploadMethod: string;
+>>>>>>> master
 }
 
 

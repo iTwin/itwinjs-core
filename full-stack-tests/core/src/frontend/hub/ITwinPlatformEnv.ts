@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
+import { ITwin } from "@bentley/itwin-registry-client";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { ITwin } from "@bentley/itwin-registry-client";
-import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
+import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { ITwinRegistryClientWrapper } from "../../common/ITwinRegistryClientWrapper";
 
@@ -87,16 +85,16 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 export interface ITwinPlatformAbstraction {
   readonly hubAccess: TestFrontendHubAccess;
   readonly iTwinMgr: ITwinRegistryClientWrapper;
-  readonly authClient?: FrontendAuthorizationClient;
+  readonly authClient?: AuthorizationClient;
 }
 
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Platform. */
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly iTwinMgr = new ITwinRegistryClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
   public readonly hubAccess = new IModelHubFrontend();
-  public readonly authClient?: FrontendAuthorizationClient; // This should be the new AuthorizationClient method defined in #
+  public readonly authClient?: AuthorizationClient;
 
-  public constructor(authClient?: FrontendAuthorizationClient) {
+  public constructor(authClient?: AuthorizationClient) {
     this.authClient = authClient;
   }
 }
@@ -105,9 +103,9 @@ export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
 export class ITwinStackCloudEnv implements ITwinPlatformAbstraction {
   public readonly iTwinMgr: IModelBankFileSystemITwinClient;
   public readonly hubAccess: TestFrontendHubAccess;
-  public readonly authClient?: FrontendAuthorizationClient;
+  public readonly authClient?: AuthorizationClient;
 
-  public constructor(orchestratorUrl: string, authClient?: FrontendAuthorizationClient) {
+  public constructor(orchestratorUrl: string, authClient?: AuthorizationClient) {
     this.hubAccess = new IModelBankFrontend(orchestratorUrl);
     this.iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
     this.authClient = authClient;

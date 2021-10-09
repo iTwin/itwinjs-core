@@ -5,7 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ChangesetId } from '@itwin/core-common';

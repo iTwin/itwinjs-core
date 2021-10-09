@@ -7,10 +7,11 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance } from "@itwin/core-common";
+import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
+import { RealityDataSource } from "./RealityDataSource";
 import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
@@ -24,16 +25,30 @@ export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
   /** The iModel with which the reality model is associated. */
   public readonly iModel: IModelConnection;
+  /** The reality data source key with which the reality model is associated. */
+  public override readonly rdSourceKey: RealityDataSourceKey;
 
   /** @internal */
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     super(props);
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-    this._treeRef = (undefined === props.orbitGtBlob) ?
+    if (undefined === props.orbitGtBlob) {
+      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl);
+    } else {
+      const provider = RealityDataProvider.ContextShare;
+      const format = RealityDataFormat.OPC;
+      if (props.orbitGtBlob.rdsUrl)
+        this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl,provider, format);
+      else
+        this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.blobFileName,provider, format);
+    }
+    const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
+    this._treeRef = (!useOrbitGtTileTreeReference) ?
       createRealityTileTreeReference({
         iModel,
         source: displayStyle,
+        rdSourceKey: this.rdSourceKey,
         url: props.tilesetUrl,
         name: props.name,
         classifiers: this.classifiers,
@@ -41,7 +56,8 @@ export class ContextRealityModelState extends ContextRealityModel {
       }) :
       createOrbitGtTileTreeReference({
         iModel,
-        orbitGtBlob: props.orbitGtBlob,
+        orbitGtBlob: props.orbitGtBlob!,
+        rdSourceKey: this.rdSourceKey,
         name: props.name,
         classifiers: this.classifiers,
         source: displayStyle,

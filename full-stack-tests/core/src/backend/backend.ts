@@ -81,8 +81,6 @@ async function init() {
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.hubAccess = IModelHubBackend;
-  iModelHost.concurrentQuery.concurrent = 2;
-  iModelHost.concurrentQuery.pollInterval = 5;
 
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });

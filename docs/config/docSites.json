@@ -61,7 +61,6 @@
       "ecschema-metadata": "ecschema-metadata",
       "core-electron": "core-electron",
       "core-mobile": "core-mobile",
-      "frontend-authorization-client": "frontend-authorization-client",
       "frontend-devtools": "frontend-devtools",
       "frontend": "core-frontend",
       "geometry": "core-geometry",

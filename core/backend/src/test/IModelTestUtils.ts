@@ -472,9 +472,8 @@ export class IModelTestUtils {
    * - cacheDir === path.join(__dirname, ".cache")
    */
   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
-    loadEnv(path.join(__dirname, "..", "..", ".env"));
+    loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
     const cfg = config ? config : new IModelHostConfiguration();
-    cfg.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
     cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
     return IModelHost.startup(cfg);
   }

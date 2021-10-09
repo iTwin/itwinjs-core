@@ -160,7 +160,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
   }
 
-  public override async finishTest() {
+  public override async terminate() {
     await IModelHost.shutdown();
 
     // Electron only

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { ITwin } from "@bentley/itwin-registry-client";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ITwin } from "@bentley/itwin-registry-client";
+import { AuthorizationClient } from "@itwin/core-common";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
@@ -61,7 +61,7 @@ export class TestUtility {
     if (!IModelApp.initialized)
       throw new Error("IModelApp must be initialized");
 
-    let authorizationClient: FrontendAuthorizationClient | undefined;
+    let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
       authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
       IModelApp.authorizationClient = authorizationClient;
@@ -75,7 +75,7 @@ export class TestUtility {
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
-      await authorizationClient.signIn();
+      await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();

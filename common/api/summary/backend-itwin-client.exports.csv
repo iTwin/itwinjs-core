@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+<<<<<<< HEAD
 beta;AgentAuthorizationClient 
 beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 beta;class BackendAuthorizationClient 
@@ -19,3 +20,15 @@ alpha;IntrospectionClient
 alpha;IntrospectionResponse 
 alpha;class IntrospectionResponseCache
 alpha;MemoryIntrospectionResponseCache 
+=======
+internal;AzureFileHandler 
+public;BackendITwinClientLoggerCategory
+internal;BlobDownloader
+internal;BufferedStream 
+internal;ConfigData
+internal;HttpRequestHost
+internal;LocalhostHandler 
+internal;ProgressData
+internal;StorageServiceFileHandler 
+internal;UrlFileHandler 
+>>>>>>> master
