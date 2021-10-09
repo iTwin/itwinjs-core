@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
-import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
@@ -39,7 +39,7 @@ describe("Plan projections", () => {
     // Force our model to be a plan projection
     const modelId = "0x17";
     await mirukuru.models.load(modelId);
-    const model = mirukuru.models.getLoaded(modelId) ;
+    const model = mirukuru.models.getLoaded(modelId) as GeometricModel3dState;
     expect(model).not.to.be.undefined;
     expect(model.isPlanProjection).to.be.true;
 
@@ -72,7 +72,7 @@ describe("Plan projections", () => {
         });
 
         // Set up plan projection settings.
-        const style = vp.displayStyle ;
+        const style = vp.displayStyle as DisplayStyle3dState;
         style.settings.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(test));
         vp.invalidateScene();
 

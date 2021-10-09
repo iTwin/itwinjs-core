@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, StandardViewId } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@itwin/core-frontend";
 import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 import {
   DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
-} from "@itwin/core-frontend/lib/render-primitives";
+} from "@itwin/core-frontend/lib/cjs/render-primitives";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 
@@ -25,7 +25,7 @@ describe("PrimitiveBuilder", () => {
     viewDiv.style.width = viewDiv.style.height = "1000px";
     document.body.appendChild(viewDiv);
 
-    const spatialView = await imodel.views.load("0x34") ;
+    const spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 
     viewport = ScreenViewport.create(viewDiv, spatialView);

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { once } from "lodash";
 import { AccessToken, GetMetaDataFunction, HttpStatus, Logger } from "@itwin/core-bentley";
 import {

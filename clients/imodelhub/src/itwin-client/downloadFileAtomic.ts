@@ -9,7 +9,8 @@ import { BriefcaseStatus } from "@itwin/core-bentley";
 import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
 import { BufferedStream } from "./AzureFileHandler";
 
-import WriteStreamAtomic = require("fs-write-stream-atomic");
+import WriteStreamAtomic from "fs-write-stream-atomic";
+
 const pipeline = promisify(pipeline_callback);
 
 /** @internal */

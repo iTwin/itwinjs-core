@@ -96,7 +96,7 @@ describe("IModelConnection (#integration)", () => {
     assert.instanceOf(viewState, OrthographicViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
-    assert.instanceOf((viewState ).modelSelector, ModelSelectorState);
+    assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
 
     viewDefinitions = await iModel.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
     assert.isAtLeast(viewDefinitions.length, 1);

@@ -13,7 +13,7 @@ import * as path from "path";
 import { IModelBankClient, IModelBankFileSystemITwinClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
-import { UrlFileHandler } from "@bentley/imodelhub-client/lib/itwin-client/file-handlers";
+import { UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/itwin-client/file-handlers";
 import { Logger } from "@itwin/core-bentley";
 
 export const assetsPath = `${__dirname}/../../../lib/test/assets/`;

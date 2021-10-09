@@ -20,5 +20,5 @@ export enum IModelHubClientLoggerCategory {
 
   /** The logger category used for file handlers
    */
-  FileHandlers = "backend-itwin-client.FileHandlers",
+  FileHandlers = "imodelhub-client.FileHandlers",
 }

@@ -449,59 +449,6 @@ importers:
       typescript: 4.4.3
       webpack: 4.42.0
 
-  ../../core/backend-itwin-client:
-    specifiers:
-      '@bentley/itwin-client': workspace:*
-      '@bentley/telemetry-client': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 14.14.31
-      '@types/sinon': ^9.0.0
-      chai: ^4.1.2
-      cpx: ^1.5.0
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      https-proxy-agent: ^5.0.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      nock: ^12.0.3
-      nyc: ^15.1.0
-      openid-client: ^4.7.4
-      rimraf: ^3.0.2
-      sinon: ^9.0.2
-      typescript: ~4.4.0
-    dependencies:
-      https-proxy-agent: 5.0.0
-      openid-client: 4.9.0
-    devDependencies:
-      '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/telemetry-client': link:../../clients/telemetry
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/core-bentley': link:../bentley
-      '@itwin/core-common': link:../common
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/chai': 4.2.22
-      '@types/mocha': 8.2.3
-      '@types/node': 14.14.31
-      '@types/sinon': 9.0.11
-      chai: 4.3.4
-      cpx: 1.5.0
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.32.0
-      internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      nock: 12.0.3
-      nyc: 15.1.0
-      rimraf: 3.0.2
-      sinon: 9.2.4
-      typescript: 4.4.3
-
   ../../core/bentley:
     specifiers:
       '@itwin/build-tools': workspace:*
@@ -1720,7 +1667,6 @@ importers:
 
   ../../example-code/snippets:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -1760,7 +1706,6 @@ importers:
       typescript: ~4.4.0
       webpack: 4.42.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
@@ -1953,7 +1898,6 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -2003,7 +1947,6 @@ importers:
       webpack-cli: ^3.1.0
       webpack-core: 0.6.9
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/browser-authorization': 0.2.0
@@ -2056,7 +1999,6 @@ importers:
 
   ../../full-stack-tests/ecschema-rpc-interface:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -2099,7 +2041,6 @@ importers:
       webpack: 4.42.0
       webpack-cli: ^3.1.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/build-tools': link:../../tools/build
@@ -2145,7 +2086,6 @@ importers:
 
   ../../full-stack-tests/imodelhub-client:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -2173,7 +2113,6 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-bentley': link:../../core/bentley
@@ -2829,7 +2768,6 @@ importers:
 
   ../../presentation/testing:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
@@ -2870,7 +2808,6 @@ importers:
       typemoq: ^2.1.0
       typescript: ~4.4.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/build-tools': link:../../tools/build
@@ -2914,7 +2851,6 @@ importers:
 
   ../../test-apps/display-performance-test-app:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
@@ -2954,7 +2890,6 @@ importers:
       typescript: ~4.4.0
       webpack: 4.42.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
@@ -2997,7 +2932,6 @@ importers:
 
   ../../test-apps/display-test-app:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
@@ -3048,7 +2982,6 @@ importers:
       typescript: ~4.4.0
       webpack: 4.42.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -3133,7 +3066,6 @@ importers:
 
   ../../test-apps/imjs-importer:
     specifiers:
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
@@ -3153,7 +3085,6 @@ importers:
       typescript: ~4.4.0
       yargs: ^16.0.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3432,7 +3363,6 @@ importers:
   ../../test-apps/ui-test-app:
     specifiers:
       '@axe-core/react': ^4.1.1
-      '@bentley/backend-itwin-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
@@ -3506,7 +3436,6 @@ importers:
       typescript: ~4.4.0
       webpack: 4.42.0
     dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -8976,6 +8905,7 @@ packages:
       debug: 4.3.2
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /agentkeepalive/4.1.4:
     resolution: {integrity: sha512-+V/rGa3EuU74H6wR04plBb7Ks10FbtUQgRj/FQOG7uUIEuaINI+AiqJR1k6t3SVNs7o7ZjIdus6706qqzVq8jQ==}
@@ -9403,7 +9333,7 @@ packages:
       multistream: 2.1.1
       mysql2: 2.3.0
       rimraf: 3.0.2
-      sequelize: 6.6.5_mysql2@2.3.0+tedious@12.3.0
+      sequelize: 6.7.0_mysql2@2.3.0+tedious@12.3.0
       tedious: 12.3.0
       to-readable-stream: 2.1.0
       tslib: 2.3.1
@@ -13871,6 +13801,7 @@ packages:
       debug: 4.3.2
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /human-signals/1.1.1:
     resolution: {integrity: sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw==}
@@ -19647,8 +19578,8 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: true
 
-  /sequelize/6.6.5_mysql2@2.3.0+tedious@12.3.0:
-    resolution: {integrity: sha512-QyRrJrDRiwuiILqTMHUA1yWOPIL12KlfmgZ3hnzQwbMvp2vJ6fzu9bYJQB+qPMosck4mBUggY4Cjoc6Et8FBIQ==}
+  /sequelize/6.7.0_mysql2@2.3.0+tedious@12.3.0:
+    resolution: {integrity: sha512-OVw3psUggqQT9kYg5Z9fja/BMdBxX/Ua3Bwx2yif5g6QuYEE4UfWq5jW6LmbacGwgK6bgZs05Q2zCkJZCDFrSA==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       mariadb: '*'

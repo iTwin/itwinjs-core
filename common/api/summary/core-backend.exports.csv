@@ -206,6 +206,7 @@ public;class LinkElement
 public;LinkModel 
 public;LinkPartition 
 internal;LocalhostIpcHost
+internal;LocalhostIpcHostOpts
 beta;LockConflict 
 beta;LockControl
 internal;LockMap = Map

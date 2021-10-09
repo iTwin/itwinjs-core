@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelCloudEnvironment, IModelHubClient } from "@bentley/imodelhub-client";
-import { AzureFileHandler } from "@bentley/imodelhub-client/lib/itwin-client/file-handlers";
+import { AzureFileHandler } from "@bentley/imodelhub-client/lib/cjs/itwin-client/file-handlers";
 import { ITwinRegistryClientWrapper } from "../common/ITwinRegistryClientWrapper";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 

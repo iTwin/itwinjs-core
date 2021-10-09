@@ -106,7 +106,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 
 /core/backend                   @imodeljs/admins
 /core/transformer               @MichaelBelousov @ColinKerr
-/core/backend-itwin-client      @calebmshafer @ramanujam-raman
 /core/bentley                   @imodeljs/admins
 /core/common                    @imodeljs/admins @imodeljs/display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne

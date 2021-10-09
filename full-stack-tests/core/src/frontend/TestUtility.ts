@@ -101,7 +101,7 @@ export class TestUtility {
     const accessToken = await IModelApp.getAccessToken();
     const iModelId = await this.iTwinPlatformEnv.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
-    return iModelId;
+    return iModelId!;
   }
 
   /** Purges all acquired briefcases for the current user for the specified iModel, if the specified threshold of acquired briefcases is exceeded */

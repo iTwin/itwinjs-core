@@ -829,7 +829,7 @@ export class IModelHubClientError extends IModelHubError {
 
 // @public
 export enum IModelHubClientLoggerCategory {
-    FileHandlers = "backend-itwin-client.FileHandlers",
+    FileHandlers = "imodelhub-client.FileHandlers",
     // @internal (undocumented)
     IModelBank = "imodelhub-client.iModelBank",
     IModelHub = "imodelhub-client.iModelHub"

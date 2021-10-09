@@ -154,13 +154,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/backend-itwin-client",
-      "projectFolder": "core/backend-itwin-client",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-quantity",
       "projectFolder": "core/quantity",
       "reviewCategory": "common",

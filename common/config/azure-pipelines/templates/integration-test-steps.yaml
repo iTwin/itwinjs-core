@@ -23,8 +23,6 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to backend-itwin-client
-
       node ./common/scripts/install-run-rush build -v --to itwin-registry-client
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
@@ -57,11 +55,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: "core/backend"
     displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "core/backend-itwin-client"
-    displayName: "Run Backend iTwin Client Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -115,14 +108,6 @@ steps:
     inputs:
       testResultsFiles: "core/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Backend iTwin Client Test Results"
-    inputs:
-      testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend iTwin Client Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 

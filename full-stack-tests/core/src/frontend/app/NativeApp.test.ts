@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { NativeApp } from "@itwin/core-frontend";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { TestRpcInterface } from "../../common/RpcInterfaces";

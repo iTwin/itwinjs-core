@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
-import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@itwin/core-frontend";
+import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
 import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUtility } from "../TestUtility";
 
@@ -30,7 +30,7 @@ describe("FeatureOverrides", () => {
   before(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") ;
+    spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
@@ -48,7 +48,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target , {}, undefined);
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -73,7 +73,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target , {}, undefined);
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {}, undefined);
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);

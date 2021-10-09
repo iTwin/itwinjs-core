@@ -11,10 +11,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@bentley/backend-itwin-client",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -543,10 +539,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-      "name": "https-proxy-agent",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "i18next",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -656,7 +648,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "nodemon",

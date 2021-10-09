@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
-import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";

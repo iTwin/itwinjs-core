@@ -41,7 +41,6 @@
     "ignore-styles": "^5.0.1"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
