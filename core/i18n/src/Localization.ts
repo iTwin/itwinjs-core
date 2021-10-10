@@ -159,7 +159,7 @@ export class ITwinLocalization implements Localization {
 
   /** override the language detected in the browser
    * @internal */
-  public changeLanguage(language: string): void {
+  public async changeLanguage(language: string) {
     this._i18next.changeLanguage(language);
   }
 

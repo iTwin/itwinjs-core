@@ -90,8 +90,10 @@ export interface Localization {
   getNamespacePromise(name: string): Promise<void> | undefined;
   /** Get the list of available languages for translations */
   getLanguageList(): string[];
-  /** Change the language for translations. This overrides the language from the browser. */
-  changeLanguage(language: string): void;
+  /** Change the language for translations. This overrides the language from the browser, for tests.
+   * @internal
+  */
+  changeLanguage(language: string): Promise<void>;
 }
 
 /** An empty [[Localization]] used if one is not provided to [IModelApp]($frontend). Does not perform localizations (merely returns the key.)
@@ -106,5 +108,5 @@ export class EmptyLocalization implements Localization {
   public unregisterNamespace(): void { }
   public getNamespacePromise(): Promise<void> | undefined { return undefined; }
   public getLanguageList(): string[] { return []; }
-  public changeLanguage(): void { }
+  public async changeLanguage() { }
 }

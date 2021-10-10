@@ -10,8 +10,8 @@ import { TranslationOptions } from 'i18next';
 // @public
 export class ITwinLocalization implements Localization {
     constructor(options?: LocalizationOptions);
-    // @internal (undocumented)
-    changeLanguage(language: string): void;
+    // @internal
+    changeLanguage(language: string): Promise<void>;
     // @internal
     getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)

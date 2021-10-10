@@ -5032,18 +5032,15 @@ export type LocalFileName = string;
 // @public
 export interface Localization {
     changeLanguage(language: string): void;
-    // (undocumented)
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
     getLanguageList(): string[];
-    // (undocumented)
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
+    // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
-    // (undocumented)
     registerNamespace(namespace: string, setDefault?: true): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 

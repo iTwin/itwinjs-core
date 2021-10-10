@@ -70,7 +70,7 @@ class IntegrationTestsApp extends NoRenderApp {
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     await NoRenderApp.startup({ ...opts, localization: new ITwinLocalization({ urlTemplate: this.supplyUrlTemplate() }) });
-    IModelApp.localization.changeLanguage("en-PSEUDO");
+    await IModelApp.localization.changeLanguage("en-PSEUDO");
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyITwinBackendAssets("lib/assets");
     copyITwinFrontendAssets("lib/public");
