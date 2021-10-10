@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
@@ -14,7 +15,6 @@ import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
 import sinon = require("sinon");
-
 describe("Content", () => {
 
   let imodel: IModelConnection;
@@ -734,7 +734,7 @@ class ECClassHierarchy {
     const derivedClassHierarchy = new Map();
 
     const query = "SELECT SourceECInstanceId AS ClassId, TargetECInstanceId AS BaseClassId FROM meta.ClassHasBaseClasses";
-    for await (const row of imodel.query(query)) {
+    for await (const row of imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
       const { classId, baseClassId } = row;
 
       const baseClasses = baseClassHierarchy.get(classId);
@@ -768,8 +768,8 @@ class ECClassHierarchy {
   }
   public async getClassInfo(schemaName: string, className: string) {
     const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
-    const result = await this._imodel.queryRows(classQuery, [className, schemaName]);
-    const { id } = result.rows[0];
+    const result = await this._imodel.createQueryReader(classQuery, QueryBinder.from([className, schemaName])).toArray(QueryRowFormat.UseJsPropertyNames);
+    const { id } = result[0];
     return {
       id,
       baseClassIds: this.getAllBaseClassIds(id),

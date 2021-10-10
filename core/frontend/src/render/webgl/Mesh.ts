@@ -168,7 +168,7 @@ export class MeshGraphic extends Graphic {
       if (instances instanceof PatternBuffers) {
         buffers = instances;
       } else {
-        const instancesRange = InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
+        const instancesRange = instances.range ?? InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
         buffers = InstanceBuffers.create(instances, instancesRange);
         if (!buffers)
           return undefined;

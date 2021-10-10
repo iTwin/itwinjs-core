@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Enhancements and improvements to particle systems.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
