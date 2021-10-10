@@ -1366,9 +1366,9 @@ The `ninezone-test-app` was used to test and demonstrate the now deprecated "nin
 
 ## Localization Changes
 
-In previous versions, localization was provided via the I18N class. ITwinJs has been updated to make use of any class that implements the [Localization]($common) interface. Additionally, users formerly had the option of providing `I18nOptions` via [IModelAppOptions]($frontend). In `3.0`, this functionality can instead be achieved by passing an implementation of [Localization]($common) directly via [IModelAppOptions.localization]($frontend). **It is important to note that in the absence of this option, an [EmptyLocalization]($common) will be used, and strings will not be localized.**
+In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an instance of [Localization]($common) via [IModelAppOptions.localization]($frontend). If none is supplied, an [EmptyLocalization]($common) will be used and strings will not be localized.
 
- It is encouraged to make use of the [ITwinLocalization]($i18n) class, as this is a viable implementation of [Localization]($common). The behavior of this class can be customized by passing an instance of [LocalizationOptions]($i18n) into the constructor.
+The [ITwinLocalization]($i18n) class supplies the default implementation of [Localization]($common). and may be customized via [LocalizationOptions]($i18n) in the constructor.
 
 The previous way to provide localization options:
 ```ts
@@ -1386,8 +1386,6 @@ const localizationOptions: LocalizationOptions = {
 
 await IModelApp.startup({ localization: new ITwinLocalization(localizationOptions) });
 ```
-
-Internally, the [ITwinLocalization]($i18n) class makes use of the [i18next package](https://www.i18next.com/). Usage of the deprecated `i18next-xhr-backend` package has been removed in favor of `i18next-http-backend`.
 
 ## Improve/Enhance particle systems
 
