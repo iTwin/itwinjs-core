@@ -12,7 +12,9 @@ import * as HttpApi from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
 
-/** @public */
+/** Options for ITwinLocalization
+ *  @public
+ */
 interface LocalizationOptions {
   urlTemplate: string;
 }

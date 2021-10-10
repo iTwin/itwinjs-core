@@ -2702,7 +2702,7 @@ export interface EmphasizeElementsProps {
 // @public
 export class EmptyLocalization implements Localization {
     // (undocumented)
-    changeLanguage(): void;
+    changeLanguage(): Promise<void>;
     // (undocumented)
     getEnglishString(_namespace: string, key: string | string[]): string;
     // (undocumented)
@@ -5031,7 +5031,8 @@ export type LocalFileName = string;
 
 // @public
 export interface Localization {
-    changeLanguage(language: string): void;
+    // @internal
+    changeLanguage(language: string): Promise<void>;
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
     getLanguageList(): string[];
     getLocalizedKeys(inputString: string): string;
