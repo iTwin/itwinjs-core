@@ -9,7 +9,8 @@ import {
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
   SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -24,7 +25,7 @@ describe("DisplayStyle", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
@@ -32,7 +33,7 @@ describe("DisplayStyle", () => {
     if (imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should clone correctly", () => {

@@ -16,6 +16,7 @@ describe("Cached decorations", () => {
   let imodel: IModelConnection;
 
   before(async () => {
+    await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -127,7 +128,7 @@ describe("Cached decorations", () => {
       const cachedC = cache.get(cachableDecoratorB);
       expect(cachedC).to.not.be.undefined;
       expect(cachedC!.length).to.equal(1); // verify only one decoration was added (as seen above in decorate())
-      const cachedDecorationC = cachedC![0]!;
+      const cachedDecorationC = cachedC![0];
       expect(cachedDecorationC === cachedDecorationB).to.be.true; // verify that this cached decoration is the previous one
 
       await dropAndVerifyEmptyCache(vp, cachableDecoratorB, cache);

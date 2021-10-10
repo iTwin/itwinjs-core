@@ -7,7 +7,7 @@ import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-c
 import { ProgressInfo } from "@bentley/itwin-client";
 import { BeDuration, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { IModelVersion, SyncMode } from "@itwin/core-common";
-import { BriefcaseConnection, CheckpointConnection, IModelApp, IModelConnection, MockRender, NativeApp } from "@itwin/core-frontend";
+import { BriefcaseConnection, CheckpointConnection, IModelApp, IModelConnection, NativeApp } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { usingOfflineScope } from "../HttpRequestHook";
@@ -19,10 +19,10 @@ describe("Opening IModelConnection (#integration)", () => {
   let testChangeSetId: string;
 
   before(async () => {
-    await MockRender.App.startup({
+    await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
       hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
-    });
+    }, true);
     Logger.initializeToConsole();
 
     await TestUtility.initialize(TestUsers.regular);
@@ -43,7 +43,7 @@ describe("Opening IModelConnection (#integration)", () => {
 
   after(async () => {
     await TestUtility.purgeAcquiredBriefcases(testIModelId);
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   const doTest = async () => {

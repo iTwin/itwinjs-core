@@ -428,13 +428,13 @@ describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should support canceling operation", async () => {
@@ -556,10 +556,10 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
 
   const tree = owner.tileTree;
   expect(tree).not.to.be.undefined;
-  return tree! as IModelTileTree ;
+  return tree! as IModelTileTree;
 }
 
-describe("mirukuru TileTree", () => {
+describe.skip("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {

@@ -8,11 +8,11 @@ import { DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
 import { DevTools, PingTestResult } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-describe("DevTools", () => {
+describe.skip("DevTools", () => {
   let devTools: DevTools;
 
   before(async () => {
-    await TestUtility.startFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
 
     const iModelRpcProps: IModelRpcProps = {
       iModelId: "test",

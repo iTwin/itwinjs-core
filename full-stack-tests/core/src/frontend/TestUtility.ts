@@ -7,7 +7,7 @@ import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-be
 import { ITwin } from "@bentley/itwin-registry-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, MockRender, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
@@ -126,15 +126,21 @@ export class TestUtility {
     };
   }
 
+  private static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
+  private static createDefaultRenderSystem() { return new MockRender.System(); }
+
   /** Helper around the different startup workflows for different app types.
    * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.
    *
    * Otherwise, IModelApp.startup is used directly.
    */
-  public static async startFrontend(config?: IModelAppOptions): Promise<void> {
+  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean): Promise<void> {
+    opts = opts ? opts : TestUtility.iModelAppOptions;
+    if (mockRender)
+      opts.renderSys = this.systemFactory();
     if (ProcessDetector.isElectronAppFrontend)
-      return ElectronApp.startup({ iModelApp: config } );
-    return IModelApp.startup(config);
+      return ElectronApp.startup({ iModelApp: opts });
+    return IModelApp.startup(opts);
   }
 
   /** Helper around the different shutdown workflows for different app types.
@@ -142,8 +148,30 @@ export class TestUtility {
    *
    */
   public static async shutdownFrontend(): Promise<void> {
+    this.systemFactory = () => TestUtility.createDefaultRenderSystem();
     if (ProcessDetector.isElectronAppFrontend)
       return ElectronApp.shutdown();
     return IModelApp.shutdown();
   }
 }
+
+// export class MockRenderApp {
+//   public static systemFactory: MockRender.SystemFactory = () => MockRenderApp.createDefaultRenderSystem();
+
+//   public static async startup(opts?: IModelAppOptions): Promise<void> {
+//     opts = opts ? opts : {};
+//     opts.renderSys = this.systemFactory();
+//     if (ProcessDetector.isElectronAppFrontend)
+//       await ElectronApp.startup({ iModelApp: opts } );
+//     await IModelApp.startup(opts);
+//   }
+//   public static async shutdown(): Promise<void> {
+//     this.systemFactory = () => MockRenderApp.createDefaultRenderSystem();
+//     await IModelApp.shutdown();
+//     if (ProcessDetector.isElectronAppFrontend)
+//       await ElectronApp.shutdown();
+//     await IModelApp.shutdown();
+//   }
+
+//   protected static createDefaultRenderSystem() { return new MockRender.System(); }
+// }

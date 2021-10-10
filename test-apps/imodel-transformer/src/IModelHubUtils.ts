@@ -20,9 +20,9 @@ export namespace IModelHubUtils {
   async function signIn(): Promise<AccessToken> {
     const client = new ElectronAuthorizationBackend();
     await client.initialize({
-      clientId: "imodeljs-electron-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization itwinjs",
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
     return new Promise<AccessToken>((resolve, reject) => {
       NativeHost.onAccessTokenChanged.addListener((token) => {

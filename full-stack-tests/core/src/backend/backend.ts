@@ -106,7 +106,6 @@ async function init() {
     await IModelHost.startup(iModelHost);
   }
 
-  // Start the backend
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();

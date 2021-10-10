@@ -165,13 +165,6 @@ steps:
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
-    displayName: "Publish Native App Full Stack Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
-      testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
     displayName: "Publish Presentation Full Stack Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/presentation/lib/test/junit_results.xml"

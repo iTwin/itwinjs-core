@@ -6,15 +6,16 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
 } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel2 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
@@ -24,7 +25,7 @@ describe("ModelState", () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
     if (imodel3) await imodel3.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("ModelSelectors should hold models", () => {
