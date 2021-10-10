@@ -16,6 +16,7 @@ import { getTileProps } from "../integration/TileUpload.test";
 import { IModelJsFs } from "../../IModelJsFs";
 
 import sinon = require("sinon");
+import { HubMock } from "..";
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
   activityId: "activity123",
@@ -93,8 +94,8 @@ describe("TileCache, open v2", async () => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     const tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    // const checkpointsV2Handler = IModelHost.hubAccess;
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").get(() => mockCheckpointV2);
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
     // Mock blockcacheVFS daemon

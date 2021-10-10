@@ -13,6 +13,7 @@ import { SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../core-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { HubMock } from "..";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -142,6 +143,7 @@ describe("Checkpoint Manager", () => {
     snapshot.saveChanges();
     snapshot.close();
 
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => { throw new ResponseError(IModelHubStatus.Unknown, "Feature is disabled."); });
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {

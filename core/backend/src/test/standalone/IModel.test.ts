@@ -30,6 +30,7 @@ import {
   SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
+import { HubMock } from "../HubMock";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -1878,7 +1879,9 @@ describe("iModel", () => {
       dbAlias: "testDb",
       storageType: "azure?sas=1",
     };
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").get(() => mockCheckpointV2);
+
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock BlobDaemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1934,8 +1937,8 @@ describe("iModel", () => {
       dbAlias: "testDb",
       storageType: "azure?sas=1",
     };
-    const checkpointsV2Handler = IModelHost.hubAccess;
-    sinon.stub(checkpointsV2Handler, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1955,8 +1958,8 @@ describe("iModel", () => {
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsV2Handler = IModelHost.hubAccess;
-    sinon.stub(checkpointsV2Handler, "queryV2Checkpoint").callsFake(async () => undefined);
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
