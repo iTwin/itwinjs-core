@@ -614,7 +614,8 @@ export class PresentationManager {
    * @beta
    */
   public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
-  /** Retrieves property data in simplified format for multiple elements specified by class
+  /**
+   * Retrieves property data in simplified format for multiple elements specified by class
    * or all element.
    * @alpha
    */
@@ -636,6 +637,31 @@ export class PresentationManager {
     }
 
     return this.getMultipleElementProperties(requestOptions);
+  }
+
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
+    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
+
+    const elementProperties: ElementProperties[] = [];
+    for (const entry of elementIds) {
+      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+        const content = await this.getContent({
+          ...optionsNoElementClasses,
+          descriptor: {
+            displayType: DefaultContentDisplayTypes.PropertyPane,
+            contentFlags: ContentFlags.ShowLabels,
+          },
+          rulesetOrId: "ElementProperties",
+          keys,
+        });
+        return buildElementsProperties(content);
+      });
+      elementProperties.push(...properties);
+    }
+
+    return { total: elementsCount, items: elementProperties };
   }
 
   /**
@@ -718,31 +744,6 @@ export class PresentationManager {
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
     diagnosticsListener && response.diagnostics && diagnosticsListener([response.diagnostics]);
     return JSON.parse(response.result, reviver);
-  }
-
-  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
-    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
-    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
-    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
-
-    const elementProperties: ElementProperties[] = [];
-    for (const entry of elementIds) {
-      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
-        const content = await this.getContent({
-          ...optionsNoElementClasses,
-          descriptor: {
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            contentFlags: ContentFlags.ShowLabels,
-          },
-          rulesetOrId: "ElementProperties",
-          keys,
-        });
-        return buildElementsProperties(content);
-      });
-      elementProperties.push(...properties);
-    }
-
-    return { total: elementsCount, items: elementProperties };
   }
 
   /**
