@@ -2700,6 +2700,28 @@ export interface EmphasizeElementsProps {
 }
 
 // @public
+export class EmptyLocalization implements Localization {
+    // (undocumented)
+    changeLanguage(): Promise<void>;
+    // (undocumented)
+    getEnglishString(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getLanguageList(): string[];
+    // (undocumented)
+    getLocalizedKeys(inputString: string): string;
+    // (undocumented)
+    getLocalizedString(key: string | string[]): string;
+    // (undocumented)
+    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getNamespacePromise(): Promise<void> | undefined;
+    // (undocumented)
+    registerNamespace(): Promise<void>;
+    // (undocumented)
+    unregisterNamespace(): void;
+}
+
+// @public
 export interface EntityIdAndClassId {
     classId: Id64String;
     id: Id64String;
