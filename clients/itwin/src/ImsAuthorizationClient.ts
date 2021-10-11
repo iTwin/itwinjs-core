@@ -10,15 +10,17 @@ import { Client } from "./Client";
 
 /** @beta */
 export class ImsAuthorizationClient extends Client {
-  public constructor() {
-    super();
-    this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
-  }
+  protected override baseUrl = "https://ims.bentley.com";
 
   public override async getUrl() {
-    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY && this.baseUrl)
-      return this.baseUrl;
-    else
-      return super.getUrl();
+    if (this._url)
+      return this._url;
+
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY) {
+      // Strip trailing '/'
+      this._url = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY.replace(/\/$/, "");
+      return this._url;
+    }
+    return super.getUrl();
   }
 }
