@@ -318,7 +318,7 @@ export class IModelApp {
    * This method must be called before any iModel.js frontend services are used.
    * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * await IModelApp.startup( {applicationId: myAppId} );
+   * await IModelApp.startup( {applicationId: myAppId, localization: new ITwinLocalization() } );
    * ```
    * @param opts The options for configuring IModelApp
    */
