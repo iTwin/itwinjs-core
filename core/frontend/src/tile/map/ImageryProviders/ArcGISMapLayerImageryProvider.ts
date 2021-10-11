@@ -13,7 +13,7 @@ import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
 import {
-  ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
 } from "../../internal";
 
@@ -27,6 +27,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
+  private _tileMap: ArcGISTileMap|undefined;
   public serviceJson: any;
   constructor(settings: MapLayerSettings) {
     super(settings, false);
@@ -106,26 +107,37 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
   protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) {
-    if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
+    if (!this._tileMap || tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
       resolveChildren();
       return;
     }
 
-    const quadId = tile.quadId;
-    const row = quadId.row * 2;
-    const column = quadId.column * 2;
-    const level = quadId.level + 1;
-    const available = [false, false, false, false];
+    // const quadId = tile.quadId;
+    // const row = quadId.row * 2;
+    // const column = quadId.column * 2;
+    // const level = quadId.level + 1;
+    // const available = [false, false, false, false];
 
-    getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${row}/${column}/2/2?f=json`).then((json) => {
-      if (Array.isArray(json.data))
-        for (let i = 0; i < 4; i++)
-          available[i] = json.data[i] !== 0;
+    // getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${row}/${column}/2/2?f=json`).then((json) => {
+    //   if (Array.isArray(json.data))
+    //     for (let i = 0; i < 4; i++)
+    //       available[i] = json.data[i] !== 0;
 
-      resolveChildren(available);
-    }).catch((_error) => {
-      resolveChildren(available);
-    });
+    //   resolveChildren(available);
+    // }).catch((_error) => {
+    //   resolveChildren(available);
+    // });
+
+    void (async () => {
+      try {
+        if (this._tileMap) {
+          const available = await this._tileMap.getChildrenAvailability(tile.quadId);
+          resolveChildren(available);
+        }
+      } catch {
+        resolveChildren([false, false, false, false]);
+      }
+    })();
 
   }
 
@@ -145,8 +157,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (json !== undefined) {
       this.serviceJson = json;
       if (json.capabilities) {
+        const nbLods = json.tileInfo?.lods?.length;
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
         this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
+        if (this._tileMapSupported)
+          this._tileMap = new ArcGISTileMap(this._settings.url, this._requestContext, nbLods);
       }
       if (json.copyrightText) this._copyrightText = json.copyrightText;
       if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
