@@ -6,6 +6,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
+// import { ITwinPreferencesAccess } from "./map-layers";
 
 /**
  * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
@@ -20,6 +21,8 @@ export class MapLayersUI {
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
+  // public static iTwinAccess: ITwinPreferencesAccess;
+
   /** Used to initialize the MapLayersAPI when used as a package. If `registerItemsProvider` is true then the
    * UiItemsProvider will automatically insert the UI items into the host applications UI. If it is false then
    * explicitly add widget definition to a specific FrontStage definition using the following syntax.
@@ -29,6 +32,8 @@ export class MapLayersUI {
    * ```
    */
   public static async initialize(registerItemsProvider = true): Promise<void> {
+    // MapLayersUI.iTwinAccess = itwinConfig;
+
     // register namespace containing localized strings for this package
     await IModelApp.localization.registerNamespace(this.localizationNamespace);
 

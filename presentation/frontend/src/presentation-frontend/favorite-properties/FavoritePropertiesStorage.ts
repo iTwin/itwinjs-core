@@ -103,8 +103,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
 
     // try to check the old namespace
     setting = await IModelApp.userPreferences.get({
-      token: async () => requestContext.accessToken,
-      iTwinId: projectId,
+      accessToken,
+      iTwinId,
       iModelId: imodelId,
       key: `${DEPRECATED_PROPERTIES_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
     });
@@ -115,28 +115,28 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     return undefined;
   }
 
-  public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void> {
+  public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void> {
     if (!(await this.isSignedIn()) || undefined === IModelApp.userPreferences) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const accessToken = await IModelApp.getAccessToken();
     await IModelApp.userPreferences.save({
-      token: async () => requestContext.accessToken,
-      iTwinId: projectId,
+      accessToken,
+      iTwinId,
       iModelId: imodelId,
       key: `${DEPRECATED_PROPERTIES_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
       content: Array.from(properties),
     });
   }
 
-  public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+  public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
     if (!(await this.isSignedIn()) || undefined === IModelApp.userPreferences) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const accessToken = await IModelApp.getAccessToken();
     const setting = await IModelApp.userPreferences.get({
-      token: async () => requestContext.accessToken,
-      iTwinId: projectId,
+      accessToken,
+      iTwinId,
       iModelId: imodelId,
       key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}`,
     });
@@ -149,8 +149,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     }
     const accessToken = await IModelApp.getAccessToken();
     await IModelApp.userPreferences.save({
-      token: async () => requestContext.accessToken,
-      iTwinId: projectId,
+      accessToken,
+      iTwinId,
       iModelId: imodelId,
       key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}`,
       content: orderInfos,

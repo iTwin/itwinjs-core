@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 
 /**
  * Argument for methods that must supply an iTwinId
@@ -20,7 +19,7 @@ export interface ITwinIdArg {
  * @beta
  */
 export interface TokenArg {
-  token?: () => Promise<AccessToken>;
+  accessToken?: AccessToken;
 }
 
 /**

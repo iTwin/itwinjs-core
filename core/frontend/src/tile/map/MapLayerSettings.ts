@@ -6,7 +6,7 @@
 import { MapLayerSource } from "../internal";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { BeEvent, GuidString } from "@bentley/bentleyjs-core";
+import { BeEvent, GuidString } from "@itwin/core-bentley";
 
 /** @internal */
 export interface MapLayerSetting {
@@ -36,7 +36,7 @@ export interface MapLayerSourceArg {
  *
  * @internal
  */
-export class MapLayerSettingsService {
+export class MapLayerPreferences {
   /** Event raised whenever a source is added, replaced or removed:
    *    changeType : Type of changed occurred.
    *    oldSource : Source that was removed or replaced.
@@ -54,7 +54,7 @@ export class MapLayerSettingsService {
    * @param storeOnIModel if true store the settings object on the model, if false store it on the project
    */
   public static async storeSource(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean> {
-    const token = undefined !== IModelApp.authorizationClient ? IModelApp.authorizationClient.getAccessToken : undefined;
+    const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     const sourceJSON = source.toJSON();
     const mapLayerSetting: MapLayerSetting = {
@@ -64,16 +64,16 @@ export class MapLayerSettingsService {
       transparentBackground: sourceJSON.transparentBackground,
     };
 
-    const result: boolean = await MapLayerSettingsService.delete(sourceJSON.url, sourceJSON.name, iTwinId, iModelId, storeOnIModel);
+    const result: boolean = await MapLayerPreferences.delete(sourceJSON.url, sourceJSON.name, iTwinId, iModelId, storeOnIModel);
     if (result) {
       await IModelApp.userPreferences.save({
-        token,
+        accessToken,
         content: mapLayerSetting,
-        key: `${MapLayerSettingsService._preferenceKey}.${sourceJSON.name}`,
+        key: `${MapLayerPreferences._preferenceKey}.${sourceJSON.name}`,
         iTwinId,
         iModelId: storeOnIModel ? iModelId : undefined
       });
-      MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Added, undefined, MapLayerSource.fromJSON(mapLayerSetting));
+      MapLayerPreferences.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Added, undefined, MapLayerSource.fromJSON(mapLayerSetting));
       return true;
     } else {
       return false;
@@ -90,20 +90,20 @@ export class MapLayerSettingsService {
    * @param iModelId
    */
   public static async replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<void> {
-    const token = undefined !== IModelApp.authorizationClient ? IModelApp.authorizationClient.getAccessToken : undefined;
+    const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     let storeOnIModel = false;
     try {
       await IModelApp.userPreferences.delete({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${oldSource.name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${oldSource.name}`,
         iTwinId: projectId,
         iModelId
       });
     } catch (_err) {
       await IModelApp.userPreferences.delete({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${oldSource.name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${oldSource.name}`,
         iTwinId: projectId
       });
       storeOnIModel = true;
@@ -117,14 +117,14 @@ export class MapLayerSettingsService {
     };
 
     await IModelApp.userPreferences.save({
-      token,
-      key: `${MapLayerSettingsService._preferenceKey}.${newSource.name}`,
+      accessToken,
+      key: `${MapLayerPreferences._preferenceKey}.${newSource.name}`,
       iTwinId: projectId,
       iModelId: storeOnIModel ? iModelId : undefined,
       content: mapLayerSetting
     })
 
-    MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Replaced, oldSource, newSource);
+    MapLayerPreferences.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Replaced, oldSource, newSource);
   }
 
   /** Deletes the provided MapLayerSource by name from both the iTwin or iModel level.
@@ -134,25 +134,25 @@ export class MapLayerSettingsService {
    * @param iModelId
    */
   public static async deleteByName(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<void> {
-    const token = undefined !== IModelApp.authorizationClient ? IModelApp.authorizationClient.getAccessToken : undefined;
+    const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     try {
       await IModelApp.userPreferences.delete({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${source.name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${source.name}`,
         iTwinId,
         iModelId
       });
     } catch (_err) {
       // failed to store based on iModelId, attempt using iTwinId
       await IModelApp.userPreferences.delete({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${source.name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${source.name}`,
         iTwinId,
       });
     }
 
-    MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Removed, source, undefined);
+    MapLayerPreferences.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Removed, source, undefined);
   }
 
   /** Deletes the current setting with the provided key if it is defined at the same preference level.
@@ -168,68 +168,68 @@ export class MapLayerSettingsService {
    * @param storeOnIModel
    */
   private static async delete(url: string, name: string, projectId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
-    const token = undefined !== IModelApp.authorizationClient ? IModelApp.authorizationClient.getAccessToken : undefined;
+    const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     const itwinPrefernceByName = await IModelApp.userPreferences.get({
-      token,
-      key: `${MapLayerSettingsService._preferenceKey}.${name}`,
+      accessToken,
+      key: `${MapLayerPreferences._preferenceKey}.${name}`,
       iTwinId: projectId,
     });
 
     if (undefined !== itwinPrefernceByName && storeOnIModel) {
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: itwinPrefernceByName.name });
+      const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: itwinPrefernceByName.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (itwinPrefernceByName) {
-      const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: itwinPrefernceByName.name });
+      const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: itwinPrefernceByName.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.userPreferences.delete({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${itwinPrefernceByName.name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${itwinPrefernceByName.name}`,
         iTwinId: projectId,
       });
     }
 
     // check if setting with url already exists, if it does, delete it
-    const settingFromUrl = await MapLayerSettingsService.getByUrl(url, projectId, undefined);
+    const settingFromUrl = await MapLayerPreferences.getByUrl(url, projectId, undefined);
     if (settingFromUrl && storeOnIModel) {
-      const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
+      const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromUrl) {
-      const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
+      const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.userPreferences.delete({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${settingFromUrl.name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${settingFromUrl.name}`,
         iTwinId: projectId,
       });
     }
 
     if (iModelId) { // delete any settings on model so user can update them if theres collisions
       const settingOnIModelFromName = await IModelApp.userPreferences.get({
-        token,
-        key: `${MapLayerSettingsService._preferenceKey}.${name}`,
+        accessToken,
+        key: `${MapLayerPreferences._preferenceKey}.${name}`,
         iTwinId: projectId,
         iModelId,
       });
-      const settingFromUrlOnIModel = await MapLayerSettingsService.getByUrl(url, projectId, iModelId);
+      const settingFromUrlOnIModel = await MapLayerPreferences.getByUrl(url, projectId, iModelId);
       if (settingOnIModelFromName) {
-        const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.name });
+        const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.userPreferences.delete({
-          token,
-          key: `${MapLayerSettingsService._preferenceKey}.${settingOnIModelFromName.name}`,
+          accessToken,
+          key: `${MapLayerPreferences._preferenceKey}.${settingOnIModelFromName.name}`,
           iTwinId: projectId,
           iModelId
         });
       }
       if (settingFromUrlOnIModel) {
-        const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
+        const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.userPreferences.delete({
-          token,
-          key: `${MapLayerSettingsService._preferenceKey}.${settingFromUrlOnIModel.name}`,
+          accessToken,
+          key: `${MapLayerPreferences._preferenceKey}.${settingFromUrlOnIModel.name}`,
           iTwinId: projectId,
           iModelId
         });
@@ -244,11 +244,11 @@ export class MapLayerSettingsService {
    * @param iModelId
    */
   public static async getByUrl(url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined> {
-    const token = undefined !== IModelApp.authorizationClient ? IModelApp.authorizationClient.getAccessToken : undefined;
+    const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     const settingResponse = await IModelApp.userPreferences.get({
-      token,
-      key: MapLayerSettingsService._preferenceKey,
+      accessToken,
+      key: MapLayerPreferences._preferenceKey,
       iTwinId: projectId,
       iModelId,
     });
@@ -271,33 +271,33 @@ export class MapLayerSettingsService {
    * @throws if any of the calls to grab settings fail.
    */
   public static async getSources(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
-    const token = undefined !== IModelApp.authorizationClient ? IModelApp.authorizationClient.getAccessToken : undefined;
+    const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     const mapLayerList = [];
 
     try {
       const userResultByProject = await IModelApp.userPreferences.get({
-        token,
-        key: MapLayerSettingsService._preferenceKey,
+        accessToken,
+        key: MapLayerPreferences._preferenceKey,
         iTwinId: projectId,
       });
       if (undefined !== userResultByProject)
         mapLayerList.push(userResultByProject);
     } catch (err: any) {
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: err }));
+      throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: err }));
     }
 
     try {
       const userResultByImodel = await IModelApp.userPreferences.get({
-        token,
-        key: MapLayerSettingsService._preferenceKey,
+        accessToken,
+        key: MapLayerPreferences._preferenceKey,
         iTwinId: projectId,
         iModelId,
       });
       if (undefined !== userResultByImodel)
         mapLayerList.push(userResultByImodel)
     } catch (err: any) {
-      throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: err }));
+      throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: err }));
     }
 
     const savedMapLayerSources: MapLayerSource[] = [];

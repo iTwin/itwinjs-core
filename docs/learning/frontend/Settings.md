@@ -1,6 +1,6 @@
-# Saving and Retrieving Settings in iTwin.js
+# Saving and Retrieving User Preferences in iTwin.js
 
-Applications frequently need to persist settings across sessions. Examples include user preferences; tool settings; recently accessed models, views, or projects; user interface state; etc. Some settings are application specific, some are Project specific, and some are iModel specific. Settings are often specific to a particular user, but in some cases defaults settings are established that are available to all users.
+Applications frequently need to persist user preferences across sessions. Examples include tool settings; recently accessed models, views, or projects; user interface state; etc. Some settings are application specific, some are iTwin specific, and some are iModel specific.
 
 In theory, settings that are iModel-specific could be stored in the iModel itself, but in practice that is not optimal, because the transaction model for design data does not fit well with settings data, and it is undesirable to have to commit a new version of an iModel every time a setting is saved. Therefore, the Settings service described here should be used for those settings too.
 

@@ -7,7 +7,6 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/core-react";
 
 /**
@@ -21,11 +20,10 @@ export class UserSettingsStorage implements UiSettingsStorage {
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
-    const result = await IModelApp.settings.getUserSetting(accessToken, namespace, name, true);
-    const status = settingsStatusToUiSettingsStatus(result.status);
+    const result = await IModelApp.userPreferences.get({ accessToken, key: `${namespace}.${name}` });
     return {
-      status,
-      setting: result.setting,
+      status: UiSettingsStatus.Success,
+      setting: result,
     };
   }
 
@@ -33,11 +31,10 @@ export class UserSettingsStorage implements UiSettingsStorage {
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
-    const result = await IModelApp.settings.saveUserSetting(accessToken, setting, namespace, name, true);
-    const status = settingsStatusToUiSettingsStatus(result.status);
+    const result = await IModelApp.userPreferences.save({ accessToken, content: setting, key: `${namespace}.${name}` });
     return {
-      status,
-      setting: result.setting,
+      status: UiSettingsStatus.Success,
+      setting: result,
     };
   }
 
@@ -45,29 +42,10 @@ export class UserSettingsStorage implements UiSettingsStorage {
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
-    const result = await IModelApp.settings.deleteUserSetting(accessToken, namespace, name, true);
-    const status = settingsStatusToUiSettingsStatus(result.status);
+    const result = await IModelApp.userPreferences.delete({ accessToken, key: `${namespace}.${name}` });
     return {
-      status,
-      setting: result.setting,
+      status: UiSettingsStatus.Success,
+      setting: result,
     };
   }
-}
-
-/** @internal */
-export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus {
-  if (status === SettingsStatus.Success)
-    return UiSettingsStatus.Success;
-  else if (status === SettingsStatus.SettingNotFound)
-    return UiSettingsStatus.NotFound;
-  else if (status === SettingsStatus.AuthorizationError)
-    return UiSettingsStatus.AuthorizationError;
-  return UiSettingsStatus.UnknownError;
-}
-
-/** Alias for [[UserSettingsStorage]]
- * @beta
- * @deprecated use UserSettingsStorage
- */
-export class IModelAppUiSettings extends UserSettingsStorage {
 }

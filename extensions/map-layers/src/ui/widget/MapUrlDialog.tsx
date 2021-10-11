@@ -11,7 +11,7 @@ import { ModalDialogManager } from "@itwin/appui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
-  IModelApp, MapLayerImageryProviderStatus, MapLayerSettingsService, MapLayerSource,
+  IModelApp, MapLayerImageryProviderStatus, MapLayerPreferences, MapLayerSource,
   MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { MapLayerProps } from "@itwin/core-common";
@@ -224,7 +224,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             } else {
               // Update service settings if storage is available and we are not prompting user for credentials
               if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
-                if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.iTwinId!, vp.iModel.iModelId!)))
+                if (!(await MapLayerPreferences.storeSource(source, storeOnIModel, vp.iModel.iTwinId!, vp.iModel.iModelId!)))
                   return;
               }
               const layerSettings = source.toLayerSettings(validation.subLayers);
@@ -303,12 +303,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           const vp = props.activeViewport;
           void (async () => {
             if (isSettingsStorageAvailable && vp) {
-              if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.iTwinId!, vp.iModel.iModelId!))) {
+              try {
+                await MapLayerPreferences.replaceSource(props.mapLayerSourceToEdit!, source, vp.iModel.iTwinId!, vp.iModel.iModelId!);
+              } catch (err: any) {
                 const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
                 return;
               }
-
             }
           })();
           return;

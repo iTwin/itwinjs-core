@@ -10,7 +10,6 @@ import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPro
 import {
   createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
 } from "@itwin/presentation-frontend";
-import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { PropertyData } from "@itwin/components-react";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
@@ -279,12 +278,11 @@ describe("Favorite properties", () => {
 
     it("favorite properties survive Presentation re-initialization", async () => {
       const storage = new Map<string, any>();
-      sinon.stub(IModelApp.settings, "saveUserSetting").callsFake(async (_, value, _settingNs, settingId) => {
-        storage.set(settingId, value);
-        return new SettingsResult(SettingsStatus.Success);
+      sinon.stub(IModelApp.userPreferences, "save").callsFake(async (arg) => {
+        storage.set(arg.key, arg.content);
       });
-      sinon.stub(IModelApp.settings, "getUserSetting").callsFake(async (_, _settingNs, settingId) => {
-        return new SettingsResult(SettingsStatus.Success, undefined, storage.get(settingId));
+      sinon.stub(IModelApp.userPreferences, "get").callsFake(async (arg) => {
+        return storage.get(arg.key);
       });
 
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);

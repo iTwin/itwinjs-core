@@ -12,7 +12,7 @@ import {
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { MapLayerSettingsService } from "../../imodeljs-frontend";
+import { MapLayerPreferences } from "../../core-frontend";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
@@ -49,7 +49,7 @@ interface MapLayerSourceProps {
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
- * @see [[MapLayerSettingsService]]
+ * @see [[MapLayerPreferences]]
  * @internal
  */
 export class MapLayerSource {
@@ -204,7 +204,7 @@ export class MapLayerSources {
 
     if (iModel && iModel.iTwinId && iModel.iModelId) {
       try {
-        (await MapLayerSettingsService.getSources(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
+        (await MapLayerPreferences.getSources(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
       }

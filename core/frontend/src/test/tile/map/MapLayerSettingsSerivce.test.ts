@@ -4,25 +4,40 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 
-import { MapLayerSettingsService } from "../../../tile/map/MapLayerSettings";
+import { MapLayerPreferences } from "../../../tile/map/MapLayerSettings";
 import { MapLayerSource } from "../../../tile/map/MapLayerSources";
 import { IModelApp } from "../../../IModelApp";
-import { setup, restore } from "./UserPreferencesMock.test";
+import { UserPreferencesAccess } from "../../../UserPreferences";
 
 chai.should();
-describe.only("MapLayerSettingsService", () => {
-  const contextId: GuidString = Guid.createValue();
+describe.only("MapLayerPreferences", () => {
+  const iTwinId: GuidString = Guid.createValue();
   const iModelId: GuidString = Guid.createValue();
   const testName: string = `test${Guid.createValue()}`;
+  const storage = new Map<string, any>();
 
   before(async () => {
-    setup();
+    const mockPreferences: UserPreferencesAccess = {
+      get: async (arg: any) => {
+        return storage.get(arg.key);
+      },
+      save: async (arg: any) => {
+        storage.set(arg.key, arg.content);
+      },
+      delete: async (arg: any) => {
+        storage.delete(arg.key);
+      }
+    }
+
+    sinon.stub(IModelApp, "userPreferences").returns(mockPreferences);
+    // sinon.stub(IModelApp.userPreferences, "get").callsFake(mockPreferences.get);
+    // sinon.stub(IModelApp.userPreferences, "save").callsFake(mockPreferences.save);
+    // sinon.stub(IModelApp.userPreferences, "delete").callsFake(mockPreferences.delete);
   });
   after(async () => {
     sinon.restore();
-    restore();
   });
 
   it("should store and retrieve layer", async () => {
@@ -33,23 +48,23 @@ describe.only("MapLayerSettingsService", () => {
       transparentBackground: true,
     });
     chai.assert.isDefined(layer);
-    let sources = await MapLayerSettingsService.getSources(contextId, iModelId);
+    let sources = await MapLayerPreferences.getSources(iTwinId, iModelId);
     let foundSource = sources.some((value) => { return value.name === testName; });
     chai.assert.isFalse(foundSource, "expect not to find the source as it has not been stored yet");
-    const success = await MapLayerSettingsService.storeSource(layer!, false, contextId, iModelId);
+    const success = await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
 
-    sources = await MapLayerSettingsService.getSources(contextId, iModelId);
+    sources = await MapLayerPreferences.getSources(iTwinId, iModelId);
     foundSource = sources.some((value) => { return value.name === testName; });
     chai.assert.isTrue(foundSource);
     await IModelApp.userPreferences.delete({
-      key: `${(MapLayerSettingsService as any).SourceNamespace}.${testName}`,
-      iTwinId: contextId,
+      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
+      iTwinId: iTwinId,
     });
 
     const val = await IModelApp.userPreferences.get({
-      key: `${(MapLayerSettingsService as any).SourceNamespace}.${testName}`,
-      iTwinId: contextId,
+      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
+      iTwinId: iTwinId,
     });
     chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
@@ -61,18 +76,18 @@ describe.only("MapLayerSettingsService", () => {
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSource(layer!, false, contextId, iModelId);
+    let success = await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSource(layer!, true, contextId, iModelId);
+    success = await MapLayerPreferences.storeSource(layer!, true, iTwinId, iModelId);
     chai.assert.isFalse(success, "cannot store the iModel setting that conflicts with an iTwin setting");
     await IModelApp.userPreferences.delete({
-      key: `${(MapLayerSettingsService as any).SourceNamespace}.${testName}`,
-      iTwinId: contextId,
+      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
+      iTwinId: iTwinId,
     });
 
     const val = await IModelApp.userPreferences.get({
-      key: `${(MapLayerSettingsService as any).SourceNamespace}.${testName}`,
-      iTwinId: contextId,
+      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
+      iTwinId: iTwinId,
     });
     chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
@@ -84,18 +99,18 @@ describe.only("MapLayerSettingsService", () => {
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSource(layer!, true, contextId, iModelId);
+    let success = await MapLayerPreferences.storeSource(layer!, true, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSource(layer!, false, contextId, iModelId);
+    success = await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
     await IModelApp.userPreferences.delete({
-      key: `${(MapLayerSettingsService as any).SourceNamespace}.${testName}`,
-      iTwinId: contextId,
+      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
+      iTwinId: iTwinId,
     });
 
     const val = await IModelApp.userPreferences.get({
-      key: `${(MapLayerSettingsService as any).SourceNamespace}.${testName}`,
-      iTwinId: contextId,
+      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
+      iTwinId: iTwinId,
     });
     chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
@@ -110,12 +125,12 @@ describe.only("MapLayerSettingsService", () => {
 
     chai.assert.isDefined(layer);
 
-    chai.assert.isTrue(await MapLayerSettingsService.storeSource(layer!, true, contextId, iModelId));
-    await MapLayerSettingsService.deleteByName(layer!, contextId, iModelId);
-    chai.assert.isUndefined(MapLayerSettingsService.getByUrl(layer!.url, contextId, iModelId));
+    chai.assert.isTrue(await MapLayerPreferences.storeSource(layer!, true, iTwinId, iModelId));
+    await MapLayerPreferences.deleteByName(layer!, iTwinId, iModelId);
+    chai.assert.isUndefined(MapLayerPreferences.getByUrl(layer!.url, iTwinId, iModelId));
 
-    chai.assert.isTrue(await MapLayerSettingsService.storeSource(layer!, false, contextId, iModelId));
-    await MapLayerSettingsService.deleteByName(layer!, contextId, iModelId);
-    chai.assert.isUndefined(MapLayerSettingsService.getByUrl(layer!.url, contextId, iModelId));
+    chai.assert.isTrue(await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId));
+    await MapLayerPreferences.deleteByName(layer!, iTwinId, iModelId);
+    chai.assert.isUndefined(MapLayerPreferences.getByUrl(layer!.url, iTwinId, iModelId));
   });
 });

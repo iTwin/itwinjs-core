@@ -9,7 +9,7 @@
 
 import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource, MapLayerSourceChangeType,
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerPreferences, MapLayerSource, MapLayerSourceChangeType,
   MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
@@ -216,7 +216,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   }, [setMapSources]);
 
   /**
-  * Handle change events in the MapLayerSettingsService
+  * Handle change events in the MapLayerPreferences
   */
   React.useEffect(() => {
     const handleLayerSourceChange = async (changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource, newSource?: MapLayerSource) => {
@@ -247,9 +247,9 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         }
       }
     };
-    MapLayerSettingsService.onLayerSourceChanged.addListener(handleLayerSourceChange);
+    MapLayerPreferences.onLayerSourceChanged.addListener(handleLayerSourceChange);
     return (() => {
-      MapLayerSettingsService.onLayerSourceChanged.removeListener(handleLayerSourceChange);
+      MapLayerPreferences.onLayerSourceChanged.removeListener(handleLayerSourceChange);
     });
   }, [updateMapSources]);
 

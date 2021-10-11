@@ -11,6 +11,7 @@ const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com
 import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import { AuthorizationClient, EmptyLocalization, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { UiAdmin } from "@itwin/appui-abstract";
+import { TelemetryManager } from "@bentley/telemetry-client";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";

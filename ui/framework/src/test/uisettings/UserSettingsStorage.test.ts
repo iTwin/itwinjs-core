@@ -4,16 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-<<<<<<< HEAD
-import { AuthorizedFrontendRequestContext, IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import { UiSettingsStatus } from "@bentley/ui-core";
-import { settingsStatusToUiSettingsStatus, UserSettingsStorage } from "../../ui-framework";
-=======
 import { IModelApp, MockRender } from "@itwin/core-frontend";
-import { SettingsAdmin, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsStatus } from "@itwin/core-react";
-import { settingsStatusToUiSettingsStatus, UserSettingsStorage } from "../../appui-react";
->>>>>>> master
+import { UserSettingsStorage } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 
 describe("UserSettingsStorage", () => {
@@ -26,40 +19,38 @@ describe("UserSettingsStorage", () => {
     await MockRender.App.shutdown();
   });
 
-  beforeEach(() => {
-  });
-
   it("should save setting", async () => {
-    const saveUserSetting = sinon.stub<SettingsAdmin["saveUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success));
-    sinon.stub(IModelApp, "settings").get(() => ({
-      saveUserSetting,
-    }));
+    const storage = new Map<string, any>();
+
+    const getStorage = sinon.stub(IModelApp.userPreferences, "get").callsFake(async (arg) => {
+      return storage.get(arg.key);
+    });
+    sinon.stub(IModelApp.userPreferences, "save").callsFake(async (arg) => {
+      storage.set(arg.key, arg.content);
+    });
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ getAccessToken: async () => { return "TestToken"; } }));
     const sut = new UserSettingsStorage();
     await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
-    saveUserSetting.calledOnceWithExactly(sinon.match.any, "testvalue", "TESTNAMESPACE", "TESTNAME", true).should.true;
+
+    // getStorage.calledOnceWithExactly({ content: "testvalue", key: "TESTNAMESPACE.TESTNAME" }).should.true;
   });
 
   it("should delete setting", async () => {
-    const deleteUserSetting = sinon.stub<SettingsAdmin["deleteUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success));
-    sinon.stub(IModelApp, "settings").get(() => ({
-      deleteUserSetting,
-    }));
+    const deleteStorage = sinon.stub(IModelApp.userPreferences, "delete").callsFake(async (_arg) => { });
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ getAccessToken: async () => { return "TestToken"; } }));
     const sut = new UserSettingsStorage();
     await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
-    deleteUserSetting.calledOnceWithExactly(sinon.match.any, "TESTNAMESPACE", "TESTNAME", true).should.true;
+    deleteStorage.calledOnceWithExactly({ key: "TESTNAMESPACE.TESTNAME" }).should.true;
   });
 
   it("should get setting", async () => {
-    const getUserSetting = sinon.stub<SettingsAdmin["getUserSetting"]>().resolves(new SettingsResult(SettingsStatus.Success, undefined, "testvalue"));
-    sinon.stub(IModelApp, "settings").get(() => ({
-      getUserSetting,
-    }));
+    const getStorage = sinon.stub(IModelApp.userPreferences, "get").callsFake(async (_arg) => {
+      return "testvalue";
+    });
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ getAccessToken: async () => { return "TestToken"; } }));
     const sut = new UserSettingsStorage();
     const settingResult = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
-    getUserSetting.calledOnceWithExactly(sinon.match.any, "TESTNAMESPACE", "TESTNAME", true).should.true;
+    getStorage.calledOnceWithExactly({ key: "TESTNAMESPACE.TESTNAME" }).should.true;
     settingResult.setting.should.eq("testvalue");
   });
 
@@ -84,22 +75,4 @@ describe("UserSettingsStorage", () => {
     expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
   });
 
-});
-
-describe("settingsStatusToUiSettingsStatus", () => {
-  it("should return Success", () => {
-    settingsStatusToUiSettingsStatus(SettingsStatus.Success).should.eq(UiSettingsStatus.Success);
-  });
-
-  it("should return NotFound", () => {
-    settingsStatusToUiSettingsStatus(SettingsStatus.SettingNotFound).should.eq(UiSettingsStatus.NotFound);
-  });
-
-  it("should return AuthorizationError", () => {
-    settingsStatusToUiSettingsStatus(SettingsStatus.AuthorizationError).should.eq(UiSettingsStatus.AuthorizationError);
-  });
-
-  it("should return UnknownError", () => {
-    settingsStatusToUiSettingsStatus(SettingsStatus.UrlError).should.eq(UiSettingsStatus.UnknownError);
-  });
 });
