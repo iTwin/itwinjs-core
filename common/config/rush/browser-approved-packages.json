@@ -559,6 +559,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "i18next-fs-backend",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "i18next-http-backend",
       "allowedCategories": [ "frontend" ]
     },

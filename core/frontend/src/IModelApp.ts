@@ -302,10 +302,10 @@ export class IModelApp {
   }
 
   /**
-   * This method must be called before any iModel.js frontend services are used.
-   * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
+   * This method must be called before any other `@itwin/core-frontend` methods are used.
+   * Somewhere in your startup code, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * await IModelApp.startup( {applicationId: myAppId, localization: new ITwinLocalization() } );
+   * await IModelApp.startup( {applicationId: myAppId} );
    * ```
    * @param opts The options for configuring IModelApp
    */

@@ -11,6 +11,8 @@ import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
 import { FormatDiagnosticReporter } from "../../ecschema-editing";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import * as fsBackend from "i18next-fs-backend";
+
 import sinon = require("sinon");
 
 /* eslint-disable-next-line deprecation/deprecation */
@@ -117,7 +119,7 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("should log expected error with translated message", async () => {
-      const i18n = new ITwinLocalization();
+      const i18n = new ITwinLocalization({ backendPlugin: fsBackend });
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
       registerNamespace.resolves(Promise.resolve());
@@ -133,7 +135,7 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("no message args, should log expected error with translated message", async () => {
-      const i18n = new ITwinLocalization();
+      const i18n = new ITwinLocalization({ backendPlugin: fsBackend });
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
       registerNamespace.resolves(Promise.resolve());

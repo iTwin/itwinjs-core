@@ -16,7 +16,8 @@ import { Localization } from "@itwin/core-common";
  *  @public
  */
 export interface LocalizationOptions {
-  urlTemplate: string;
+  urlTemplate?: string;
+  backendPlugin?: object;
 }
 
 /** Supplies localizations for iTwin.js
@@ -58,8 +59,8 @@ export class ITwinLocalization implements Localization {
       initOptions.debug = true;
 
     this._i18next.use(i18nextBrowserLanguageDetector)
-      .use(HttpApi.default ?? HttpApi)
       .use(TranslationLogger)
+      .use(options?.backendPlugin ?? HttpApi.default ?? HttpApi)
       .init(initOptions);
   }
 
