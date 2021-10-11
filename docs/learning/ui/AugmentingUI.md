@@ -4,11 +4,11 @@ There are two basic ways to augment the UI of a host IModelApp. The first way is
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
-A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When constructing the stage the ui-framework code will request item definitions from the UiItemsProvider. These calls will always include the current frontstage's Id and usage. An extension can use the info to decide which items to add. The stageId name's used by an application may not be useful unless the extension is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values.
+A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When constructing the stage the UiFramework code will request item definitions from the UiItemsProvider. These calls will always include the current frontstage's Id and usage. An extension can use the info to decide which items to add. The stageId name's used by an application may not be useful unless the extension is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values.
 
 ### Adding a ToolButton
 
-Below is the UiItemsProvider function called when ui-framework is populating toolbars.  The [ToolbarUsage]($appui-abstract) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-abstract) specifies if the toolbar is horizontal or vertical.
+Below is the UiItemsProvider function called when appui-react is populating toolbars.  The [ToolbarUsage]($appui-abstract) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-abstract) specifies if the toolbar is horizontal or vertical.
 
 ```ts
 public provideToolbarButtonItems(stageId: string, stageUsage: string,
@@ -17,7 +17,7 @@ public provideToolbarButtonItems(stageId: string, stageUsage: string,
 
 ### Status Bar Item
 
-Below is the UiItemsProvider function called when ui-framework is populating the status bar footer.
+Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
 
 ```ts
 public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[]
@@ -25,7 +25,7 @@ public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusB
 
 ### Widget Item
 
-Below is the UiItemsProvider function called when ui-framework is populating StagePanels. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what zone/area in the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
+Below is the UiItemsProvider function called when appui-react is populating StagePanels. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what zone/area in the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
 
 Starting in version 2.17 Widgets can specify if they support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
 

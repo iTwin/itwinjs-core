@@ -13,7 +13,7 @@ various utility classes, functions and React hooks for working with a UI.
 - [RectangleProps]($core-react) - Describes 2d bounds
 - [SizeProps]($core-react) - Describes 2d dimensions
 - [Timer]($core-react) - Notifies handler after a set interval
-- [UiCore]($core-react) - Manages the I18N service for the ui-core package
+- [UiCore]($core-react) - Manages the I18N service for the core-react package
 - [useDisposable]($core-react) - Custom hook which creates a disposable object and manages its disposal on unmount or factory method change
 - [useEffectSkipFirst]($core-react) - Custom hook which works like useEffect hook, but does not invoke callback when effect is triggered for the first time
 - [useOptionalDisposable]($core-react) - Custom hook which calls the factory method to create a disposable object which might as well be undefined. If the result was a disposable object, the hook takes care of disposing it when necessary.
