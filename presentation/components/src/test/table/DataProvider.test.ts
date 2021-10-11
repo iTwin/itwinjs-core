@@ -10,7 +10,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
   SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
@@ -51,7 +51,7 @@ describe("TableDataProvider", () => {
     const mocks = mockPresentationManager();
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
-    Presentation.setLocalization(new I18N("", {
+    Presentation.setLocalization(new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
     await initializeLocalization();

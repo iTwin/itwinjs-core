@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@itwin/backend-webpack-tools": "workspace:*",
+    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
@@ -88,7 +89,9 @@
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0",
     "webpack": "4.42.0",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "express-ws": "^5.0.2",
+    "@types/express-ws": "^3.0.1"
   },
   "browserslist": [
     "electron 8.0.0",

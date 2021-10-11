@@ -263,7 +263,7 @@ class DictionaryWithReservations<TKey, TValue> {
 }
 type ITwinAndIModelIdsKey = [string | undefined, string | undefined];
 
-// istanbul ignore nex
+// istanbul ignore next
 function iTwinAndIModelIdsKeyComparer(lhs: ITwinAndIModelIdsKey, rhs: ITwinAndIModelIdsKey) {
   const iTwinIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");
   return (iTwinIdCompare !== 0) ? iTwinIdCompare : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
