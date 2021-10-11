@@ -1371,6 +1371,7 @@ In previous versions, localization was provided via the I18N class. iTwin.js has
 The [ITwinLocalization]($i18n) class supplies the default implementation of [Localization]($common), and may be customized via [LocalizationOptions]($i18n) in the constructor.
 
 The previous way to provide localization options:
+
 ```ts
 const i18nOptions: I18NOptions = {
   urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
@@ -1378,7 +1379,9 @@ const i18nOptions: I18NOptions = {
 
 await IModelApp.startup({ i18n: i18nOptions });
 ```
+
 Now becomes:
+
 ```ts
 const localizationOptions: LocalizationOptions = {
   urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
@@ -1390,3 +1393,13 @@ await IModelApp.startup({ localization: new ITwinLocalization(localizationOption
 ## Improve/Enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
+## Buildology
+
+`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
+
+All packages will continue to build a CommonJS variant, but will now deliver it to `lib/cjs`. All frontend and shared packages will now build an ESModules variant, and deliver it to `lib/esm`. This change is intended to improve the bundle sizes of applications and allow for dynamic imports in order to tree-shake unused code.
+
+If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
+
+This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).
