@@ -133,25 +133,18 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/deep-assign': ^0.1.0
-      '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
-      deep-assign: ^2.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
-      lodash: ^4.17.10
       mocha: ^8.3.2
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
       webpack: 4.42.0
-    dependencies:
-      deep-assign: 2.0.0
-      lodash: 4.17.21
     devDependencies:
       '@bentley/itwin-client': link:../itwin
       '@itwin/build-tools': link:../../tools/build
@@ -160,8 +153,6 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
-      '@types/deep-assign': 0.1.1
-      '@types/lodash': 4.14.175
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
