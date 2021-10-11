@@ -16,8 +16,9 @@ describe("Package initialization", () => {
   });
 
   after(async () => {
-    HyperModeling.shutdown();
+    expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
+    expect(HyperModeling.resources).to.be.undefined;
   });
 
   it("throws if not initialized", () => {
@@ -45,8 +46,9 @@ describe("Package configuration", () => {
   });
 
   after(async () => {
-    HyperModeling.shutdown();
+    expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
+    expect(HyperModeling.resources).to.be.undefined;
   });
 
   function expectMarkerConfig(actual: SectionMarkerConfig, expected: SectionMarkerConfig): void {

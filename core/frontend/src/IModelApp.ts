@@ -11,6 +11,7 @@ const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@itwin/appui-abstract";
+import { BeEvent } from "@itwin/core-bentley";
 import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
   AuthorizationClient, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
@@ -191,6 +192,9 @@ export class IModelApp {
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
 
+  /** Event raised just before the frontend IModelApp is to be shut down */
+  public static readonly onBeforeShutdown = new BeEvent<() => void>();
+
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
@@ -315,15 +319,15 @@ export class IModelApp {
     this._initialized = true;
 
     opts = opts ?? {};
-    this._securityOptions = opts.security || {};
+    this._securityOptions = opts.security ?? {};
 
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
     // Initialize basic application details before log messages are sent out
-    this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
-    this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
+    this.sessionId = opts.sessionId ?? Guid.createValue();
+    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iModel.js
+    this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
 
@@ -390,6 +394,10 @@ export class IModelApp {
   public static async shutdown() {
     if (!this._initialized)
       return;
+
+    // notify listeners that this IModelApp is about to be shut down.
+    this.onBeforeShutdown.raiseEvent();
+    this.onBeforeShutdown.clear();
 
     (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
 

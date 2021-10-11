@@ -56,9 +56,11 @@ export class HyperModeling {
   private static _markerConfig: SectionMarkerConfig = {};
   private static _graphicsConfig: SectionGraphicsConfig = {};
 
-  /** @internal */
-  public static shutdown() {
+  private static shutdown() {
     this.resources = undefined;
+    this._markerHandler = undefined;
+    this._markerConfig = {};
+    this._graphicsConfig = {};
   }
 
   /** Invoke this method to initialize the hypermodeling package for use. You *must* await the result before using any of this package's APIs.
@@ -75,6 +77,9 @@ export class HyperModeling {
       this.replaceConfiguration(config);
       return;
     }
+
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
 
     const namespace = "HyperModeling";
     await IModelApp.localization.registerNamespace(namespace);
