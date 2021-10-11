@@ -4,6 +4,10 @@
 
 ```ts
 
+import * as HttpApi from 'i18next-http-backend';
+import { i18n } from 'i18next';
+import * as i18nextBrowserLanguageDetector from 'i18next-browser-languagedetector';
+import { InitOptions } from 'i18next';
 import { Localization } from '@itwin/core-common';
 import { TranslationOptions } from 'i18next';
 
@@ -21,6 +25,8 @@ export class ITwinLocalization implements Localization {
     // @internal
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     getNamespacePromise(name: string): Promise<void> | undefined;
+    // (undocumented)
+    i18next: i18n;
     // @internal (undocumented)
     loadNamespace(name: string, i18nCallback: any): void;
     registerNamespace(name: string, setDefault?: true): Promise<void>;
@@ -31,7 +37,17 @@ export class ITwinLocalization implements Localization {
 // @public
 export interface LocalizationOptions {
     // (undocumented)
-    urlTemplate: string;
+    backendHttpOptions?: HttpApi.BackendOptions;
+    // (undocumented)
+    backendPlugin?: object;
+    // (undocumented)
+    detectorOptions?: i18nextBrowserLanguageDetector.DetectorOptions;
+    // (undocumented)
+    detectorPlugin?: object;
+    // (undocumented)
+    initOptions?: InitOptions;
+    // (undocumented)
+    urlTemplate?: string;
 }
 
 
