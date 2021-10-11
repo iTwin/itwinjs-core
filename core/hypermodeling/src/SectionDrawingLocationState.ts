@@ -7,15 +7,9 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import {
-  ClipVector, Transform, XYZProps,
-} from "@itwin/core-geometry";
-import {
-  Placement3d, SectionType,
-} from "@itwin/core-common";
-import {
-  DrawingViewState, IModelConnection, SheetViewState, SpatialViewState,
-} from "@itwin/core-frontend";
+import { Placement3d, QueryRowFormat, SectionType } from "@itwin/core-common";
+import { DrawingViewState, IModelConnection, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
+import { ClipVector, Transform, XYZProps } from "@itwin/core-geometry";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT
@@ -210,7 +204,7 @@ export class SectionDrawingLocationState {
   public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
-      for await (const row of iModel.query(selectSectionDrawingLocationStatesECSql))
+      for await (const row of iModel.query(selectSectionDrawingLocationStatesECSql, undefined, QueryRowFormat.UseJsPropertyNames))
         states.push(new SectionDrawingLocationState(row as SectionDrawingLocationStateData, iModel));
     } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.

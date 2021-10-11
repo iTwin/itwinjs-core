@@ -37,4 +37,9 @@ export enum FrontendLoggerCategory {
    * @alpha
    */
   FeatureTracking = "core-frontend.FeatureTracking",
+  /**
+   * The logger category used by RealityData
+   * @alpha
+   */
+  RealityData = "core-frontend.RealityData",
 }

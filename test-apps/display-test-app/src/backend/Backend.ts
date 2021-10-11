@@ -145,6 +145,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
       applicationName: "display-test-app",
     },
     mobileHost: hostOpts?.mobileHost,
+    localhostIpcHost: {
+      noServer: true,
+    },
   };
 
   /** register the implementation of our RPCs. */
@@ -158,6 +161,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     await AndroidHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
+    EditCommandAdmin.registerModule(editorBuiltInCommands);
   }
 
   // Set up logging (by default, no logging is enabled)

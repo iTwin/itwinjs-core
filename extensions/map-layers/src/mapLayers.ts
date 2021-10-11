@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp } from "@itwin/core-frontend";
-import { Localization } from "@itwin/core-common";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
@@ -18,7 +17,6 @@ import { ConfigurableUiManager } from "@itwin/appui-react";
  * @beta
  */
 export class MapLayersUI {
-  private static _localization?: Localization;
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
@@ -30,13 +28,12 @@ export class MapLayersUI {
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
    * ```
    */
-  public static async initialize(registerItemsProvider = true, localization?: Localization): Promise<void> {
+  public static async initialize(registerItemsProvider = true): Promise<void> {
     // register namespace containing localized strings for this package
-    this._localization = (localization ? localization : IModelApp.localization);
-    await this._localization.registerNamespace(this.localizationNamespace);
+    await IModelApp.localization.registerNamespace(this.localizationNamespace);
 
     // _uiItemsProvider always created to provide access to localization.
-    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(this._localization);
+    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(IModelApp.localization);
     if (registerItemsProvider)
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
     else
@@ -45,9 +42,7 @@ export class MapLayersUI {
 
   /** Unregisters the GeoTools internationalization service namespace */
   public static terminate() {
-    if (MapLayersUI._localization)
-      MapLayersUI._localization.unregisterNamespace(this.localizationNamespace);
-    MapLayersUI._localization = undefined;
+    IModelApp.localization.unregisterNamespace(this.localizationNamespace);
   }
 
   /** The internationalization service namespace. */

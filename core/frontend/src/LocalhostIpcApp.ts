@@ -10,14 +10,32 @@ import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTr
 import { IpcApp } from "./IpcApp";
 import { IModelAppOptions } from "./IModelApp";
 
+/** @internal */
+export interface LocalHostIpcAppOpts {
+  iModelApp?: IModelAppOptions;
+
+  localhostIpcApp?: {
+    socketPort?: number;
+    socketPath?: string;
+  };
+}
+
 class LocalTransport extends IpcWebSocketTransport {
   private _client: WebSocket;
   private _pending?: IpcWebSocketMessage[] = [];
 
-  public constructor(port: number) {
+  public constructor(opts: LocalHostIpcAppOpts) {
     super();
 
-    this._client = new WebSocket(`ws://localhost:${port}/`);
+    let url = "";
+    if (opts?.localhostIpcApp?.socketPath) {
+      url = opts?.localhostIpcApp?.socketPath;
+    } else {
+      const port = opts?.localhostIpcApp?.socketPort ?? 3002;
+      url = `ws://localhost:${port}/`;
+    }
+
+    this._client = new WebSocket(url);
 
     this._client.addEventListener("open", () => {
       const pending = this._pending!;
@@ -36,21 +54,13 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 }
 
-/** @internal */
-export interface LocalHostIpcAppOpts {
-  iModelApp?: IModelAppOptions;
-  localhostIpcApp?: {
-    socketPort?: number;
-  };
-}
-
 /**
  * To be used only by test applications that want to test web-based editing using localhost.
  *  @internal
  */
 export class LocalhostIpcApp {
   public static async startup(opts: LocalHostIpcAppOpts) {
-    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcApp?.socketPort ?? 3002);
+    IpcWebSocket.transport = new LocalTransport(opts);
     const ipc = new IpcWebSocketFrontend();
     await IpcApp.startup(ipc, opts);
   }

@@ -9,7 +9,7 @@ import * as path from "path";
 import * as moq from "typemoq";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import {
   FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
@@ -36,7 +36,7 @@ describe("FavoritePropertiesDataProvider", () => {
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setSelectionManager(selectionManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setLocalization(new I18N("", {
+    Presentation.setLocalization(new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
   });

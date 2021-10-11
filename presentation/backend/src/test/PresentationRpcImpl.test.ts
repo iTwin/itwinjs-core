@@ -6,21 +6,22 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions,
   ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs,
   DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ElementPropertiesRpcRequestOptions, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement,
-  Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
-  SelectionScopeRequestOptions, VariableValueTypes,
+  DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
+  Item, KeySet, MultiElementPropertiesRequestOptions, MultiElementPropertiesRpcRequestOptions, Node, NodeKey, NodePathElement, Paged, PageOptions,
+  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
+  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor,  createTestSelectClassInfo, ResolvablePromise,
+import {
+  createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
+  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestSelectClassInfo, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
@@ -1080,7 +1081,7 @@ describe("PresentationRpcImpl", () => {
 
     describe("getElementProperties", () => {
 
-      it("calls manager", async () => {
+      it("calls manager with single element options", async () => {
         const testElementProperties: ElementProperties = {
           class: "Test Class",
           id: "0x123",
@@ -1097,16 +1098,54 @@ describe("PresentationRpcImpl", () => {
             },
           },
         };
-        const managerOptions: ElementPropertiesRequestOptions<IModelDb> = {
+        const managerOptions: SingleElementPropertiesRequestOptions<IModelDb> = {
           imodel: testData.imodelMock.object,
           elementId: "0x123",
         };
         const managerResponse = testElementProperties;
-        const rpcOptions: PresentationRpcRequestOptions<ElementPropertiesRpcRequestOptions> = {
+        const rpcOptions: PresentationRpcRequestOptions<SingleElementPropertiesRpcRequestOptions> = {
           ...defaultRpcParams,
           elementId: "0x123",
         };
         const expectedRpcResponse = testElementProperties;
+        presentationManagerMock
+          .setup(async (x) => x.getElementProperties(managerOptions))
+          .returns(async () => managerResponse)
+          .verifiable();
+        const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(expectedRpcResponse);
+      });
+
+      it("calls manager with multi element options", async () => {
+        const testElementsProperties: ElementProperties[] = [{
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        }];
+        const managerOptions: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: testData.imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+          paging: testData.pageOptions,
+        };
+        const managerResponse = { total: 1, items: testElementsProperties };
+        const rpcOptions: PresentationRpcRequestOptions<MultiElementPropertiesRpcRequestOptions> = {
+          ...defaultRpcParams,
+          elementClasses: ["TestSchema:TestClass"],
+          paging: testData.pageOptions,
+        };
+        const expectedRpcResponse = { total: 1, items: testElementsProperties };
         presentationManagerMock
           .setup(async (x) => x.getElementProperties(managerOptions))
           .returns(async () => managerResponse)

@@ -1,0 +1,12 @@
+{
+  "check-coverage": true,
+  "statements": 100,
+  "functions": 100,
+  "branches": 100,
+  "lines": 100,
+  "exclude": [
+    "src/presentation-common.ts",
+    "src/test/**",
+    "lib/cjs/test/**"
+  ]
+}
