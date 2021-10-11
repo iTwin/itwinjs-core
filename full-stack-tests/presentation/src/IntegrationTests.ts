@@ -10,8 +10,8 @@ import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
@@ -69,7 +69,8 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, localization: new I18N("iModelJs", { urlTemplate: this.supplyUrlTemplate() }) });
+    await NoRenderApp.startup({ ...opts, localization: new ITwinLocalization({ urlTemplate: this.supplyUrlTemplate() }) });
+    await IModelApp.localization.changeLanguage("en-PSEUDO");
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyITwinBackendAssets("lib/assets");
     copyITwinFrontendAssets("lib/public");

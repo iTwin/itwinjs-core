@@ -8,7 +8,7 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
@@ -195,7 +195,7 @@ export class DisplayTestApp {
 
     const opts = {
       iModelApp: {
-        localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
+        localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
