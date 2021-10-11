@@ -13,7 +13,7 @@ import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON,
   DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
   DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRpcRequestOptions, ElementPropertiesRpcResult,
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, ItemJSON, KeySet,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, isSingleElementPropertiesRequestOptions, ItemJSON, KeySet,
   KeySetJSON, LabelDefinition, LabelDefinitionJSON, MultiElementPropertiesRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
   NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus,
   Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions,
@@ -244,6 +244,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   public override async getElementProperties(token: IModelRpcProps, requestOptions: MultiElementPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
   public override async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesRpcResult> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
+      if (!isSingleElementPropertiesRequestOptions(options)) {
+        options = enforceValidPageSize(options);
+      }
       return this.getManager(requestOptions.clientId).getElementProperties(options);
     });
   }
