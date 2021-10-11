@@ -56,6 +56,7 @@ export class HyperModeling {
   private static _markerConfig: SectionMarkerConfig = {};
   private static _graphicsConfig: SectionGraphicsConfig = {};
 
+  /** @internal */
   public static shutdown() {
     this.resources = undefined;
   }
