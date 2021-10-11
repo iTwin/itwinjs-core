@@ -99,7 +99,7 @@ export interface IModelAppOptions {
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
-  /** If present, supplies the [[Localization]] for this session. */
+  /** If present, supplies the [[Localization]] for this session. Defaults to [ITwinLocalization]($i18n). */
   localization?: Localization;
   /** If present, supplies the authorization information for various frontend APIs */
   authorizationClient?: AuthorizationClient;
@@ -226,7 +226,7 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[Localization]] for this session. Defaults to [[EmptyLocalization]] if not provided via IModelAppOptions. */
+  /** The [[Localization]] for this session. */
   public static get localization(): Localization { return this._localization; }
   /** The [[SettingsAdmin]] for this session. */
   public static get settings(): SettingsAdmin { return this._settings; }
