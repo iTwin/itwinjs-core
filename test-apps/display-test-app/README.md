@@ -76,12 +76,31 @@ The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n agai
 
 ## Debugging
 
-Debugging display-test-app can be accomplished using the following procedures, depending on which packages of iTwin.js you would like to step through:
+Debugging display-test-app can be accomplished using the following procedures to easily debug both the backend and frontend of the app.
 
-* frontend
-  * The frontend and common iTwin.js core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
-* backend
-  * Calls to the imodeljs-backend functionality may be debugged by opening Visual Studio Code to the root of this repository, navigating to the debug tab, and selecting either 'display-test-app Electron (backend)' or 'display-test-app Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
+In addition, the configuration allows setting breakpoints in any dependent package that lives within this monorepo (i.e. core-frontend or core-backend).
+
+1. Make sure the backend is built `npm run build:backend`
+1. Run `npm run start:webserver`
+    * Launches the react-scripts dev server, providing hot-module reloading of the frontend
+1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
+
+A more advanced debug experience will give you more quick turn around time for both backend and frontend changes:
+
+1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
+    * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
+    * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
+1. Run `npm run start:webserver` in a separate terminal
+    * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
+1. Launch the VSCode "display-test-app (electron)" or "display-test-app (chrome)" depending on which app type
+
+### What if a change is made in a dependent package in the monorepo?
+
+The display-test-app is part of a monorepo which is setup to link all packages with symlinks so any time you make a change in a dependent package, and run that package's `npm run build` script, the output will automatically be picked up by the application. The steps to pick up that change is different depending on if it was a backend or frontend change.
+
+For the frontend, if the page doesn't automatically refresh just refresh the page and the updated source will be available.
+
+For the backend, restart the debugger config to pick up the changes.
 
 ## Dependencies
 
