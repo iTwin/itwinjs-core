@@ -35,7 +35,7 @@ describe("ViewAttributes", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ localization: new ITwinLocalization() });
+    await MockRender.App.startup();
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,

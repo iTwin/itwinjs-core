@@ -66,7 +66,7 @@ describe("MapManagerSettings", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup({ localization: new ITwinLocalization() });
+    await MockRender.App.startup();
     await TestUtils.initialize();
   });
 

@@ -8,11 +8,14 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
-import { AuthorizationClient, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@itwin/appui-abstract";
+import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
+import {
+  AuthorizationClient, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+} from "@itwin/core-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -148,22 +151,6 @@ export interface ModalReturn {
  */
 interface IModelAppForDebugger {
   iModelAppForDebugger?: typeof IModelApp;
-}
-
-/** An empty [[Localization]] used if one is not provided to [IModelApp]($frontend). Does not perform localizations (merely returns the key.) */
-class EmptyLocalization implements Localization {
-  public constructor() {
-    Logger.logWarning("Localization", "No localization client provided. Localization will not be performed.");
-  }
-  public getLocalizedString(key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
-  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
-  public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
-  public getLocalizedKeys(inputString: string): string { return inputString; }
-  public async registerNamespace(): Promise<void> { }
-  public unregisterNamespace(): void { }
-  public getNamespacePromise(): Promise<void> | undefined { return undefined; }
-  public getLanguageList(): string[] { return []; }
-  public async changeLanguage() { }
 }
 
 /**
@@ -342,7 +329,7 @@ export class IModelApp {
 
     this._setupRpcRequestContext();
 
-    this._localization = opts.localization ?? new EmptyLocalization();
+    this._localization = opts.localization ?? new ITwinLocalization();
     const toolsNs = "CoreTools";
     [
       selectTool,

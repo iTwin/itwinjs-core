@@ -26,7 +26,7 @@ describe("InstanceKeyValueRenderer", () => {
   }
 
   before(async () => {
-    await NoRenderApp.startup({ localization: new ITwinLocalization() });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 

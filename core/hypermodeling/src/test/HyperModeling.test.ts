@@ -13,7 +13,7 @@ import { ITwinLocalization } from "@itwin/core-i18n";
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.
 describe("Package initialization", () => {
   before(async () => {
-    await IModelApp.startup({ localization: new ITwinLocalization() });
+    await IModelApp.startup();
   });
 
   after(async () => {
@@ -41,7 +41,7 @@ describe("Package initialization", () => {
 
 describe("Package configuration", () => {
   before(async () => {
-    await IModelApp.startup({ localization: new ITwinLocalization() });
+    await IModelApp.startup();
     await HyperModeling.initialize();
   });
 

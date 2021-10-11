@@ -32,7 +32,7 @@ describe("Presentation", () => {
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup({ localization: new ITwinLocalization() });
+    await NoRenderApp.startup();
     Presentation.terminate();
   });
 
