@@ -1,29 +1,12 @@
 sep=;
 Release Tag;API Item
-beta;AgentAuthorizationClient 
-beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 internal;AzureFileHandler 
-beta;class BackendAuthorizationClient 
-beta;BackendAuthorizationClientConfiguration
 public;BackendITwinClientLoggerCategory
-alpha;class BackendTelemetryClient 
-alpha;BackendTelemetryEvent 
 internal;BlobDownloader
 internal;BufferedStream 
-alpha;ClientAuthDetail
-alpha;ClientAuthIntrospectionManager
 internal;ConfigData
-beta;DelegationAuthorizationClient 
-beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 internal;HttpRequestHost
-internal;ImsClientAuthDetail 
-internal;ImsClientAuthIntrospectionManager 
-internal;ImsIntrospectionResponse 
-alpha;IntrospectionClient
-alpha;IntrospectionResponse 
-alpha;class IntrospectionResponseCache
 internal;LocalhostHandler 
-alpha;MemoryIntrospectionResponseCache 
 internal;ProgressData
 internal;StorageServiceFileHandler 
 internal;UrlFileHandler 

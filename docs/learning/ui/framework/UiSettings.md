@@ -50,7 +50,7 @@ The [AppUiSettings]($appui-react) class, which implements the UserSettingsProvid
 
     // initialize Presentation
     await Presentation.initialize({
-      activeLocale: IModelApp.i18n.languageList()[0],
+      activeLocale: IModelApp.i18n.getLanguageList()[0],
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 

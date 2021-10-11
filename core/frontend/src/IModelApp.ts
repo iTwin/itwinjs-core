@@ -9,8 +9,7 @@
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
-import { EmptyLocalization, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient, EmptyLocalization, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@itwin/appui-abstract";
@@ -334,6 +333,8 @@ export class IModelApp {
       this._localization = new EmptyLocalization();
       Logger.logWarning("Localization", "No localization client provided. Localization will not be performed.");
     }
+
+    await this.localization.registerNamespace("iModelJs", true);
 
     // first register all the core tools. Subclasses may choose to override them.
     const namespace = "CoreTools";

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
   createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
@@ -87,7 +87,7 @@ describe("Utils", () => {
   });
 
   describe("initializeLocalization", () => {
-    const i18nMock = moq.Mock.ofType<I18N>();
+    const i18nMock = moq.Mock.ofType<ITwinLocalization>();
 
     beforeEach(() => {
       i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));

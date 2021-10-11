@@ -9,7 +9,7 @@
 import "./SignOut.scss";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelApp } from "@itwin/core-frontend";
 import { getUserColor } from "@itwin/core-react";
 import { Button } from "@itwin/itwinui-react";
@@ -60,8 +60,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     const authorizationClient = IModelApp.authorizationClient;
 
     // istanbul ignore next
-    if (isFrontendAuthorizationClient(authorizationClient))
-      await authorizationClient.signOut();
+    if ((authorizationClient as BrowserAuthorizationClient).signOut !== undefined)
+      await (authorizationClient as BrowserAuthorizationClient).signOut();
     else
       Logger.logError(UiFramework.loggerCategory(this), "IModelApp.authorizationClient must be set for signOut");
   };

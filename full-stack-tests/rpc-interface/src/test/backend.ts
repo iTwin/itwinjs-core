@@ -37,8 +37,6 @@ const settings = new Settings(process.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

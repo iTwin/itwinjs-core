@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { NumberInput, Toggle } from "@itwin/core-react";
 import { Select } from "@itwin/itwinui-react";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
@@ -66,8 +66,8 @@ describe("MapManagerSettings", () => {
   };
 
   before(async () => {
+    await MockRender.App.startup({ localization: new ITwinLocalization() });
     await TestUtils.initialize();
-    await MockRender.App.startup({ localization: new I18N("iModelJs") });
   });
 
   after(async () => {
@@ -297,3 +297,4 @@ describe("MapManagerSettings", () => {
     component.unmount();
   });
 });
+

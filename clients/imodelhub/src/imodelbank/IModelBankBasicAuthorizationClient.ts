@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AuthorizationClient } from "@itwin/core-common";
 /** @packageDocumentation
  * @module iModelBankClient
  */
@@ -21,7 +21,7 @@ export function tokenFromUserCredentials(userCredentials: any): AccessToken {
  * be able to tolerate this BasicAccessToken.
  * @internal
  */
-export class IModelBankBasicAuthorizationClient implements FrontendAuthorizationClient {
+export class IModelBankBasicAuthorizationClient implements AuthorizationClient {
   private _token: AccessToken = "";
 
   public constructor(private _userCredentials: any) {
