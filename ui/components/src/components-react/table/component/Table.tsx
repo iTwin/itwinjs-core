@@ -83,7 +83,7 @@ interface ScrollState {
 }
 
 /** Properties for the Table React component
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
@@ -166,7 +166,7 @@ export interface CellProps {
 }
 
 /** Properties for a Table row
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface RowProps {
   index: number;
@@ -189,7 +189,7 @@ interface ReactDataGridColumnEventArgs {
 }
 
 /** Cell/Property Editor state
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface TableCellEditorState {
   active: boolean;
@@ -208,7 +208,7 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */
