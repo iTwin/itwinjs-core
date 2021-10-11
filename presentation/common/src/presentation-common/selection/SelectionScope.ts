@@ -7,7 +7,7 @@
  */
 
 /**
- * Data structure that describes a [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope)
+ * Data structure that describes a [selection scope]($docs/presentation/Unified-Selection/index#selection-scopes)
  *
  * @public
  */

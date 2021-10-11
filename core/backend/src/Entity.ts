@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -62,13 +62,6 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string) => val[propName] = (this as any)[propName], false);
     return val;
   }
-
-  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
-   * @param _opcode The operation that will be performed on the element.
-   * @note subclasses must override this method
-   * @alpha
-   */
-  public buildConcurrencyControlRequest(_opcode: DbOpcode): void { }
 
   /** Call a function for each property of this Entity.
    * @param func The callback to be invoked on each property

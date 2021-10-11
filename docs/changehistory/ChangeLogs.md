@@ -1,13 +1,13 @@
 ## Change Logs
 
-- [imodeljs-backend](../reference/imodeljs-backend/changelog)
+- [core-backend](../reference/core-backend/changelog)
 
-- [imodeljs-transformer](../reference/imodeljs-transformer/changelog)
+- [core-transformer](../reference/core-transformer/changelog)
 
-- [imodeljs-frontend](../reference/imodeljs-frontend/changelog)
+- [core-frontend](../reference/core-frontend/changelog)
 
-- [imodeljs-common](../reference/imodeljs-common/changelog)
+- [core-common](../reference/core-common/changelog)
 
-- [geometry-core](../reference/geometry-core/changelog)
+- [core-geometry](../reference/core-geometry/changelog)
 
-- [bentleyjs-core](../reference/bentleyjs-core/changelog)
+- [core-bentley](../reference/core-bentley/changelog)

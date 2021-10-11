@@ -1,6 +1,21 @@
-# Change Log - @bentley/eslint-plugin
+# Change Log - @itwin/eslint-plugin
 
-This log was last generated on Wed, 08 Sep 2021 14:36:01 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+_Version update only_
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:57 GMT
+
+_Version update only_
 
 ## 2.19.10
 Wed, 08 Sep 2021 14:36:01 GMT
@@ -109,7 +124,7 @@ Mon, 28 Jun 2021 16:20:11 GMT
 ### Updates
 
 - Output parent symbol and skip local files in no-internal eslint rule
-- Added no-internal-report command to @bentley/eslint-plugin
+- Added no-internal-report command to @itwin/eslint-plugin
 
 ## 2.16.10
 Thu, 22 Jul 2021 20:23:45 GMT

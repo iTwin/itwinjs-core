@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ModelsTab.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { NodeKey, RegisteredRuleset } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, DEPRECATED_Tree, TreeNodeItem } from "@bentley/ui-components";
-import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
+import { Id64String } from "@itwin/core-bentley";
+import { ModelProps, ModelQueryParams, QueryRowFormat } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
 import { Button, Checkbox } from "@itwin/itwinui-react";
+import { RegisteredRuleset } from "@itwin/presentation-common";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 
 interface ModelInfo {
   name: string;
@@ -99,8 +98,6 @@ class DocumentProperty {
 export interface ModelsProps {
   /** IModelConnection */
   iModelConnection: IModelConnection;
-  /** If doccodes do not exist, show flat list of models instead of presentation tree */
-  showFlatList?: boolean;
   /** Callback to display "loading" when entering an imodel */
   onEnter?: (viewIds: Id64String[]) => void;
   /** Show the toast message or not */
@@ -113,7 +110,6 @@ interface ModelsState {
   models: ModelInfo[];
   docCodes: DocCodeCategory[] | undefined;
   selectedNodes: TreeNodeItem[];
-  showTree: boolean;
 }
 
 /** @internal */
@@ -126,7 +122,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   constructor(props?: any, context?: any) {
     super(props, context);
 
-    this.state = { initialized: false, models: [], docCodes: undefined, showToast: this.props.showToast, selectedNodes: [], showTree: false };
+    this.state = { initialized: false, models: [], docCodes: undefined, showToast: this.props.showToast, selectedNodes: [] };
   }
 
   /** Load document codes when we mount */
@@ -248,7 +244,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
     const rows = [];
-    for await (const row of this.props.iModelConnection.query(ecsql)) {
+    for await (const row of this.props.iModelConnection.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     if (rows.length !== 1)
@@ -257,7 +253,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    for await (const model of this.props.iModelConnection.query(ecsql2)) {
+    for await (const model of this.props.iModelConnection.query(ecsql2, undefined, QueryRowFormat.UseJsPropertyNames)) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;
@@ -295,72 +291,6 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const _docCodes = this.state.docCodes!.slice();
     this.setState({ docCodes: _docCodes });
   }
-
-  /*
-  private async _getAllCategories(iModelConnection: IModelConnection) {
-     const categories: Id64Array = [];
-     for await (const row of iModelConnection.query("SELECT ECInstanceId as id FROM BisCore.SpatialCategory"))
-       categories.push(row.id);
-     return categories;
-  }
-
-  private async _manufactureViewStateProps(models: Id64String[]): Promise<ViewStateProps> {
-    // Use dictionary model in all props
-    const dictionaryId = IModel.dictionaryId;
-
-    // Get categories
-    const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM BisCore.SpatialCategory";
-    const rows = await this.props.iModelConnection.queryPage(ecsql);
-    const categories: Id64Array = [];
-    for (const category of rows)
-      categories.push(category.id);
-    // TODO: viewState.load() will cause 413s if there are too many categories specified in props, so for now we are forcing turning on categories on the viewports instead - Get categories
-    // TODO: Later on, once 413s are fixed in core, we should simply pass them via props.
-    // const categories: Id64Array = await this._getAllCategories(this.props.iModelConnection);
-
-    // Category Selector Props
-    const categorySelectorProps = {
-      categories: [],
-      code: Code.createEmpty(),
-      model: dictionaryId,
-      classFullName: "BisCore:CategorySelector",
-    };
-    // Model Selector Props
-    const modelSelectorProps = {
-      models,
-      code: Code.createEmpty(),
-      model: dictionaryId,
-      classFullName: "BisCore:ModelSelector",
-    };
-    // View Definition Props
-    const viewDefinitionProps = {
-      categorySelectorId: "",
-      displayStyleId: "",
-      code: Code.createEmpty(),
-      model: dictionaryId,
-      classFullName: "BisCore:SpatialViewDefinition",
-    };
-    // Display Style Props
-    const displayStyleProps = {
-      code: Code.createEmpty(),
-      model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
-      jsonProperties: {
-        styles: {
-          viewflags: {
-            renderMode: RenderMode.SmoothShade,
-            noSourceLights: false,
-            noCameraLights: false,
-            noSolarLight: false,
-            noConstruct: true,
-          },
-        },
-      },
-    };
-
-    return { displayStyleProps, categorySelectorProps, modelSelectorProps, viewDefinitionProps };
-  }
-  */
 
   /** Gets the model Ids that we want to view based on doc codes */
   private _getModelsFromDocCodes(): Id64String[] {
@@ -427,16 +357,11 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     if (this.state.docCodes) {
       viewedModels = this._getModelsFromDocCodes();
     } else {
-      if (this.props.showFlatList && !this.state.showTree) {
-        this.state.models.forEach((model: ModelInfo) => {
-          if (model.checked) {
-            viewedModels.push(model.modelProps!.id!);
-          }
-        });
-      } else {
-        const ids = this._getSelectedModelIds();
-        viewedModels = viewedModels.concat(ids);
-      }
+      this.state.models.forEach((model: ModelInfo) => {
+        if (model.checked && model.modelProps) {
+          viewedModels.push(model.modelProps.id!);
+        }
+      });
     }
 
     if (this.props.onEnter)
@@ -459,41 +384,11 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           }
         });
       });
-    } else if (this.props.showFlatList && !this.state.showTree) {
-      count = this.state.models.filter((model: ModelInfo) => model.checked).length;
     } else {
-      count = this.state.selectedNodes.length;
+      count = this.state.models.filter((model: ModelInfo) => model.checked).length;
     }
     return count > 0;
   }
-
-  private _getSelectedModelIds(): string[] {
-    const ids: string[] = [];
-    for (const node of this.state.selectedNodes) {
-      const key = this._dataProvider!.getNodeKey(node);
-      if (NodeKey.isInstancesNodeKey(key)) {
-        ids.push(...key.instanceKeys.map((k) => k.id));
-      }
-    }
-
-    return ids;
-  }
-
-  private _onCheckboxClick = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
-    for (const { node } of stateChanges) {
-      // toggle the state of the checkbox
-      const check = (node.checkBoxState === CheckBoxState.On) ? CheckBoxState.Off : CheckBoxState.On;
-
-      // get the selected nodes
-      const _selectedNodes = this.state.selectedNodes.slice();
-
-      // change the state of the selected node (which will recursively change any children)
-      await this._onNodesSelected(_selectedNodes, node, check);
-
-      // finally set the state
-      this.setState({ selectedNodes: _selectedNodes });
-    }
-  };
 
   /** Set item state for selected node and recursive change children if needed */
   private _onNodesSelected = async (_selectedNodes: TreeNodeItem[], node: TreeNodeItem, state: CheckBoxState) => {
@@ -518,18 +413,6 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     }
 
     return true;
-  };
-
-  private _getSelectedNodes(): string[] {
-    const selectedNodes: string[] = [];
-    this.state.selectedNodes.forEach((node: TreeNodeItem) => {
-      selectedNodes.push(node.id);
-    });
-    return selectedNodes;
-  }
-
-  private _onShowTree = () => {
-    this.setState({ showTree: true });
   };
 
   private renderContent() {
@@ -560,10 +443,9 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           ))}
         </div>
       );
-    } else if (this.props.showFlatList && !this.state.showTree) {
+    } else {
       return (
         <div className="models-list-container">
-          <Button className="showtree-button" styleType="high-visibility" onClick={this._onShowTree}>Show Tree</Button>
           <CheckListBox>
             {this.state.models.map((model: ModelInfo, i: number) => (
               <CheckListBoxItem key={i} label={model.name} checked={model.checked} onClick={() => this._onModelCheckboxClick(model)} />
@@ -571,19 +453,12 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           </CheckListBox>
         </div>
       );
-    } else {
-      return (
-        <div className="models-tree-container">
-          {/* eslint-disable-next-line react/jsx-pascal-case, deprecation/deprecation */}
-          {<DEPRECATED_Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
-        </div>
-      );
     }
   }
 
   private renderToastMessage() {
-    const toastTitle = UiFramework.translate("iModelIndex.toastTitle");
-    const toastMessage = UiFramework.translate("iModelIndex.toastMessage");
+    const toastTitle = IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.toastTitle");
+    const toastMessage = IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.toastMessage");
     return (
       <div className="toast slide">
         <div className="toast-image"><span className="icon icon-info-hollow"></span></div>
@@ -591,7 +466,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastTitle}</span>
           <span>{toastMessage}</span>
         </div>
-        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.translate("iModelIndex.learnMore")}</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.learnMore")}</a>
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );
@@ -601,7 +476,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     return (
       <div className="modelstab-container">
         {this.renderContent()}
-        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{UiFramework.translate("iModelIndex.enteriModel")}</Button>}
+        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.enteriModel")}</Button>}
         {this.state.showToast && this.renderToastMessage()}
       </div>
     );

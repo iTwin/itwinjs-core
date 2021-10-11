@@ -1,0 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-footer-message-button {
+  color: $buic-foreground-muted;
+  cursor: pointer;
+
+  &:hover {
+    color: $buic-foreground-activehover;
+  }
+
+  &:active {
+    color: $buic-foreground-activehover;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

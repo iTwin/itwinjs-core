@@ -6,15 +6,15 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@bentley/imodeljs-common";
+import { Guid, Id64 } from "@itwin/core-bentley";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
-  BackendRequestContext, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
+  FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
   InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg,
   OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -227,7 +227,6 @@ class Component extends FunctionalComponentElement {
 }
 
 describe("Functional Domain", () => {
-  const requestContext = new BackendRequestContext();
 
   afterEach(() => {
     sinonRestore();
@@ -251,7 +250,7 @@ describe("Functional Domain", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     ClassRegistry.registerModule({ TestFuncPartition, TestFuncModel, Breakdown, Component, TestFuncAspect }, TestSchema);
 
-    await FunctionalSchema.importSchema(requestContext, iModelDb); // eslint-disable-line deprecation/deprecation
+    await FunctionalSchema.importSchema(iModelDb); // eslint-disable-line deprecation/deprecation
 
     let commits = 0;
     let committed = 0;
@@ -267,7 +266,7 @@ describe("Functional Domain", () => {
 
     IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchemas(requestContext, [join(__dirname, "../assets/TestFunctional.ecschema.xml")]);
+    await iModelDb.importSchemas([join(__dirname, "../assets/TestFunctional.ecschema.xml")]);
 
     iModelDb.saveChanges("Import TestFunctional schema");
     assert.equal(commits, 1);

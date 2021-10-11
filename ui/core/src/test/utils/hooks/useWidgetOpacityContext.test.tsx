@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import {
   useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext,
-} from "../../../ui-core";
+} from "../../../core-react";
 
 function WidgetOpacityChild() {
   const isInitialMount = React.useRef(true);

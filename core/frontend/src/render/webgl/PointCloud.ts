@@ -7,8 +7,8 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { FeatureIndexType } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { FeatureIndexType } from "@itwin/core-common";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -36,6 +36,7 @@ export class PointCloudGeometry extends CachedGeometry {
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
   public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
   public override get supportsThematicDisplay() { return true; }
+  public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
   public dispose() {
     dispose(this.buffers);

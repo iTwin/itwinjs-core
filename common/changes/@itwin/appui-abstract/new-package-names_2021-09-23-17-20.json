@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "rename to @itwin/appui-abstract",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

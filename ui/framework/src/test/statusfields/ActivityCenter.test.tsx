@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
+import { WidgetState } from "@itwin/appui-abstract";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActivityCenter", () => {

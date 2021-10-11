@@ -9,9 +9,10 @@ Array [
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "3caa806de1fa4bc90290ae8a2755f4f3",
+        "c9d74beb2e21023326e3036befdc1362",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Definition Model",
@@ -26,9 +27,10 @@ Array [
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "47ed3d544ba37474a5fb60f2bb704a36",
+        "012f743f00200395ef369cbb8d1ee610",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Dictionary Model",
@@ -43,9 +45,10 @@ Array [
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
       "pathFromRoot": Array [
-        "5b021c11ed10dfb94a20baae0c83078d",
+        "bb41c30325ea9b70064610992a390f94",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Document List",
@@ -59,9 +62,10 @@ Array [
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "861364dae7f314673152c6240550c07b",
+        "64f544884fb648cd16feb97fd562083a",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Group Model",
@@ -76,9 +80,10 @@ Array [
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "95414daa04d0c393b6d4b72f36b7e70b",
+        "30ec57ca9b6ccbf5be7095496806981d",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Link Model",
@@ -93,9 +98,10 @@ Array [
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "9997d2f214dabd14f4768e9036740f90",
+        "e68d55129e4a653a1d23ba445eb369cd",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Physical Model",
@@ -110,9 +116,10 @@ Array [
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "16c68b49795998124caec606562d599a",
+        "7b659a37e17a4da5936494f7f2ebe3f8",
       ],
       "type": "ECClassGroupingNode",
+      "version": 2,
     },
     "label": Object {
       "displayValue": "Repository Model",
@@ -138,10 +145,11 @@ Array [
         "node": Object {
           "key": Object {
             "pathFromRoot": Array [
-              "a76c30bf3672b42f70bfaebfb5dd1760",
-              "473ff8469bbb704b6f94e2699a7ccbe4",
+              "049d0761fb6bf0bffa6a161a8e19bb7a",
+              "df09d7650467c5704fbcf30291b5032b",
             ],
             "type": "nodeType",
+            "version": 2,
           },
           "label": Object {
             "displayValue": "filter ch1",
@@ -163,11 +171,12 @@ Array [
             "node": Object {
               "key": Object {
                 "pathFromRoot": Array [
-                  "a76c30bf3672b42f70bfaebfb5dd1760",
-                  "71c97a238a6f2797a34701353ba1a394",
-                  "16fe6e94e77e901b84d657fb41861853",
+                  "049d0761fb6bf0bffa6a161a8e19bb7a",
+                  "06f1e28d08a34b2bd3265d0189c5782c",
+                  "0aad958227b8f327fe56485357f1fa8d",
                 ],
                 "type": "nodeType",
+                "version": 2,
               },
               "label": Object {
                 "displayValue": "filter ch4",
@@ -187,10 +196,11 @@ Array [
           "hasChildren": true,
           "key": Object {
             "pathFromRoot": Array [
-              "a76c30bf3672b42f70bfaebfb5dd1760",
-              "71c97a238a6f2797a34701353ba1a394",
+              "049d0761fb6bf0bffa6a161a8e19bb7a",
+              "06f1e28d08a34b2bd3265d0189c5782c",
             ],
             "type": "nodeType",
+            "version": 2,
           },
           "label": Object {
             "displayValue": "other ch3",
@@ -210,9 +220,10 @@ Array [
       "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
-          "a76c30bf3672b42f70bfaebfb5dd1760",
+          "049d0761fb6bf0bffa6a161a8e19bb7a",
         ],
         "type": "nodeType",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "filter r1",
@@ -234,10 +245,11 @@ Array [
         "node": Object {
           "key": Object {
             "pathFromRoot": Array [
-              "18ccf95564a4a5cfb07cb2cdb41f6512",
-              "20e4a241495a1aadfc052e298473ef04",
+              "fd9aec7ae7c6f2b6bdf49e5f0cff5e54",
+              "387655582c59afcd86ec1e0367536c7b",
             ],
             "type": "nodeType",
+            "version": 2,
           },
           "label": Object {
             "displayValue": "filter ch6",
@@ -257,9 +269,10 @@ Array [
       "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
-          "18ccf95564a4a5cfb07cb2cdb41f6512",
+          "fd9aec7ae7c6f2b6bdf49e5f0cff5e54",
         ],
         "type": "nodeType",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "other r3",
@@ -296,13 +309,14 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "57d003546f2d1829437bb7c85233546e",
-                      "95bc4d2a24733d1a5f0523d42663d94b",
-                      "18131be4d8c127cfd80e75bb9127f7cb",
-                      "3d62d48a550322607f26a8b1000cf4af",
-                      "979b3ecb33fab7285f7d56b0160add99",
+                      "c0717ae8ee7c89bcf87386ac51eb1b94",
+                      "79d131b97b620ec196305e1c9f832035",
+                      "bae951c69239e9a5f927a1578c2ea51d",
+                      "6353eaa324a9bd3ce40812bb86657761",
+                      "04d7273dde9e07ef177686c0d652ab24",
                     ],
                     "type": "ECInstancesNode",
+                    "version": 2,
                   },
                   "label": Object {
                     "displayValue": "BisCore.DictionaryModel",
@@ -325,12 +339,13 @@ Array [
                 "className": "BisCore:DefinitionPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "57d003546f2d1829437bb7c85233546e",
-                  "95bc4d2a24733d1a5f0523d42663d94b",
-                  "18131be4d8c127cfd80e75bb9127f7cb",
-                  "3d62d48a550322607f26a8b1000cf4af",
+                  "c0717ae8ee7c89bcf87386ac51eb1b94",
+                  "79d131b97b620ec196305e1c9f832035",
+                  "bae951c69239e9a5f927a1578c2ea51d",
+                  "6353eaa324a9bd3ce40812bb86657761",
                 ],
                 "type": "ECClassGroupingNode",
+                "version": 2,
               },
               "label": Object {
                 "displayValue": "Definition Partition",
@@ -358,13 +373,14 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "57d003546f2d1829437bb7c85233546e",
-                      "95bc4d2a24733d1a5f0523d42663d94b",
-                      "18131be4d8c127cfd80e75bb9127f7cb",
-                      "6de4c23615a524fb7fc4dc99574a59f5",
-                      "e7ed4e6e4cbacc3b9a4eb3b05df8a732",
+                      "c0717ae8ee7c89bcf87386ac51eb1b94",
+                      "79d131b97b620ec196305e1c9f832035",
+                      "bae951c69239e9a5f927a1578c2ea51d",
+                      "2cff3053e2f25e55b4e8c7b4d0c4b9ac",
+                      "bb827c51fc29a1b8ed101a82743c0562",
                     ],
                     "type": "ECInstancesNode",
+                    "version": 2,
                   },
                   "label": Object {
                     "displayValue": "BisCore.RealityDataSources",
@@ -387,12 +403,13 @@ Array [
                 "className": "BisCore:LinkPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "57d003546f2d1829437bb7c85233546e",
-                  "95bc4d2a24733d1a5f0523d42663d94b",
-                  "18131be4d8c127cfd80e75bb9127f7cb",
-                  "6de4c23615a524fb7fc4dc99574a59f5",
+                  "c0717ae8ee7c89bcf87386ac51eb1b94",
+                  "79d131b97b620ec196305e1c9f832035",
+                  "bae951c69239e9a5f927a1578c2ea51d",
+                  "2cff3053e2f25e55b4e8c7b4d0c4b9ac",
                 ],
                 "type": "ECClassGroupingNode",
+                "version": 2,
               },
               "label": Object {
                 "displayValue": "Link Partition",
@@ -418,11 +435,12 @@ Array [
               },
             ],
             "pathFromRoot": Array [
-              "57d003546f2d1829437bb7c85233546e",
-              "95bc4d2a24733d1a5f0523d42663d94b",
-              "18131be4d8c127cfd80e75bb9127f7cb",
+              "c0717ae8ee7c89bcf87386ac51eb1b94",
+              "79d131b97b620ec196305e1c9f832035",
+              "bae951c69239e9a5f927a1578c2ea51d",
             ],
             "type": "ECInstancesNode",
+            "version": 2,
           },
           "label": Object {
             "displayValue": "DgnV8Bridge",
@@ -448,10 +466,11 @@ Array [
           },
         ],
         "pathFromRoot": Array [
-          "57d003546f2d1829437bb7c85233546e",
-          "95bc4d2a24733d1a5f0523d42663d94b",
+          "c0717ae8ee7c89bcf87386ac51eb1b94",
+          "79d131b97b620ec196305e1c9f832035",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Ñót spêçìfíêd",

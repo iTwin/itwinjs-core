@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
+import { PointerCaptor, usePointerCaptor } from "../../appui-layout-react";
 import { DragManagerProvider } from "../Providers";
 import { mount } from "../Utils";
 
@@ -47,8 +47,7 @@ describe("<PointerCaptor />", () => {
     const spy = sinon.spy();
     mount(<PointerCaptor isPointerDown onPointerUp={spy} />);
 
-    const pointerUp = document.createEvent("HTMLEvents");
-    pointerUp.initEvent("pointerup");
+    const pointerUp = new PointerEvent("pointerup");
     document.dispatchEvent(pointerUp);
 
     spy.calledOnce.should.true;
@@ -59,8 +58,7 @@ describe("<PointerCaptor />", () => {
     const sut = mount(<PointerCaptor isPointerDown onPointerMove={spy} />);
     sut.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("HTMLEvents");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new PointerEvent("pointermove");
     document.dispatchEvent(pointerMove);
 
     spy.calledOnce.should.true;
@@ -203,8 +201,7 @@ describe("usePointerCaptor", () => {
 
     const spy = sinon.spy(HTMLElement.prototype, "addEventListener");
     act(() => {
-      const touchStart = document.createEvent("TouchEvent");
-      touchStart.initEvent("touchstart");
+      const touchStart = new TouchEvent("touchstart");
       sinon.stub(touchStart, "target").get(() => ({}));
       sinon.stub(touchStart, "touches").get(() => [{}]);
       element.dispatchEvent(touchStart);
@@ -226,8 +223,7 @@ describe("usePointerCaptor", () => {
 
     const spy = sinon.spy(HTMLElement.prototype, "removeEventListener");
     act(() => {
-      const touchEnd = document.createEvent("TouchEvent");
-      touchEnd.initEvent("touchend");
+      const touchEnd = new TouchEvent("touchend");
       sinon.stub(touchEnd, "target").get(() => ({}));
       sinon.stub(touchEnd, "touches").get(() => [{}]);
       element.dispatchEvent(touchEnd);
@@ -266,8 +262,7 @@ describe("usePointerCaptor", () => {
         touches: [{}],
       });
 
-      const touchEnd = document.createEvent("TouchEvent");
-      touchEnd.initEvent("touchmove");
+      const touchEnd = new TouchEvent("touchmove");
       sinon.stub(touchEnd, "target").get(() => element);
       sinon.stub(touchEnd, "touches").get(() => [{}]);
       document.dispatchEvent(touchEnd);
@@ -287,8 +282,7 @@ describe("usePointerCaptor", () => {
         touches: [{}],
       });
 
-      const touchEnd = document.createEvent("TouchEvent");
-      touchEnd.initEvent("touchend");
+      const touchEnd = new TouchEvent("touchend");
       sinon.stub(touchEnd, "target").get(() => element);
       sinon.stub(touchEnd, "touches").get(() => [{}]);
       document.dispatchEvent(touchEnd);

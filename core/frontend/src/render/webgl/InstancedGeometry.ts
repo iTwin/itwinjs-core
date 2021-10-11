@@ -6,51 +6,86 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { Matrix4 } from "./Matrix";
 
 /** @internal */
-export class InstanceBuffers implements WebGLDisposable {
+export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
+  return typeof params === "object" && typeof params.count === "number" && params.transforms instanceof Float32Array && params.transformCenter instanceof Point3d;
+}
+
+class InstanceData {
   public readonly numInstances: number;
-  public readonly transforms: BufferHandle;
-  public readonly featureIds?: BufferHandle;
-  public readonly hasFeatures: boolean;
-  public readonly symbology?: BufferHandle;
-  public readonly shared: boolean;
-  // The center of the range of the instances' translations.
-  private readonly _rtcCenter: Point3d;
+  public readonly range: Range3d;
   // A transform including only rtcCenter.
   private readonly _rtcOnlyTransform: Transform;
   // A transform from _rtcCenter including model matrix
   private readonly _rtcModelTransform: Transform;
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
-  // Holds the instance transforms for computing range. Set to undefined after range computed (immediately after construction)
-  private _transforms?: Float32Array;
-  // Holds the range computed from the above transforms
-  private _range?: Range3d;
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, transformsData: Float32Array, symbology?: BufferHandle, featureIds?: BufferHandle) {
-    this.shared = shared;
-    this.numInstances = count;
+  protected constructor(numInstances: number, rtcCenter: Point3d, range: Range3d) {
+    this.numInstances = numInstances;
+    this.range = range;
+    this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
+    this._rtcModelTransform = this._rtcOnlyTransform.clone();
+  }
+
+  public getRtcModelTransform(modelMatrix: Transform): Transform {
+    if (!this._modelMatrix.isAlmostEqual(modelMatrix)) {
+      modelMatrix.clone(this._modelMatrix);
+      modelMatrix.multiplyTransformTransform(this._rtcOnlyTransform, this._rtcModelTransform);
+    }
+
+    return this._rtcModelTransform;
+  }
+
+  public getRtcOnlyTransform(): Transform {
+    return this._rtcOnlyTransform;
+  }
+
+  private static readonly _noFeatureId = new Float32Array([0, 0, 0]);
+  public get patternFeatureId(): Float32Array {
+    return InstanceData._noFeatureId;
+  }
+}
+
+/** @internal */
+export interface PatternTransforms {
+  readonly orgTransform: Matrix4;
+  readonly localToModel: Matrix4;
+  readonly symbolToLocal: Matrix4;
+  readonly origin: Float32Array;
+}
+
+/** @internal */
+export class InstanceBuffers extends InstanceData {
+  private static readonly _patternParams = new Float32Array([0, 0, 0, 0]);
+
+  public readonly transforms: BufferHandle;
+  public readonly featureIds?: BufferHandle;
+  public readonly hasFeatures: boolean;
+  public readonly symbology?: BufferHandle;
+  public readonly patternParams = InstanceBuffers._patternParams;
+  public readonly patternTransforms = undefined;
+  public readonly viewIndependentOrigin = undefined;
+
+  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+    super(count, rtcCenter, range);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
-    this._rtcCenter = rtcCenter;
-    this._rtcOnlyTransform = Transform.createTranslation(this._rtcCenter);
-    this._rtcModelTransform = this._rtcOnlyTransform.clone();
-    this._transforms = transformsData;
   }
 
   public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
@@ -81,7 +116,7 @@ export class InstanceBuffers implements WebGLDisposable {
     return params;
   }
 
-  public static create(params: InstancedGraphicParams, shared: boolean): InstanceBuffers | undefined {
+  public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
@@ -98,19 +133,7 @@ export class InstanceBuffers implements WebGLDisposable {
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, transforms, symBuf, idBuf) : undefined;
-  }
-
-  public getRtcModelTransform(modelMatrix: Transform): Transform {
-    if (!this._modelMatrix.isAlmostEqual(modelMatrix)) {
-      modelMatrix.clone(this._modelMatrix);
-      modelMatrix.multiplyTransformTransform(this._rtcOnlyTransform, this._rtcModelTransform);
-    }
-
-    return this._rtcModelTransform;
-  }
-  public getRtcOnlyTransform(): Transform {
-    return this._rtcOnlyTransform;
+    return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
   }
 
   public get isDisposed(): boolean {
@@ -125,8 +148,6 @@ export class InstanceBuffers implements WebGLDisposable {
     dispose(this.symbology);
   }
 
-  public get rtcCenter(): Point3d { return this._rtcCenter; }
-
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const featureBytes = undefined !== this.featureIds ? this.featureIds.bytesUsed : 0;
     const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
@@ -135,57 +156,121 @@ export class InstanceBuffers implements WebGLDisposable {
     stats.addInstances(bytesUsed);
   }
 
-  public computeRange(reprRange: Range3d, out?: Range3d): Range3d {
-    if (undefined !== this._range)
-      return this._range.clone(out);
+  private static extendTransformedRange(tfs: Float32Array, i: number, range: Range3d, x: number, y: number, z: number) {
+    range.extendXYZ(tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
+      tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
+      tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
+  }
 
-    this._range = new Range3d();
-    const tfs = this._transforms;
-    if (undefined === tfs)
-      return this._range.clone(out);
-
-    this._transforms = undefined;
+  public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
+    const range = out ?? new Range3d();
 
     const numFloatsPerTransform = 3 * 4;
     assert(0 === tfs.length % (3 * 4));
 
-    const tf = Transform.createIdentity();
-    const r = new Range3d();
     for (let i = 0; i < tfs.length; i += numFloatsPerTransform) {
-      tf.setFromJSON({
-        origin: [tfs[i + 3], tfs[i + 7], tfs[i + 11]],
-        matrix: [
-          [tfs[i + 0], tfs[i + 1], tfs[i + 2]],
-          [tfs[i + 4], tfs[i + 5], tfs[i + 6]],
-          [tfs[i + 8], tfs[i + 9], tfs[i + 10]],
-        ],
-      });
-
-      reprRange.clone(r);
-      tf.multiplyRange(r, r);
-      this._range.extendRange(r);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.low.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.low.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.high.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.high.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.low.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.low.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.high.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.high.y, reprRange.high.z);
     }
 
-    const rtcTransform = Transform.createTranslation(this._rtcCenter);
-    rtcTransform.multiplyRange(this._range, this._range);
+    range.low.addInPlace(rtcCenter);
+    range.high.addInPlace(rtcCenter);
 
-    return this._range.clone(out);
+    return range.clone(out);
+  }
+}
+
+/** @internal */
+export class PatternBuffers extends InstanceData {
+  private readonly _featureId?: Float32Array;
+
+  private constructor(
+    count: number,
+    rtcCenter: Point3d,
+    range: Range3d,
+    public readonly patternParams: Float32Array, // [ isAreaPattern, spacingX, spacingY, scale ]
+    public readonly origin: Float32Array, // [ x, y ]
+    public readonly orgTransform: Matrix4,
+    public readonly localToModel: Matrix4,
+    public readonly symbolToLocal: Matrix4,
+    public readonly offsets: BufferHandle,
+    featureId: number | undefined,
+    public readonly viewIndependentOrigin: Point3d | undefined
+  ) {
+    super(count, rtcCenter, range);
+    this.patternTransforms = this;
+    if (undefined !== featureId) {
+      this._featureId = new Float32Array([
+        (featureId & 0x0000ff) >>> 0,
+        (featureId & 0x00ff00) >>> 8,
+        (featureId & 0xff0000) >>> 16,
+      ]);
+    }
+  }
+
+  public static create(params: PatternGraphicParams): PatternBuffers | undefined {
+    const count = params.xyOffsets.byteLength / 2;
+    assert(Math.floor(count) === count);
+
+    const offsets = BufferHandle.createArrayBuffer(params.xyOffsets);
+    if (!offsets)
+      return undefined;
+
+    return new PatternBuffers(
+      count,
+      new Point3d(),
+      params.range,
+      new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
+      new Float32Array([params.origin.x, params.origin.y]),
+      Matrix4.fromTransform(params.orgTransform),
+      Matrix4.fromTransform(params.patternToModel),
+      Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
+      offsets,
+      params.featureId,
+      params.viewIndependentOrigin,
+    );
+  }
+
+  public readonly patternTransforms: PatternTransforms;
+
+  public get hasFeatures(): boolean {
+    return undefined !== this._featureId;
+  }
+
+  public override get patternFeatureId(): Float32Array {
+    return this._featureId ?? super.patternFeatureId;
+  }
+
+  public get isDisposed(): boolean {
+    return this.offsets.isDisposed;
+  }
+
+  public dispose(): void {
+    dispose(this.offsets);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addInstances(this.offsets.bytesUsed);
   }
 }
 
 /** @internal */
 export class InstancedGeometry extends CachedGeometry {
   private readonly _buffersContainer: BuffersContainer;
-  private readonly _buffers: InstanceBuffers;
+  private readonly _buffers: InstanceBuffers | PatternBuffers;
   private readonly _repr: LUTGeometry;
-  private readonly _ownsRepr: boolean;
+  private readonly _ownsBuffers: boolean;
 
-  public get numInstances() { return this._buffers.numInstances; }
-  public get transforms() { return this._buffers.transforms; }
-  public get featureIds() { return this._buffers.featureIds; }
-  public get symbology() { return this._buffers.symbology; }
   public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
   public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
+
+  public override get viewIndependentOrigin(): Point3d | undefined { return this._buffers.viewIndependentOrigin; }
 
   public override get asInstanced() { return this; }
   public override get asLUT() { return this._repr.asLUT; }
@@ -213,45 +298,67 @@ export class InstancedGeometry extends CachedGeometry {
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
 
-  public get rtcCenter(): Point3d { return this._buffers.rtcCenter; }
+  public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
+    const techId = repr.techniqueId;
+    const container = BuffersContainer.create();
+    container.appendLinkages(repr.lutBuffers.linkages);
 
-  public constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers) {
-    super();
-    this._repr = repr;
-    this._ownsRepr = ownsRepr;
-    this._buffers = buffers;
-    this._buffersContainer = BuffersContainer.create();
-    this._buffersContainer.appendLinkages(repr.lutBuffers.linkages);
+    container.addBuffer(buffers.transforms, InstanceBuffers.createTransformBufferParameters(repr.techniqueId));
 
-    this._buffersContainer.addBuffer(this._buffers.transforms, InstanceBuffers.createTransformBufferParameters(this.techniqueId));
-    if (this._buffers.symbology !== undefined) {
-      const attrInstanceOverrides = AttributeMap.findAttribute("a_instanceOverrides", this.techniqueId, true);
-      const attrInstanceRgba = AttributeMap.findAttribute("a_instanceRgba", this.techniqueId, true);
+    if (buffers.symbology) {
+      const attrInstanceOverrides = AttributeMap.findAttribute("a_instanceOverrides", techId, true);
+      const attrInstanceRgba = AttributeMap.findAttribute("a_instanceRgba", techId, true);
       assert(attrInstanceOverrides !== undefined);
       assert(attrInstanceRgba !== undefined);
-      this._buffersContainer.addBuffer(this._buffers.symbology, [
+      container.addBuffer(buffers.symbology, [
         BufferParameters.create(attrInstanceOverrides.location, 4, GL.DataType.UnsignedByte, false, 8, 0, true),
         BufferParameters.create(attrInstanceRgba.location, 4, GL.DataType.UnsignedByte, false, 8, 4, true),
       ]);
     }
-    if (this._buffers.featureIds !== undefined) {
-      const attrFeatureId = AttributeMap.findAttribute("a_featureId", this.techniqueId, true);
+    if (buffers.featureIds) {
+      const attrFeatureId = AttributeMap.findAttribute("a_featureId", techId, true);
       assert(attrFeatureId !== undefined);
-      this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
+      container.addBuffer(buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
+
+    return new this(repr, ownsBuffers, buffers, container);
+  }
+
+  public static createPattern(repr: LUTGeometry, ownsBuffers: boolean, buffers: PatternBuffers): InstancedGeometry {
+    const techId = repr.techniqueId;
+    const container = BuffersContainer.create();
+    container.appendLinkages(repr.lutBuffers.linkages);
+
+    const attrX = AttributeMap.findAttribute("a_patternX", techId, true);
+    const attrY = AttributeMap.findAttribute("a_patternY", techId, true);
+    assert(undefined !== attrX && undefined !== attrY);
+    container.addBuffer(buffers.offsets, [
+      BufferParameters.create(attrX.location, 1, GL.DataType.Float, false, 8, 0, true),
+      BufferParameters.create(attrY.location, 1, GL.DataType.Float, false, 8, 4, true),
+    ]);
+
+    return new this(repr, ownsBuffers, buffers, container);
+  }
+
+  private constructor(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
+    super();
+    this._repr = repr;
+    this._ownsBuffers = ownsBuffers;
+    this._buffers = buffers;
+    this._buffersContainer = container;
   }
 
   public get isDisposed(): boolean {
-    let isReprDisposed = true;
-    if (this._ownsRepr)
-      isReprDisposed = this._repr.isDisposed;
-    return this._buffers.isDisposed && isReprDisposed;
+    if (!this._repr.isDisposed)
+      return false;
+
+    return !this._ownsBuffers || this._buffers.isDisposed;
   }
 
   public dispose() {
-    dispose(this._buffers);
-    if (this._ownsRepr)
-      this._repr.dispose();
+    this._repr.dispose();
+    if (this._ownsBuffers)
+      dispose(this._buffers);
   }
 
   protected _wantWoWReversal(_target: Target) {
@@ -260,22 +367,20 @@ export class InstancedGeometry extends CachedGeometry {
   }
 
   public draw() {
-    this._repr.drawInstanced(this.numInstances, this._buffersContainer);
+    this._repr.drawInstanced(this._buffers.numInstances, this._buffersContainer);
   }
 
   public override computeRange(output?: Range3d): Range3d {
-    if (undefined === this._range) {
-      this._range = new Range3d();
-      const reprRange = this._repr.computeRange();
-      this._buffers.computeRange(reprRange, this._range);
-    }
-
-    return this._range.clone(output);
+    return this._buffers.range.clone(output);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    if (!this._buffers.shared)
+    if (this._ownsBuffers)
       this._buffers.collectStatistics(stats);
   }
+
+  public get patternParams(): Float32Array { return this._buffers.patternParams; }
+  public get patternTransforms(): PatternTransforms | undefined { return this._buffers.patternTransforms; }
+  public get patternFeatureId(): Float32Array { return this._buffers.patternFeatureId; }
 }

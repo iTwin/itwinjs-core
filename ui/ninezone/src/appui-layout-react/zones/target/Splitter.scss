@@ -1,0 +1,25 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../../target";
+@import "../variables";
+@import "variables";
+
+.nz-zones-target-splitter {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: $nz-splitter-target-color;
+  pointer-events: all;
+  cursor: pointer;
+
+  @include uicore-z-index(zone-target);
+
+  @include nz-internal-targeted {
+    background-color: $nz-splitter-targeted-color;
+  }
+}

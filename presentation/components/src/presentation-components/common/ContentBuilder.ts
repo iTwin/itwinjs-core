@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module Core
  */
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   applyOptionalPrefix, EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item, PropertyValueFormat as PresentationPropertyValueFormat,
   ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, RendererDescription, StartArrayProps,
   StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, TypeDescription,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import {
   ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, StructValue, PropertyValueFormat as UiPropertyValueFormat,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 /** @internal */
 export interface FieldRecord {
@@ -57,7 +57,7 @@ export function createPropertyDescriptionFromFieldInfo(info: FieldInfo) {
   }
 
   if (info.editor) {
-    descr.editor = { name: info.editor.name, params: [] } as PropertyEditorInfo;
+    descr.editor = { name: info.editor.name } as PropertyEditorInfo;
   }
 
   if (info.type.valueFormat === PresentationPropertyValueFormat.Primitive && info.enum) {

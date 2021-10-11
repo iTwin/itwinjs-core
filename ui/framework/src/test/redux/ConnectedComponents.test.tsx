@@ -7,9 +7,9 @@ import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { fireEvent, render } from "@testing-library/react";
-import { connectIModelConnection } from "../../ui-framework/redux/connectIModel";
-import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../ui-framework/redux/SessionState";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { connectIModelConnection } from "../../appui-react/redux/connectIModel";
+import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../appui-react/redux/SessionState";
+import { UiFramework } from "../../appui-react/UiFramework";
 import TestUtils from "../TestUtils";
 
 describe("ConnectedContent", () => {

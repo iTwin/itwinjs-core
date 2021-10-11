@@ -8,16 +8,195 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 |**Nested** | is accessed from a primary frontstage. It may use all zones and panels, but instead of the App button, the Tool Widget contains a Back button to return to the primary frontstage.
 |**Modal** | is accessed from another frontstage or the Backstage. It may contain any content along with a Back button. It does not use zones or stage panels. It is useful for application settings and data management user interfaces.
 
-## Configuring a Frontstage
+## Frontstages in UI 2.0/"App UI"
 
-A frontstage is configured in a class subclassing the [FrontstageProvider]($ui-framework) abstract class.
-The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($ui-framework) field containing a [Frontstage]($ui-framework) React component.
+With the release of the `iTwin.js 2.0`, new UI components are available that provide a new look and feel for iTwin Apps. The new look and feel was initially referred to as `UI 2.0` and now has the more formal name of a `App UI`. The two primary goals of `App UI` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
+
+Below is an example frontstage that shows the different areas/zones.
+
+![FrontstageUi2](./images/FrontstageUi2.png "UI 2.0/App UI Frontstage design")
+
+A frontstage is configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class.
+The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($appui-react) field containing a [Frontstage]($appui-react) React component.  The Frontstage React component has props for populating the different areas of the stage as well as values for the default tool, application data, and usage.
+
+### Example Frontstage definition
+
+The definition that produces the sample frontstage is shown below.
+
+```tsx
+  <Frontstage id="Ui2Sample"
+    defaultTool={CoreTools.selectElementCommand}
+    contentGroup={myContentGroup}
+    defaultContentId="singleIModelView"
+    isInFooterMode={true}
+    usage={StageUsage.General}
+    applicationData={{ key: "value" }}
+    contentManipulationTools={
+      <Zone
+        widgets={[
+          <Widget isFreeform={true} element={<BasicToolWidget />} />,
+        ]}
+      />
+    }
+    viewNavigationTools={
+      <Zone
+        widgets={[
+          <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
+        ]}
+      />
+    }
+    toolSettings={
+      <Zone
+        widgets={[
+          <Widget isToolSettings={true} />,
+        ]}
+      />
+    }
+    statusBar={
+      <Zone
+        widgets={[
+          <Widget isStatusBar={true} classId="SmallStatusBar" />,
+        ]}
+      />
+    }
+
+    leftPanel={
+      <StagePanel
+        size={300}
+        defaultState={StagePanelState.Minimized}
+        panelZones={{
+          start: {
+            widgets: [
+              <Widget id="LeftStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Left Start1 widget</h2>} />,
+              <Widget id="LeftStart2" label="Start2" element={<h2>Left Start2 widget</h2>} />,
+            ],
+          },
+          middle: {
+            widgets: [
+              <Widget id="LeftMiddle1" label="Middle1" element={<h2>Left Middle1 widget</h2>} />,
+              <Widget id="LeftMiddle2" label="Middle2" defaultState={WidgetState.Open} element={<h2>Left Middle2 widget</h2>} />,
+            ],
+          },
+          end: {
+            widgets: [
+              <Widget id="LeftEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Left End1 widget</h2>} />,
+              <Widget id="LeftEnd2" label="End2" element={<h2>Left End2 widget</h2>} />,
+            ],
+          },
+        }}
+      />
+    }
+
+    topPanel={
+      <StagePanel
+        size={90}
+        defaultState={StagePanelState.Minimized}
+        panelZones={{
+          start: {
+            widgets: [
+              <Widget id="TopStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Top Start1 widget</h2>} />,
+              <Widget id="TopStart2" label="Start2" element={<h2>Top Start2 widget</h2>} />,
+            ],
+          },
+          end: {
+            widgets: [
+              <Widget id="TopEnd1" label="End1" element={<h2>Top End1 widget</h2>} />,
+              <Widget id="TopEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Top End2 widget</h2>} />,
+            ],
+          },
+        }}
+      />
+    }
+
+    rightPanel={
+      <StagePanel
+        defaultState={StagePanelState.Open}
+        panelZones={{
+          start: {
+            widgets: [
+              <Widget id="RightStart1" label="Start1" element={<h2>Right Start1 widget</h2>} />,
+              <Widget id="RightStart2" label="Start2" defaultState={WidgetState.Open} element={<h2>Right Start2 widget</h2>} />,
+            ],
+          },
+          middle: {
+            widgets: [
+              <Widget id="RightMiddle1" label="Middle1" defaultState={WidgetState.Open} element={<h2>Right Middle1 widget</h2>} />,
+              <Widget id="RightMiddle2" label="Middle2" element={<h2>Right Middle2 widget</h2>} />,
+            ],
+          },
+          end: {
+            widgets: [
+              <Widget id="RightEnd1" label="End1" element={<h2>Right End1 widget</h2>} />,
+              <Widget id="RightEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Right End2 widget</h2>} />,
+            ],
+          },
+        }}
+      />
+    }
+
+    bottomPanel={
+       <StagePanel
+        size={180}
+        defaultState={StagePanelState.Minimized}
+        panelZones={{
+          start: {
+            widgets: [
+              <Widget id="BottomStart1" label="Start1" element={<h2>Bottom Start1 widget</h2>} />,
+              <Widget id="BottomStart2" label="Start2" defaultState={WidgetState.Open} element={<h2>Bottom Start2 widget</h2>} />,
+            ],
+          },
+          end: {
+            widgets: [
+              <Widget id="BottomEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Bottom End1 widget</h2>} />,
+              <Widget id="BottomEnd2" label="End2" element={<h2>Bottom End2 widget</h2>} />,
+            ],
+          },
+        }}
+      />
+    }
+  />
+
+```
+
+Note `contentGroup` can reference a ContentGroup or a ContentGroupProvider See [Content Views and Layouts](./ContentViews.md) for more details.
+
+### Usage
+
+The Stage usage prop is a way to designate the type of tasks that will be performed in the stage and can be used by UiItemsProviders to
+determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($appui-abstract) for a default set of usages.
+
+## Defining an 'empty' frontstage
+
+It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($appui-abstract) instances. The
+
+```tsx
+    const ui2StageProps: StandardFrontstageProps = {
+      id: "unique-stage-id",
+      version: 1.1,
+      contentGroupProps: myContentGroupProvider,
+      hideNavigationAid,
+      cornerButton,
+      usage: StageUsage.General,
+      applicationData,
+    };
+
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
+
+    // Use standard provider to provide basic tool and statusbar items
+    StandardContentToolsProvider.register();
+    StandardNavigationToolsProvider.register();
+    StandardStatusbarItemsProvider.register();
+
+```
+
+## Configuring a Ninezone Frontstage (deprecated)
+
+A frontstage is configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class.
+The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($appui-react) field containing a [Frontstage]($appui-react) React component.
 The Frontstage React component has props for the default tool, Content Layout, Content Group, a Footer mode flag and application data.
 It also has props for the Zones that are specified by their position in the 9-zone grid.
 
 ### Zone Descriptions
-
-The following zone props are used in the Frontstage React component.
 
 |Zone|Description
 |-----|-----
@@ -36,13 +215,23 @@ The following is a sample of a very basic FrontstageProvider definition with zon
 
 ```tsx
 export class SampleFrontstage extends FrontstageProvider {
+    public static SampleContentGroup: ContentGroupProps = {
+    id: "SampleFrontstageGroup",
+    layout: StandardContentLayouts.singleView,
+    contents: [
+      {
+        id: "primaryIModelView",
+        classId: IModelViewportControl,
+      },
+    ],
+  };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(SampleFrontstage.SampleContentGroup);
     return (
       <Frontstage id="Test1"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="TwoHalvesVertical"
-        contentGroup="TestContentGroup1"
+        contentGroup={contentGroup}
         isInFooterMode={true}
         applicationData={{ key: "value" }}
         topLeft={
@@ -89,10 +278,7 @@ export class SampleFrontstage extends FrontstageProvider {
 
 ```
 
-The `defaultTool` prop specifies a tool or command.
-`defaultLayout` specifies a registered Content Layout and `contentGroup` specifies a registered Content Group.
-Note that these two props can reference a ContentLayoutDef and ContentGroup directly instead of specifying an Id.
-See [Content Views and Layouts](./ContentViews.md) for more details.
+The `defaultTool` prop specifies a tool or command and `contentGroup` specifies a registered Content Group.
 A `isInFooterMode` prop with a value of true indicates the Status Bar will be in Footer mode across the bottom of the screen.
 A value of false would indicate the Status Bar is open in the bottom center position in the grid.
 The `applicationData` prop specifies JSON data attached to the Frontstage and FrontstageDef.
@@ -113,7 +299,7 @@ const frontstageProvider = new SampleFrontstage();
 FrontstageManager.addFrontstageProvider(frontstageProvider);
 
 // Set the Frontstage active
-FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id).then(() => {
   // Frontstage is ready
 });
 ```
@@ -128,4 +314,5 @@ FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(
 
 ## API Reference
 
-- [Zone]($ui-framework:Zone)
+- [Frontstage]($appui-react:Frontstage)
+- [Zone]($appui-react:Zone)

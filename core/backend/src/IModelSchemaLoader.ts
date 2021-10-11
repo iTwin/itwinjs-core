@@ -3,14 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
-
-const loggerCategory: string = BackendLoggerCategory.IModelSchemaLoader;
 
 /**
  * A utility class for retrieving EC Schema objects from an iModel. Loaded schemas are held in memory within
@@ -36,7 +33,7 @@ export class IModelSchemaLoader {
   public getSchema<T extends Schema>(schemaName: string): T {
     const schema = this.tryGetSchema(schemaName);
     if (!schema)
-      throw new IModelError(IModelStatus.NotFound, `reading schema=${schemaName}`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `reading schema=${schemaName}`);
 
     return schema as T;
   }
@@ -97,7 +94,7 @@ class IModelSchemaLocater implements ISchemaLocater {
       if (IModelStatus.NotFound === val.error.status) {
         return undefined;
       }
-      throw new IModelError(val.error.status, `reading schema=${schemaName}`, Logger.logWarning, loggerCategory);
+      throw new IModelError(val.error.status, `reading schema=${schemaName}`);
     }
     return val.result;
   }

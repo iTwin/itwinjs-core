@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
+import * as ResizeObserverModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/ResizeObserverPolyfill";
 import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import {
   DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
-} from "../../ui-ninezone";
-import { createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
+} from "../../appui-layout-react";
+import { flushAsyncOperations, ResizeObserverMock } from "../Utils";
 import { DragManagerProvider } from "../Providers";
 
 describe("DockedToolSettings", () => {
@@ -41,11 +41,11 @@ describe("DockedToolSettings", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
-        return createDOMRect({ width: 100 });
+        return DOMRect.fromRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
-        return createDOMRect({ width: 50 });
+        return DOMRect.fromRect({ width: 50 });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
     const { container } = render(
       <DockedToolSettings>
@@ -64,11 +64,11 @@ describe("DockedToolSettings", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
-        return createDOMRect({ width: 100 });
+        return DOMRect.fromRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
-        return createDOMRect({ width: 50 });
+        return DOMRect.fromRect({ width: 50 });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
     const { container } = render(
       <DockedToolSettings>
@@ -91,11 +91,11 @@ describe("DockedToolSettings", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
-        return createDOMRect({ width: 100 });
+        return DOMRect.fromRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
-        return createDOMRect({ width: 50 });
+        return DOMRect.fromRect({ width: 50 });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
     render(
       <DockedToolSettings
@@ -121,11 +121,11 @@ describe("DockedToolSettings", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
-        return createDOMRect({ width: 100 });
+        return DOMRect.fromRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
-        return createDOMRect({ width: 50 });
+        return DOMRect.fromRect({ width: 50 });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
     render(
       <DockedToolSettings>
@@ -157,11 +157,11 @@ describe("DockedToolSettings", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
-        return createDOMRect({ width });
+        return DOMRect.fromRect({ width });
       } else if (queryByText(this, /Entry [0-9]$/)) {
-        return createDOMRect({ width: 50 });
+        return DOMRect.fromRect({ width: 50 });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
 
     let resizeObserver: ResizeObserverMock | undefined;
@@ -190,9 +190,9 @@ describe("DockedToolSettings", () => {
     act(() => {
       width = 50;
       resizeObserver!.callback([{
-        contentRect: createDOMRect(),
+        contentRect: new DOMRect(),
         target: target!,
-      } as any ], resizeObserver!);
+      } as any], resizeObserver!);
     });
 
     await flushAsyncOperations();
@@ -205,11 +205,11 @@ describe("DockedToolSettings", () => {
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
-        return createDOMRect({ width: 100 });
+        return DOMRect.fromRect({ width: 100 });
       } else if (queryByText(this, /Entry [0-9]$/)) {
-        return createDOMRect({ width });
+        return DOMRect.fromRect({ width });
       }
-      return createDOMRect();
+      return new DOMRect();
     });
 
     let resizeObserver: ResizeObserverMock | undefined;
@@ -238,9 +238,9 @@ describe("DockedToolSettings", () => {
     act(() => {
       width = 100;
       resizeObserver!.callback([{
-        contentRect: createDOMRect(),
+        contentRect: new DOMRect(),
         target: target!,
-      } as any ], resizeObserver!);
+      } as any], resizeObserver!);
     });
 
     await flushAsyncOperations();

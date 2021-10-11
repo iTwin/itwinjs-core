@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/inputs/variables";
+
+.components-parsed-input {
+  width: auto;
+
+  &.components-parsed-input-has-error {
+    color: $buic-foreground-alert;
+    font-weight: bold;
+  }
+
+  &.components-parsed-input[disabled] {
+    color: $buic-foreground-body;
+    opacity: 0.65;
+  }
+
+  &.iui-input {
+    padding: $uicore-iui-input-padding;
+  }
+}

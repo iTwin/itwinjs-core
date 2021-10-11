@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
-import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import {
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+} from "@itwin/core-common";
+import { Reporter } from "@itwin/perf-tools";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -126,7 +128,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       const seedName = path.join(outDir, `mixin_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await seedIModel.importSchemas(new BackendRequestContext(), [st]);
+        await seedIModel.importSchemas([st]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);

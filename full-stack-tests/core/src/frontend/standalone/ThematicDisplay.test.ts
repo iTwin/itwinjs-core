@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   IModelApp, IModelConnection,
   SnapshotConnection, ViewRect,
   ViewState3d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { expect } from "chai";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 

@@ -6,15 +6,15 @@
  * @module Rendering
  */
 
-import { Id64String, partitionArray } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Id64String } from "@itwin/core-bentley";
+import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
   ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
-import { MeshParams} from "./primitives/VertexTable";
+import { MeshParams } from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "./primitives/DisplayParams";
 
@@ -66,6 +66,9 @@ export interface ParticleProps extends XYAndZ {
 
   /** The transparency with which to draw the particle as an integer in [0,255]. If omitted, it defaults to the current value of [[ParticleCollectionBuilder.transparency]]. */
   transparency?: number;
+
+  /** A rotation matrix to orient the particle.  If supplied then the particle will not be automatically oriented towards the camera. */
+  rotationMatrix?: Matrix3d;
 }
 
 /** Interface for producing a collection of particles suitable for use in particle effects.
@@ -118,12 +121,14 @@ class Particle {
   public readonly transparency: number;
   public readonly width: number;
   public readonly height: number;
+  public readonly rotationMatrix?: Matrix3d;
 
-  public constructor(centroid: XYAndZ, width: number, height: number, transparency: number) {
+  public constructor(centroid: XYAndZ, width: number, height: number, transparency: number, rotationMatrix?: Matrix3d) {
     this.centroid = Point3d.fromJSON(centroid);
     this.transparency = transparency;
     this.width = width;
     this.height = height;
+    this.rotationMatrix = rotationMatrix;
   }
 }
 
@@ -137,7 +142,8 @@ class Builder implements ParticleCollectionBuilder {
   private _hasVaryingTransparency = false;
   private readonly _localToWorldTransform: Transform;
   private readonly _range = Range3d.createNull();
-  private readonly _particles: Particle[] = [];
+  private _particlesOpaque: Particle[] = [];
+  private _particlesTranslucent: Particle[] = [];
 
   public constructor(params: ParticleCollectionBuilderParams) {
     this._viewport = params.viewport;
@@ -168,7 +174,7 @@ class Builder implements ParticleCollectionBuilder {
     transparency = clampTransparency(transparency);
     if (transparency !== this._transparency) {
       this._transparency = transparency;
-      this._hasVaryingTransparency = this._particles.length > 0;
+      this._hasVaryingTransparency = this._particlesTranslucent.length > 0;
     }
   }
 
@@ -186,28 +192,31 @@ class Builder implements ParticleCollectionBuilder {
       throw new Error("A particle must have a size greater than zero");
 
     const transparency = undefined !== props.transparency ? clampTransparency(props.transparency) : this.transparency;
-    if (transparency !== this.transparency && this._particles.length > 0)
+    if (transparency !== this.transparency && this._particlesTranslucent.length > 0)
       this._hasVaryingTransparency = true;
 
-    const particle = new Particle(props, width, height, transparency);
-    this._particles.push(particle);
+    const particle = new Particle(props, width, height, transparency, props.rotationMatrix);
+    if (transparency > 0)
+      this._particlesTranslucent.push(particle);
+    else
+      this._particlesOpaque.push(particle);
     this._range.extendPoint(particle.centroid);
   }
 
   public finish(): RenderGraphic | undefined {
-    if (0 === this._particles.length)
+    if (0 === this._particlesTranslucent.length + this._particlesOpaque.length)
       return undefined;
 
     // Order-independent transparency doesn't work well with opaque geometry - it will look semi-transparent.
     // If we have a mix of opaque and transparent particles, put them in separate graphics to be rendered in separate passes.
-    const slices = this.partition();
-    const opaque = this.createGraphic(slices.opaque, 0);
-    const transparent = this.createGraphic(slices.transparent, this._hasVaryingTransparency ? undefined : this._transparency);
+    const opaque = this.createGraphic(this._particlesOpaque, 0);
+    const transparent = this.createGraphic(this._particlesTranslucent, this._hasVaryingTransparency ? undefined : this._transparency);
 
     // Empty the collection before any return statements.
     const range = this._range.clone();
     this._range.setNull();
-    this._particles.length = 0;
+    this._particlesOpaque.length = 0;
+    this._particlesTranslucent.length = 0;
     this._hasVaryingTransparency = false;
 
     if (!transparent && !opaque)
@@ -238,25 +247,24 @@ class Builder implements ParticleCollectionBuilder {
     return graphic;
   }
 
-  private partition(): { opaque: ArraySlice<Particle>, transparent: ArraySlice<Particle> } {
-    const partitionIndex = partitionArray(this._particles, (x) => x.transparency === 0);
-    return {
-      opaque: new ArraySlice(this._particles, 0, partitionIndex),
-      transparent: new ArraySlice(this._particles, partitionIndex, this._particles.length),
-    };
-  }
-
-  private createGraphic(particles: ArraySlice<Particle>, uniformTransparency: number | undefined): RenderGraphic | undefined {
+  private createGraphic(particles: Particle[], uniformTransparency: number | undefined): RenderGraphic | undefined {
     const numParticles = particles.length;
     if (numParticles <= 0)
       return undefined;
 
     // To keep scale values close to 1, compute mean size to use as size of quad.
     const meanSize = new Vector2d();
+    let maxSize = 0;
     for (const particle of particles) {
-      meanSize.x += particle.width / numParticles;
-      meanSize.y += particle.height / numParticles;
+      meanSize.x += particle.width;
+      meanSize.y += particle.height;
+      if (particle.width > maxSize)
+        maxSize = particle.width;
+      if (particle.height > maxSize)
+        maxSize = particle.height;
     }
+    meanSize.x /= numParticles;
+    meanSize.y /= numParticles;
 
     // Define InstancedGraphicParams for particles.
     const rangeCenter = this._range.center;
@@ -266,7 +274,6 @@ class Builder implements ParticleCollectionBuilder {
     const symbologyOverrides = undefined === uniformTransparency ? new Uint8Array(bytesPerOverride * numParticles) : undefined;
 
     const viewToWorld = this._viewport.view.getRotation().transpose();
-    const rotMatrix = new Matrix3d();
     let tfIndex = 0;
     let ovrIndex = 0;
     for (const particle of particles) {
@@ -277,21 +284,28 @@ class Builder implements ParticleCollectionBuilder {
         transforms[tfIndex + 0] = scaleX;
         transforms[tfIndex + 5] = scaleY;
         transforms[tfIndex + 10] = 1;
+      } else if (undefined !== particle.rotationMatrix) {
+        // Scale rotation matrix relative to size of quad.
+        transforms[tfIndex + 0] = particle.rotationMatrix.coffs[0] * scaleX;
+        transforms[tfIndex + 1] = particle.rotationMatrix.coffs[1] * scaleY;
+        transforms[tfIndex + 2] = particle.rotationMatrix.coffs[2];
+        transforms[tfIndex + 4] = particle.rotationMatrix.coffs[3] * scaleX;
+        transforms[tfIndex + 5] = particle.rotationMatrix.coffs[4] * scaleY;
+        transforms[tfIndex + 6] = particle.rotationMatrix.coffs[5];
+        transforms[tfIndex + 8] = particle.rotationMatrix.coffs[6] * scaleX;
+        transforms[tfIndex + 9] = particle.rotationMatrix.coffs[7] * scaleY;
+        transforms[tfIndex + 10] = particle.rotationMatrix.coffs[8];
       } else {
-        // Rotate about origin by inverse view matrix so quads always face the camera
-        viewToWorld.clone(rotMatrix);
-
-        // Scale relative to size of quad.
-        rotMatrix.scaleColumnsInPlace(scaleX, scaleY, 1);
-        transforms[tfIndex + 0] = rotMatrix.coffs[0];
-        transforms[tfIndex + 1] = rotMatrix.coffs[1];
-        transforms[tfIndex + 2] = rotMatrix.coffs[2];
-        transforms[tfIndex + 4] = rotMatrix.coffs[3];
-        transforms[tfIndex + 5] = rotMatrix.coffs[4];
-        transforms[tfIndex + 6] = rotMatrix.coffs[5];
-        transforms[tfIndex + 8] = rotMatrix.coffs[6];
-        transforms[tfIndex + 9] = rotMatrix.coffs[7];
-        transforms[tfIndex + 10] = rotMatrix.coffs[8];
+        // Rotate about origin by inverse view matrix so quads always face the camera and scale relative to size of quad.
+        transforms[tfIndex + 0] = viewToWorld.coffs[0] * scaleX;
+        transforms[tfIndex + 1] = viewToWorld.coffs[1] * scaleY;
+        transforms[tfIndex + 2] = viewToWorld.coffs[2];
+        transforms[tfIndex + 4] = viewToWorld.coffs[3] * scaleX;
+        transforms[tfIndex + 5] = viewToWorld.coffs[4] * scaleY;
+        transforms[tfIndex + 6] = viewToWorld.coffs[5];
+        transforms[tfIndex + 8] = viewToWorld.coffs[6] * scaleX;
+        transforms[tfIndex + 9] = viewToWorld.coffs[7] * scaleY;
+        transforms[tfIndex + 10] = viewToWorld.coffs[8];
       }
 
       // Translate relative to center of particles range.
@@ -315,7 +329,8 @@ class Builder implements ParticleCollectionBuilder {
     // So we leave the vertex attribute disabled causing the shader to receive the default (0, 0, 0) which happens to correspond to our feature index.
     const quad = createQuad(meanSize, this._texture, uniformTransparency ?? 0x7f);
     const transformCenter = new Point3d(0, 0, 0);
-    const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides };
+    const range = computeRange(this._range, rangeCenter, maxSize);
+    const instances = { count: numParticles, transforms, transformCenter, symbologyOverrides, range };
     return this._viewport.target.renderSystem.createMesh(quad, instances);
   }
 }
@@ -325,7 +340,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
   const halfHeight = size.y / 2;
   const corners = [
     new Point3d(-halfWidth, -halfHeight, 0), new Point3d(halfWidth, -halfHeight, 0),
-    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth,halfHeight, 0),
+    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth, halfHeight, 0),
   ];
 
   const quadArgs = new MeshArgs();
@@ -337,7 +352,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
     quadArgs.points.add(corner);
 
   quadArgs.vertIndices = [0, 1, 2, 2, 1, 3];
-  quadArgs.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+  quadArgs.textureUv = [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)];
   quadArgs.texture = texture;
   quadArgs.colors.initUniform(ColorDef.white.withTransparency(transparency));
   quadArgs.isPlanar = true;
@@ -354,27 +369,16 @@ function clampTransparency(transparency: number): number {
   return transparency;
 }
 
-class ArraySlice<T> {
-  private readonly _array:  T[];
-  private readonly _startIndex: number;
-  private readonly _endIndex: number;
-
-  public constructor(array: T[], startIndex: number, endIndex: number) {
-    this._array = array;
-    this._startIndex = startIndex;
-    this._endIndex = endIndex;
-  }
-
-  public get length(): number {
-    return this._endIndex - this._startIndex;
-  }
-
-  public [Symbol.iterator](): Iterator<T> {
-    function * iterator(array: T[], start: number, end: number) {
-      for (let i = start; i < end; i++)
-        yield array[i];
-    }
-
-    return iterator(this._array, this._startIndex, this._endIndex);
-  }
+function computeRange(centroidRange: Range3d, center: Point3d, maxSize: number): Range3d {
+  const range2 = centroidRange.clone();
+  range2.low.subtractInPlace(center);
+  range2.high.subtractInPlace(center);
+  const halfSize = maxSize * 0.5;
+  range2.low.x -= halfSize;
+  range2.low.y -= halfSize;
+  range2.low.z -= halfSize;
+  range2.high.x += halfSize;
+  range2.high.y += halfSize;
+  range2.high.z += halfSize;
+  return range2;
 }

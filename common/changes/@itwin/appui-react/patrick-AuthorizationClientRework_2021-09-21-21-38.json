@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Added UserInfo from itwin-client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

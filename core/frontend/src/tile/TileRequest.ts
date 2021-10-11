@@ -6,12 +6,12 @@
  * @module Tiles
  */
 
-import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
-import { ImageSource } from "@bentley/imodeljs-common";
+import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bentley";
+import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet } from "../ViewportSet";
-import { Tile, TileRequestChannel, TileTree } from "./internal";
+import { Tile, TileContent, TileRequestChannel, TileTree } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
  * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
@@ -84,7 +84,7 @@ export class TileRequest {
 
       // Set this now, so our `isCanceled` check can see it.
       this._state = TileRequest.State.Loading;
-    } catch (err) {
+    } catch (err: any) {
       if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
@@ -144,6 +144,7 @@ export class TileRequest {
 
   /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
   private async handleResponse(response: TileRequest.Response): Promise<void> {
+    let content: TileContent | undefined;
     let data: TileRequest.ResponseData | undefined;
     if (undefined !== response) {
       if (typeof response === "string")
@@ -152,22 +153,27 @@ export class TileRequest {
         data = response;
       else if (response instanceof ArrayBuffer)
         data = new Uint8Array(response);
+      else if (typeof response === "object" && undefined !== response.content)
+        content = response.content;
     }
 
-    if (undefined === data) {
+    if (!content && !data) {
       this.setFailed();
       return;
     }
 
     try {
-      const content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
-      if (this.isCanceled)
-        return;
+      if (!content) {
+        assert(undefined !== data);
+        content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
+        if (this.isCanceled)
+          return;
+      }
 
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
       this.notifyAndClear();
-      this.channel.recordCompletion(this.tile);
+      this.channel.recordCompletion(this.tile, content);
     } catch (_err) {
       this.setFailed();
     }
@@ -181,7 +187,7 @@ export namespace TileRequest { // eslint-disable-line no-redeclare
    * can produce a [[RenderGraphic]].
    * @public
    */
-  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | { content: TileContent } | undefined;
 
   /** The input to [[Tile.readContent]], to be converted into a [[RenderGraphic]].
    * @public

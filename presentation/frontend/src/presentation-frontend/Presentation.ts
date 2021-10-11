@@ -6,25 +6,37 @@
  * @module Core
  */
 
-import { isIDisposable } from "@bentley/bentleyjs-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "./ConnectivityInformationProvider";
-import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
-import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "./favorite-properties/FavoritePropertiesStorage";
+import { IModelApp } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
+import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
 import { LocalizationHelper } from "./LocalizationHelper";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { SelectionManager } from "./selection/SelectionManager";
+import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
-let connectivityInfoProvider: IConnectivityInformationProvider | undefined;
-let i18n: I18N | undefined;
+let localization: Localization | undefined;
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
 const initializationHandlers: Array<() => Promise<(() => void) | void>> = [];
 const terminationHandlers: Array<() => void> = [];
+
+/**
+ * Props for initializing [[Presentation]].
+ * @public
+ */
+export interface PresentationProps {
+  /** Props for [[PresentationManager]]. */
+  presentation?: PresentationManagerProps;
+
+  /** Props for [[SelectionManager]]. */
+  selection?: SelectionManagerProps;
+
+  /** Props for [[FavoritePropertiesManager]]. */
+  favorites?: FavoritePropertiesManagerProps;
+}
 
 /**
  * Static class used to statically set up Presentation library for the frontend.
@@ -48,47 +60,36 @@ export class Presentation {
    * [[include:Presentation.Frontend.Initialization]]
    * ```
    *
-   * The method should be called after a call
-   * to [IModelApp.startup]($imodeljs-frontend)
-   *
-   * @param props Optional properties to use when creating [[PresentationManager]]. If not provided
-   * or provided with `activeLocale` not set, `Presentation.i18n.languageList()[0]` is used as active locale.
+   * The method should be called after a call to [IModelApp.startup]($core-frontend).
    */
-  public static async initialize(props?: PresentationManagerProps): Promise<void> {
+  public static async initialize(props?: PresentationProps): Promise<void> {
     if (!IModelApp.initialized) {
       throw new PresentationError(PresentationStatus.NotInitialized,
         "IModelApp.startup must be called before calling Presentation.initialize");
     }
-    if (!i18n) {
-      i18n = IModelApp.i18n;
-    }
-    if (!connectivityInfoProvider) {
-      connectivityInfoProvider = new ConnectivityInformationProvider();
+    if (!localization) {
+      localization = IModelApp.localization;
     }
     if (!presentationManager) {
-      if (!props)
-        props = {};
-      if (!props.activeLocale) {
-        const languages = Presentation.i18n.languageList();
-        props.activeLocale = (languages.length ? languages[0] : undefined);
+      const managerProps = props?.presentation ?? {};
+      if (!managerProps.activeLocale) {
+        const languages = Presentation.localization.getLanguageList();
+        managerProps.activeLocale = (languages.length ? languages[0] : undefined);
       }
-      presentationManager = PresentationManager.create(props);
+      presentationManager = PresentationManager.create(managerProps);
     }
     if (!selectionManager) {
-      const scopesManager = new SelectionScopesManager({
-        rpcRequestsHandler: presentationManager.rpcRequestsHandler,
-        localeProvider: () => this.presentation.activeLocale,
-      });
-      selectionManager = new SelectionManager({
-        scopes: scopesManager,
+      selectionManager = new SelectionManager(props?.selection ?? {
+        scopes: new SelectionScopesManager({
+          rpcRequestsHandler: presentationManager.rpcRequestsHandler,
+          localeProvider: () => this.presentation.activeLocale,
+        }),
       });
     }
     if (!favoritePropertiesManager) {
-      const storage = new OfflineCachingFavoritePropertiesStorage({
-        connectivityInfo: connectivityInfoProvider,
-        impl: new IModelAppFavoritePropertiesStorage(),
+      favoritePropertiesManager = new FavoritePropertiesManager({
+        storage: props?.favorites ? props.favorites.storage : createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop),
       });
-      favoritePropertiesManager = new FavoritePropertiesManager({ storage });
     }
     // eslint-disable-next-line @typescript-eslint/unbound-method
     presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection.bind(favoritePropertiesManager);
@@ -102,18 +103,14 @@ export class Presentation {
 
   /**
    * Terminates Presentation library frontend. This method should be called
-   * before a call to [IModelApp.shutdown]($imodeljs-frontend)
+   * before a call to [IModelApp.shutdown]($core-frontend)
    */
   public static terminate(): void {
     terminationHandlers.forEach((handler) => handler());
     terminationHandlers.length = 0;
 
-    if (i18n)
+    if (localization)
       LocalizationHelper.unregisterNamespaces();
-
-    if (connectivityInfoProvider && isIDisposable(connectivityInfoProvider))
-      connectivityInfoProvider.dispose();
-    connectivityInfoProvider = undefined;
 
     if (presentationManager)
       presentationManager.dispose();
@@ -124,7 +121,7 @@ export class Presentation {
     favoritePropertiesManager = undefined;
 
     selectionManager = undefined;
-    i18n = undefined;
+    localization = undefined;
   }
 
   /**
@@ -183,28 +180,14 @@ export class Presentation {
   /**
    * The localization manager used by Presentation frontend. Returns the result of `IModelApp.i18n`.
    */
-  public static get i18n(): I18N {
-    if (!i18n)
+  public static get localization(): Localization {
+    if (!localization)
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
-    return i18n;
+    return localization;
   }
 
   /** @internal */
-  public static setI18nManager(value: I18N) {
-    i18n = value;
-  }
-
-  /** Provides information about current connection status. */
-  public static get connectivity(): IConnectivityInformationProvider {
-    if (!connectivityInfoProvider)
-      throw new Error("Presentation must be first initialized by calling Presentation.initialize");
-    return connectivityInfoProvider;
-  }
-
-  /** @internal */
-  public static setConnectivityInformationProvider(value: IConnectivityInformationProvider) {
-    if (connectivityInfoProvider && isIDisposable(connectivityInfoProvider))
-      connectivityInfoProvider.dispose();
-    connectivityInfoProvider = value;
+  public static setLocalization(value: Localization) {
+    localization = value;
   }
 }

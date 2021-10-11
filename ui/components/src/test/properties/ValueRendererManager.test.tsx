@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { IPropertyValueRenderer, PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager";
-import { UiComponents } from "../../ui-components/UiComponents";
+import { IPropertyValueRenderer, PropertyValueRendererManager } from "../../components-react/properties/ValueRendererManager";
+import { UiComponents } from "../../components-react/UiComponents";
 import TestUtils from "../TestUtils";
 
 describe("PropertyValueRendererManager", () => {
@@ -139,6 +139,20 @@ describe("PropertyValueRendererManager", () => {
       const valueMount = mount(<div>{value}</div>);
 
       expect(valueMount.text()).to.be.equal(UiComponents.translate("property.varies"));
+    });
+
+    it("renders merged properties before looking for custom renderer in property typename", () => {
+      const property = TestUtils.createPrimitiveStringProperty("Label", "Test prop");
+      property.property.typename = "stub";
+      property.isMerged = true;
+
+      const rendererManager = new PropertyValueRendererManager();
+      rendererManager.registerRenderer("stub", fakeRenderer);
+
+      const value = rendererManager.render(property);
+      const valueMount = mount(<div>{value}</div>);
+      expect(valueMount.text()).to.be.equal(UiComponents.translate("property.varies"));
+      expect(fakeRenderer.render).to.not.be.called;
     });
   });
 });

@@ -2,38 +2,35 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorByName } from "@bentley/imodeljs-common";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { ColorByName } from "@itwin/core-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
-} from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@bentley/ui-components";
-import { UiIModelComponents } from "../ui-imodel-components/UiIModelComponents";
+} from "@itwin/appui-abstract";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/components-react";
+import { UiIModelComponents } from "../imodel-components-react/UiIModelComponents";
 
 // cSpell:ignore buttongroup
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _i18n?: ITwinLocalization;
   private static _uiIModelComponentsInitialized = false;
 
-  public static get i18n(): I18N {
+  public static get i18n(): ITwinLocalization {
     if (!TestUtils._i18n) {
       // const port = process.debugPort;
       // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new I18N();
+      TestUtils._i18n = new ITwinLocalization();
     }
     return TestUtils._i18n;
   }
 
   public static async initializeUiIModelComponents() {
     if (!TestUtils._uiIModelComponentsInitialized) {
-      // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
       await UiIModelComponents.initialize(TestUtils.i18n);
       TestUtils._uiIModelComponentsInitialized = true;
 

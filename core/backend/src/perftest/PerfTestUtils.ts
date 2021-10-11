@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseIdValue, Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelTestUtils } from "../test/IModelTestUtils";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@bentley/geometry-core";
+import { Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 import { IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
-import { BackendRequestContext } from "../BackendRequestContext";
 import { SpatialCategory } from "../Category";
 import { ECSqlStatement } from "../ECSqlStatement";
 
@@ -31,7 +30,7 @@ export class PerfTestDataMgr {
   public async importSchema(schemaPath: string, testCName: string = "") {
     assert(IModelJsFs.existsSync(schemaPath));
     if (this.db) {
-      await this.db.importSchemas(new BackendRequestContext(), [schemaPath]);
+      await this.db.importSchemas([schemaPath]);
       if (testCName)
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
       this.db.saveChanges();

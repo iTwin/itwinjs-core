@@ -1,0 +1,22 @@
+sep=;
+Release Tag;API Item
+alpha;BasicManipulationCommandIpc 
+alpha;EditCommandIpc
+alpha;editorBuiltInCmdIds:
+internal;editorChannel = "editor"
+alpha;EditorIpc
+alpha;ElementGeometryCacheFilter
+alpha;ElementGeometryResultOptions
+alpha;ElementGeometryResultProps
+alpha;FlatBufferGeometricElementData
+alpha;FlatBufferGeometryFilter
+alpha;FlatBufferGeometryPartData
+alpha;LocateSubEntityProps
+alpha;OffsetFacesProps
+alpha;SolidModelingCommandIpc 
+alpha;SubEntityAppearanceProps
+alpha;SubEntityFilter
+alpha;SubEntityGeometryProps
+alpha;SubEntityLocationProps
+alpha;SubEntityProps
+alpha;SubEntityType

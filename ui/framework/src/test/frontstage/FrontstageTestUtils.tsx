@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
-} from "../../ui-framework";
-import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
+} from "../../appui-react";
+import { ToolItemDef } from "../../appui-react/shared/ToolItemDef";
 
 /* eslint-disable react/jsx-key */
 
@@ -60,20 +60,29 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
 
 /** @internal */
 export class TestFrontstage extends FrontstageProvider {
+  public static stageId = "TestFrontstage";
+  public get id(): string {
+    return TestFrontstage.stageId;
+  }
+
+  public get defaultToolDef() {
+    return new ToolItemDef({
+      toolId: "dummy",
+      iconSpec: "dummy",
+      label: "dummy",
+      description: "dummy",
+      execute: async () => { },
+    });
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "test-group",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "main",
             classId: TestContentControl,
             applicationData: { label: "Content 1a", bgColor: "black" },
           },
@@ -83,9 +92,8 @@ export class TestFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="TestFrontstage"
-        defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
+        id={this.id}
+        defaultTool={this.defaultToolDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}
@@ -153,20 +161,19 @@ export class TestFrontstage extends FrontstageProvider {
 
 /** @internal */
 export class TestFrontstage2 extends FrontstageProvider {
+  public static stageId = "TestFrontstage2";
+  public get id(): string {
+    return TestFrontstage2.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "test-group",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "main",
             classId: TestContentControl,
             applicationData: { label: "Content 1a", bgColor: "black" },
           },
@@ -176,9 +183,8 @@ export class TestFrontstage2 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="TestFrontstage2"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}
@@ -246,21 +252,19 @@ export class TestFrontstage2 extends FrontstageProvider {
 
 /** @internal */
 export class TestFrontstage3 extends FrontstageProvider {
+  public static stageId = "TestFrontstage3";
+  public get id(): string {
+    return TestFrontstage3.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "test-group",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
-            classId: TestContentControl,
+            id: "main", classId: TestContentControl,
           },
         ],
       },
@@ -268,9 +272,8 @@ export class TestFrontstage3 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="TestFrontstage3"
+        id={this.id}
         defaultTool={new ToolItemDef({ toolId: "test" })}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, StandardNodeTypes } from "@bentley/presentation-common";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { createRandomPropertyRecord, createRandomTreeNodeItem } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { TreeModelNode } from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, StandardNodeTypes } from "@itwin/presentation-common";
+import { createRandomPropertyRecord, createRandomTreeNodeItem } from "@itwin/presentation-components/lib/cjs/test";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { TreeModelNode } from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 
 /** @internal */
 export const createSimpleTreeModelNode = (id?: string): TreeModelNode => {
@@ -100,6 +100,7 @@ export const createKey = (type: "subject" | "model" | "category" | "element", id
 
   return {
     type: StandardNodeTypes.ECInstancesNode,
+    version: 0,
     instanceKeys,
     pathFromRoot: [],
   };
@@ -109,6 +110,7 @@ export const createKey = (type: "subject" | "model" | "category" | "element", id
 export const createClassGroupingKey = (ids: Id64String[]): ECClassGroupingNodeKey => {
   return {
     type: StandardNodeTypes.ECClassGroupingNode,
+    version: 0,
     className: "MyDomain:SomeElementType",
     groupedInstancesCount: Array.isArray(ids) ? ids.length : 1,
     pathFromRoot: [],

@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -54,7 +54,7 @@ class TreeOwner implements TileTreeOwner {
     try {
       tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
-    } catch (err) {
+    } catch (err: any) {
       newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
     }
 

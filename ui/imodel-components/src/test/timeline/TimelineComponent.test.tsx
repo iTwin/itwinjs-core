@@ -7,11 +7,10 @@ import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { BaseTimelineDataProvider } from "../../ui-imodel-components/timeline/BaseTimelineDataProvider";
-import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-imodel-components/timeline/interfaces";
-import { TimelineComponent, TimelineMenuItemProps } from "../../ui-imodel-components/timeline/TimelineComponent";
-import { createBoundingClientRect } from "../test-helpers/Utils";
+import { UiAdmin } from "@itwin/appui-abstract";
+import { BaseTimelineDataProvider } from "../../imodel-components-react/timeline/BaseTimelineDataProvider";
+import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../imodel-components-react/timeline/interfaces";
+import { TimelineComponent, TimelineMenuItemProps } from "../../imodel-components-react/timeline/TimelineComponent";
 import { TestUtils } from "../TestUtils";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
@@ -96,7 +95,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   const getBoundingClientRect = Element.prototype.getBoundingClientRect;
-  const sliderContainerSize = createBoundingClientRect(10, 0, 1010, 60);
+  const sliderContainerSize = DOMRect.fromRect({ x: 10, width: 1000, height: 60 });
 
   before(async () => {
     Element.prototype.getBoundingClientRect = () => sliderContainerSize;
@@ -875,8 +874,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
     expect(renderedComponent.queryByText("timeline.repeat")).to.be.null;
 
-    const mouseUp = document.createEvent("HTMLEvents");
-    mouseUp.initEvent("mouseup");
+    const mouseUp = new MouseEvent("mouseup");
     sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
     window.dispatchEvent(mouseUp);
   });
@@ -906,6 +904,49 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(startTimeLabel).not.to.be.null;
     expect(startTimeLabel.innerHTML).to.equal("7:00:00 PM");
   });
+  it("should mark today's date on the timeline", () => {
+    const duration = 10 * 1000;
+    const todayDate = new Date();
+    const startDate = new Date(todayDate.getTime() - 6 * 28 * 24 * 60 * 60);
+    const endDate = new Date(todayDate.getTime() + 6 * 28 * 24 * 60 * 60);
+    const marker = {};
 
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        minimized={true}
+        showDuration={false}
+        totalDuration={duration}
+        componentId={"sampleApp-MarkToday"}
+        markDate={marker}
+      />
+    );
+    expect(renderedComponent).not.to.be.undefined;
+    const dateMarker = renderedComponent.getByTestId("test-date-marker");
+    expect(dateMarker).not.to.be.null;
+
+  });
+  it("should mark a date on the timeline with a custom symbol", () => {
+    const duration = 10 * 1000;
+    const startDate = new Date("July 1, 2016, 00:00:00 GMT -0000");
+    const endDate = new Date("July 1, 2017, 20:30:45 GMT -0000");
+    const myDateMarker = <span data-testid="test-custom-date-marker">{"T"}</span>;
+    const marker = { date: new Date("December 15, 2016"), dateMarker: myDateMarker };
+
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        minimized={true}
+        showDuration={false}
+        totalDuration={duration}
+        componentId={"sampleApp-MarkTodayCustom"}
+        markDate={marker}
+      />
+    );
+    expect(renderedComponent).not.to.be.undefined;
+    const dateMarker = renderedComponent.getByTestId("test-custom-date-marker");
+    expect(dateMarker).not.to.be.null;
+  });
 });
-

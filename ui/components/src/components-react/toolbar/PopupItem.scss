@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "variables";
+
+.components-toolbar-expandable-button {
+  $triangle-width: 4px;
+  $triangle-height: $triangle-width;
+  $shadow-vertical-offset: 1px;
+  $margin-from-triangle-to-stroke: 3px;
+  $arrow-shadow: $icon-shadow;
+  position: relative;
+
+  >* {
+    &:not(.components-triangle) {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  >.components-triangle {
+    border-radius: 0;
+    position: absolute;
+    right: $margin-from-triangle-to-stroke;
+    bottom: $margin-from-triangle-to-stroke;
+    filter: $arrow-shadow;
+    pointer-events: none;
+
+    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
+  }
+
+  &:active>.components-triangle {
+    filter: $no-shadow;
+
+    @include triangle-bottom-right-color($pressed-icon-color);
+  }
+
+  &.components-active {
+    &:not(:active):not(.components-disabled) {
+      >.components-triangle {
+        filter: $no-shadow;
+
+        @include triangle-bottom-right-color($active-icon-color);
+      }
+    }
+  }
+
+  &.components-disabled {
+    >.components-triangle {
+      @include triangle-bottom-right-color($disabled-icon-color);
+    }
+  }
+
+  &.components-disabled-drag {
+    >.components-icon {
+      color: $disabled-icon-color;
+    }
+
+    >.components-triangle {
+      @include triangle-bottom-right-color($disabled-icon-color);
+    }
+  }
+}
+
+.components-toolbar-popupItem_popupItemPopup {
+  @include uicore-z-index(toolbar-panels);
+  width: fit-content;
+  background: $buic-background-1;
+  border-color: $buic-background-5;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+}

@@ -6,9 +6,9 @@
  * @module LinearReferencing
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ElementRefersToElements } from "@bentley/imodeljs-backend";
-import { RelatedElement } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { ElementRefersToElements } from "@itwin/core-backend";
+import { RelatedElement } from "@itwin/core-common";
 
 /** Relationship indicating the Linear-Element along which concrete instances mixing-in ILinearlyLocated are located.
  * @beta

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LazyLoadedPhenomenon, LazyLoadedUnitSystem, Unit } from "@bentley/ecschema-metadata";
+import { LazyLoadedPhenomenon, LazyLoadedUnitSystem, Unit } from "@itwin/ecschema-metadata";
 
 /**
  * @internal

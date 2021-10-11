@@ -6,10 +6,10 @@
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
 import * as path from "path";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { getRpcInterfaces, Settings } from "../common/Settings";
+import { IModelJsExpressServer } from "@itwin/express-server";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
+import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
@@ -28,15 +28,11 @@ function loadEnv(envFile: string) {
 }
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
-const settings = new Settings(process.env);
-process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 void (async () => {
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
   await IModelHost.startup(hostConfig);
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());

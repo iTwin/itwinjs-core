@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { Range1d } from "@bentley/geometry-core";
+import { assert, Id64String } from "@itwin/core-bentley";
+import { Range1d } from "@itwin/core-geometry";
 import { RequestOptions } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";

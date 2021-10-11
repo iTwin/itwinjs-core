@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory, PropertyData } from "../../ui-components";
-import { FavoritePropertiesRenderer } from "../../ui-components/favorite/FavoritePropertiesRenderer";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyCategory, PropertyData } from "../../components-react";
+import { FavoritePropertiesRenderer } from "../../components-react/favorite/FavoritePropertiesRenderer";
 import TestUtils from "../TestUtils";
 
 describe("FavoritePropertiesRenderer", () => {

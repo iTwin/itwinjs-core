@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -76,13 +76,13 @@ export class SaturationConfig extends Tool {
   /** Multiplier applied to the saturation of each color in the source image. */
   public static multiplier = 2.0;
 
-  public override run(multiplier?: number): boolean {
+  public override async run(multiplier?: number): Promise<boolean> {
     SaturationConfig.multiplier = multiplier ?? 2.0;
     refreshViewportsForEffect("fdt Saturation");
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     return this.run(args.getFloat("s"));
   }

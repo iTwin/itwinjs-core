@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
-import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import {
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+} from "@itwin/core-common";
+import { Reporter } from "@itwin/perf-tools";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -129,7 +131,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       const seedName = path.join(outDir, `poly_flat_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await seedIModel.importSchemas(new BackendRequestContext(), [st]);
+        await seedIModel.importSchemas([st]);
         // first create Elements and then Relationship
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -166,7 +168,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     const seedName2 = path.join(outDir, `poly_multi_${multiHierarchyCount.toString()}.bim`);
     if (!IModelJsFs.existsSync(seedName2)) {
       const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
-      await seedIModel2.importSchemas(new BackendRequestContext(), [st2]);
+      await seedIModel2.importSchemas([st2]);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel2, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");

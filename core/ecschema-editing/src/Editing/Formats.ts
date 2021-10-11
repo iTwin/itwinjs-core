@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { FormatProps, FormatType, InvertedUnit, SchemaItemKey, SchemaKey, Unit } from "@bentley/ecschema-metadata";
+import { FormatProps, FormatType, InvertedUnit, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
 

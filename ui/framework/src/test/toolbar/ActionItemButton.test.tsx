@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BadgeType } from "@bentley/ui-abstract";
-import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../ui-framework";
-import { SyncUiEventId } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import { BadgeType } from "@itwin/appui-abstract";
+import { ActionItemButton, BaseItemState, CommandItemDef, KeyboardShortcutManager, SyncUiEventDispatcher } from "../../appui-react";
+import { SyncUiEventId } from "../../appui-react/syncui/SyncUiEventDispatcher";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ActionItemButton", () => {

@@ -5,7 +5,7 @@
 
 import "./IModelSelector.css";
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
@@ -66,14 +66,14 @@ export class IModelSelector extends React.Component<Props, State> {
   public override render() {
     let error = null;
     if (this.state.error)
-      error = (<div className="Error">{IModelApp.i18n.translate("Sample:controls.notifications.error")}: {this.state.error.message}</div>);
+      error = (<div className="Error">{IModelApp.localization.getLocalizedString("Sample:controls.notifications.error")}: {this.state.error.message}</div>);
 
     return (
       <div className="IModelSelector">
         <Select
           options={this.state.availableImodels}
           value={this.props.activeIModelPath}
-          placeholder={IModelApp.i18n.translate("Sample:controls.notifications.select-imodel")}
+          placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-imodel")}
           onChange={this.onImodelSelected}
         />
         {error}

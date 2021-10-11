@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { MutableCategorizedPrimitiveProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty";
+import { MutableCategorizedPrimitiveProperty } from "../../../../../components-react/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty";
 import TestUtils from "../../../../TestUtils";
 import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
 

@@ -1,0 +1,90 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "variables";
+
+@mixin hover-style {
+  background-color: $buic-accessory-primary;
+
+  >.nz-dot {
+    background-color: $buic-foreground-accessory;
+  }
+}
+
+.nz-widgetPanels-grip {
+  $handle-length: 3em;
+  $handle-width: 1.5em;
+
+  background-color: $buic-background-5;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  position: relative;
+  display: flex;
+
+  >.nz-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  >.nz-dot {
+    $size: 0.25em;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    background-color: $buic-foreground-disabled;
+  }
+
+  &.nz-left,
+  &.nz-right {
+    flex-direction: column;
+    cursor: ew-resize;
+    width: $nz-grip-width;
+    height: $nz-grip-height;
+
+    >.nz-dot {
+      &:not(:first-child) {
+        margin-top: 3px;
+      }
+    }
+
+    >.nz-handle {
+      height: $handle-length;
+      width: $handle-width;
+    }
+  }
+
+  &.nz-top,
+  &.nz-bottom {
+    flex-direction: row;
+    cursor: ns-resize;
+    width: $nz-grip-height;
+    height: $nz-grip-width;
+
+    >.nz-dot {
+      &:not(:first-child) {
+        margin-left: 3px;
+      }
+    }
+
+    >.nz-handle {
+      height: $handle-width;
+      width: $handle-length;
+    }
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      @include hover-style;
+    }
+  }
+
+  &.nz-active,
+  &.nz-resizing {
+    @include hover-style;
+  }
+}

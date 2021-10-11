@@ -8,17 +8,17 @@
 
 import { inPlaceSort } from "fast-sort";
 import memoize from "micro-memoize";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
   InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
   RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
   Value, ValuesMap,
-} from "@bentley/presentation-common";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@bentley/ui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
+} from "@itwin/presentation-common";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@itwin/appui-abstract";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
@@ -93,7 +93,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     });
     this._includeFieldsWithNoValues = true;
     this._includeFieldsWithCompositeValues = true;
-    this._isNestedPropertyCategoryGroupingEnabled = false;
+    this._isNestedPropertyCategoryGroupingEnabled = true;
     this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
     this._shouldCreateFavoritesCategory = !props.disableFavoritesCategory;
   }
@@ -120,17 +120,11 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /**
-   * Tells the data provider to _not_ request descriptor and instead configure
-   * content using `getDescriptorOverrides()` call
-   */
-  protected override shouldConfigureContentDescriptor(): boolean { return false; }
-
-  /**
    * Provides content configuration for the property grid
    */
-  protected override getDescriptorOverrides(): DescriptorOverrides {
+  protected override async getDescriptorOverrides(): Promise<DescriptorOverrides> {
     return {
-      ...super.getDescriptorOverrides(),
+      ...(await super.getDescriptorOverrides()),
       contentFlags: ContentFlags.ShowLabels | ContentFlags.MergeResults,
     };
   }
@@ -138,7 +132,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Hides the computed display label field from the list of properties
    */
-  protected override isFieldHidden(field: Field) {
+  protected isFieldHidden(field: Field) {
     return field.name === "/DisplayLabel/";
   }
 
@@ -350,6 +344,7 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
     const categorizedRecords: { [categoryName: string]: PropertyRecord[] } = {};
     this._categorizedRecords.forEach((recs, categoryName) => {
       destructureRecords(recs);
+      // istanbul ignore else
       if (recs.length) {
         const sortedFields = recs.map((r) => r.fieldHierarchy.field);
         this._props.callbacks.sortFields(this._categoriesCache.getEntry(categoryName)!, sortedFields);
@@ -373,6 +368,7 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
     // determine which categories are actually used
     const usedCategoryNames = new Set();
     this._categorizedRecords.forEach((records, categoryName) => {
+      // istanbul ignore if
       if (records.length === 0)
         return;
 
@@ -670,6 +666,7 @@ function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: Fi
 
   // if we got a chance to destructure at least one item, replace old members with new ones
   // in the field hierarchy that we got
+  // istanbul ignore else
   if (items.length > 0)
     fieldHierarchy.childFields = destructuredFields;
 }
@@ -688,6 +685,7 @@ function destructureRecords(records: FieldHierarchyRecord[]) {
       // destructure 0 or 1 sized arrays by removing the array record and putting its first item in its place (if any)
       if (entry.record.value.items.length <= 1) {
         records.splice(i, 1);
+        // istanbul ignore else
         if (entry.record.value.items.length > 0) {
           const item = entry.record.value.items[0];
           records.splice(i, 0, { ...entry, fieldHierarchy: entry.fieldHierarchy, record: item });

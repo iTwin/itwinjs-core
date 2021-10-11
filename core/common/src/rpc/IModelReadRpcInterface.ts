@@ -6,25 +6,28 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Range3dProps } from "@bentley/geometry-core";
-import { ElementLoadOptions, ElementProps } from "../ElementProps";
+import { GuidString, Id64String } from "@itwin/core-bentley";
+import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
+import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
+import { ElementLoadOptions, ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../EntityProps";
-import { GeoCoordinatesResponseProps, IModelCoordinatesResponseProps } from "../GeoCoordinateServices";
+import { FontMapProps } from "../Fonts";
+import {
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
+} from "../GeoCoordinateServices";
+import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { GeometrySummaryRequestProps } from "../GeometrySummary";
 import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
 import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
 import { ModelProps } from "../ModelProps";
-import { QueryLimit, QueryPriority, QueryQuota, QueryResponse } from "../Paging";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
+import { TextureData, TextureLoadProps } from "../TextureProps";
 import { ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
-import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
-import { TextureLoadProps } from "../TextureProps";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -50,15 +53,15 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.3.1";
+  public static interfaceVersion = "3.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForRead(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
-  public async close(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
-  public async queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse> { return this.forward(arguments); }
+  public async getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse> { return this.forward(arguments); }
+  public async queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse> { return this.forward(arguments); }
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
   public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
@@ -68,7 +71,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
   public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
-  public async readFontJson(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
+  public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
@@ -76,11 +79,10 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
   public async getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return this.forward(arguments); }
   public async getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
-  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
-  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
-  public async getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> { return this.forward(arguments); }
-
+  public async queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> { return this.forward(arguments); }
   public async loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined> {
     return this.forward(arguments);
   }

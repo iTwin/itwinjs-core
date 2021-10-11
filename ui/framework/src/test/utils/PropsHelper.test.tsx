@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ConditionalStringValue } from "@bentley/ui-abstract";
-import { PropsHelper } from "../../ui-framework";
+import { ConditionalStringValue } from "@itwin/appui-abstract";
+import { PropsHelper } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("PropsHelper", () => {

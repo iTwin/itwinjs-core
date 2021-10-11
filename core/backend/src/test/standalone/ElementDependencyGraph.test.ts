@@ -7,15 +7,15 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
-  BackendRequestContext, ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
-} from "../../imodeljs-backend";
+  ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
+} from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {
@@ -144,7 +144,6 @@ class TestHelper {
 
 describe("ElementDependencyGraph", () => {
   let testFileName: string;
-  const requestContext = new BackendRequestContext();
   let dbInfo: DbInfo;
 
   const performUpgrade = (pathname: string) => {
@@ -166,7 +165,7 @@ describe("ElementDependencyGraph", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
     const codeSpecId = imodel.codeSpecs.insert(CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model));
     const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));

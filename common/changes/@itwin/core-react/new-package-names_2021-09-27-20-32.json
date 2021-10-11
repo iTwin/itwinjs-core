@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "rename to @itwin/core-react",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

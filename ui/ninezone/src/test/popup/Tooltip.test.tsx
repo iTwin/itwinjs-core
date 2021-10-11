@@ -5,9 +5,9 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { SizeProps } from "@bentley/ui-core";
-import { offsetAndContainInContainer, Tooltip } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { SizeProps } from "@itwin/core-react";
+import { offsetAndContainInContainer, Tooltip } from "../../appui-layout-react";
+import { createRect, mount } from "../Utils";
 
 describe("<Tooltip />", () => {
   it("should render", () => {
@@ -30,7 +30,7 @@ describe("<Tooltip />", () => {
       />,
     );
     const element = sut.getDOMNode();
-    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 1, 50, 22));
+    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 1, 50, 22));
 
     sut.setProps({
       position: {

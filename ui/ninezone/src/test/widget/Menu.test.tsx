@@ -5,8 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { WidgetMenu } from "../../ui-ninezone";
-import { createDOMRect } from "../Utils";
+import { WidgetMenu } from "../../appui-layout-react";
 
 describe("WidgetMenu ", () => {
   it("should render", () => {
@@ -24,7 +23,7 @@ describe("WidgetMenu ", () => {
 
   it("should render to right", () => {
     sinon.stub(Element.prototype, "getBoundingClientRect").returns({
-      ...createDOMRect(),
+      ...new DOMRect(),
       left: 49,
     });
     sinon.stub(document.body, "clientWidth").get(() => 100);
@@ -42,7 +41,7 @@ describe("WidgetMenu ", () => {
 
   it("should render to bottom", () => {
     sinon.stub(Element.prototype, "getBoundingClientRect").returns({
-      ...createDOMRect(),
+      ...new DOMRect(),
       top: 49,
     });
     sinon.stub(document.body, "clientHeight").get(() => 100);

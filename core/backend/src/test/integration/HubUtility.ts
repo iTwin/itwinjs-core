@@ -5,12 +5,11 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { AccessToken, BentleyStatus, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -22,7 +21,7 @@ export class HubUtility {
   public static logCategory = "HubUtility";
   public static allowHubBriefcases = false;
 
-  public static testContextName = "iModelJsIntegrationTest";
+  public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
@@ -30,80 +29,72 @@ export class HubUtility {
     readWrite: "ReadWriteTest",
   };
 
-  public static contextId: GuidString | undefined;
-  /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
-  public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
+  public static iTwinId: GuidString | undefined;
+  /** Returns the iTwinId if an iTwin with the name exists. Otherwise, returns undefined. */
+  public static async getTestITwinId(accessToken: AccessToken): Promise<GuidString> {
 
-    if (undefined !== HubUtility.contextId)
-      return HubUtility.contextId;
-    return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
+    if (undefined !== HubUtility.iTwinId)
+      return HubUtility.iTwinId;
+    return HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
   }
 
   private static imodelCache = new Map<string, GuidString>();
   /** Returns the iModelId if the iModel exists. Otherwise, returns undefined. */
-  public static async getTestIModelId(requestContext: AuthorizedClientRequestContext, name: string): Promise<GuidString> {
+  public static async getTestIModelId(accessToken: AccessToken, name: string): Promise<GuidString> {
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
-    const projectId = await HubUtility.getTestContextId(requestContext);
-    const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
-    HubUtility.imodelCache.set(name, imodelId);
-    return imodelId;
+    const iTwinId = await HubUtility.getTestITwinId(accessToken);
+    const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, name);
+    HubUtility.imodelCache.set(name, iModelId);
+    return iModelId;
   }
 
-  private static async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string | undefined> {
-    if (undefined !== HubUtility.contextId)
-      return HubUtility.contextId;
-
-    const project = await getIModelProjectAbstraction().queryProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    return project.wsgId;
+  public static async queryIModelByName(accessToken: AccessToken, iTwinId: string, iModelName: string): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
   }
 
-  public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: projectId, iModelName });
-  }
-
-  private static async queryIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
-    const iModels = await getIModelProjectAbstraction().queryIModels(requestContext, projectId, new IModelQuery().byId(iModelId));
+  private static async queryIModelById(accessToken: AccessToken, iTwinId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
+    const iModels = await getITwinAbstraction().queryIModels(accessToken, iTwinId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
     return iModels[0];
   }
 
   /**
-   * Queries the project id by its name
-   * @param requestContext The client request context
-   * @param projectName Name of project
-   * @throws If the project is not found, or there is more than one project with the supplied name
+   * Queries the iTwin id by its name
+   * @param accessToken The client request context
+   * @param name Name of iTwin
+   * @throws If the iTwin is not found, or there is more than one iTwin with the supplied name
    */
-  public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const project = await HubUtility.queryContextByName(requestContext, projectName);
-    if (!project)
-      throw new Error(`Project ${projectName} not found`);
-    return project;
+  public static async getITwinIdByName(accessToken: AccessToken, name: string): Promise<string> {
+    if (undefined !== HubUtility.iTwinId)
+      return HubUtility.iTwinId;
+
+    const iTwin = await getITwinAbstraction().getITwinByName(accessToken, name);
+    if (iTwin === undefined || !iTwin.id)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+
+    return iTwin.id;
   }
 
-  /**
-   * Queries the iModel id by its name
-   * @param requestContext The client request context
-   * @param projectId Id of the project
+  /** Queries the iModel id by its name
+   * @param accessToken The client request context
+   * @param iTwinId Id of the parent iTwin
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
-  public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
-    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+  public static async queryIModelIdByName(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
+    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
     return iModelId;
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(accessToken: AccessToken, changeSetsPath: string, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
+    const changeSets = await IModelHubBackend.iModelClient.changeSets.get(accessToken, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
       return changeSets;
     const latestIndex = changeSets.length - 1;
@@ -122,18 +113,18 @@ export class HubUtility {
     const query = earliestChangeSetId ? new ChangeSetQuery().betweenChangeSets(earliestChangeSetId, latestChangeSetId) : new ChangeSetQuery();
 
     const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
-    await IModelHubBackend.iModelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
+    await IModelHubBackend.iModelClient.changeSets.download(accessToken, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }
 
   /** Download all named versions of the specified iModel */
-  private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, _projectId: string, iModelId: GuidString): Promise<Version[]> {
+  private static async downloadNamedVersions(accessToken: AccessToken, iModelId: GuidString): Promise<Version[]> {
     const query = new VersionQuery();
     query.orderBy("createdDate");
 
     const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
-    const versions = await IModelHubBackend.iModelClient.versions.get(requestContext, iModelId, query);
+    const versions = await IModelHubBackend.iModelClient.versions.get(accessToken, iModelId, query);
     perfLogger.dispose();
     if (versions.length === 0)
       return new Array<ChangeSet>();
@@ -143,7 +134,7 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelById(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
     // Recreate the download folder if necessary
     if (reDownload) {
       if (IModelJsFs.existsSync(downloadDir))
@@ -151,7 +142,7 @@ export class HubUtility {
       IModelJsFs.recursiveMkDirSync(downloadDir);
     }
 
-    const iModel = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
+    const iModel = await HubUtility.queryIModelById(accessToken, iTwinId, iModelId);
     if (!iModel)
       throw new Error(`IModel with id ${iModelId} not found`);
 
@@ -164,20 +155,20 @@ export class HubUtility {
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
       const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-      await IModelHubBackend.iModelClient.iModels.download(requestContext, iModelId, seedPathname);
+      await IModelHubBackend.iModelClient.iModels.download(accessToken, iModelId, seedPathname);
       perfLogger.dispose();
     }
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, projectId, iModelId);
+    const changeSets = await HubUtility.downloadChangesets(accessToken, changeSetDir, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
 
     // Download the version information
-    const namedVersions = await HubUtility.downloadNamedVersions(requestContext, projectId, iModelId);
+    const namedVersions = await HubUtility.downloadNamedVersions(accessToken, iModelId);
     const namedVersionsJsonStr = JSON.stringify(namedVersions, undefined, 4);
     const namedVersionsJsonPathname = path.join(downloadDir, "namedVersions.json");
     IModelJsFs.writeFileSync(namedVersionsJsonPathname, namedVersionsJsonStr);
@@ -186,22 +177,22 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+  public static async downloadIModelByName(accessToken: AccessToken, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
+    const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
 
-    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
 
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir, reDownload);
+    await HubUtility.downloadIModelById(accessToken, iTwinId, iModelId, downloadDir, reDownload);
   }
 
   /** Delete an IModel from the hub */
-  public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const contextId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, contextId, iModelName);
+  public static async deleteIModel(accessToken: AccessToken, iTwinName: string, iModelName: string): Promise<void> {
+    const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
+    const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, iModelName);
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
@@ -227,8 +218,7 @@ export class HubUtility {
     const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const applyOption = ChangeSetApplyOption.Merge;
-    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+    const perfLogger = new PerfLogger(`Applying change sets }`);
 
     const results = [];
     // Apply change sets one by one to debug any issues
@@ -236,8 +226,8 @@ export class HubUtility {
       const startTime = new Date().getTime();
       let csResult = ChangeSetStatus.Success;
       try {
-        nativeDb.applyChangeset(changeSet, applyOption);
-      } catch (err) {
+        nativeDb.applyChangeset(changeSet);
+      } catch (err: any) {
         csResult = err.errorNumber;
       }
       const endTime = new Date().getTime();
@@ -245,7 +235,6 @@ export class HubUtility {
       results.push({
         csNum: changeSet.index,
         csId: changeSet.id,
-        csApplyOption: ChangeSetApplyOption[applyOption],
         csResult,
         time: elapsedTime,
       });
@@ -266,7 +255,7 @@ export class HubUtility {
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const lastAppliedChangeset = nativeDb.getParentChangeset();
+    const lastAppliedChangeset = nativeDb.getCurrentChangeset();
 
     const changeSets = HubUtility.readChangeSets(iModelDir);
     const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeset.id);
@@ -276,7 +265,7 @@ export class HubUtility {
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
+    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
     nativeDb.closeIModel();
     assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
   }
@@ -302,7 +291,7 @@ export class HubUtility {
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets, ChangeSetApplyOption.Merge);
+    status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets);
 
     // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
     const reverseChangeSets = changeSets.reverse();
@@ -310,13 +299,13 @@ export class HubUtility {
     const filteredChangeSets = reverseChangeSets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Reverse);      // eslint-disable-line deprecation/deprecation
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
     }
 
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
       filteredChangeSets.reverse();
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
     }
 
     nativeDb.closeIModel();
@@ -327,9 +316,9 @@ export class HubUtility {
    * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
-  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
+  public static async validateAllChangeSetOperations(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, iModelDir: string) {
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir, true /* =reDownload */);
+    await HubUtility.downloadIModelById(accessToken, iTwinId, iModelId, iModelDir, true /* =reDownload */);
 
     this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }
@@ -346,46 +335,46 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
-  public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+  public static async pushIModel(accessToken: AccessToken, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModels");
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
-    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
+    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, locIModelName);
     if (iModelId) {
       if (!overwrite)
         return iModelId;
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName: locIModelName, revision0: pathname });
+    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, revision0: pathname });
   }
 
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
-  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+  public static async pushIModelAndChangeSets(accessToken: AccessToken, iTwinName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
-    const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
+    const iModelId = await HubUtility.pushIModel(accessToken, iTwinId, seedPathname, iModelName, overwrite);
 
     let briefcase: Briefcase;
-    const hubBriefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, iModelId);
+    const hubBriefcases = await IModelHubBackend.iModelClient.briefcases.get(accessToken, iModelId);
     if (hubBriefcases.length > 0)
       briefcase = hubBriefcases[0];
     else
-      briefcase = await IModelHubBackend.iModelClient.briefcases.create(requestContext, iModelId);
+      briefcase = await IModelHubBackend.iModelClient.briefcases.create(accessToken, iModelId);
     if (!briefcase) {
       throw new Error(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
     briefcase.iModelId = iModelId;
 
-    await HubUtility.pushChangeSets(requestContext, briefcase, uploadDir);
-    await HubUtility.pushNamedVersions(requestContext, briefcase, uploadDir, overwrite);
+    await HubUtility.pushChangeSets(accessToken, briefcase, uploadDir);
+    await HubUtility.pushNamedVersions(accessToken, briefcase, uploadDir, overwrite);
     return iModelId;
   }
 
-  private static async pushChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string): Promise<void> {
+  private static async pushChangeSets(accessToken: AccessToken, briefcase: Briefcase, uploadDir: string): Promise<void> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests push changesets");
     const changeSetJsonPathname = path.join(uploadDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
@@ -395,7 +384,7 @@ export class HubUtility {
     const changeSetsJson = JSON.parse(jsonStr);
 
     // Find the last change set that was already uploaded
-    const lastCs = await IModelHost.hubAccess.getLatestChangeset({ requestContext, iModelId: briefcase.iModelId! });
+    const lastCs = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: briefcase.iModelId! });
     const filteredChangeSetsJson = (lastCs.index === 0) ? changeSetsJson.slice(lastCs.index + 1) : changeSetsJson;
 
     // Upload change sets
@@ -414,13 +403,13 @@ export class HubUtility {
       changeSet.changesType = changeSetJson.changesType;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await IModelHubBackend.iModelClient.changeSets.create(requestContext, briefcase.iModelId!, changeSet, changeSetPathname);
+      await IModelHubBackend.iModelClient.changeSets.create(accessToken, briefcase.iModelId!, changeSet, changeSetPathname);
       ii++;
       Logger.logInfo(HubUtility.logCategory, `Uploaded Change Set ${ii} of ${count}`, () => ({ ...changeSet }));
     }
   }
 
-  private static async pushNamedVersions(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
+  private static async pushNamedVersions(requestContext: AccessToken, briefcase: Briefcase, uploadDir: string, overwrite?: boolean): Promise<void> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const namedVersionsJsonPathname = path.join(uploadDir, "namedVersions.json");
     if (!IModelJsFs.existsSync(namedVersionsJsonPathname))
@@ -442,16 +431,16 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
+  public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
+    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
         onReachThreshold();
 
       const promises: Promise<void>[] = [];
       briefcases.forEach((briefcaseId) => {
-        promises.push(IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId }));
+        promises.push(IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
       });
       await Promise.all(promises);
     }
@@ -460,13 +449,13 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+  public static async purgeAcquiredBriefcases(accessToken: AccessToken, iTwinName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
+    const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, iModelName);
 
-    return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
-      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+    return this.purgeAcquiredBriefcasesById(accessToken, iModelId, () => {
+      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${iTwinName}:${iModelName}. Purging all briefcases.`);
     }, acquireThreshold);
   }
 
@@ -515,8 +504,8 @@ export class HubUtility {
   }
 
   /** Applies change sets one by one (for debugging) */
-  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
-    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[]): ChangeSetStatus {
+    const perfLogger = new PerfLogger(`Applying change sets]}`);
 
     // Apply change sets one by one to debug any issues
     let count = 0;
@@ -524,9 +513,9 @@ export class HubUtility {
       ++count;
       Logger.logInfo(HubUtility.logCategory, `Started applying change set: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
       try {
-        nativeDb.applyChangeset(changeSet, applyOption);
+        nativeDb.applyChangeset(changeSet);
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status }));
-      } catch (err) {
+      } catch (err: any) {
         Logger.logError(HubUtility.logCategory, `Error applying ChangeSet ${err.errorNumber}`, () => ({ ...changeSet }));
         perfLogger.dispose();
         return err.errorNumber;
@@ -572,31 +561,31 @@ export class HubUtility {
     return `${baseName} - ${Guid.createValue()}`;
   }
 
-  /** Deletes and re-creates an iModel with the provided name in the Context.
+  /** Deletes and re-creates an iModel with the provided name in the iTwin.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(arg.accessToken, arg.iTwinId, arg.iModelName);
     if (undefined !== deleteIModel)
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId: deleteIModel });
+      await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for ${iModelName}` });
+    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
   }
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
-  public static async createIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+  public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    let iModelId = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    let iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
     if (!iModelId)
-      iModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for iModel` });
+      iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
     return iModelId;
   }
 }
 
-/** An implementation of IModelProjectAbstraction backed by an iTwin project */
-class TestIModelHubProject {
+/** An implementation of TestITwin backed by an iTwin */
+class TestITwin {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
@@ -604,29 +593,42 @@ class TestIModelHubProject {
     return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
-  private static _contextRegistryClient?: ContextRegistryClient;
+  private static _iTwinAccessClient?: ITwinAccessClient;
 
-  private static get contextClient(): ContextRegistryClient {
-    if (this._contextRegistryClient === undefined)
-      this._contextRegistryClient = new ContextRegistryClient();
-    return this._contextRegistryClient;
+  private static get iTwinClient(): ITwinAccessClient {
+    if (this._iTwinAccessClient === undefined)
+      this._iTwinAccessClient = new ITwinAccessClient();
+    return this._iTwinAccessClient;
   }
 
-  public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
-    const client = TestIModelHubProject.contextClient;
-    return client.getProject(requestContext, query);
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+    const client = TestITwin.iTwinClient;
+    const iTwinList: ITwin[] = await client.getAll(accessToken, {
+      search: {
+        searchString: name,
+        propertyName: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      },
+    });
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 
-  public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
+  public async queryIModels(accessToken: AccessToken, iTwinId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
-    return client.iModels.get(requestContext, projectId, query);
+    return client.iModels.get(accessToken, iTwinId, query);
   }
 }
 
-let projectAbstraction: TestIModelHubProject;
-export function getIModelProjectAbstraction(): TestIModelHubProject {
-  if (projectAbstraction !== undefined)
-    return projectAbstraction;
+let iTwinAbstraction: TestITwin;
+export function getITwinAbstraction(): TestITwin {
+  if (iTwinAbstraction !== undefined)
+    return iTwinAbstraction;
 
-  return projectAbstraction = new TestIModelHubProject();
+  return iTwinAbstraction = new TestITwin();
 }

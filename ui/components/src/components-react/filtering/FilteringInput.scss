@@ -1,0 +1,69 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/inputs/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/variables";
+@import "~@itwin/itwinui-css/scss/button/button";
+@import "~@itwin/itwinui-css/scss/button/default";
+@import "~@itwin/itwinui-css/scss/inputs/input";
+
+.components-filtering-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px;
+}
+
+// Input wrapper
+.components-filtering-input-input {
+  position: relative;
+  flex: 1;
+
+  // The input itself
+  input {
+    min-height: $uicore-component-height-normal;
+    padding: $uicore-iui-input-padding;
+    box-sizing: border-box;
+  }
+
+  input::-ms-clear {
+    display: none;
+  }
+}
+
+.components-filtering-input-input-components {
+  display: flex;
+  position: absolute;
+  right: 8px;
+  top: 1px;
+  bottom: 0px;
+
+  >.icon {
+    align-self: center;
+    border: none;
+    outline: none;
+  }
+}
+
+@mixin filtering-button-base {
+  @include iui-button;
+  @include iui-button-default;
+  margin-left: 6px;
+}
+
+.components-filtering-input-button {
+  @include filtering-button-base;
+}
+
+.components-filtering-input-clear {
+  @include filtering-button-base;
+  color: $buic-text-color-muted;
+  font-size: "12px";
+}
+
+.components-filtering-input-loader {
+  margin-bottom: auto;
+  margin-top: auto;
+}

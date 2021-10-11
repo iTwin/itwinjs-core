@@ -6,15 +6,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { SelectionHandler } from "../../../../ui-components/common/selection/SelectionHandler";
-import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
+import { SelectionHandler } from "../../../../components-react/common/selection/SelectionHandler";
+import { SelectionMode } from "../../../../components-react/common/selection/SelectionModes";
 import {
   IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager,
-} from "../../../../ui-components/tree/controlled/internal/TreeSelectionManager";
-import { isTreeModelNode, TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
+} from "../../../../components-react/tree/controlled/internal/TreeSelectionManager";
+import { isTreeModelNode, TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../../../../components-react/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
 
 type Selection = string | RangeSelection;
 

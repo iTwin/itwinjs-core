@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { fireEvent, render } from "@testing-library/react";
-import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
+import { PropertyValueRendererContext } from "../../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
-import { UrlPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/UrlPropertyValueRenderer";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { UrlPropertyValueRenderer } from "../../../../components-react/properties/renderers/value/UrlPropertyValueRenderer";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import sinon from "sinon";
 import * as moq from "typemoq";
 
@@ -65,7 +65,7 @@ describe("UrlPropertyValueRenderer", () => {
 
     describe("onClick", () => {
       const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
-      let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
+      let spy: sinon.SinonStub<[(string | URL | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
 
       before(() => {
         location = locationMockRef.object;

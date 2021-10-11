@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-impl",
+      "comment": "rename to @itwin/ecschema-rpcinterface-impl",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-impl"
+}

@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { assert } from "@itwin/core-bentley";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
@@ -471,7 +471,7 @@ export const enum ShaderBuilderFlags {
   InstancedVertexTable = VertexTable | Instanced,
 }
 
-/*
+/**
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
  * @internal

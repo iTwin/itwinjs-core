@@ -2,21 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, RegisteredRuleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import {
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { PageOptions } from "@bentley/ui-components";
+import * as moq from "typemoq";
+import { BeEvent, Logger } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Node, RegisteredRuleset } from "@itwin/presentation-common";
+import { createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset, PromiseContainer, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { PageOptions } from "@itwin/components-react";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
@@ -164,8 +160,7 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves(0);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesCount: override } });
       await provider.getNodesCount(undefined);
-      // eslint-disable-next-line deprecation/deprecation
-      presentationManagerMock.verify(async (x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getNodesCount(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 
@@ -274,7 +269,7 @@ describe("TreeDataProvider", () => {
     it("returns presentation manager result", async () => {
       const filter = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getFilteredNodePaths({ imodel: imodelMock.object, rulesetOrId: rulesetId }, filter))
+        .setup(async (x) => x.getFilteredNodePaths({ imodel: imodelMock.object, rulesetOrId: rulesetId, filterText: filter }))
         .returns(async () => [createRandomNodePathElement(), createRandomNodePathElement()])
         .verifiable();
       const actualResult = await provider.getFilteredNodePaths(filter);
@@ -286,7 +281,7 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves([]);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getFilteredNodePaths: override } });
       await provider.getFilteredNodePaths("test");
-      presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 

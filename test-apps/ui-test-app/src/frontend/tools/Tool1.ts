@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { Point3d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, EventHandled, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
-import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { DialogItemValue, DialogPropertySyncItem } from "@itwin/appui-abstract";
 
 export class Tool1 extends PrimitiveTool {
   public static override toolId = "Tool1";
@@ -41,8 +41,8 @@ export class Tool1 extends PrimitiveTool {
   }
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override onUnsuspend(): void { this.provideToolAssistance(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -61,7 +61,7 @@ export class Tool1 extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.Tool2.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.Tool2.Prompts.GetPoint"));
 
     const instruction1 = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
     const instruction2 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["A"]), "Press a key");
@@ -94,13 +94,13 @@ export class Tool1 extends PrimitiveTool {
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new Tool1();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

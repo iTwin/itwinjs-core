@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { WebFontIcon } from "../../ui-core/icons/WebFontIcon";
+import { WebFontIcon } from "../../core-react/icons/WebFontIcon";
 
 describe("WebFontIcon", () => {
   it("renders", () => {

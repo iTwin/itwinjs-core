@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { EventEmitter, TabIdContext, TabState, useTransientState, WidgetContentManager, WidgetContentManagerContext, WidgetContentManagerContextArgs, WidgetContentRenderer } from "../../ui-ninezone";
+import { EventEmitter, TabIdContext, TabState, useTransientState, WidgetContentManager, WidgetContentManagerContext, WidgetContentManagerContextArgs, WidgetContentRenderer } from "../../appui-layout-react";
 
 describe("WidgetContentRenderer", () => {
   const wrapper = WidgetContentManager;

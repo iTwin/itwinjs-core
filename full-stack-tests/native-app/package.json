@@ -1,19 +1,20 @@
 {
   "name": "native-app-full-stack-tests",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run webpack:frontend",
+    "compile": "npm run -s build",
+    "build": "tsc 1>&2 && npm run -s webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
-    "cover": "npm run test:chrome -- --cover && npm run test:electron -- --cover",
+    "cover": "npm run -s test:chrome -- --cover && npm run -s test:electron -- --cover",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run test:electron",
+    "test": "npm run -s test:electron",
     "test:chrome": "",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
-    "test:integration": "npm run test:integration:electron",
+    "test:integration": "npm run -s test:integration:electron",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "copy:config": "internal-tools copy-config",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
@@ -21,32 +22,30 @@
   "repository": {},
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
-    "@bentley/express-server": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/express-server": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-markup": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-markup": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
-    "electron": "^11.1.0"
+    "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@bentley/certa": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
@@ -57,18 +56,19 @@
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "nyc": "^15.1.0",
     "nock": "^12.0.3",
-    "webpack": "4.42.0"
+    "webpack": "4.42.0",
+    "webpack-cli": "^3.1.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

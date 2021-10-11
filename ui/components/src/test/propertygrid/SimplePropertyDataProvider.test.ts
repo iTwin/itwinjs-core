@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyCategory, SimplePropertyDataProvider } from "../../ui-components";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyCategory, SimplePropertyDataProvider } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {

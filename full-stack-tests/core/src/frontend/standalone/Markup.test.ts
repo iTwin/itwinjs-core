@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@bentley/imodeljs-frontend";
-import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@bentley/imodeljs-markup";
+import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
+import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
 
@@ -51,8 +51,8 @@ describe("Markup tests", async () => {
 
   it("viewing tools should fail when Markup active", async () => {
     const tools = IModelApp.tools;
-    assert.isFalse(tools.run(StandardViewTool.toolId, vp, StandardViewId.Back), "standard view");
-    assert.isFalse(tools.run(WindowAreaTool.toolId, vp), "standard view");
+    assert.isFalse(await tools.run(StandardViewTool.toolId, vp, StandardViewId.Back), "standard view");
+    assert.isFalse(await tools.run(WindowAreaTool.toolId, vp), "standard view");
   });
 
   it("Markup Undo/Redo", () => {

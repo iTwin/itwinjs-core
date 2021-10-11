@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as timerModule from "@bentley/ui-core/lib/ui-core/utils/Timer";
-import { Toast } from "../../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../../Utils";
+import * as timerModule from "@itwin/core-react/lib/cjs/core-react/utils/Timer";
+import { Toast } from "../../../appui-layout-react";
+import { createRect, mount } from "../../Utils";
 
 describe("<Toast />", () => {
   it("should render", () => {
@@ -78,7 +78,7 @@ describe("<Toast />", () => {
     />);
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const sut = mounted.find(".nz-toast").getDOMNode() as HTMLDivElement;
-    sinon.stub(sut, "getBoundingClientRect").returns(createBoundingClientRect(10, 20, 40, 80));
+    sinon.stub(sut, "getBoundingClientRect").returns(createRect(10, 20, 40, 80));
 
     fakeTimers.tick(2000);
     fakeTimers.tick(1);

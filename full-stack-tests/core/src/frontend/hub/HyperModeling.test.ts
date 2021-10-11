@@ -3,37 +3,39 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@bentley/geometry-core";
-import { SectionType } from "@bentley/imodeljs-common";
+import { Point3d } from "@itwin/core-geometry";
+import { SectionType } from "@itwin/core-common";
 import {
   CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
-} from "@bentley/hypermodeling-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+} from "@itwin/hypermodeling-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ITwinLocalization } from "@itwin/core-i18n";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
+    await IModelApp.shutdown();
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
+      ...TestUtility.iModelAppOptions,
+      localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
     });
+    await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
-    const testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
+    const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.sectionDrawingLocations);
 
-    hypermodel = await CheckpointConnection.openRemote(testContextId, testIModelId);
+    hypermodel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
   });
 
   after(async () => {
@@ -219,18 +221,18 @@ describe("HyperModeling (#integration)", () => {
       const dec = (await HyperModeling.startOrStop(vp, true))!;
       expect(dec).not.to.be.undefined;
 
-      const test = (keyin: string, config: SectionMarkerConfig) => {
-        expect(IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
+      const test = async (keyin: string, config: SectionMarkerConfig) => {
+        expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
         expectMarkerConfig(dec.config, config);
       };
 
-      test("hypermodeling marker config model=0", { ignoreModelSelector: true });
-      test("hypermodeling marker config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
-      test("hypermodeling marker config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
-      test("hypermodeling marker config", {});
-      test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [SectionType.Plan, SectionType.Elevation] });
-      test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [SectionType.Section] });
-      test("hypermodeling marker config", {});
+      await test("hypermodeling marker config model=0", { ignoreModelSelector: true });
+      await test("hypermodeling marker config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
+      await test("hypermodeling marker config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
+      await test("hypermodeling marker config", {});
+      await test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [SectionType.Plan, SectionType.Elevation] });
+      await test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [SectionType.Section] });
+      await test("hypermodeling marker config", {});
     });
   });
 

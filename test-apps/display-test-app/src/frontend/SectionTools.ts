@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { createButton, createComboBox } from "@bentley/frontend-devtools";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
-import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
+import { BeEvent } from "@itwin/core-bentley";
+import { createButton, createComboBox } from "@itwin/frontend-devtools";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
+import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 function setFocusToHome(): void {
@@ -47,21 +47,21 @@ export class SectionsPanel extends ToolBarDropDown {
     div.style.textAlign = "center";
     createButton({
       value: "Define",
-      handler: () => { IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
+      handler: async () => { await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
       parent: div,
       inline: true,
       tooltip: "Define clip",
     });
     createButton({
       value: "Edit",
-      handler: () => ViewClipDecorationProvider.create().toggleDecoration(this._vp),
+      handler: async () => ViewClipDecorationProvider.create().toggleDecoration(this._vp),
       parent: div,
       inline: true,
       tooltip: "Show clip edit handles",
     });
     createButton({
       value: "Clear",
-      handler: () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
+      handler: async () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
       parent: div,
       inline: true,
       tooltip: "Clear clips",
@@ -137,7 +137,7 @@ class ModelClipTool {
 }
 
 export interface DividingLineProps {
-  bounds: ClientRect;
+  bounds: DOMRect;
   onDragged?: (leftPanelWidth: number, rightPanelWidth: number) => void;
   buffer?: number;
   sideL?: number;
@@ -154,7 +154,7 @@ export class TwoPanelDivider {
   }
 
   private _buffer: number;
-  private _bounds: ClientRect;
+  private _bounds: DOMRect;
   private _oldPosition: number = 0;
 
   public dividerElem: HTMLElement;
@@ -164,7 +164,7 @@ export class TwoPanelDivider {
     this.dividerElem.style.left = `${left}px`;
   }
 
-  public updateBounds(rect: ClientRect): void {
+  public updateBounds(rect: DOMRect): void {
     this.dividerElem.style.top = `${rect.top}px`;
     this.dividerElem.style.height = `${rect.height}px`;
   }

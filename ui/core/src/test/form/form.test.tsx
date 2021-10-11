@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { FieldDefinitions, FieldValues, Form } from "../../ui-core";
+import { FieldDefinitions, FieldValues, Form } from "../../core-react";
 import TestUtils, { handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 
 describe("<Form />", () => {

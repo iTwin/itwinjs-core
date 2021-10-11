@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@itwin/core-frontend";
 
 /** Connect or disconnect two viewports using TwoWayViewportSync. */
 export class SyncViewportsTool extends Tool {
@@ -16,7 +16,7 @@ export class SyncViewportsTool extends Tool {
   private static _removeListeners?: VoidFunction;
   private static _sync = new TwoWayViewportSync();
 
-  public override run(vp1?: Viewport, vp2?: Viewport): boolean {
+  public override async run(vp1?: Viewport, vp2?: Viewport): Promise<boolean> {
     const that = SyncViewportsTool;
     if (!vp1 && !vp2) {
       that.disconnect();
@@ -30,7 +30,7 @@ export class SyncViewportsTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     switch (args.length) {
       case 0:
         return this.run();

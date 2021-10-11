@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Zones } from "../../ui-ninezone";
+import { Zones } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<Zones />", () => {

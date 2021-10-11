@@ -1,9 +1,0 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-@import "./index";
-
-.uicore-inputs-labeled-select { @include uicore-inputs-labeled-select; }
-.uicore-inputs-select { @include uicore-inputs-select; }
-.uicore-inputs-labeled-themed-select { @include uicore-inputs-labeled-themed-select; }

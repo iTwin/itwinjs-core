@@ -5,21 +5,21 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
-import { InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
+import { IModelRpcProps } from "@itwin/core-common";
+import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@itwin/core-frontend";
+import { InstanceKey, RpcRequestsHandler } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
 import {
   ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework, WidgetStateChangedEventArgs,
-} from "../../ui-framework";
-import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager";
+} from "../../appui-react";
+import { Backstage, BackstageEventArgs } from "../../appui-react/backstage/Backstage";
+import { ActiveContentChangedEventArgs, ContentViewManager } from "../../appui-react/content/ContentViewManager";
 import {
   FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
-} from "../../ui-framework/frontstage/FrontstageManager";
-import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow";
+} from "../../appui-react/frontstage/FrontstageManager";
+import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../appui-react/workflow/Workflow";
 import TestUtils from "../TestUtils";
 
 const timeToWaitForUiSyncCallback = 60;
@@ -199,12 +199,12 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    WorkflowManager.onTaskActivatedEvent.emit({} as TaskActivatedEventArgs);
+    WorkflowManager.onTaskActivatedEvent.emit({} as TaskActivatedEventArgs);  // eslint-disable-line deprecation/deprecation
     fakeTimers.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    WorkflowManager.onWorkflowActivatedEvent.emit({} as WorkflowActivatedEventArgs);
+    WorkflowManager.onWorkflowActivatedEvent.emit({} as WorkflowActivatedEventArgs);  // eslint-disable-line deprecation/deprecation
     fakeTimers.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

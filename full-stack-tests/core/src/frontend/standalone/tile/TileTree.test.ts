@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { compareStrings } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { IModelTileTreeProps, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { compareStrings } from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -56,7 +56,7 @@ class MockTree extends TileTree {
   public get rootTile() { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return 1; }
-  public get viewFlagOverrides() { return { }; }
+  public get viewFlagOverrides() { return {}; }
   public override get isContentUnbounded() { return false; }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
@@ -197,7 +197,7 @@ describe("requestTileTreeProps", () => {
       try {
         await IModelApp.tileAdmin.requestTileTreeProps(imodel, id);
         fulfilled.push(id);
-      } catch (_) {
+      } catch {
         //
       }
     };

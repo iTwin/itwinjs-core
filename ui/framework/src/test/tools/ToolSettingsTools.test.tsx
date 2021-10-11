@@ -5,9 +5,9 @@
 import * as React from "react";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { TestUtils } from "../TestUtils";
-import { BumpToolSetting, FocusToolSettings } from "../../ui-framework/tools/ToolSettingsTools";
+import { BumpToolSetting, FocusToolSettings } from "../../appui-react/tools/ToolSettingsTools";
 
 describe("ToolSettingsTools", () => {
 
@@ -25,30 +25,30 @@ describe("ToolSettingsTools", () => {
     it("should return false if no ToolSettings div found", async () => {
       render(<div data-testid="div"></div>);
       const tool = new FocusToolSettings();
-      expect(tool.parseAndRun()).to.be.false;
+      expect(await tool.parseAndRun()).to.be.false;
     });
 
     it("should return true if focusable item in docked ToolSettings", async () => {
-      render(<div className="nz-toolSettings-docked"><button/></div>);
+      render(<div className="nz-toolSettings-docked"><button /></div>);
       const tool = new FocusToolSettings();
-      expect(tool.parseAndRun()).to.be.true;
+      expect(await tool.parseAndRun()).to.be.true;
     });
   });
 
   describe("BumpToolSetting", () => {
     it("should return true if no args", async () => {
       const tool = new BumpToolSetting();
-      expect(tool.parseAndRun()).to.be.true;
+      expect(await tool.parseAndRun()).to.be.true;
     });
 
     it("should return true if valid arg", async () => {
       const tool = new BumpToolSetting();
-      expect(tool.parseAndRun("2")).to.be.true;
+      expect(await tool.parseAndRun("2")).to.be.true;
     });
 
     it("should return false if invalid arg", async () => {
       const tool = new BumpToolSetting();
-      expect(tool.parseAndRun("bad")).to.be.false;
+      expect(await tool.parseAndRun("bad")).to.be.false;
     });
 
   });

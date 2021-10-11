@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/analytical-backend",
+      "comment": "Support for Node 16",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/analytical-backend"
+}

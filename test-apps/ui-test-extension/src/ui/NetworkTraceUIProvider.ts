@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { I18N } from "@bentley/imodeljs-i18n";
+import { Localization } from "@itwin/core-common";
 import {
   BadgeType,
   CommonToolbarItem,
@@ -13,9 +13,9 @@ import {
   ToolbarOrientation,
   ToolbarUsage,
   UiItemsProvider,
-} from "@bentley/ui-abstract";
-import { SyncUiEventDispatcher } from "@bentley/ui-framework";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+} from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher } from "@itwin/appui-react";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";
@@ -26,17 +26,17 @@ export class TraceUiItemsProvider implements UiItemsProvider {
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
 
   public readonly id = "TraceUiItemsProvider";
-  private static _i18n: I18N;
+  private static _localization: Localization;
   private static _defaultNs: string;
   private static _traceAvailableProperty = false;
 
-  public constructor(i18n: I18N, defaultNs: string) {
-    TraceUiItemsProvider._i18n = i18n;
+  public constructor(localization: Localization, defaultNs: string) {
+    TraceUiItemsProvider._localization = localization;
     TraceUiItemsProvider._defaultNs = defaultNs;
   }
 
   public static translate(key: string) {
-    return TraceUiItemsProvider._i18n.translate(
+    return TraceUiItemsProvider._localization.getLocalizedString(
       `${TraceUiItemsProvider._defaultNs}:${key}`
     );
   }

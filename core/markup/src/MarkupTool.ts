@@ -6,8 +6,8 @@
  * @module MarkupTools
  */
 
-import { XAndY } from "@bentley/geometry-core";
-import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
+import { XAndY } from "@itwin/core-geometry";
+import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 
@@ -19,10 +19,10 @@ export abstract class MarkupTool extends PrimitiveTool {
   public static toolKey = "MarkupTools:tools.Markup.";
   public override requireWriteableTarget(): boolean { return false; }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView); }
-  public override onInstall(): boolean { if (undefined === MarkupApp.markup) return false; this.markup = MarkupApp.markup; return super.onInstall(); }
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override onUnsuspend(): void { this.showPrompt(); }
-  public onRestartTool(): void { this.exitTool(); }
+  public override async onInstall(): Promise<boolean> { if (undefined === MarkupApp.markup) return false; this.markup = MarkupApp.markup; return super.onInstall(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onUnsuspend() { this.showPrompt(); }
+  public async onRestartTool() { return this.exitTool(); }
 
   protected showPrompt(): void { }
   protected setupAndPromptForNextAction(): void {

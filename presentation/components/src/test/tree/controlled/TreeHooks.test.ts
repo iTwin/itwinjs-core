@@ -5,14 +5,14 @@
 import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import {
@@ -37,7 +37,7 @@ describe("usePresentationNodeLoader", () => {
   };
 
   before(async () => {
-    await UiComponents.initialize(new I18N());
+    await UiComponents.initialize(new ITwinLocalization());
   });
 
   after(() => {
@@ -276,18 +276,6 @@ describe("usePresentationNodeLoader", () => {
       const oldNodeLoader = result.current.nodeLoader;
 
       const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: currRuleset.toJSON(),
-          },
-          rulesetOrId: currRuleset.toJSON(),
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [])
-        .verifiable();
-
       onRulesetModified.raiseEvent(currRuleset, currRuleset.toJSON());
 
       expect(result.current.nodeLoader).to.eq(oldNodeLoader);
@@ -315,9 +303,6 @@ describe("usePresentationNodeLoader", () => {
       initialModelSource.modifyModel((treeModel) => treeModel.insertChild(undefined, createNodeInput("test"), 0));
 
       // Update tree so that `info.treeModel` is not undefined
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies(moq.It.isAny()))
-        .returns(async () => [{ type: "Update", target: createNode("test").key, changes: createNode("test_updated") }]);
       onRulesetModified.raiseEvent(
         new RegisteredRuleset({ id: "initial", rules: [] }, "", () => { }),
         { id: "initial", rules: [] },

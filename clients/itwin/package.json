@@ -1,20 +1,23 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "3.0.0-dev.51",
+  "version": "3.0.0-dev.83",
   "description": "Base client package for iTwin applications",
-  "main": "lib/itwin-client.js",
-  "typings": "lib/itwin-client",
+  "main": "lib/cjs/itwin-client.js",
+  "module": "lib/esm/itwin-client.js",
+  "typings": "lib/cjs/itwin-client",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=itwin-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test --offline=\"mock\"",
-    "cover": "nyc npm test"
+    "test": "mocha",
+    "cover": "nyc npm -s test"
   },
   "repository": {
     "type": "git",
@@ -30,25 +33,24 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.51"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.83"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.7",
-    "@types/xmldom": "^0.1.30",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
@@ -56,7 +58,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "webpack": "4.42.0"
   },
   "dependencies": {
@@ -65,16 +67,15 @@
     "lodash": "^4.17.10",
     "qs": "^6.5.1",
     "superagent": "^5.2.2",
-    "xmldom": "^0.6.0",
     "xpath": "0.0.27"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

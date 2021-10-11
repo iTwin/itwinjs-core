@@ -8,15 +8,16 @@
 
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
-} from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d,
+  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+} from "@itwin/core-common";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
@@ -45,8 +46,8 @@ export interface BlankConnectionProps {
   extents: Range3dProps;
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
-  /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
-  contextId?: GuidString;
+  /** The optional Guid that identifies the iTwin associated with the [[BlankConnection]]. */
+  iTwinId?: GuidString;
 }
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
@@ -162,7 +163,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = JSON.parse(await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps())) as FontMapProps;
+        const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
@@ -239,6 +240,47 @@ export abstract class IModelConnection extends IModel {
   /** Close this IModelConnection. */
   public abstract close(): Promise<void>;
 
+  /** Allow to execute query and read results along with meta data. The result are streamed.
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param config Allow to specify certain flags which control how query is executed.
+   * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
+   * @beta
+   * */
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+    const executor = {
+      execute: async (request: DbQueryRequest) => {
+        return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
+      },
+    };
+    return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /** Execute a query and stream its results
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
+   * @param options Allow to specify certain flags which control how query is executed.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   */
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    const builder = new QueryOptionsBuilder(options);
+    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
+      builder.setConvertClassIdsToNames(true);
+    }
+    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
+    while (await reader.step())
+      yield reader.formatCurrentRow(rowFormat);
+  }
+
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
@@ -246,52 +288,19 @@ export abstract class IModelConnection extends IModel {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
+   * @param params The values to bind to the parameters (if the ECSQL has any).
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
-      return row.nRows;
+
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+      return row[0] as number;
     }
-    Logger.logError(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.getRpcProps(), ecsql, bindings }));
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
-
-  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
-   * The result of the query is returned as an array of JavaScript objects where every array element represents an
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @param restartToken when provide cancel the previous query with same token in same session.
-   * @returns Returns structure containing rows and status.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @internal
-   */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
-
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), ecsql, bindings, limit, quota, priority, restartToken, abbreviateBlobs);
-  }
-
-  /** Execute a query and stream its results
+  /** Cancel any previous query with same token and run execute the current specified query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -300,105 +309,20 @@ export abstract class IModelConnection extends IModel {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   */
-  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any> {
-    let result: QueryResponse;
-    let offset: number = 0;
-    let rowsToGet = limitRows ? limitRows : -1;
-    do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
-      while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
-      }
-
-      if (result.status === QueryResponseStatus.Error) {
-        if (result.rows[0] === undefined) {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
-        } else {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
-        }
-      }
-
-      if (rowsToGet > 0) {
-        rowsToGet -= result.rows.length;
-      }
-      offset += result.rows.length;
-
-      for (const row of result.rows)
-        yield row;
-
-    } while (result.status !== QueryResponseStatus.Done);
-  }
-
-  /** Execute a query and stream its results
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
-   * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
+   * @param options Allow to specify certain flags which control how query is executed.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   * @beta
    */
-  public async * restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
-    let result: QueryResponse;
-    let offset: number = 0;
-    let rowsToGet = limitRows ? limitRows : -1;
-    do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
-      while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
-      }
-      if (result.status === QueryResponseStatus.Cancelled) {
-        throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);
-      } else if (result.status === QueryResponseStatus.Error) {
-        if (result.rows[0] === undefined) {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
-        } else {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
-        }
-      }
-
-      if (rowsToGet > 0) {
-        rowsToGet -= result.rows.length;
-      }
-      offset += result.rows.length;
-
-      for (const row of result.rows)
-        yield row;
-
-    } while (result.status !== QueryResponseStatus.Done);
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+      yield row;
+    }
   }
-
   /** Query for a set of element ids that satisfy the supplied query params
    * @param params The query parameters. The `limit` and `offset` members should be used to page results.
    * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
@@ -442,10 +366,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[Id64]]
    * @public
    */
-  public async getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
+  public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     if (this.isOpen) {
       const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
-      const img = rpcClient.getTextureImage(this.getRpcProps(), textureLoadProps);
+      const img = rpcClient.queryTextureData(this.getRpcProps(), textureLoadProps);
       return img;
     }
     return undefined;
@@ -476,7 +400,7 @@ export abstract class IModelConnection extends IModel {
     }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-    return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
+    return Cartographic.fromDegrees({ longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z }, result);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
@@ -609,11 +533,11 @@ export abstract class IModelConnection extends IModel {
 export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
-  /** The Guid that identifies the *context* for this BlankConnection.
-   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
+  /** The Guid that identifies the iTwin for this BlankConnection.
+   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
-  public override get contextId(): GuidString | undefined { return this._contextId; }
-  public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
+  public override get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public override set iTwinId(iTwinId: GuidString | undefined) { this._iTwinId = iTwinId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
@@ -633,7 +557,7 @@ export class BlankConnection extends IModelConnection {
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
-      contextId: props.contextId,
+      iTwinId: props.iTwinId,
     });
   }
 
@@ -975,7 +899,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const row of this._iModel.query(ecsql)) {
+      for await (const row of this._iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
         const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },
@@ -1023,12 +947,12 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
       if (!Id64.isValid(codeSpecId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId }));
+        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1042,7 +966,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
       if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1104,7 +1028,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
       if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid view definition Id for IModelConnection.Views.load", Logger.logError, loggerCategory, () => { return { viewDefinitionId }; });
+        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
 
       const options: ViewStateLoadProps = {
         displayStyle: {
@@ -1118,7 +1042,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
       if (undefined === ctor)
-        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", () => viewProps);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector

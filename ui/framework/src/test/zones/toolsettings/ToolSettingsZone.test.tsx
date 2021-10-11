@@ -6,13 +6,13 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { WidgetState } from "@bentley/ui-abstract";
-import { Rectangle } from "@bentley/ui-core";
-import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@bentley/ui-ninezone";
+import { WidgetState } from "@itwin/appui-abstract";
+import { Rectangle } from "@itwin/core-react";
+import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,
   ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, Widget, Zone,
-} from "../../../ui-framework";
+} from "../../../appui-react";
 import TestUtils, { mount, ReactWrapper } from "../../TestUtils";
 import { Tool1 } from "../../tools/Tool1";
 
@@ -80,13 +80,17 @@ describe("ToolSettingsZone", () => {
     await TestUtils.initializeUiFramework();
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ToolSettingsZone-TestFrontstage";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolSettingsZone-TestFrontstage"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             topCenter={
               <Zone
                 widgets={[
@@ -101,13 +105,17 @@ describe("ToolSettingsZone", () => {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
     class Frontstage2 extends FrontstageProvider {
+      public static stageId = "ToolSettingsZone-TestFrontstage2";
+      public get id(): string {
+        return Frontstage2.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolSettingsZone-TestFrontstage2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             topCenter={
               <Zone
                 widgets={[
@@ -134,7 +142,7 @@ describe("ToolSettingsZone", () => {
 
     const wrapper = mount(<FrontstageComposer />);
 
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolSettingsZone-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -173,7 +181,7 @@ describe("ToolSettingsZone", () => {
 
     const wrapper = mount(<FrontstageComposer />);
 
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolSettingsZone-TestFrontstage2");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

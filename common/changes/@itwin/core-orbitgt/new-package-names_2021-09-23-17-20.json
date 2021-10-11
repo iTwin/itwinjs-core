@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-orbitgt",
+      "comment": "rename to @itwin/core-orbitgt",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-orbitgt"
+}

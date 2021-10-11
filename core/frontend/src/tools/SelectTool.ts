@@ -6,13 +6,13 @@
  * @module SelectionSet
  */
 
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -505,15 +505,15 @@ export class SelectionTool extends PrimitiveTool {
 
       switch (this.selectionMode) {
         case SelectionMode.Replace:
-          this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
           break;
 
         case SelectionMode.Add:
-          this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
           break;
 
         case SelectionMode.Remove:
-          this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
           break;
       }
       return EventHandled.Yes;
@@ -548,11 +548,12 @@ export class SelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
-          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+
         return EventHandled.Yes;
       }
     }
@@ -560,12 +561,23 @@ export class SelectionTool extends PrimitiveTool {
     if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
       return EventHandled.Yes;
 
-    IModelApp.accuSnap.resetButton(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await IModelApp.accuSnap.resetButton();
     return EventHandled.Yes;
   }
 
-  public override onSuspend(): void { this._isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
-  public override onUnsuspend(): void { this._isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.selectionMode, this.selectionMethod); }
+  public override async onSuspend() {
+    this._isSuspended = true;
+    if (this.wantEditManipulators())
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend);
+  }
+
+  public override async onUnsuspend() {
+    this._isSuspended = false;
+    if (this.wantEditManipulators())
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend);
+
+    this.showPrompt(this.selectionMode, this.selectionMethod);
+  }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this._isSelectByPoints)
@@ -598,15 +610,15 @@ export class SelectionTool extends PrimitiveTool {
     return status;
   }
 
-  public onRestartTool(): void { this.exitTool(); }
+  public async onRestartTool(): Promise<void> { return this.exitTool(); }
 
-  public override onCleanup(): void {
+  public override async onCleanup() {
     if (this.wantEditManipulators())
       IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
   }
 
-  public override onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     if (!this.targetView)
       return;
     if (this.wantEditManipulators())
@@ -614,7 +626,7 @@ export class SelectionTool extends PrimitiveTool {
     this.initSelectTool();
   }
 
-  public static startTool(): boolean { return new SelectionTool().run(); }
+  public static async startTool(): Promise<boolean> { return new SelectionTool().run(); }
 
   private syncSelectionMode(): void {
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
@@ -658,7 +670,7 @@ export class SelectionTool extends PrimitiveTool {
   /** Used to send changes from UI back to Tool
    * @beta
    */
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     let changed = false;
     if (updatedValue.propertyName === SelectionTool._methodsName) {
       const saveWantManipulators = this.wantEditManipulators();

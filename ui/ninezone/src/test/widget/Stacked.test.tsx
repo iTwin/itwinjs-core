@@ -5,9 +5,9 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point, Rectangle } from "@bentley/ui-core";
-import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone";
-import { createBoundingClientRect, mount } from "../Utils";
+import { Point, Rectangle } from "@itwin/core-react";
+import { DisabledResizeHandles, HorizontalAnchor, ResizeGrip, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "../../appui-layout-react";
+import { createRect, mount } from "../Utils";
 
 describe("<Stacked />", () => {
   it("should render", () => {
@@ -434,7 +434,7 @@ describe("<Stacked />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode();
-    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(10);
@@ -454,7 +454,7 @@ describe("<Stacked />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode();
-    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(0);

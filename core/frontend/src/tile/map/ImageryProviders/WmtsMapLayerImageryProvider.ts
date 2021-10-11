@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@bentley/bentleyjs-core";
-import { MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { MapLayerSettings, ServerError } from "@itwin/core-common";
 import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
@@ -37,7 +37,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       if (this._preferredLayerTileMatrixSet.size === 0 || this._preferredLayerStyle.size === 0)
         throw new ServerError(IModelStatus.ValidationFailed, "");
 
-    } catch (error) {
+    } catch (error: any) {
       // Don't throw error if unauthorized status:
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
       // When credentials will be provided, a new provider will be created, and initialization should be fine.

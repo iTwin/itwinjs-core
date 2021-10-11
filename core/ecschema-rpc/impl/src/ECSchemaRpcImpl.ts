@@ -1,12 +1,11 @@
+import * as backend from "@itwin/core-backend";
+import { IModelRpcProps, QueryRowFormat, RpcManager } from "@itwin/core-common";
+import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
-import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import * as backend from "@bentley/imodeljs-backend";
-import { SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**
  * Defines the interface how the rows of the iModel query look like.
@@ -49,7 +48,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @returns                 An array of SchemaKeyProps.
    */
   public override async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
-    ClientRequestContext.current.enter();
 
     const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
@@ -57,7 +55,8 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
     // a typed row instance instead of any.
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
-    for await (const schemaDefinitionRow of iModelDb.query(schemaNameQuery) as AsyncIterableIterator<SchemaNameRow>) {
+    for await (const row of iModelDb.query(schemaNameQuery, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      const schemaDefinitionRow = row as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
       const read = Number(schemaDefinitionRow.read);
       const write = Number(schemaDefinitionRow.write);
@@ -75,8 +74,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @returns                 The SchemaProps.
    */
   public override async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
-    ClientRequestContext.current.enter();
-
     if (schemaName === undefined || schemaName.length < 1) {
       throw new Error(`Schema name must not be undefined or empty.`);
     }

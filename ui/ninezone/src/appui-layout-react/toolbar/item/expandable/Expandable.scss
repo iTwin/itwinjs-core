@@ -1,0 +1,60 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "../variables";
+
+.nz-toolbar-item-expandable-expandable {
+  $triangle-width: 4px;
+  $triangle-height: $triangle-width;
+  $shadow-vertical-offset: 1px;
+  $margin-from-triangle-to-stroke: 3px;
+  $arrow-shadow: $icon-shadow;
+
+  position: relative;
+
+  >* {
+    &:not(.nz-triangle) {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &:hover>.nz-triangle {
+    @include triangle-bottom-right-color($hovered-icon-color);
+  }
+
+  >.nz-triangle {
+    border-radius: 0;
+    position: absolute;
+    right: $margin-from-triangle-to-stroke;
+    bottom: $margin-from-triangle-to-stroke;
+    filter: $arrow-shadow;
+    pointer-events: none;
+
+    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
+  }
+
+  &:active>.nz-triangle {
+    filter: $no-shadow;
+
+    @include triangle-bottom-right-color($pressed-icon-color);
+  }
+
+  &.nz-active {
+    &:not(:active):not(.nz-disabled) {
+      >.nz-triangle {
+        filter: $no-shadow;
+
+        @include triangle-bottom-right-color($active-icon-color);
+      }
+    }
+  }
+
+  &.nz-disabled {
+    >.nz-triangle {
+      @include triangle-bottom-right-color($disabled-icon-color);
+    }
+  }
+}
