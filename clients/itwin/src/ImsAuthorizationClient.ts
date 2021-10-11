@@ -12,6 +12,10 @@ import { Client } from "./Client";
 export class ImsAuthorizationClient extends Client {
   protected override baseUrl = "https://ims.bentley.com";
 
+  public constructor() {
+    super();
+  }
+
   public override async getUrl() {
     if (this._url)
       return this._url;
