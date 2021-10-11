@@ -28,6 +28,12 @@ export class ITwinLocalization implements Localization {
     unregisterNamespace(name: string): void;
 }
 
+// @public
+export interface LocalizationOptions {
+    // (undocumented)
+    urlTemplate: string;
+}
+
 
 // (No @packageDocumentation comment for this package)
 

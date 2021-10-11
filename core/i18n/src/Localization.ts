@@ -15,7 +15,7 @@ import { Localization } from "@itwin/core-common";
 /** Options for ITwinLocalization
  *  @public
  */
-interface LocalizationOptions {
+export interface LocalizationOptions {
   urlTemplate: string;
 }
 
