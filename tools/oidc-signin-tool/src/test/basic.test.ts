@@ -35,6 +35,16 @@ describe("Sign in (#integration)", () => {
     assert.exists(token);
   });
 
+  // test will not work without using a desktop client. setup correctly on master, will enable there.
+  it.skip("success with valid user and offline_access scope", async () => {
+    const validUser = TestUsers.regular;
+    const token = await getTestAccessToken({
+      ...oidcConfig,
+      scope: `${oidcConfig.scope} offline_access`,
+    }, validUser);
+    assert.exists(token);
+  });
+
   it("failure with invalid url", async () => {
     const oidcInvalidConfig = { ...oidcConfig, redirectUri: "invalid.com" };
     const validUser = TestUsers.regular;
