@@ -14,4 +14,11 @@ export class ImsAuthorizationClient extends Client {
     super();
     this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
   }
+
+  public override async getUrl() {
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY && this.baseUrl)
+      return this.baseUrl;
+    else
+      return super.getUrl();
+  }
 }
