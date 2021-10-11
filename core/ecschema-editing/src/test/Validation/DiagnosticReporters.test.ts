@@ -5,12 +5,12 @@
 
 import { assert, expect } from "chai";
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { I18N } from "@itwin/core-i18n";
 import { ECClass, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
 import { FormatDiagnosticReporter } from "../../ecschema-editing";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import sinon = require("sinon");
 
 /* eslint-disable-next-line deprecation/deprecation */
@@ -23,7 +23,6 @@ class TestDiagnosticReporter extends FormatDiagnosticReporter {
 }
 
 describe("DiagnosticReporters tests", () => {
-  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
   let testSchema: Schema;
   let testSchemaItem: EntityClass;
@@ -118,7 +117,7 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("should log expected error with translated message", async () => {
-      const i18n = new I18N();
+      const i18n = new ITwinLocalization();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
       registerNamespace.resolves(Promise.resolve());
@@ -134,7 +133,7 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("no message args, should log expected error with translated message", async () => {
-      const i18n = new I18N();
+      const i18n = new ITwinLocalization();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
       registerNamespace.resolves(Promise.resolve());
@@ -207,3 +206,4 @@ describe("DiagnosticReporters tests", () => {
     });
   });
 });
+

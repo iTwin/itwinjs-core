@@ -1364,6 +1364,29 @@ The behavior of this method has not changed, but the parameters must be provided
 
 The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
 
+## Localization Changes
+
+In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an object that implements [Localization]($common) via [IModelAppOptions.localization]($frontend). If none is supplied, an [EmptyLocalization]($common) will be used and strings will not be localized.
+
+The [ITwinLocalization]($i18n) class supplies the default implementation of [Localization]($common), and may be customized via [LocalizationOptions]($i18n) in the constructor.
+
+The previous way to provide localization options:
+```ts
+const i18nOptions: I18NOptions = {
+  urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
+};
+
+await IModelApp.startup({ i18n: i18nOptions });
+```
+Now becomes:
+```ts
+const localizationOptions: LocalizationOptions = {
+  urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
+};
+
+await IModelApp.startup({ localization: new ITwinLocalization(localizationOptions) });
+```
+
 ## Improve/Enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
