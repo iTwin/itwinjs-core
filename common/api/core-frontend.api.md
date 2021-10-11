@@ -13,7 +13,7 @@ import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -73,6 +73,7 @@ import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EasingFunction } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
+import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
@@ -219,10 +220,9 @@ import { QPoint2d } from '@itwin/core-common';
 import { QPoint3d } from '@itwin/core-common';
 import { QPoint3dList } from '@itwin/core-common';
 import { QuantityParseResult } from '@itwin/core-quantity';
-import { QueryLimit } from '@itwin/core-common';
-import { QueryPriority } from '@itwin/core-common';
-import { QueryQuota } from '@itwin/core-common';
-import { QueryResponse } from '@itwin/core-common';
+import { QueryBinder } from '@itwin/core-common';
+import { QueryOptions } from '@itwin/core-common';
+import { QueryRowFormat } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
@@ -230,6 +230,10 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
 import { ReadonlySortedArray } from '@itwin/core-bentley';
+import { RealityDataFormat } from '@itwin/core-common';
+import { RealityDataProvider } from '@itwin/core-common';
+import { RealityDataSourceKey } from '@itwin/core-common';
+import { RealityDataSourceProps } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -1898,6 +1902,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     readonly iModel: IModelConnection;
     get isGlobal(): boolean;
     get modelId(): Id64String | undefined;
+    readonly rdSourceKey: RealityDataSourceKey;
     get treeRef(): TileTreeReference;
     }
 
@@ -3213,7 +3218,9 @@ export enum FrontendLoggerCategory {
     MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
     NativeApp = "core-frontend.NativeApp",
     // (undocumented)
-    Package = "core-frontend"
+    Package = "core-frontend",
+    // @alpha
+    RealityData = "core-frontend.RealityData"
 }
 
 // @public
@@ -4392,6 +4399,8 @@ export abstract class IModelConnection extends IModel {
     abstract close(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
+    // @beta
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
     readonly displayedExtents: AxisAlignedBox3d;
@@ -4435,16 +4444,13 @@ export abstract class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     get projectCenterAltitude(): number | undefined;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
-    queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
-    // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
-    // @beta
-    restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
@@ -4718,6 +4724,7 @@ export enum InputSource {
 export interface InstancedGraphicParams {
     readonly count: number;
     readonly featureIds?: Uint8Array;
+    readonly range?: Range3d;
     readonly symbologyOverrides?: Uint8Array;
     readonly transformCenter: Point3d;
     readonly transforms: Float32Array;
@@ -4889,6 +4896,7 @@ export interface LocalHostIpcAppOpts {
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
+        socketPath?: string;
     };
 }
 
@@ -6815,13 +6823,14 @@ export class OrbitGtTileTree extends TileTree {
 // @internal (undocumented)
 export namespace OrbitGtTileTree {
     // (undocumented)
-    export function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
         modelId?: Id64String;
         // (undocumented)
-        orbitGtBlob: OrbitGtBlobProps;
+        orbitGtBlob?: OrbitGtBlobProps;
     }
 }
 
@@ -6952,6 +6961,7 @@ export interface ParticleCollectionBuilderParams {
 
 // @public
 export interface ParticleProps extends XYAndZ {
+    rotationMatrix?: Matrix3d;
     size?: XAndY | number;
     transparency?: number;
 }
@@ -7387,12 +7397,47 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
+// @internal
+export interface RealityDataConnection {
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    readonly realityData: RealityData | undefined;
+    readonly realityDataType: string | undefined;
+    readonly source: RealityDataSource;
+}
+
+// @internal (undocumented)
+export namespace RealityDataConnection {
+    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+}
+
+// @alpha
+export class RealityDataSource {
+    protected constructor(props: RealityDataSourceProps);
+    // (undocumented)
+    static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    static fromProps(props: RealityDataSourceProps): RealityDataSource;
+    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // (undocumented)
+    get isContextShare(): boolean;
+    // (undocumented)
+    get iTwinId(): string | undefined;
+    // (undocumented)
+    readonly rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    get realityDataId(): string | undefined;
+    }
+
+// @alpha
+export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;
+
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, iTwinId?: string);
+    constructor(rdConnection: RealityDataConnection, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
@@ -7414,7 +7459,7 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7469,6 +7514,8 @@ export namespace RealityModelTileTree {
         // (undocumented)
         planarClipMask?: PlanarClipMaskSettings;
         // (undocumented)
+        rdSourceKey: RealityDataSourceKey;
+        // (undocumented)
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
@@ -7480,7 +7527,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         requestAuthorization?: string;
         // (undocumented)
-        url: string;
+        url?: string;
     }
 }
 

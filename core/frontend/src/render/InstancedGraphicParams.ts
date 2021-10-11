@@ -41,6 +41,10 @@ export interface InstancedGraphicParams {
    * The encoding matches that used by FeatureOverrides, though only the RGB, alpha, line weight, and line code are used.
    */
   readonly symbologyOverrides?: Uint8Array;
+
+  /** If defined, the combined range of all instances of the geometry.
+   */
+  readonly range?: Range3d;
 }
 
 /** Parameters for creating a [[RenderGraphic]] representing a patterned area.

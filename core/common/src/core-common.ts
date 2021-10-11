@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
+export * from "./AuthorizationClient";
 export * from "./BackgroundMapProvider";
 export * from "./BackgroundMapSettings";
 export * from "./Base64EncodedString";
@@ -77,7 +78,8 @@ export * from "./ModelClipGroup";
 export * from "./ModelProps";
 export * from "./NativeAppProps";
 export * from "./OctEncodedNormal";
-export * from "./Paging";
+export * from "./ConcurrentQuery";
+export * from "./ECSqlReader";
 export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
@@ -222,4 +224,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description Localization
  * Classes for internationalization and localization of your app.
+ */
+/**
+ * @docs-group-description Authorization
+ * Classes for managing AccessToken used for all requests in other classes.
  */

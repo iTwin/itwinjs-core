@@ -9,9 +9,8 @@
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import * as os from "os";
 import * as path from "path";
@@ -22,7 +21,6 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
-import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -149,23 +147,6 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
-  public concurrentQuery: ConcurrentQueryConfig = {
-    concurrent: os.cpus().length,
-    autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
-    minMonitorInterval: 1, // 1 seconds
-    idleCleanupTime: 30 * 60, // 30 minutes
-    cachedStatementsPerThread: 40,
-    maxQueueSize: (os.cpus().length) * 500,
-    pollInterval: 50,
-    useSharedCache: false,
-    useUncommittedRead: false,
-    resetStatisticsInterval: 60, // minutes
-    logStatisticsInterval: 5, // minutes
-    quota: {
-      maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
-    },
-  };
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.

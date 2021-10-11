@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-beta;AuthorizationClient
 beta;CancelRequest
 beta;class Client
 internal;DefaultRequestOptionsProvider
