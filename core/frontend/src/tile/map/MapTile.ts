@@ -298,8 +298,9 @@ export class MapTile extends RealityTile {
 
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     const mapTree = this.mapTree;
-    const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
-    const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
+    const childLevel = this.quadId.level + 1;
+    const rowCount = mapTree.sourceTilingScheme.getNumberOfYChildrenAtLevel(childLevel);
+    const columnCount = mapTree.sourceTilingScheme.getNumberOfXChildrenAtLevel(childLevel);
 
     const resolveChildren = (children: Tile[]) => {
       const childrenRange = Range3d.createNull();

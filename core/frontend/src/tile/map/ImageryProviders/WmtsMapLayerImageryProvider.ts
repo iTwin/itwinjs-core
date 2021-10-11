@@ -11,16 +11,20 @@ import {
   ImageryMapTile,
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
+  QuadId,
   WmsUtilities, WmtsCapabilities, WmtsCapability,
 } from "../../internal";
 
-interface PreferredLayerMatrixSet { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
+// eslint-disable-next-line prefer-const
+let force4326 = false;
+interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
 /** @internal */
 export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _baseUrl: string;
   private _capabilities?: WmtsCapabilities;
-  private _preferredLayerTileMatrixSet = new Map<string, PreferredLayerMatrixSet>();
+  private _preferredLayerTileMatrixSet = new Map<string, TileMatrixSetAndLimits>();
   private _preferredLayerStyle = new Map<string, WmtsCapability.Style>();
+  public displayedLayerName = "";
 
   public override get mutualExclusiveSubLayer(): boolean { return true; }
 
@@ -35,10 +39,10 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();
       this.initCartoRange();
+      this.initDisplayedLayer();
 
       if (this._preferredLayerTileMatrixSet.size === 0 || this._preferredLayerStyle.size === 0)
         throw new ServerError(IModelStatus.ValidationFailed, "");
-
     } catch (error: any) {
       // Don't throw error if unauthorized status:
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
@@ -49,7 +53,15 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
     }
+  }
+  private initDisplayedLayer() {
+    if (0 === this._settings.subLayers.length) {
+      assert(false);
+      return;
+    }
 
+    const firstDisplayedLayer = this._settings.subLayers.find((subLayer) => subLayer.visible);
+    this.displayedLayerName = firstDisplayedLayer ? firstDisplayedLayer.name : this._settings.subLayers[0].name;
   }
 
   // Each layer can be served in multiple tile matrix set (i.e. TileTree).
@@ -65,11 +77,19 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
         // Favor tile matrix set that was explicitly marked as GoogleMaps compatible
         preferredTms =  wellGoogleKnownTms;
       } else {
+
         // Search all compatible tile set matrix if previous attempt didn't work.
         // If more than one candidate is found, pick the tile set with the most LODs.
-        const tileMatrixSets = googleMapsTms?.filter((tms) => {
+        let tileMatrixSets = force4326 ? undefined : googleMapsTms?.filter((tms) => {
           return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
         });
+
+        if (!tileMatrixSets || tileMatrixSets.length === 0) {
+          const eps4326CompatibleTms = this._capabilities?.contents?.getEpsg4326CompatibleTileMatrixSet();
+          tileMatrixSets = eps4326CompatibleTms?.filter((tms) => {
+            return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
+          });
+        }
 
         if (tileMatrixSets && tileMatrixSets.length === 1)
           preferredTms = tileMatrixSets[0];
@@ -82,7 +102,6 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
         const tmsLink= layer.tileMatrixSetLinks.find((tmsl) => tmsl.tileMatrixSet === preferredTms!.identifier);
         this._preferredLayerTileMatrixSet.set(layer.identifier, { tileMatrixSet: preferredTms, limits: tmsLink?.tileMatrixSetLimits } );
       }
-
     });
   }
 
@@ -117,50 +136,47 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       }
     });
   }
-  private getPreferredTileMatrixSet(): PreferredLayerMatrixSet | undefined {
-    // WMTS support a single layer per tile request, so we pick the first visible layer.
-    const layerString = this._settings.subLayers.find((subLayer) => subLayer.visible)?.name;
-    return layerString ? this._preferredLayerTileMatrixSet.get(layerString) : undefined;
+  private getDisplayedTileMatrixSetAndLimits(): TileMatrixSetAndLimits | undefined {
+    return  this._preferredLayerTileMatrixSet.get(this.displayedLayerName);
   }
 
-  public override testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) {
-    const preferredTileMatrixSet = this.getPreferredTileMatrixSet();
-    if (!preferredTileMatrixSet) {
+  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(tile);
+    const matrixSetAndLimits = this.getDisplayedTileMatrixSetAndLimits();
+    if (!matrixSetAndLimits) {
       assert(false);    // Must always hava a matrix set.
       return;
     }
-    let availability: boolean[] | undefined;
-    const level = tile.quadId.level + 1;
-    const limits = preferredTileMatrixSet.limits?.[level]?.limits;
-    if (limits) {
-      const startCol = tile.quadId.column * 2;
-      const startRow = tile.quadId.row * 2;
-
-      availability = new Array<boolean>();
-      for (let row = 0, k = 0;  row < 2; row++)
-        for (let col = 0; col < 2; col++)
-          availability[k++] = limits.containsXY(startCol + col, startRow + row);
+    const limits = matrixSetAndLimits.limits?.[tile.quadId.level + 1]?.limits;
+    if (!limits) {
+      resolveChildren(childIds);
+      return;
     }
-    resolveChildren(availability);
+
+    const availableChildIds = [];
+    for (const childId of childIds)
+      if (limits.containsXY(childId.column, childId.row))
+        availableChildIds.push(childId);
+
+    resolveChildren(availableChildIds);
+  }
+  public override get useGeographicTilingScheme(): boolean {
+    const matrixSetAndLimits = this.getDisplayedTileMatrixSetAndLimits();
+    return matrixSetAndLimits ? matrixSetAndLimits?.tileMatrixSet.identifier?.includes("4326") : false;
   }
 
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
-    // WMTS support a single layer per tile request, so we pick the first visible layer.
-    const layerString = this._settings.subLayers.find((subLayer) => subLayer.visible)?.name;
-    let tileMatrix, preferredSet, style;
-    if (layerString) {
-      preferredSet = this._preferredLayerTileMatrixSet.get(layerString);
+    const matrixSetAndLimits = this.getDisplayedTileMatrixSetAndLimits();
+    const style = this._preferredLayerStyle.get(this.displayedLayerName);
 
-      style = this._preferredLayerStyle.get(layerString);
+    // Matrix identifier might be something other than standard 0..n zoom level,
+    // so lookup the matrix identifier just in case.
+    let tileMatrix;
+    if (matrixSetAndLimits && matrixSetAndLimits.tileMatrixSet.tileMatrix.length > zoomLevel)
+      tileMatrix = matrixSetAndLimits.tileMatrixSet.tileMatrix[zoomLevel].identifier;
 
-      // Matrix identifier might be something other than standard 0..n zoom level,
-      // so lookup the matrix identifier just in case.
-      if (preferredSet && preferredSet.tileMatrixSet.tileMatrix.length > zoomLevel)
-        tileMatrix = preferredSet.tileMatrixSet.tileMatrix[zoomLevel].identifier;
-    }
-
-    if (layerString !== undefined && tileMatrix !== undefined && preferredSet !== undefined && style !== undefined && (preferredSet.limits === undefined ||  preferredSet.limits[zoomLevel] === undefined || preferredSet.limits[zoomLevel].limits?.containsXY(column, row)))
-      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${layerString}&style=${style.identifier}&TileMatrixSet=${preferredSet.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
+    if (tileMatrix !== undefined && matrixSetAndLimits !== undefined && style !== undefined)
+      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${this.displayedLayerName}&style=${style.identifier}&TileMatrixSet=${matrixSetAndLimits.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
     else
       return "";
 

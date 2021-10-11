@@ -12,8 +12,7 @@ import { getJson, request, RequestBasicCredentials, RequestOptions, Response } f
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-
-import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId, WebMercatorTilingScheme } from "../internal";
+import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
 const tileImageSize = 256, untiledImageSize = 256;
 
@@ -33,6 +32,8 @@ export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
   public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
   public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
+  private readonly _mercatorTilingScheme = new WebMercatorTilingScheme();
+  private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
@@ -40,9 +41,13 @@ export abstract class MapLayerImageryProvider {
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }
+  public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
   protected get _filterByCartoRange() { return true; }
-  constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean, public readonly tilingScheme = new WebMercatorTilingScheme()) { }
+  constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) {
+    this._mercatorTilingScheme = new WebMercatorTilingScheme();
+    this._geographicTilingScheme = new GeographicTilingScheme();
+  }
 
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -51,20 +56,28 @@ export abstract class MapLayerImageryProvider {
   }
   protected _requestContext = new ClientRequestContext("");
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
-
+  public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
   public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
   protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
-  protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: (availability?: boolean[]) => void) { resolveChildren(); }
+  public getPotentialChildIds(tile: ImageryMapTile): QuadId[] {
+    const childLevel = tile.quadId.level + 1;
+    return tile.quadId.getChildIds(this.tilingScheme.getNumberOfXChildrenAtLevel(childLevel), this.tilingScheme.getNumberOfYChildrenAtLevel(childLevel));
 
-  public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
+  }
+
+  protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+    resolveChildren(this.getPotentialChildIds(tile));
+  }
+
+  public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
     if (tile.depth >= this.maximumZoomLevel || (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))) {
       tile.setLeaf();
       return;
     }
-    this._testChildAvailability(tile, resolveChildren);
+    this._generateChildIds(tile, resolveChildren);
   }
 
   public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {

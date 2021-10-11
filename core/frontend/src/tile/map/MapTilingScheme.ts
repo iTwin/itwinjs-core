@@ -31,8 +31,11 @@ export abstract class MapTilingScheme {
 
   public abstract yFractionToLatitude(yFraction: number): number;
   public abstract latitudeToYFraction(latitude: number): number;
+  private _baseLevel: number;
 
-  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean) { }
+  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean) {
+    this._baseLevel = (this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1) ? 1 : 0;
+  }
   /**
    * Gets the total number of tiles in the X direction at a specified level-of-detail.
    *
@@ -40,7 +43,7 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the X direction at the given level.
    */
   public getNumberOfXTilesAtLevel(level: number) {
-    return 0 === level ? 1 : this.numberOfLevelZeroTilesX << (level - 1);
+    return this.numberOfLevelZeroTilesX << level;
   }
 
   /**
@@ -51,7 +54,17 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the Y direction at the given level.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return (0 === level) ? 1 : this.numberOfLevelZeroTilesY << (level - 1);
+    return  this.numberOfLevelZeroTilesY << level;
+  }
+
+  public get rootLevel() {
+    return this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1 ? -1 : 0;
+  }
+  public getNumberOfXChildrenAtLevel(level: number): number {
+    return level === 0 ? this.numberOfLevelZeroTilesX : 2;
+  }
+  public getNumberOfYChildrenAtLevel(level: number): number {
+    return level === 0 ? this.numberOfLevelZeroTilesY : 2;
   }
   public tileXToFraction(x: number, level: number): number {
     return x / this.getNumberOfXTilesAtLevel(level);
@@ -221,7 +234,7 @@ export class WebMercatorProjection {
 /** @internal */
 export class WebMercatorTilingScheme extends MapTilingScheme {
 
-  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 2, rowZeroAtNorthPole: boolean = true /* Bing uses 0 north */) {
+  public constructor(numberOfLevelZeroTilesX: number = 1, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole: boolean = true /* Bing uses 0 north */) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 

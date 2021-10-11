@@ -262,6 +262,10 @@ export namespace WmtsCapability {
       });
       return googleMapsTms;
     }
+
+    public getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[] {
+      return this.tileMatrixSets.filter((tms) => tms.supportedCrs.includes("4326"));
+    }
   }
 
   export class Style {

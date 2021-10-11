@@ -47,9 +47,9 @@ export class ArcGISTileMap {
     return {allTilesFound, available};
   }
 
-  public async getChildrenAvailability(parentQuadId: QuadId): Promise<boolean[]> {
-
-    const childIds = parentQuadId.getChildIds();
+  public async getChildrenAvailability(childIds: QuadId[]): Promise<boolean[]> {
+    if (!childIds.length)
+      return [];
 
     // We need to check cache again:
     // Tiles we are looking for may have been added to cache while we were waiting in the call queue.
@@ -62,16 +62,15 @@ export class ArcGISTileMap {
     // However, we dont want several overlapping large tilemap request being made simultaneously for tiles on the same level.
     // To avoid this from happening, we 'serialize' async calls so that we wait until the first tilemap request has completed
     // before making another one.
-    const childLevel = parentQuadId.level+1;
+    const childLevel = childIds[0].level+1;
     if (this._callQueues && childLevel < this._callQueues.length ) {
-      const res = this._callQueues[childLevel].then(async () => this.getChildrenAvailabilityFromServer(parentQuadId));
+      const res = this._callQueues[childLevel].then(async () => this.getChildrenAvailabilityFromServer(childIds));
       this._callQueues[childLevel] = res.catch(() => {return nonVisibleChildren;});
       return res;
     } else {
       // We should not be in this case, probably because server info is missing LODs in the capabilities?!
-      return this.getChildrenAvailabilityFromServer(parentQuadId);
+      return this.getChildrenAvailabilityFromServer(childIds);
     }
-
   }
 
   // Query tiles are tiles that we need to check availability
@@ -153,9 +152,7 @@ export class ArcGISTileMap {
     return available;
   }
 
-  protected async getChildrenAvailabilityFromServer(parentQuadId: QuadId): Promise<boolean[]> {
-    const childIds = parentQuadId.getChildIds();
-
+  protected async getChildrenAvailabilityFromServer(childIds: QuadId[]): Promise<boolean[]> {
     // We need to check cache again:
     // Tiles we are looking for may have been added to cache while we were waiting in the call queue.
     const cacheInfo = this.getAvailableTilesFromCache(childIds);

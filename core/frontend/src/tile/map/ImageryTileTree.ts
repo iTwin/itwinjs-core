@@ -88,34 +88,25 @@ export class ImageryMapTile extends RealityTile {
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
 
     const imageryTree = this.imageryTree;
-    const resolveChildren = (availability?: boolean[]) => {
-      const columnCount = 2, rowCount = 2;
-      const level = this.quadId.level + 1;
-      const column = this.quadId.column * 2;
-      const row = this.quadId.row * 2;
-      const children = [];
+    const resolveChildren = (childIds: QuadId[]) => {
+      const children = new Array<Tile>();
       const childrenAreLeaves = (this.depth + 1) === imageryTree.maxDepth;
-
       // If children depth is lower than min LOD, mark them as disabled.
       // This is important: if those tiles are requested and the server refuse to serve them,
       // they will be marked as not found and their descendant will never be displayed.
       const childrenAreDisabled = (this.depth + 1) < imageryTree.minDepth;
-      const tilingScheme = imageryTree.tilingScheme;
-      for (let j = 0, k = 0; j < rowCount; j++) {
-        for (let i = 0; i < columnCount; i++) {
-          if (!availability || availability[k++]) {
-            const quadId = new QuadId(level, column + i, row + j);
-            const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
-            const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-            const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
-            children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
-          }
-        }
-      }
+
+      childIds.forEach((quadId) => {
+        const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
+        const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
+        const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
+        children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
+      });
+
       resolve(children);
     };
 
-    imageryTree.imageryLoader.testChildAvailability(this, resolveChildren);
+    imageryTree.imageryLoader.generateChildIds(this, resolveChildren);
   }
 
   protected override _collectStatistics(stats: RenderMemory.Statistics): void {
@@ -148,7 +139,7 @@ export class ImageryMapTile extends RealityTile {
 export class ImageryMapTileTree extends RealityTileTree {
   constructor(params: RealityTileTreeParams, private _imageryLoader: ImageryTileLoader) {
     super(params);
-    const rootQuadId = new QuadId(0, 0, 0);
+    const rootQuadId = new QuadId(_imageryLoader.imageryProvider.tilingScheme.rootLevel, 0, 0);
     this._rootTile = new ImageryMapTile(params.rootTile, this, rootQuadId, this.getTileRectangle(rootQuadId));
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
@@ -190,7 +181,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
-  public testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) { return this._imageryProvider.testChildAvailability(tile, resolveChildren); }
+  public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) { return this._imageryProvider.generateChildIds(tile, resolveChildren); }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> { assert(false); return undefined; }
@@ -272,7 +263,9 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
 
     await imageryProvider.initialize();
     const modelId = iModel.transientIds.next;
-    const rootTileId = new QuadId(0, 0, 0).contentId;
+    const tilingScheme = imageryProvider.tilingScheme;
+    const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
+    const rootTileId = new QuadId(rootLevel, 0, 0).contentId;
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
     const loader = new ImageryTileLoader(imageryProvider, iModel);

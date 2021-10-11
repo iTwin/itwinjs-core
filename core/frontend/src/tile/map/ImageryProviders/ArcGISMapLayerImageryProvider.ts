@@ -106,36 +106,25 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       return undefined;
     }
   }
-  protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: (available?: boolean[]) => void) {
+  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(tile);
     if (!this._tileMap || tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
-      resolveChildren();
+      resolveChildren(childIds);
       return;
     }
-
-    // const quadId = tile.quadId;
-    // const row = quadId.row * 2;
-    // const column = quadId.column * 2;
-    // const level = quadId.level + 1;
-    // const available = [false, false, false, false];
-
-    // getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${row}/${column}/2/2?f=json`).then((json) => {
-    //   if (Array.isArray(json.data))
-    //     for (let i = 0; i < 4; i++)
-    //       available[i] = json.data[i] !== 0;
-
-    //   resolveChildren(available);
-    // }).catch((_error) => {
-    //   resolveChildren(available);
-    // });
 
     void (async () => {
       try {
         if (this._tileMap) {
-          const available = await this._tileMap.getChildrenAvailability(tile.quadId);
-          resolveChildren(available);
+          const availability = await this._tileMap.getChildrenAvailability(childIds);
+          const availableChildIds = new Array<QuadId>();
+          for (let i = 0; i < availability.length; i++)
+            if (availability[i])
+              availableChildIds.push(childIds[i]);
+
+          resolveChildren (availableChildIds);
         }
       } catch {
-        resolveChildren([false, false, false, false]);
       }
     })();
 

@@ -78,7 +78,7 @@ export class MapTileTree extends RealityTileTree {
     super(params);
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, id.applyTerrain);
-    const quadId = new QuadId(0, 0, 0);
+    const quadId = new QuadId(sourceTilingScheme.rootLevel, 0, 0);
     this.globeOrigin = this.ecefToDb.getOrigin().clone();
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
     const globalHeightRange = id.applyTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);

@@ -148,7 +148,7 @@ describe.only("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl);
     tileMap.tileMapRequestSize = 4;
-    let available = await tileMap.getChildrenAvailability(parentQuadId);
+    let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
     // [10,10,10], 10,11,11] should be visible
     expect(available).to.eql(dataset1.available);
@@ -166,14 +166,14 @@ describe.only("ArcGISTileMap", () => {
 
     // Result in cache, no server request should be made
     getTileMapStub.resetHistory();
-    available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset1.parentContentId));
+    available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset1.parentContentId).getChildIds());
     expect(tileInfo.allTilesFound).to.be.true;
     expect(available).to.eql(dataset1.available);
     expect(getTileMapStub.called).to.be.false;
 
     // Request parent tile next to the initial one, so 9,6,5, a server quest should be made.
     const nextParentTile = QuadId.createFromContentId("9_5_6");
-    available = await tileMap.getChildrenAvailability(nextParentTile);
+    available = await tileMap.getChildrenAvailability(nextParentTile.getChildIds());
     const requestTile2 = getRequestTile(nextParentTile, tileMap.tileMapRequestSize);
     expect(getTileMapStub.calledWithExactly(requestTile2.level, requestTile2.row, requestTile2.column, tileMap.tileMapRequestSize,tileMap.tileMapRequestSize)).to.be.true;
   });
@@ -188,7 +188,7 @@ describe.only("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, undefined, 24);
     tileMap.tileMapRequestSize = 4;
-    const available = await tileMap.getChildrenAvailability(parentQuadId);
+    const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
     expect(available).to.eql(dataset1.available);
 
@@ -210,7 +210,7 @@ describe.only("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl, undefined, 24);
     tileMap.tileMapRequestSize = 4;
-    const available = await tileMap.getChildrenAvailability(parentQuadId);
+    const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
     expect(available).to.eql(dataset3.available);
 
@@ -229,7 +229,7 @@ describe.only("ArcGISTileMap", () => {
 
     const tileMap = new ArcGISTileMap(fakeArcGisUrl);
     tileMap.tileMapRequestSize = 4;
-    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId));
+    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
     expect(getTileMapStub.calledOnce).to.be.true;
     expect(available).to.eql(dataset2.available);
   });
@@ -245,7 +245,7 @@ describe.only("ArcGISTileMap", () => {
     const tileMap = new ArcGISTileMap(fakeArcGisUrl);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
-    const available = await tileMap.getChildrenAvailability(parentQuadId);
+    const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     expect(getTileMapStub.calledTwice).to.be.true;
     const requestTile = getRequestTile(parentQuadId, tileMap.fallbackTileMapRequestSize);
 
@@ -265,7 +265,7 @@ describe.only("ArcGISTileMap", () => {
     const tileMap = new ArcGISTileMap(fakeArcGisUrl);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
-    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset4.parentContentId));
+    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset4.parentContentId).getChildIds());
     expect(getTileMapStub.calledTwice).to.be.true;
     expect(available).to.eql([true,false,false,false]);
     const requestTile1 = getRequestTile(parentQuadId, tileMap.tileMapRequestSize);
@@ -279,7 +279,7 @@ describe.only("ArcGISTileMap", () => {
     // Also no offset should be applied
     tileMap.fallbackTileMapRequestSize = tileMap.tileMapRequestSize;
     getTileMapStub.resetHistory();
-    const available2 = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset4.parentContentId));
+    const available2 = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset4.parentContentId).getChildIds());
     expect(available2).to.eql([true,false,false,false]);
     expect(getTileMapStub.calledOnce).to.be.true;
     // Tilemap request should have the fallbackTileMapRequestSize size, and no offset applied
@@ -296,7 +296,7 @@ describe.only("ArcGISTileMap", () => {
     const allFalse = [false,false,false,false];
     const tileMap = new ArcGISTileMap(fakeArcGisUrl);
     tileMap.tileMapRequestSize = 4;
-    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId));
+    const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
     expect(getTileMapStub.calledOnce).to.be.true;
     expect(available).to.eql(allFalse);
 
@@ -314,7 +314,7 @@ describe.only("ArcGISTileMap", () => {
     const parentQuadId = QuadId.createFromContentId(dataset6.parentContentId1);
     const tileMap = new ArcGISTileMap(fakeArcGisUrl);
     tileMap.tileMapRequestSize = 8;
-    let available = await tileMap.getChildrenAvailability(parentQuadId);
+    let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     expect(available).to.eql(dataset6.available1);
     expect(getTileMapStub.calledOnce).to.be.true;
 
@@ -327,7 +327,7 @@ describe.only("ArcGISTileMap", () => {
     getTileMapStub.resetHistory();
     const reqParentTile2 = QuadId.createFromContentId(dataset6.parentContentId2);
     expect(getTileMapStub.called).to.be.false;
-    available = await tileMap.getChildrenAvailability(reqParentTile2);
+    available = await tileMap.getChildrenAvailability(reqParentTile2.getChildIds());
     expect(available).to.eql(dataset6.available2);
     expect(getTileMapStub.calledOnce).to.be.false;
   });
