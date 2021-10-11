@@ -15,12 +15,13 @@ import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Key,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
-  SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
+  isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementProperties } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
@@ -616,18 +617,55 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined> {
-    const { elementId, ...optionsNoElementId } = requestOptions;
-    const content = await this.getContent({
-      ...optionsNoElementId,
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-        contentFlags: ContentFlags.ShowLabels,
-      },
-      rulesetOrId: "ElementProperties",
-      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-    });
-    return buildElementProperties(content);
+  public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+  /**
+   * Retrieves property data in simplified format for multiple elements specified by class
+   * or all element.
+   * @alpha
+   */
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      const { elementId, ...optionsNoElementId } = requestOptions;
+      const content = await this.getContent({
+        ...optionsNoElementId,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+      });
+      const properties = buildElementsProperties(content);
+      return properties[0];
+    }
+
+    return this.getMultipleElementProperties(requestOptions);
+  }
+
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
+    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
+
+    const elementProperties: ElementProperties[] = [];
+    for (const entry of elementIds) {
+      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+        const content = await this.getContent({
+          ...optionsNoElementClasses,
+          descriptor: {
+            displayType: DefaultContentDisplayTypes.PropertyPane,
+            contentFlags: ContentFlags.ShowLabels,
+          },
+          rulesetOrId: "ElementProperties",
+          keys,
+        });
+        return buildElementsProperties(content);
+      });
+      elementProperties.push(...properties);
+    }
+
+    return { total: elementsCount, items: elementProperties };
   }
 
   /**
@@ -880,3 +918,15 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
+
+const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
+  const elementProperties: ElementProperties[] = [];
+  const elementIds = [...ids];
+  while (elementIds.length > 0) {
+    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
+    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
+    elementProperties.push(...(await getter(keys)));
+  }
+  return elementProperties;
+}
