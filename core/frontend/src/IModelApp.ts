@@ -334,6 +334,8 @@ export class IModelApp {
 
     this._localization = opts.localization ?? new ITwinLocalization();
     const toolsNs = "CoreTools";
+    await this.localization.registerNamespace("iModelJs", true);
+    await this.localization.registerNamespace(toolsNs);
     [
       selectTool,
       idleTool,
@@ -382,11 +384,7 @@ export class IModelApp {
       this.uiAdmin,
     ].forEach((sys) => sys.onInitialized());
 
-    await Promise.all([
-      this.localization.registerNamespace("iModelJs", true),
-      this.localization.registerNamespace(toolsNs),
-      this.quantityFormatter.onInitialized(),
-    ]);
+    return this.quantityFormatter.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
