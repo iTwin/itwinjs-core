@@ -23,20 +23,48 @@ export class Entities extends ECClasses {
     super(_schemaEditor);
   }
 
-  public async createEx(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
-    if (baseClassKey) {
-      const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
-      if (!baseClass)
-        throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
+  public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
+    if (!baseClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
 
-      if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
-        throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
+    if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
 
-      if (!(await (baseClass as EntityClass).is("Element", "BisCore")) && !(await (baseClass as EntityClass).is("ElementUniqueAspect", "BisCore")) &&
-        !(await (baseClass as EntityClass).is("ElementMultiAspect", "BisCore"))) {
-        throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not supported.`);
-      }
+    if (!(await (baseClass as EntityClass).is("Element", "BisCore"))) {
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an Element.`);
     }
+
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
+  }
+
+  public async createElementUniqueAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
+    if (!baseClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
+
+    if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
+
+    if (!(await (baseClass as EntityClass).is("ElementUniqueAspect", "BisCore"))) {
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an ElementUniqueAspect.`);
+    }
+
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
+  }
+
+  public async createElementMultiAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
+    if (!baseClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
+
+    if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
+
+    if (!(await (baseClass as EntityClass).is("ElementMultiAspect", "BisCore"))) {
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an ElementMultiAspect.`);
+    }
+
     return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
   }
 

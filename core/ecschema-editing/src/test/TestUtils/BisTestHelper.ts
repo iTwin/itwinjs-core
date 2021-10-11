@@ -5,7 +5,7 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
+import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 
 export class BisTestHelper {
   public static async getNewContext(): Promise<SchemaContext> {

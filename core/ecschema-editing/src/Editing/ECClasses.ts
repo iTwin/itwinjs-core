@@ -42,7 +42,7 @@ export class ECClasses {
 
     try {
       mutableClass = await this.getClass(classKey, prefixedName);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
