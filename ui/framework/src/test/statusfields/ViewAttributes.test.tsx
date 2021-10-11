@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { MockRender } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
+import { MockRender } from "@itwin/core-frontend";
 import { Checkbox } from "@itwin/itwinui-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../appui-react/configurableui/ConfigurableUiControl";
 import { StatusBar } from "../../appui-react/statusbar/StatusBar";
@@ -14,7 +14,6 @@ import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../appui-
 import { ViewAttributesStatusField } from "../../appui-react/statusfields/ViewAttributes";
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
-import { ITwinLocalization } from "@itwin/core-i18n";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {

@@ -15,7 +15,6 @@ import {
 } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { NumberInput, Toggle } from "@itwin/core-react";
 import { Select } from "@itwin/itwinui-react";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
