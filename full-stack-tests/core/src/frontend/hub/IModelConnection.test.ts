@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@itwin/core-common";
+import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
+import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, bindings)) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames)) {
     rows.push(row);
   }
   return rows;
