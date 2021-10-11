@@ -9,11 +9,11 @@ import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
 import { Marker } from "../Marker";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
-    await IModelApp.startup({ localization: new I18N("iModelJs") });
+    await IModelApp.startup({ localization: new ITwinLocalization() });
   });
   afterEach(async () => {
     if (IModelApp.initialized) await IModelApp.shutdown();

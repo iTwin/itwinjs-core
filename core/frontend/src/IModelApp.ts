@@ -334,6 +334,8 @@ export class IModelApp {
       Logger.logWarning("Localization", "No localization client provided. Localization will not be performed.");
     }
 
+    await this.localization.registerNamespace("iModelJs", true);
+
     // first register all the core tools. Subclasses may choose to override them.
     const namespace = "CoreTools";
     await this.localization.registerNamespace(namespace);

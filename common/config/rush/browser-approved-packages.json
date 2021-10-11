@@ -15,10 +15,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -495,6 +491,10 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
+      "name": "express-ws",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "faker",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -547,10 +547,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "highlight.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "https-proxy-agent",
       "allowedCategories": [ "backend" ]
     },
@@ -563,12 +559,8 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "name": "i18next-http-backend",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ignore-styles",
@@ -600,11 +592,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions" ]
+      "allowedCategories": [ "backend", "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",
@@ -691,10 +683,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "oidc-client",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "open",
       "allowedCategories": [ "backend" ]
     },
@@ -725,10 +713,6 @@
     {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "raf-schd",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react",
@@ -775,20 +759,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-markdown",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "react-redux",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-resize-detector",
       "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
-      "name": "react-router-dom",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
@@ -880,7 +856,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "edit", "tools" ]
+      "allowedCategories": [ "backend", "edit", "frontend", "tools" ]
     },
     {
       "name": "spdy",

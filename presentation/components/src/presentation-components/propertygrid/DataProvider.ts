@@ -344,6 +344,7 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
     const categorizedRecords: { [categoryName: string]: PropertyRecord[] } = {};
     this._categorizedRecords.forEach((recs, categoryName) => {
       destructureRecords(recs);
+      // istanbul ignore else
       if (recs.length) {
         const sortedFields = recs.map((r) => r.fieldHierarchy.field);
         this._props.callbacks.sortFields(this._categoriesCache.getEntry(categoryName)!, sortedFields);
@@ -367,6 +368,7 @@ class PropertyDataBuilder extends PropertyRecordsBuilder {
     // determine which categories are actually used
     const usedCategoryNames = new Set();
     this._categorizedRecords.forEach((records, categoryName) => {
+      // istanbul ignore if
       if (records.length === 0)
         return;
 
@@ -664,6 +666,7 @@ function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: Fi
 
   // if we got a chance to destructure at least one item, replace old members with new ones
   // in the field hierarchy that we got
+  // istanbul ignore else
   if (items.length > 0)
     fieldHierarchy.childFields = destructuredFields;
 }
@@ -682,6 +685,7 @@ function destructureRecords(records: FieldHierarchyRecord[]) {
       // destructure 0 or 1 sized arrays by removing the array record and putting its first item in its place (if any)
       if (entry.record.value.items.length <= 1) {
         records.splice(i, 1);
+        // istanbul ignore else
         if (entry.record.value.items.length > 0) {
           const item = entry.record.value.items[0];
           records.splice(i, 0, { ...entry, fieldHierarchy: entry.fieldHierarchy, record: item });
