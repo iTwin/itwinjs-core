@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Id64 } from "@itwin/core-bentley";
+import { ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
-} from "@bentley/presentation-common";
-import { PresentationTableDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
-import { SortDirection } from "@bentley/ui-core";
+} from "@itwin/presentation-common";
+import { PresentationTableDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat, StructValue } from "@itwin/appui-abstract";
+import { SortDirection } from "@itwin/core-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {

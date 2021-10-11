@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../../ui-components";
+import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../../components-react";
 
 describe("PrimitivePropertyLabelRenderer ", () => {
   it("renders correctly when offset is not provided", () => {

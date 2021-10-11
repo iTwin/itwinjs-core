@@ -6,8 +6,7 @@
  * @module Tiles
  */
 
-import { IModelStatus } from "@bentley/bentleyjs-core";
-import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
@@ -50,7 +49,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (tileUrl.length === 0)
       return undefined;
 
-    return request(this._requestContext, tileUrl, tileRequestOptions);
+    return request(tileUrl, tileRequestOptions);
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
@@ -89,7 +88,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             // and then encountered an error, otherwise I assume an error was already reported
             // through the source validation process.
             if (this._hasSuccessfullyFetchedTile) {
-              const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+              const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
             }
           }
@@ -150,7 +149,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
         this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
         if (this._tileMapSupported)
-          this._tileMap = new ArcGISTileMap(this._settings.url, this._requestContext, nbLods);
+          this._tileMap = new ArcGISTileMap(this._settings.url, nbLods);
       }
       if (json.copyrightText) this._copyrightText = json.copyrightText;
       if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
@@ -198,12 +197,12 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
     const url = await this.appendSecurityToken(tmpUrl);
 
-    let json = await getJson(this._requestContext, url);
+    let json = await getJson(url);
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
       // Token might have expired, make a second attempt by forcing new token.
       if (this._settings.userName && this._settings.userName.length > 0) {
         ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
-        json = await getJson(this._requestContext, url);
+        json = await getJson(url);
       }
 
       // OK at this point, if response still contain a token error, we assume end-user will
@@ -213,7 +212,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         // Check again layer status, it might have change during await.
         if (this.status === MapLayerImageryProviderStatus.Valid) {
           this.status = MapLayerImageryProviderStatus.RequireAuth;
-          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
+          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 

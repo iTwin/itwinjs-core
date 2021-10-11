@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $divider-color: $buic-background-toolbutton-stroke;
@@ -27,7 +27,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   grid-column-gap: 10px;
   align-items: center;
 
-  .map-layer-source-label{
+  .map-layer-source-label {
     font-size: $iui-font-size;
     color: $buic-foreground-body;
     padding-right: 6px;
@@ -36,14 +36,16 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     white-space: nowrap;
   }
 
-  .map-layer-source-editor{
+  .map-layer-source-editor {
     width: 100%;
     height: 100%;
   }
-  label{
+
+  label {
     grid-column-start: 2;
   }
-  .map-layer-warning-icon{
+
+  .map-layer-warning-icon {
     margin-left: 3%;
   }
 
@@ -73,6 +75,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     &:hover {
       color: $hovered-icon-color;
     }
+
     &:focus {
       outline: none;
       box-shadow: $uicore-button-focus-boxshadow;

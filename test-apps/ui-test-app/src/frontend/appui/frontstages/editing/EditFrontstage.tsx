@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@itwin/appui-abstract";
 import {
   AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
   StagePanel, ToolbarHelper, Widget, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
 // cSpell:Ignore contentviews statusbars
 import { EditStatusBarWidgetControl } from "../../statusbars/editing/EditStatusBar";
 import { ActiveSettingsWidget } from "../../widgets/editing/ActiveSettingsWidget";
 import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation } from "@itwin/core-react";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -145,7 +145,7 @@ class AdditionalTools {
     EditTools.placeLineStringTool, EditTools.placeArcTool]);
 
   public sketchGroupButtonItem = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.sketch", 135, IconSpecUtilities.createSvgIconSpec(sketchIconSvg),
-    IModelApp.i18n.translate("SampleApp:buttons.sketch"), this.sketchGroupItems);
+    IModelApp.localization.getLocalizedString("SampleApp:buttons.sketch"), this.sketchGroupItems);
 
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [...ToolbarHelper.createToolbarItemsFromItemDefs([
     CoreTools.keyinPaletteButtonItemDef, EditTools.deleteElementTool,
@@ -192,7 +192,7 @@ class AdditionalTools {
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
-    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.misc", 130, "icon-tools", IModelApp.i18n.translate("SampleApp:buttons.misc"), children, { isHidden: groupHiddenCondition });
+    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.misc", 130, "icon-tools", IModelApp.localization.getLocalizedString("SampleApp:buttons.misc"), children, { isHidden: groupHiddenCondition });
     return item;
   };
 

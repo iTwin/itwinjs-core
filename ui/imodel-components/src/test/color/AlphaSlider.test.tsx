@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react"; // , waitForElement
-import { AlphaSlider } from "../../ui-imodel-components/color/AlphaSlider";
+import { AlphaSlider } from "../../imodel-components-react/color/AlphaSlider";
 
 describe("<AlphaSlider />", () => {
   const alpha = .50;

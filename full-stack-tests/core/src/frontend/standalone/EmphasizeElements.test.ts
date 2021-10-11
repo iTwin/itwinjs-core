@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
   EmphasizeElements, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
   StandardViewId,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;

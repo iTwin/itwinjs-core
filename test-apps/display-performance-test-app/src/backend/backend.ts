@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as fs from "fs";
 import * as path from "path";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { IModelHost } from "@itwin/core-backend";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
-import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -32,7 +32,22 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    await ElectronHost.startup({ electronHost: { webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces } });
+    await ElectronHost.startup({
+      electronHost: {
+        webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces, authConfig: {
+          clientId: "imodeljs-electron-test",
+          redirectUri: "http://localhost:3000/signin-callback",
+          scope: "openid email profile organization itwinjs",
+        },
+      },
+    });
+
+    // TODO: Use this setup once the ElectronAuth is split out.
+    // IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    //   clientId: "imodeljs-electron-test",
+    //   redirectUri: "http://localhost:3000/signin-callback",
+    //   scope: "openid email profile organization itwinjs",
+    // });
   } else
     await IModelHost.startup();
 }

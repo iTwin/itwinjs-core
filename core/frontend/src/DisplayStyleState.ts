@@ -5,14 +5,15 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
+  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -21,7 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { RenderSystem } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
@@ -125,7 +126,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
 
       return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -141,8 +142,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
-  /** @internal */
-  public get backgroundMapBase(): BaseLayerSettings | undefined { return this.settings.mapImagery.backgroundBase; }
+  /** @beta */
+  public get backgroundMapBase(): BaseLayerSettings {
+    return this.settings.mapImagery.backgroundBase;
+  }
+  public set backgroundMapBase(base: BaseLayerSettings) {
+    this.settings.mapImagery.backgroundBase = base;
+    this._synchBackgroundMapImagery();
+  }
 
   /** @internal */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
@@ -158,6 +165,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Modify a subset of the background map display settings.
    * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   * @see [[changeBackgroundMapProvider]] to change the type of map imagery displayed.
    *
    * Example that changes only the elevation, leaving the provider and type unchanged:
    * ``` ts
@@ -167,10 +175,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
     this.backgroundMapSettings = newSettings;
-    if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
-      const mapBase = MapLayerSettings.fromMapSettings(newSettings);
-      this.settings.mapImagery.backgroundBase = mapBase;
-    }
+  }
+
+  /** Change aspects of the [BackgroundMapProvider]($common) from which background map imagery is obtained.
+   * Any properties not explicitly specified by `props` will retain their current values.
+   * @public
+   */
+  public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    const provider = BackgroundMapProvider.fromJSON(props);
+    const base = this.settings.mapImagery.backgroundBase;
+    if (base instanceof ColorDef)
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
+    else
+      this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+
+    this._synchBackgroundMapImagery();
   }
 
   /** Call a function for each reality model attached to this display style.
@@ -311,7 +330,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (!model) {
-      const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
+      const name = IModelApp.localization.getLocalizedString("iModelJs:RealityModelNames.OSMBuildings");
       model = this.attachRealityModel({ tilesetUrl: url, name });
       this.onOSMBuildingDisplayChanged.raiseEvent(true);
     }
@@ -395,26 +414,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
-  /** @internal */
-  public changeBaseMapProps(props: MapLayerProps | ColorDef) {
-    if (props instanceof ColorDef) {
-      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
-    } else {
-      if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
-        this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
-      else {
-        const backgroundLayerSettings = MapLayerSettings.fromJSON(props);
-        if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
-      }
-      const mapProvider = BackgroundMapSettings.providerFromMapLayer(props);
-      if (mapProvider)
-        this.backgroundMapSettings = this.backgroundMapSettings.clone(mapProvider);
-    }
-    this._synchBackgroundMapImagery();
-  }
-
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
@@ -426,14 +425,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
-      this._synchBackgroundMapImagery();
     } else {
-      this.changeBaseMapProps({ transparency });
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
     }
+    this._synchBackgroundMapImagery();
   }
 
   /** @internal */
-  public changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean) {
+  public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
@@ -449,7 +448,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  public changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
+  public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return;
@@ -591,12 +590,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
   /** @internal */
-  public get backgroundMapElevationBias(): number | undefined{
+  public get backgroundMapElevationBias(): number | undefined {
     if (this.backgroundMapSettings.applyTerrain) {
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return (undefined ===  this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
+          return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
@@ -1016,7 +1015,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
-    const promises = new Array<Promise<TextureImage | undefined>>();
+    const promises = [];
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 
@@ -1032,6 +1031,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
           idToImage.set(textureId, image.image);
       }
 
+      // eslint-disable-next-line deprecation/deprecation
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
       const textureImages = [
         idToImage.get(this.front)!, idToImage.get(this.back)!, idToImage.get(this.top)!,

@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";

@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction, Guid, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;
@@ -21,7 +21,6 @@ export const requestIdHeaderName = "X-Correlation-Id";
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
-  // sendImmediately deprecated, user -> userName
 }
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
@@ -65,7 +64,6 @@ export interface RequestQueryOptions {
 export interface RequestQueryStringifyOptions {
   delimiter?: string;
   encode?: boolean;
-  // sep -> delimiter, eq deprecated, encode -> encode
 }
 
 /** Option to control the time outs
@@ -263,14 +261,13 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
 // module that will rid us of NodeJs dependency.
 
 /** Wrapper around HTTP request utility
- * @param requestContext The client request context
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
  * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
  * @internal
  */
-export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
+export async function request(url: string, options: RequestOptions): Promise<Response> {
   if (!RequestGlobalOptions.online) {
     throw new ResponseError(503, "Service unavailable");
   }
@@ -285,8 +282,9 @@ export async function request(requestContext: ClientRequestContext, url: string,
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  if (requestContext.activityId !== "")
-    sareq = sareq.set(requestIdHeaderName, requestContext.activityId);
+  // Add an x-correlation-id header with a new GUID if one doesn't already exist.
+  if (!options.headers || !options.headers.hasOwnProperty(requestIdHeaderName))
+    sareq = sareq.set(requestIdHeaderName, Guid.createValue());
 
   let queryStr: string = "";
   let fullUrl: string = "";
@@ -406,7 +404,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
 
   // console.log("%s %s %s", url, options.method, queryStr);
 
-  /*
+  /**
   * Note:
   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
   * Fetch only rejects if there's some network issue (permissions issue or similar)
@@ -433,12 +431,12 @@ export async function request(requestContext: ClientRequestContext, url: string,
  * @param url server URL to address the request
  * @internal
  */
-export async function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any> {
+export async function getArrayBuffer(url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "arraybuffer",
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.body;
 }
 
@@ -447,11 +445,11 @@ export async function getArrayBuffer(requestContext: ClientRequestContext, url: 
  * @param url server URL to address the request
  * @internal
  */
-export async function getJson(requestContext: ClientRequestContext, url: string): Promise<any> {
+export async function getJson(url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "json",
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.body;
 }

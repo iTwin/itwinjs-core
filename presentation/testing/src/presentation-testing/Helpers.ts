@@ -7,17 +7,17 @@
  */
 import * as rimraf from "rimraf";
 // common includes
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@itwin/core-bentley";
 // backend includes
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 // frontend includes
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@bentley/presentation-backend";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
-import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+} from "@itwin/core-common";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@itwin/presentation-backend";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -85,7 +85,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
     presentation: {
-      activeLocale: IModelApp.i18n.languageList()[0],
+      activeLocale: IModelApp.localization.getLanguageList()[0],
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });

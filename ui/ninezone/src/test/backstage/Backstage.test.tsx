@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Backstage, BackstageProps, SafeAreaInsets } from "../../ui-ninezone";
+import { Backstage, BackstageProps, SafeAreaInsets } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 describe("<Backstage />", () => {

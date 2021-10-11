@@ -6,15 +6,15 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { Orientation } from "@bentley/ui-core";
-import { LinksRenderer } from "../../../ui-components/properties/LinkHandler";
-import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
-import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
-import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import { Orientation } from "@itwin/core-react";
+import { LinksRenderer } from "../../../components-react/properties/LinkHandler";
+import { NonPrimitivePropertyRenderer } from "../../../components-react/properties/renderers/NonPrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer } from "../../../components-react/properties/renderers/PrimitivePropertyRenderer";
+import { PropertyRenderer } from "../../../components-react/properties/renderers/PropertyRenderer";
+import { PropertyValueRendererManager } from "../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {

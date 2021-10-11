@@ -1,6 +1,6 @@
 {
-  "name": "@bentley/build-tools",
-  "version": "3.0.0-dev.70",
+  "name": "@itwin/build-tools",
+  "version": "3.0.0-dev.83",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -11,7 +11,7 @@
     "betools": "bin/betools.js"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",
@@ -48,15 +48,15 @@
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/node": "14.14.31",
     "eslint": "^7.11.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
       "deprecation/deprecation": "off"
     }

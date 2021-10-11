@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
-import { UiIModelComponents } from "../ui-imodel-components";
+import { Logger } from "@itwin/core-bentley";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
+import { UiIModelComponents } from "../imodel-components-react";
 import TestUtils from "./TestUtils";
 
 describe("UiIModelComponents", () => {
@@ -16,15 +16,15 @@ describe("UiIModelComponents", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiIModelComponents.i18n).to.throw(Error);
+    expect(() => UiIModelComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return 'UiIModelComponents'", () => {
-    expect(UiIModelComponents.i18nNamespace).to.eq("UiIModelComponents");
+    expect(UiIModelComponents.localizationNamespace).to.eq("UiIModelComponents");
   });
 
-  it("packageName should return 'ui-imodel-components'", () => {
-    expect(UiIModelComponents.packageName).to.eq("ui-imodel-components");
+  it("packageName should return 'imodel-components-react'", () => {
+    expect(UiIModelComponents.packageName).to.eq("imodel-components-react");
   });
 
   it("translate should return the key (in test environment)", async () => {
@@ -54,7 +54,7 @@ describe("UiIModelComponents", () => {
     await MockRender.App.startup();
 
     await UiIModelComponents.initialize();
-    expect(UiIModelComponents.i18n).to.eq(IModelApp.i18n);
+    expect(UiIModelComponents.localization).to.eq(IModelApp.localization);
 
     await MockRender.App.shutdown();
   });

@@ -9,7 +9,7 @@ better understanding of the *big picture* concepts upon which the API is based.
 
 The iTwin.js packages contain some APIs which are intentionally excluded from the API Reference documentation. These APIs should be considered internal implementation details subject to change at any time.
 
-The iTwin.js library is organized into the following separately downloadable [npm](https://www.npmjs.com/) packages under the `@bentley` scope:
+The iTwin.js library is organized into the following separately downloadable [npm](https://www.npmjs.com/) packages under the `@itwin` scope:
 
 ## iTwin.js Core Packages
 
@@ -32,8 +32,7 @@ The iTwin.js library is organized into the following separately downloadable [np
 
 ## iTwin.js Client Packages
 
-- ($context-registry-client)
-- ($frontend-authorization-client)
+- ($itwin-registry-client)
 - ($imodelhub-client)
 - ($itwin-client)
 - ($product-settings-client)
@@ -41,12 +40,12 @@ The iTwin.js library is organized into the following separately downloadable [np
 
 ## iTwin.js UI Packages
 
-- ($ui-abstract)
-- ($ui-core)
-- ($ui-components)
-- ($ui-imodel-components)
-- ($ui-ninezone)
-- ($ui-framework)
+- ($appui-abstract)
+- ($core-react)
+- ($components-react)
+- ($imodel-components-react)
+- ($appui-layout-react)
+- ($appui-react)
 
 ## iTwin.js Presentation Packages
 

@@ -8,15 +8,16 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UserInfo } from "@bentley/itwin-client";
-import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@bentley/ui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { Localization } from "@itwin/core-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { UserInfo } from "../appui-react/UserInfo";
+import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
-} from "../ui-framework";
+} from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
 interface SampleAppState {
@@ -54,24 +55,21 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get i18n(): I18N {
-    if (!TestUtils._i18n) {
-      TestUtils._i18n = new I18N();
+  public static get localization(): Localization {
+    if (!TestUtils._localization) {
+      TestUtils._localization = new ITwinLocalization();
     }
-    return TestUtils._i18n;
+    return TestUtils._localization;
   }
 
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
-      // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
         this._rootReducer = combineReducers({
@@ -91,9 +89,9 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.i18n, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.localization, "testDifferentFrameworkKey");
       else
-        await UiFramework.initialize(this.store, TestUtils.i18n);
+        await UiFramework.initialize(this.store, TestUtils.localization);
 
       TestUtils._uiFrameworkInitialized = true;
     }

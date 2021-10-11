@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { createRandomId, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/presentation-components/viewport/WithUnifiedSelection";
-import { Presentation } from "@bentley/presentation-frontend";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/SelectionManager";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { createRandomId, createRandomTransientId, waitForAllAsyncs } from "@itwin/presentation-common/lib/cjs/test";
+import { ViewportSelectionHandler } from "@itwin/presentation-components";
+import { Presentation, TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Unified Selection", () => {

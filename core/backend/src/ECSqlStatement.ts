@@ -6,9 +6,9 @@
  * @module ECSQL
  */
 
-import { DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
-import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
+import { DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
@@ -16,9 +16,9 @@ import { IModelHost } from "./IModelHost";
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *
  * If the step was successful, the ECSqlInsertResult contains
- * [DbResult.BE_SQLITE_DONE]($bentleyjs-core)
+ * [DbResult.BE_SQLITE_DONE]($core-bentley)
  * and the ECInstanceId of the newly created instance.
- * In case of failure it contains the [DbResult]($bentleyjs-core) error code.
+ * In case of failure it contains the [DbResult]($core-bentley) error code.
  *
  * > Insert statements can be used with ECDb only, not with IModelDb.
  * @public
@@ -266,12 +266,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** Step this statement to the next row.
    *
    *  For **ECSQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - [DbResult.BE_SQLITE_ROW]($core-bentley) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has no more rows.
    *  - Error status in case of errors.
    *
    *  For **ECSQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    *
    *  >  Insert statements can be used with ECDb only, not with IModelDb.
@@ -443,7 +443,7 @@ export class ECSqlBinder {
   }
 
   /** Binds an GUID value to the ECSQL parameter.
-   * @param val GUID value. If passed as string, it must be formatted as described in [GuidString]($bentleyjs-core).
+   * @param val GUID value. If passed as string, it must be formatted as described in [GuidString]($core-bentley).
    */
   public bindGuid(val: GuidString): void {
     const stat: DbResult = this._binder.bindGuid(val);
@@ -598,7 +598,7 @@ export class ECSqlValue {
   /** Get the value as a IGeometry value (as ECJSON IGeometry) */
   public getGeometry(): any { return JSON.parse(this._val.getGeometry()); }
   /** Get the value as a GUID (formatted as GUID string).
-   *  See [GuidString]($bentleyjs-core)
+   *  See [GuidString]($core-bentley)
    */
   public getGuid(): GuidString { return this._val.getGuid(); }
   /** Get the value as a Id (formatted as hexadecimal string). */
@@ -609,9 +609,9 @@ export class ECSqlValue {
   public getInteger(): number { return this._val.getInt64(); }
   /** Get the value as a string value */
   public getString(): string { return this._val.getString(); }
-  /** Get the value as [XAndY]($geometry-core) */
+  /** Get the value as [XAndY]($core-geometry) */
   public getXAndY(): XAndY { return this._val.getPoint2d(); }
-  /** Get the value as [XYAndZ]($geometry-core) */
+  /** Get the value as [XYAndZ]($core-geometry) */
   public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
   /** Get the value as ECEnumeration value
    *  Note: This method is optional. Using [[ECSqlValue.getInteger]] for integral enums and

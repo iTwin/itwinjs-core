@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { renderHook } from "@testing-library/react-hooks";
 import * as sinon from "sinon";
-import { useEventListener } from "../../../ui-core/utils/hooks/useEventListener";
+import { useEventListener } from "../../../core-react/utils/hooks/useEventListener";
 
 describe("useEventListener", () => {
 

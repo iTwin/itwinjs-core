@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { renderHook } from "@testing-library/react-hooks";
-import { useEffectSkipFirst } from "../../../ui-core/utils/hooks/useEffectSkipFirst";
+import { useEffectSkipFirst } from "../../../core-react/utils/hooks/useEffectSkipFirst";
 
 describe("useEffectSkipFirst", () => {
 

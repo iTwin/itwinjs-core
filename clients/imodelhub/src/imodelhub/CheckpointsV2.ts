@@ -6,8 +6,7 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
@@ -182,12 +181,11 @@ export class CheckpointV2Handler {
    * @returns Checkpoints that match the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: CheckpointV2Query = new CheckpointV2Query()): Promise<CheckpointV2[]> {
+  public async get(accessToken: AccessToken, iModelId: GuidString, query: CheckpointV2Query = new CheckpointV2Query()): Promise<CheckpointV2[]> {
     Logger.logInfo(loggerCategory, "Querying CheckpointsV2 for iModel", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const checkpoints = await this._handler.getInstances<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId), query.getQueryOptions());
+    const checkpoints = await this._handler.getInstances<CheckpointV2>(accessToken, CheckpointV2, this.getRelativeUrl(iModelId), query.getQueryOptions());
 
     Logger.logTrace(loggerCategory, "Queried CheckpointsV2 for iModel", () => ({ iModelId, count: checkpoints.length }));
     return checkpoints;
@@ -202,14 +200,13 @@ export class CheckpointV2Handler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
+  public async create(accessToken: AccessToken, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
     Logger.logInfo(loggerCategory, "Creating CheckpointV2 for iModel", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("checkpoint", checkpoint);
     ArgumentCheck.validChangeSetId("checkpoint.changeSetId", checkpoint.changeSetId, false);
 
-    checkpoint = await this._handler.postInstance<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId), checkpoint);
+    checkpoint = await this._handler.postInstance<CheckpointV2>(accessToken, CheckpointV2, this.getRelativeUrl(iModelId), checkpoint);
     Logger.logTrace(loggerCategory, "Created CheckpointV2 for iModel", () => ({ iModelId, checkpoint }));
     return checkpoint;
   }
@@ -223,15 +220,14 @@ export class CheckpointV2Handler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
+  public async update(accessToken: AccessToken, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
     Logger.logInfo(loggerCategory, "Updating CheckpointV2 for iModel", () => ({ iModelId, checkpoint }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("checkpoint", checkpoint);
     const checkpointId = parseInt(checkpoint.wsgId, 10);
     ArgumentCheck.definedNumber("checkpoint.wsgId", checkpointId);
 
-    const updatedCheckpoint = await this._handler.postInstance<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId, checkpointId), checkpoint);
+    const updatedCheckpoint = await this._handler.postInstance<CheckpointV2>(accessToken, CheckpointV2, this.getRelativeUrl(iModelId, checkpointId), checkpoint);
     Logger.logTrace(loggerCategory, "Updated CheckpointV2 for iModel", () => ({ iModelId, updatedCheckpoint }));
     return updatedCheckpoint;
   }

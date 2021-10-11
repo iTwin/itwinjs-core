@@ -7,12 +7,12 @@
  */
 
 import { join } from "path";
-import { AuthStatus, BeEvent, ClientRequestContext, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
-  NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+  AuthorizationClient, BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel,
+  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, SessionProps, StorageValue,
+} from "@itwin/core-common";
+import { ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -20,8 +20,8 @@ import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /** @internal */
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
-  protected _accessToken?: AccessToken;
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+  protected _accessToken: AccessToken = "";
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessToken>;
@@ -34,24 +34,18 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     this.config = config;
   }
 
-  public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
-  }
-
-  public setAccessToken(token?: AccessToken) {
+  public setAccessToken(token: AccessToken) {
     if (token === this._accessToken)
       return;
     this._accessToken = token;
-    NativeHost.onUserStateChanged.raiseEvent(token);
+    NativeHost.onAccessTokenChanged.raiseEvent(token);
   }
 
   public async getAccessToken(): Promise<AccessToken> {
-    if (!this.isAuthorized)
+    if (!this._accessToken) // TODO: This should happen from a timer, not here
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken!;
+    return this._accessToken;
   }
-
-  public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
 
   public async initialize(config?: NativeAppAuthorizationConfiguration) {
     this.config = config ?? this.config;
@@ -69,8 +63,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  public async setAccessTokenProps(token: AccessTokenProps) {
-    NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
+  public async setAccessToken(token: AccessToken) {
+    NativeHost.authorization.setAccessToken(token);
+  }
+  public async getAccessToken(): Promise<AccessToken> {
+    return NativeHost.authorization.getAccessToken();
   }
   public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
     IModelHost.session.applicationId = props.applicationId;
@@ -85,9 +82,6 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
   public async signOut(): Promise<void> {
     return NativeHost.authorization.signOut();
-  }
-  public async getAccessTokenProps(): Promise<AccessTokenProps> {
-    return (await NativeHost.authorization.getAccessToken()).toJSON();
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -136,7 +130,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAuthorizedContext());
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAccessToken());
   }
 
   public async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
@@ -202,7 +196,7 @@ export class NativeHost {
   public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
-  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public static readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 
   /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -238,8 +232,8 @@ export class NativeHost {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
-      this.onUserStateChanged.addListener((token?: AccessToken) =>
-        NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+      this.onAccessTokenChanged.addListener((token: AccessToken) =>
+        NativeHost.notifyNativeFrontend("notifyAccessTokenChanged", token));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 
@@ -252,7 +246,7 @@ export class NativeHost {
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
-    this.onUserStateChanged.clear();
+    this.onAccessTokenChanged.clear();
     await IpcHost.shutdown();
   }
 

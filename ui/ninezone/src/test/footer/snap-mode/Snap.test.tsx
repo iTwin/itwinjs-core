@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Snap } from "../../../ui-ninezone";
+import { Snap } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<Snap />", () => {

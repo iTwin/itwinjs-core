@@ -6,15 +6,13 @@
  * @module NativeApp
  */
 
+import { AccessToken, AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
-} from "@bentley/bentleyjs-core";
-import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  AuthorizationClient, BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+  RequestNewBriefcaseProps, SessionProps, StorageValue, SyncMode,
+} from "@itwin/core-common";
+import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
@@ -46,27 +44,30 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(props?: AccessTokenProps) {
-    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
+  public notifyAccessTokenChanged(accessToken: AccessToken) {
+    const client = (IModelApp.authorizationClient as NativeAppAuthorization);
+    client?.onAccessTokenChanged.raiseEvent(accessToken);
   }
 }
 
 /**
  * Object to be set as `IModelApp.authorizationClient` for the frontend of NativeApps.
  * Since NativeApps use the backend for all authorization, this class sends signIn/signOut requests to the backend
- * and then listens for the `onUserStateChanged` event to cache the accessToken. The token is cached
+ * and then listens for the `onAccessTokenChanged` event to cache the accessToken. The token is cached
  * here on the frontend because it is used for every RPC operation, even when we're running as a NativeApp.
  * We must therefore check for expiration and request refreshes as/when necessary.
  * @public
  */
-export class NativeAppAuthorization {
+export class NativeAppAuthorization implements AuthorizationClient {
   private _config?: NativeAppAuthorizationConfiguration;
-  private _cachedToken?: AccessToken;
+  private _cachedToken: AccessToken = "";
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
-  public get hasSignedIn() { return this._cachedToken !== undefined; }
-  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
+  public get hasSignedIn() { return this._cachedToken !== ""; }
+  public get isAuthorized(): boolean {
+    return this.hasSignedIn;
+  }
 
   /** ctor for NativeAppAuthorization
    * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
@@ -74,9 +75,7 @@ export class NativeAppAuthorization {
    */
   public constructor(config?: NativeAppAuthorizationConfiguration) {
     this._config = config;
-    this.onUserStateChanged.addListener((token?: AccessToken) => {
-      this._cachedToken = token;
-    });
+    this.onAccessTokenChanged.addListener((token: AccessToken) => this._cachedToken = token);
   }
 
   /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
@@ -84,12 +83,12 @@ export class NativeAppAuthorization {
     this._expireSafety = await NativeApp.callNativeHost("initializeAuth", props, this._config);
   }
 
-  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
+  /** Called to start the sign-in process. Subscribe to onAccessTokenChanged to be notified when sign-in completes */
   public async signIn(): Promise<void> {
     return NativeApp.callNativeHost("signIn");
   }
 
-  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
+  /** Called to start the sign-out process. Subscribe to onAccessTokenChanged to be notified when sign-out completes */
   public async signOut(): Promise<void> {
     return NativeApp.callNativeHost("signOut");
   }
@@ -98,7 +97,7 @@ export class NativeAppAuthorization {
    * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
    * - The token is refreshed if it's possible and necessary.
    * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
-   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
+   * - Getting or refreshing the token will trigger the [[onAccessTokenChanged]] event.
    */
   public async getAccessToken(): Promise<AccessToken> {
     // if we have a valid token, return it. Otherwise call backend to refresh the token.
@@ -108,10 +107,11 @@ export class NativeAppAuthorization {
       }
 
       this._refreshingToken = true;
-      this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+      this._cachedToken = (await NativeApp.callNativeHost("getAccessToken"));
       this._refreshingToken = false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return this._cachedToken!;
   }
 }
@@ -121,16 +121,7 @@ export class NativeAppAuthorization {
  * @public
  */
 export interface NativeAppOpts extends IpcAppOptions {
-  nativeApp?: {
-    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized.
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    authConfig?: NativeAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    noInitializeAuthClient?: boolean;
-  };
+  nativeApp?: {};
 }
 
 /**
@@ -199,10 +190,10 @@ export class NativeApp {
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
 
-    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig); // eslint-disable-line deprecation/deprecation
+    const auth = new NativeAppAuthorization();
     IModelApp.authorizationClient = auth;
     const connStatus = await NativeApp.checkInternetConnectivity();
-    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online) { // eslint-disable-line deprecation/deprecation
+    if (connStatus === InternetConnectivityStatus.Online) {
       await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
     }
   }

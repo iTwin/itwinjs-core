@@ -9,28 +9,28 @@
 // cSpell: ignore popout
 
 import * as React from "react";
-import { IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
   ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
-import { FillCentered, LocalSettingsStorage } from "@bentley/ui-core";
+} from "@itwin/appui-abstract";
+import { FillCentered, LocalSettingsStorage } from "@itwin/core-react";
 import {
   ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, createAction,
   FrontstageManager, ReducerRegistryInstance, SavedViewLayout, SavedViewLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
   UiFramework, withStatusFieldProps,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
-import layoutRestoreIconSvg from "@bentley/icons-generic/icons/folder-export.svg?sprite";
+import layoutRestoreIconSvg from "@bentley/icons-generic/icons/download.svg?sprite";
 import removeLayoutIconSvg from "@bentley/icons-generic/icons/remove.svg?sprite";
-import layoutSaveIconSvg from "@bentley/icons-generic/icons/folder-import.svg?sprite";
+import layoutSaveIconSvg from "@bentley/icons-generic/icons/upload.svg?sprite";
 import { PopupTestPanel } from "./PopupTestPanel";
 import { PopupTestView } from "./PopupTestView";
 import { ComponentExamplesPage } from "../appui/frontstages/component-examples/ComponentExamples";

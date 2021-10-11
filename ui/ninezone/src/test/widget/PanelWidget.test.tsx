@@ -2,15 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget, TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
-} from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget,
+  TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
+} from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -31,13 +32,13 @@ interface ProviderProps {
 function Provider(props: ProviderProps) {
   const side = props.side || "left";
   return (
-    <NineZoneProvider
+    <TestNineZoneProvider
       state={props.state}
     >
       <PanelStateContext.Provider value={props.state.panels[side]}>
         {props.children}
       </PanelStateContext.Provider>
-    </NineZoneProvider>
+    </TestNineZoneProvider>
   );
 }
 
@@ -258,13 +259,13 @@ describe("useBorders", () => {
 
   function Wrapper({ children, side = "left", state = createNineZoneState() }: WrapperProps) {
     return (
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={state}
       >
         <PanelStateContext.Provider value={state.panels[side]}>
           {children}
         </PanelStateContext.Provider>
-      </NineZoneProvider>
+      </TestNineZoneProvider>
     );
   }
   const wrapper = Wrapper;

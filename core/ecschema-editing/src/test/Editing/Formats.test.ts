@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Format, FormatTraits, FormatType, SchemaContext, SchemaKey } from "@bentley/ecschema-metadata";
+import { Format, FormatTraits, FormatType, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Formats tests", () => {

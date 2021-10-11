@@ -7,20 +7,19 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
+import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
-} from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+} from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
@@ -865,7 +864,7 @@ export class IModelTransformer extends IModelExportHandler {
  * If this parameter is not provided, then just the current changeset will be exported.
  * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
-  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
+  public async processChanges(requestContext: AccessToken, startChangesetId?: string): Promise<void> {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();

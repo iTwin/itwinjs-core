@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Splitter } from "../../ui-ninezone";
+import { Splitter } from "../../appui-layout-react";
 import { createRect, mount } from "../Utils";
 
 describe("<Splitter />", () => {

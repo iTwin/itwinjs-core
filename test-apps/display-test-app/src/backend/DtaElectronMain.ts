@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-backend";
+import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
+import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 
 const mainWindowName = "mainWindow";
@@ -43,6 +43,9 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
+  // Need to load the config first to get the electron options
+  loadBackendConfig();
+
   const opts: ElectronHostOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
@@ -50,8 +53,9 @@ const dtaElectronMain = async () => {
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
     authConfig: {
-      clientId: "imodeljs-electron-test",
-      scope: "openid email profile organization itwinjs",
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     },
   };
 

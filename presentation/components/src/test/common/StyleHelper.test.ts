@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { LabelDefinition, Node } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { LabelDefinition, Node } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { StyleHelper } from "../../presentation-components/common/StyleHelper";
 
 describe("StyleHelper", () => {

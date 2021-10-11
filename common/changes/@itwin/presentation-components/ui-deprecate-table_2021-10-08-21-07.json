@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Ignore lint errors for deprecated Table component.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

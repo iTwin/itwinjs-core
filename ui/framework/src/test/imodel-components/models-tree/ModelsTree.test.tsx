@@ -3,26 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
+import { BeEvent } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
+import { createRandomId, deepEquals } from "@itwin/presentation-common/lib/cjs/test";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
+import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
-} from "@bentley/presentation-testing";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { SelectionMode, TreeNodeItem } from "@bentley/ui-components";
+} from "@itwin/presentation-testing";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
-import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
-import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../appui-react/imodel-components/models-tree/ModelsTree";
+import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "../Common";
 
@@ -205,7 +204,7 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(element.__key.instanceKeys), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, deepEquals(element.__key.instanceKeys), 0, ""), moq.Times.once());
         });
 
         it("adds element node to unified selection according to `selectionPredicate`", async () => {
@@ -220,7 +219,7 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(element.__key.instanceKeys), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, deepEquals(element.__key.instanceKeys), 0, ""), moq.Times.once());
         });
 
         it("adds multiple model nodes to unified selection according to `selectionPredicate`", async () => {
@@ -240,8 +239,8 @@ describe("ModelsTree", () => {
           fireEvent.click(renderedNodes[0]);
           fireEvent.click(renderedNodes[1], { ctrlKey: true });
 
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(node1.__key.instanceKeys), 0, ""), moq.Times.once());
-          selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(node2.__key.instanceKeys), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, deepEquals(node1.__key.instanceKeys), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), imodelMock.object, deepEquals(node2.__key.instanceKeys), 0, ""), moq.Times.once());
         });
 
         it("adds subject node to unified selection according to `selectionPredicate`", async () => {
@@ -256,7 +255,7 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(subject.__key.instanceKeys), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, deepEquals(subject.__key.instanceKeys), 0, ""), moq.Times.once());
         });
 
         it("adds node without extendedData to unified selection according to `selectionPredicate`", async () => {
@@ -272,7 +271,7 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(node.__key.instanceKeys), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, deepEquals(node.__key.instanceKeys), 0, ""), moq.Times.once());
         });
 
         it("adds element class grouping node to unified selection according to `selectionPredicate`", async () => {
@@ -283,11 +282,11 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
 
           const result = render(<ModelsTree {...sizeProps} iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await  result.findByText("grouping");
+          await result.findByText("grouping");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals([node.__key]), 0, ""), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, deepEquals([node.__key]), 0, ""), moq.Times.once());
         });
 
         it("does not add category node to unified selection according to `selectionPredicate`", async () => {
@@ -357,8 +356,7 @@ describe("ModelsTree", () => {
         backendProps: {
           caching: {
             hierarchies: {
-              mode: HierarchyCacheMode.Disk,
-              directory: path.join("lib", "test", "cache"),
+              mode: HierarchyCacheMode.Memory,
             },
           },
         },

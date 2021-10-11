@@ -6,16 +6,17 @@
 import * as path from "path";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
-  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
-} from "@bentley/imodeljs-common";
+  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { System } from "@bentley/imodeljs-frontend/lib/webgl";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
+} from "@itwin/core-frontend";
+import { System } from "@itwin/core-frontend/lib/cjs/webgl";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -142,6 +143,8 @@ export class TestRunner {
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
+
+    ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
   }
 
   /** Run all the tests. */
@@ -181,6 +184,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: this.curConfig.renderOptions,
           tileAdmin: this.curConfig.tileProps,
+          realityDataAccess: new RealityDataAccessClient(),
         });
       }
 
@@ -213,9 +217,13 @@ export class TestRunner {
 
       await this.logTest();
 
-      const result = await this.runTest(context);
-      if (result)
-        await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      try {
+        const result = await this.runTest(context);
+        if (result)
+          await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      } catch (ex) {
+        await this.onException(ex);
+      }
     }
   }
 
@@ -376,7 +384,7 @@ export class TestRunner {
           }
         }
       } catch (err: any) {
-        await this.logError(err.toString());
+        await DisplayPerfTestApp.logException(err, { dir: this.curConfig.outputPath, name: this._logFileName });
       }
     }
 
@@ -661,8 +669,6 @@ export class TestRunner {
 
     await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
     await this.logToConsole("Tests complete. Press Ctrl-C to exit.");
-
-    return DisplayPerfRpcInterface.getClient().finishTest();
   }
 
   private async saveCsv(row: Map<string, number | string>): Promise<void> {
@@ -960,6 +966,13 @@ export class TestRunner {
       await savePng(this.getImageName(test, `type_${pixStr}_`), canvas);
     }
   }
+
+  private async onException(ex: any): Promise<void> {
+    // We need to log here so it gets written to the file.
+    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if ("terminate" === this.curConfig.onException)
+      await DisplayPerfRpcInterface.getClient().terminate();
+  }
 }
 
 function removeOptsFromString(input: string, ignore: string[] | string | undefined): string {
@@ -1070,32 +1083,29 @@ function getTileProps(props: TileAdmin.Props): string {
 
 function getBackgroundMapProps(vp: ScreenViewport): string {
   let bmPropsStr = "";
+  const layer = vp.displayStyle.settings.mapImagery.backgroundBase;
+  if (layer instanceof BaseMapLayerSettings && layer.provider) {
+    switch (layer.provider.name) {
+      case "BingProvider":
+        break;
+      case "MapBoxProvider":
+        bmPropsStr += "MapBox";
+        break;
+    }
+
+    switch (layer.provider.type) {
+      case BackgroundMapType.Hybrid:
+        break;
+      case BackgroundMapType.Aerial:
+        bmPropsStr += "+aer";
+        break;
+      case BackgroundMapType.Street:
+        bmPropsStr += "+st";
+        break;
+    }
+  }
+
   const bmProps = vp.displayStyle.settings.backgroundMap;
-  switch (bmProps.providerName) {
-    case "BingProvider":
-      break;
-    case "MapBoxProvider":
-      bmPropsStr += "MapBox";
-      break;
-    default:
-      bmPropsStr += bmProps.providerName;
-      break;
-  }
-
-  switch (bmProps.mapType) {
-    case BackgroundMapType.Hybrid:
-      break;
-    case BackgroundMapType.Aerial:
-      bmPropsStr += "+aer";
-      break;
-    case BackgroundMapType.Street:
-      bmPropsStr += "+st";
-      break;
-    default:
-      bmPropsStr += `+type${bmProps.mapType}`;
-      break;
-  }
-
   if (bmProps.groundBias !== 0)
     bmPropsStr += `+bias${bmProps.groundBias}`;
 

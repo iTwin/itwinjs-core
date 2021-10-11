@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Removed internal tag from EGFBAccessors",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common",
+  "email": "38542573+williamkbentley@users.noreply.github.com"
+}

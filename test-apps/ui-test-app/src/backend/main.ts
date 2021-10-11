@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Presentation } from "@bentley/presentation-backend";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import { Presentation } from "@itwin/presentation-backend";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
 import { loggerCategory } from "../common/TestAppConfiguration";
-import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises

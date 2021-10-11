@@ -5,13 +5,13 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
-  IModelJsFs, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialElement,
-} from "@bentley/imodeljs-backend";
-import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
-import { Code, PhysicalElementProps } from "@bentley/imodeljs-common";
+  Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition,
+  SnapshotDb, SpatialCategory, SpatialElement,
+} from "@itwin/core-backend";
+import { DbResult, Logger, LogLevel } from "@itwin/core-bentley";
+import { Code, PhysicalElementProps, QueryBinder } from "@itwin/core-common";
+import { TransformerLoggerCategory } from "@itwin/core-transformer";
 import { loggerCategory, Transformer } from "../Transformer";
 
 describe("imodel-transformer", () => {
@@ -104,9 +104,9 @@ describe("imodel-transformer", () => {
       return sum(await Promise.all([GeometricElement2d.classFullName, GeometricElement3d.classFullName].map(async (className) => {
         const queryResult = await db.query(
           `SELECT COUNT(*) FROM ${className} e JOIN bis.Category c ON e.category.id=c.ECInstanceId WHERE c.CodeValue=:category`,
-          { category: testCategory }
+          QueryBinder.from({ category: testCategory })
         ).next();
-        const value = Object.values(queryResult.value)[0]; // gets the value of the first column in the returned row
+        const value = queryResult.value[0];
         if (typeof value !== "number") {
           throw Error(`unexpected result from COUNT query, queryResult was: '${JSON.stringify(queryResult)}'`);
         }

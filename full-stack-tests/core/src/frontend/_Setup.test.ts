@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 
 RpcConfiguration.developmentMode = true;

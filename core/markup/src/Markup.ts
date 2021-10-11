@@ -6,11 +6,10 @@
  * @module MarkupApp
  */
 
-import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY } from "@bentley/geometry-core";
-import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { BentleyError, Logger } from "@itwin/core-bentley";
+import { Point3d, XAndY } from "@itwin/core-geometry";
+import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
@@ -55,7 +54,7 @@ export class MarkupApp {
   /** the current Markup being created */
   public static markup?: Markup;
   /** The namespace for the Markup tools */
-  public static namespace: I18NNamespace;
+  public static namespace?: string;
   /** By setting members of this object, applications can control the appearance and behavior of various parts of MarkupApp. */
   public static props = {
     /** the UI controls displayed on Elements by the Select Tool to allow users to modify them. */
@@ -204,7 +203,7 @@ export class MarkupApp {
   }
 
   /** @internal */
-  public static getActionName(action: string) { return IModelApp.i18n.translate(`${this.namespace.name}:actions.${action}`); }
+  public static getActionName(action: string) { return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`); }
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
@@ -265,12 +264,14 @@ export class MarkupApp {
    */
   public static async initialize(): Promise<void> {
     if (undefined === this.namespace) {     // only need to do this once
-      this.namespace = IModelApp.i18n.registerNamespace("MarkupTools");
+      this.namespace = "MarkupTools";
+      const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
       IModelApp.tools.register(SelectTool, this.namespace);
       IModelApp.tools.registerModule(redlineTool, this.namespace);
       IModelApp.tools.registerModule(textTool, this.namespace);
+      return namespacePromise;
     }
-    return this.namespace.readFinished; // so caller can make sure localized messages are ready.
+    return IModelApp.localization.getNamespacePromise(this.namespace)!; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics
@@ -326,7 +327,7 @@ export class MarkupApp {
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
     } catch (e) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => getErrorProps(e));
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", BentleyError.getErrorProps(e));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }

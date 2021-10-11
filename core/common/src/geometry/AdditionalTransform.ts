@@ -7,7 +7,7 @@
  */
 // cspell:ignore Helmert
 
-import { Geometry } from "@bentley/geometry-core";
+import { Geometry } from "@itwin/core-geometry";
 
 /** An affine transformation with an additional Z Offset.
  *  The equations are:

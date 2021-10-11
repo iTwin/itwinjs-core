@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import * as EC from "@bentley/ecschema-metadata";
+import * as EC from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
 import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
 

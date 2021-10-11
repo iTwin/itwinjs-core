@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { LinkElementsInfo } from "@bentley/ui-abstract";
+import { LinkElementsInfo } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
-import { LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
+import { LinksRenderer, renderLinks, withLinks } from "../../components-react/properties/LinkHandler";
 import TestUtils from "../TestUtils";
 
 describe("LinkHandler", () => {

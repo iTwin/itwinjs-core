@@ -5,13 +5,12 @@
 /** @packageDocumentation
  * @module Hierarchies
  */
-import { using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Omit, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils";
-import { Presentation } from "@bentley/presentation-frontend";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Omit, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import { PRESENTATION_TREE_NODE_KEY, PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { TreeNodeItem } from "@itwin/components-react";
 
 /**
  * Structure that describes a Node with any indexed properties

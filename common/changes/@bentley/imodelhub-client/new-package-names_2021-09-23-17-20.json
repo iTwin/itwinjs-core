@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "use new @itwin package names",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client"
+}

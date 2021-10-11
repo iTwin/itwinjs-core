@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import {
   StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { DefaultNavigationTools, StandardNavigationToolsProvider } from "../../ui-framework/ui-items-provider/StandardNavigationToolsProvider";
+import { MockRender } from "@itwin/core-frontend";
+import { DefaultNavigationTools, StandardNavigationToolsProvider } from "../../appui-react/ui-items-provider/StandardNavigationToolsProvider";
 
 const testToolsArray: DefaultNavigationTools[] = [
   {
@@ -63,7 +63,7 @@ describe("StandardNavigationToolsProvider", () => {
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ i18n: TestUtils.i18n });
+    await MockRender.App.startup({ localization: TestUtils.localization });
   });
 
   after(async () => {

@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
   iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
   SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend";
+import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";

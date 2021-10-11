@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Replaced ContextRegistry with generalized ITwinAccess interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

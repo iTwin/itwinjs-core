@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, BeEvent, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData } from "@bentley/imodeljs-common";
+import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData } from "@itwin/core-common";
 import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -16,6 +16,7 @@ import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
+import { TextureOwnership } from "../RenderTexture";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -133,17 +134,31 @@ interface TextureImageProperties {
   anisotropicFilter: TextureAnisotropicFilter;
 }
 
+/** @internal */
+export interface TextureParams {
+  type: RenderTexture.Type;
+  ownership?: TextureOwnership;
+  // ###TODO transparency: TextureTransparency;
+  handle: TextureHandle;
+}
+
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
 export class Texture extends RenderTexture implements WebGLDisposable {
   public readonly texture: TextureHandle;
+  public readonly ownership?: TextureOwnership;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
+  public get hasOwner(): boolean { return undefined !== this.ownership; }
+  public get key(): string | undefined {
+    return typeof this.ownership !== "string" && typeof this.ownership?.key === "string" ? this.ownership.key : undefined;
+  }
 
-  public constructor(params: RenderTexture.Params, texture: TextureHandle) {
-    super(params);
-    this.texture = texture;
+  public constructor(params: TextureParams) {
+    super(params.type);
+    this.ownership = params.ownership;
+    this.texture = params.handle;
   }
 
   public get isDisposed(): boolean { return this.texture.isDisposed; }
@@ -638,7 +653,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
         const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
         if (System.instance.capabilities.supportsCreateImageBitmap) {
           const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
-          const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
+          const image = await createImageBitmap(blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
           if (!cnvReq.req.imodel.isClosed) {
             cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
           }

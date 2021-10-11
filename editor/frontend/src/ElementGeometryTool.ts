@@ -6,11 +6,11 @@
  * @module Editing
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, OffsetFacesProps, SolidModelingCommandIpc, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@bentley/imodeljs-editor-common";
-import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@bentley/imodeljs-common";
-import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, LocateResponse, readElementGraphics, RenderGraphicOwner, Viewport } from "@bentley/imodeljs-frontend";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, OffsetFacesProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
+import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
+import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 
@@ -82,9 +82,6 @@ export class SubEntityData {
 
   protected _graphicsProvider?: ElementGeometryGraphicsProvider;
 
-  private _acceptedAppearance?: FeatureAppearance;
-  private _flashedAppearance?: FeatureAppearance;
-
   public isSame(other: SubEntityProps): boolean {
     if (undefined === this.info)
       return false;
@@ -98,38 +95,26 @@ export class SubEntityData {
   }
 
   public getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance {
-    let appearance = (accepted ? this._acceptedAppearance : this._flashedAppearance);
+    const color = vp.hilite.color;
+    const rgb = RgbColor.fromColorDef(accepted ? color.inverse() : color);
+    const transparency = 0.25;
+    const emphasized = true; // Necessary for obscured sub-entities w/SceneGraphic...
+    let weight;
 
-    if (undefined === appearance) {
-      const color = vp.hilite.color;
-      const rgb = RgbColor.fromColorDef(accepted ? color.inverse() : color);
-      const transparency = 0.25;
-      let weight;
-      let emphasized: undefined | true;
-
-      switch (this.info?.type) {
-        case SubEntityType.Face:
-          emphasized = true;
-          break;
-        case SubEntityType.Edge:
-          const edgeWeight = accepted ? 5 : 3;
-          weight = this.geom?.appearance?.weight ? Math.min(this.geom.appearance.weight + edgeWeight, 31) : edgeWeight;
-          break;
-        case SubEntityType.Vertex:
-          const vertexWeight = accepted ? 10 : 8;
-          weight = this.geom?.appearance?.weight ? Math.min(this.geom.appearance.weight + vertexWeight, 31) : vertexWeight;
-          break;
-      }
-
-      appearance = FeatureAppearance.fromJSON({ rgb, transparency, weight, emphasized, nonLocatable: true }); // TODO: nonLocatable shouldn't be necessary...
-
-      if (accepted)
-        this._acceptedAppearance = appearance;
-      else
-        this._flashedAppearance = appearance;
+    switch (this.info?.type) {
+      case SubEntityType.Face:
+        break;
+      case SubEntityType.Edge:
+        const edgeWeight = accepted ? 5 : 3;
+        weight = this.geom?.appearance?.weight ? Math.min(this.geom.appearance.weight + edgeWeight, 31) : edgeWeight;
+        break;
+      case SubEntityType.Vertex:
+        const vertexWeight = accepted ? 12 : 10;
+        weight = this.geom?.appearance?.weight ? Math.min(this.geom.appearance.weight + vertexWeight, 31) : vertexWeight;
+        break;
     }
 
-    return appearance;
+    return FeatureAppearance.fromJSON({ rgb, transparency, weight, emphasized, nonLocatable: true });
   }
 
   public async createGraphic(iModel: IModelConnection): Promise<boolean> {
@@ -324,23 +309,15 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   }
 }
 
-/** @alpha Identify faces of solids and surfaces to offset. */
-export class OffsetFacesTool extends ElementGeometryCacheTool {
-  public static override toolId = "OffsetFaces";
-  public static override iconSpec = "icon-move"; // TODO: Need better icon...
-
+/** @alpha Base class for tools that need to locate faces, edges, and vertices. */
+export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected _currentSubEntity?: SubEntityData;
   protected _acceptedSubEntity?: SubEntityLocationProps;
 
-  public override requireWriteableTarget(): boolean { return false; } // TODO: Testing...
+  protected wantSubEntityType(type: SubEntityType) { return SubEntityType.Face === type; }
+  protected getMaximumSubEntityHits(type: SubEntityType) { return this.wantSubEntityType(type) ? 25 : 0; }
 
-  protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return undefined !== this._acceptedSubEntity; }
   protected override get wantAgendaAppearanceOverride(): boolean { return true; }
-
-  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
-    return { minGeom: 1, maxGeom: 1, parts: true, curves: false, surfaces: true, solids: true, other: false };
-  }
 
   public override decorate(context: DecorateContext): void {
     if (!this.allowView(context.viewport))
@@ -350,14 +327,96 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
       this._currentSubEntity.display(context, false);
   }
 
-  protected async doPickSubEntities(id: Id64String, boresite: Ray3d): Promise<SubEntityLocationProps | undefined> {
-    // TODO: Need proper locate method that returns array of hits...store per-element id...
+  protected getLocateAperture(ev: BeButtonEvent): number {
+    if (undefined === ev.viewport)
+      return 0.0;
+
+    return ev.viewport.pixelsFromInches(InputSource.Touch === ev.inputSource ? IModelApp.locateManager.touchApertureInches : IModelApp.locateManager.apertureInches);
+  }
+
+  protected getMaxRayDistance(ev: BeButtonEvent, aperture: number): number {
+    if (undefined === ev.viewport)
+      return 0.0;
+
+    // NOTE: Compute a world coordinate radius for ray test, try getting aperature size at point on element...
+    const hit = IModelApp.accuSnap.currHit;
+    const vec: Point3d[] = [];
+
+    vec[0] = ev.viewport.worldToView(hit ? hit.hitPoint : ev.point);
+    vec[1] = vec[0].clone(); vec[1].x += 1;
+    ev.viewport.viewToWorldArray(vec);
+
+    // The edge and vertex hits get post-filtered on xy distance, so this is fine for perspective views...
+    return (aperture * vec[0].distance(vec[1]));
+  }
+
+  protected getSubEntityFilter(): SubEntityFilter | undefined { return undefined; }
+
+  protected async pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined> {
     try {
       this._startedCmd = await this.startCommand();
-      return await ElementGeometryCacheTool.callCommand("getClosestFace", id, boresite.origin);
+      const opts: LocateSubEntityProps = {
+        maxFace,
+        maxEdge,
+        maxVertex,
+        maxDistance,
+        hiddenEdgesVisible,
+        filter,
+      };
+      return await ElementGeometryCacheTool.callCommand("locateSubEntities", id, boresite.origin, boresite.direction, opts);
     } catch (err) {
       return undefined;
     }
+  }
+
+  protected async doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined> {
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return undefined;
+
+    const maxFace = this.getMaximumSubEntityHits(SubEntityType.Face);
+    const maxEdge = this.getMaximumSubEntityHits(SubEntityType.Edge);
+    const maxVertex = this.getMaximumSubEntityHits(SubEntityType.Vertex);
+
+    if (0 === maxFace && 0 === maxEdge && 0 === maxVertex)
+      return undefined;
+
+    const aperture = this.getLocateAperture(ev);
+    const maxDistance = this.getMaxRayDistance(ev, aperture);
+    const boresite = AccuDrawHintBuilder.getBoresite(ev.point, vp);
+    const hiddenEdgesVisible = vp.viewFlags.hiddenEdgesVisible();
+    const filter = this.getSubEntityFilter();
+
+    let hits = await this.pickSubEntities(id, boresite, maxFace, maxEdge, maxVertex, maxDistance, hiddenEdgesVisible, filter);
+
+    // NOTE: Remove erroneous edge/vertex hits in perspective views by checking real xy distance to hit point...
+    if (undefined === hits || !vp.isCameraOn)
+      return hits;
+
+    if (maxEdge > 0 && hits.length > 1) {
+      const edgeApertureSquared = (aperture * aperture);
+      const vertexApertureSquared = ((aperture * 2.0) * (aperture * 2.0));
+
+      const e2 = Math.pow(aperture, 2);
+      const v2 = Math.pow(aperture * 2.0, 2);
+
+      if (e2 !== edgeApertureSquared || v2 !== vertexApertureSquared)
+        return hits;
+
+      const rayOrigin = vp.worldToView(boresite.origin);
+
+      hits = hits.filter((hit) => {
+        if (SubEntityType.Face === hit.subEntity.type)
+          return true;
+
+        const hitPoint = vp.worldToView(Point3d.fromJSON(hit.point));
+        const distance = hitPoint.distanceSquaredXY(rayOrigin);
+
+        return (distance <= (SubEntityType.Edge === hit.subEntity.type ? edgeApertureSquared : vertexApertureSquared));
+      });
+    }
+
+    return hits;
   }
 
   protected async doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean> {
@@ -365,16 +424,12 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
       return false;
 
     if (newSearch) {
-      // TODO: Use ev.point when doPickSubEntities stops using getClosestPoint...
-      // const boresite = AccuDrawHintBuilder.getBoresite(ev.point, ev.viewport);
-      const hit = IModelApp.accuSnap.currHit;
-      const boresite = AccuDrawHintBuilder.getBoresite(hit ? hit.hitPoint : ev.point, ev.viewport);
-      const info = await this.doPickSubEntities(this.agenda.elements[this.agenda.length - 1], boresite);
+      const info = await this.doPickSubEntities(this.agenda.elements[this.agenda.length - 1], ev);
 
       if (undefined === info)
         return false;
 
-      this._acceptedSubEntity = info;
+      this._acceptedSubEntity = info[0]; // TODO: Save array for reset cyling. Do we need to support multiple elements?
       this.clearSubEntityGraphic();
 
       return true;
@@ -451,13 +506,10 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
     if (undefined === hit || !hit.isElementHit)
       return this.setCurrentSubEntity();
 
-    // TODO: Use ev.point when doPickSubEntities stops using getClosestPoint...
-    // const boresite = AccuDrawHintBuilder.getBoresite(ev.point, ev.viewport);
-    const boresite = AccuDrawHintBuilder.getBoresite(hit.hitPoint, ev.viewport);
-    const current = await this.doPickSubEntities(hit.sourceId, boresite);
-    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current.point)) : 0.0;
+    const current = await this.doPickSubEntities(hit.sourceId, ev);
+    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
 
-    if (!await this.setCurrentSubEntity(hit.sourceId, current, chordTolerance))
+    if (!await this.setCurrentSubEntity(hit.sourceId, current ? current[0] : undefined, chordTolerance))
       return false;
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
@@ -471,12 +523,50 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
     await this.updateSubEntityGraphic(ev);
   }
 
+  protected async applyAgendaOperation(_ev: BeButtonEvent, _isAccept: boolean): Promise<ElementGeometryResultProps | undefined> { return undefined; }
+
   protected override async getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined> {
     const result = await this.applyAgendaOperation(ev, false);
     return result?.graphic;
   }
 
-  protected async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
+  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
+    if (undefined === this._acceptedSubEntity)
+      return;
+
+    const result = await this.applyAgendaOperation(ev, true);
+    if (result?.elementId)
+      await this.saveChanges();
+  }
+
+  protected setupAccuDraw(): void { }
+
+  protected override setupAndPromptForNextAction(): void {
+    this.setupAccuDraw();
+    super.setupAndPromptForNextAction();
+  }
+
+  public override async onCleanup(): Promise<void> {
+    this.clearSubEntityGraphic();
+    return super.onCleanup();
+  }
+}
+
+/** @alpha Identify faces of solids and surfaces to offset. */
+export class OffsetFacesTool extends LocateSubEntityTool {
+  public static override toolId = "OffsetFaces";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  public override requireWriteableTarget(): boolean { return false; } // TODO: Testing...
+
+  protected override get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean { return undefined !== this._acceptedSubEntity; }
+
+  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
+    return { minGeom: 1, maxGeom: 1, parts: true, curves: false, surfaces: true, solids: true, other: false };
+  }
+
+  protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
     if (undefined === ev.viewport || this.agenda.isEmpty || undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
       return undefined;
 
@@ -511,18 +601,7 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
     }
   }
 
-  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
-    if (undefined === this._acceptedSubEntity)
-      return;
-
-    const result = await this.applyAgendaOperation(ev, true);
-    if (result?.elementId)
-      await this.saveChanges();
-  }
-
-  protected override setupAndPromptForNextAction(): void {
-    super.setupAndPromptForNextAction();
-
+  protected override setupAccuDraw(): void {
     if (undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
       return;
 
@@ -537,11 +616,6 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
     hints.setOrigin(facePt);
     hints.setXAxis2(faceNormal);
     hints.sendHints();
-  }
-
-  public override async onCleanup(): Promise<void> {
-    this.clearSubEntityGraphic();
-    return super.onCleanup();
   }
 
   public async onRestartTool(): Promise<void> {

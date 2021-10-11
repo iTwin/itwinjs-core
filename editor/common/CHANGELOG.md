@@ -1,4 +1,4 @@
-# Change Log - @bentley/imodeljs-editor-common
+# Change Log - @itwin/editor-common
 
 This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
 

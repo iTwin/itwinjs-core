@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update ClearHideIsolateEmphasize Tool button definition to work on Models and Categories as well as Elements.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

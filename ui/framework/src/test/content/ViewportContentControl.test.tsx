@@ -6,15 +6,15 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
-import { ViewportComponentEvents } from "@bentley/ui-imodel-components";
+import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { ViewportComponentEvents } from "@itwin/imodel-components-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount, storageMock } from "../TestUtils";
-import { StandardContentLayouts } from "@bentley/ui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 const mySessionStorage = storageMock();
 

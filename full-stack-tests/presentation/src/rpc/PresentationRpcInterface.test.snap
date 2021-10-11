@@ -8,21 +8,6 @@ Object {
     "items": Object {
       "$élêçtèd Ítêm(s)": Object {
         "items": Object {
-          "$óúrçè Íñfórmâtíöñ": Object {
-            "items": Object {
-              "Mòdél $õürçê": Object {
-                "items": Object {
-                  "Repository Link": Object {
-                    "type": "array",
-                    "valueType": "struct",
-                    "values": Array [],
-                  },
-                },
-                "type": "category",
-              },
-            },
-            "type": "category",
-          },
           "Code": Object {
             "type": "primitive",
             "value": "DgnV8Bridge",

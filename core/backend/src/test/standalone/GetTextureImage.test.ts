@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { TextureLoadProps } from "@bentley/imodeljs-common";
+import { TextureLoadProps } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 

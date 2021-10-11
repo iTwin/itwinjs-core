@@ -2,38 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
+import "@itwin/presentation-common/lib/cjs/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String, using } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  FieldDescriptor, FieldDescriptorType, FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, Ruleset,
-  SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
-} from "@bentley/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSelectClassInfo, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "@bentley/presentation-common/lib/test/_helpers/EC";
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo,
+  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
+  LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes,
+} from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
   createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElementJSON, createRandomRelationshipPathJSON, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription, createTestContentDescriptor,
+  createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo,
+  createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
-  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  getKeysForContentRequest, HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
@@ -354,8 +352,6 @@ describe("PresentationManager", () => {
 
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
-        sinon.stub(PresentationIpcHandler, "register").returns(() => { });
-
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
         using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
@@ -548,16 +544,6 @@ describe("PresentationManager", () => {
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
     });
 
-    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
-      sinon.stub(IpcHost, "isValid").get(() => true);
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const unregisterSpy = sinon.spy();
-      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
-      manager.dispose();
-      expect(unregisterSpy).to.be.calledOnce;
-    });
-
   });
 
   describe("getRulesetId", () => {
@@ -676,6 +662,7 @@ describe("PresentationManager", () => {
           level: faker.random.number(),
         } as SelectionInfo,
       };
+      imodelMock.reset();
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       manager = new PresentationManager({ addon: nativePlatformMock.object });
@@ -1207,14 +1194,20 @@ describe("PresentationManager", () => {
           requestId: NativePlatformRequestTypes.GetContentDescriptor,
           params: {
             displayType: testData.displayType,
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
         };
 
         // what the addon returns
-        const classesMap = {};
+        const testClassInfo = createTestECClassInfo();
+        const classesMap = {
+          [testClassInfo.id]: {
+            label: testClassInfo.label,
+            name: testClassInfo.name,
+          },
+        };
         const addonResponse: DescriptorJSON = {
           connectionId: faker.random.uuid(),
           inputKeysHash: faker.random.uuid(),
@@ -1248,7 +1241,7 @@ describe("PresentationManager", () => {
             },
             properties: [{
               property: {
-                classInfo: createRandomECClassInfoJSON(),
+                classInfo: testClassInfo.id,
                 name: faker.random.word(),
                 type: "string",
                 enumerationInfo: {
@@ -1261,10 +1254,10 @@ describe("PresentationManager", () => {
                   }],
                   isStrict: faker.random.boolean(),
                 },
-              } as PropertyInfoJSON,
+              } as PropertyInfoJSON<Id64String>,
               relatedClassPath: [],
-            } as PropertyJSON],
-          } as PropertiesFieldJSON, {
+            } as PropertyJSON<Id64String>],
+          } as PropertiesFieldJSON<Id64String>, {
             name: "Complex array of structs property field",
             category: "test-category",
             label: faker.random.words(),
@@ -1299,7 +1292,7 @@ describe("PresentationManager", () => {
             priority: faker.random.number(),
             properties: [{
               property: {
-                classInfo: createRandomECClassInfoJSON(),
+                classInfo: testClassInfo.id,
                 name: faker.random.word(),
                 type: "double",
                 kindOfQuantity: {
@@ -1307,10 +1300,10 @@ describe("PresentationManager", () => {
                   label: faker.random.words(),
                   persistenceUnit: faker.random.word(),
                 } as KindOfQuantityInfo,
-              } as PropertyInfoJSON,
+              } as PropertyInfoJSON<Id64String>,
               relatedClassPath: [],
-            } as PropertyJSON],
-          } as PropertiesFieldJSON, {
+            } as PropertyJSON<Id64String>],
+          } as PropertiesFieldJSON<Id64String>, {
             name: "Nested content field",
             category: "test-category",
             label: faker.random.words(),
@@ -1326,8 +1319,8 @@ describe("PresentationManager", () => {
                 },
               }],
             } as StructTypeDescription,
-            contentClassInfo: createRandomECClassInfoJSON(),
-            pathToPrimaryClass: createRandomRelationshipPathJSON(1),
+            contentClassInfo: testClassInfo.id,
+            pathToPrimaryClass: createRandomRelationshipPath(1).map((step) => RelatedClassInfo.toCompressedJSON(step, classesMap)),
             nestedFields: [{
               name: "Simple property field",
               category: "test-category",
@@ -1342,7 +1335,7 @@ describe("PresentationManager", () => {
             isReadonly: faker.random.boolean(),
             priority: faker.random.number(),
             autoExpand: faker.random.boolean(),
-          } as NestedContentFieldJSON],
+          } as NestedContentFieldJSON<Id64String>],
           contentFlags: 0,
         };
         setup(addonResponse);
@@ -1370,7 +1363,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSetSize,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
@@ -1398,7 +1391,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSetSize,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: {
               displayType: descriptor.displayType,
             },
@@ -1440,7 +1433,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
@@ -1486,7 +1479,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([concreteClassKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([concreteClassKey])),
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
@@ -1539,7 +1532,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([baseClassKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([baseClassKey])),
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
@@ -1592,7 +1585,7 @@ describe("PresentationManager", () => {
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             descriptorOverrides: {
               displayType: descriptor.displayType,
             },
@@ -1653,7 +1646,7 @@ describe("PresentationManager", () => {
           requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
           params: {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
-            keys: keys.toJSON(),
+            keys: getKeysForContentRequest(keys),
             fieldDescriptor,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
             paging: pageOpts,
@@ -1687,7 +1680,7 @@ describe("PresentationManager", () => {
 
     describe("getElementProperties", () => {
 
-      it("returns element properties", async () => {
+      it("returns single element properties", async () => {
         // what the addon receives
         const elementKey = { className: "BisCore:Element", id: "0x123" };
         setupIModelForElementKey(imodelMock, elementKey);
@@ -1695,7 +1688,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([elementKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([elementKey])),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.PropertyPane,
               contentFlags: ContentFlags.ShowLabels,
@@ -1732,7 +1725,7 @@ describe("PresentationManager", () => {
         setup(addonContentResponse);
 
         // test
-        const options: ElementPropertiesRequestOptions<IModelDb> = {
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
           elementId: elementKey.id,
         };
@@ -1751,6 +1744,114 @@ describe("PresentationManager", () => {
               },
             },
           },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsByClass);
+      }
+
+      it("returns multiple elements properties", async () => {
+        // what the addon receives
+        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
+        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
+        elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet(elementKeys)),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label 1",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value 1",
+              },
+              displayValues: {
+                test: "test display value 1",
+              },
+            }),
+            createTestContentItem({
+              label: "test label 2",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+              values: {
+                test: "test value 2",
+              },
+              displayValues: {
+                test: "test display value 2",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+        };
+        const expectedResponse = {
+          total: 2,
+          items: [
+            {
+              class: "Test Class",
+              id: "0x123",
+              label: "test label 1",
+              items: {
+                ["Test Category"]: {
+                  type: "category",
+                  items: {
+                    ["Test Field"]: {
+                      type: "primitive",
+                      value: "test display value 1",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              class: "Test Class",
+              id: "0x124",
+              label: "test label 2",
+              items: {
+                ["Test Category"]: {
+                  type: "category",
+                  items: {
+                    ["Test Field"]: {
+                      type: "primitive",
+                      value: "test display value 2",
+                    },
+                  },
+                },
+              },
+            },
+          ],
         };
         const result = await manager.getElementProperties(options);
         verifyMockRequest(expectedContentParams);
@@ -1795,7 +1896,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: getKeysForContentRequest(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1849,7 +1950,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet([concreteClassKey]).toJSON(),
+            keys: getKeysForContentRequest(new KeySet([concreteClassKey])),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1899,7 +2000,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: getKeysForContentRequest(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
@@ -1938,7 +2039,7 @@ describe("PresentationManager", () => {
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
-            keys: new KeySet(keys).toJSON(),
+            keys: getKeysForContentRequest(new KeySet(keys)),
             descriptorOverrides: {
               displayType: DefaultContentDisplayTypes.List,
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,

@@ -6,10 +6,10 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@itwin/core-common";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -32,6 +32,7 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -51,13 +52,14 @@ export abstract class RenderTextureDrape implements IDisposable {
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** Describes a texture loaded from an HTMLImageElement
+ * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
  * @internal
  */
-export interface TextureImage {
+export interface OldTextureImage {
   /** The HTMLImageElement containing the texture's image data */
-  image: HTMLImageElement | undefined;
+  image: HTMLImageElement;
   /** The format of the texture's image data */
-  format: ImageSourceFormat | undefined;
+  format: ImageSourceFormat;
 }
 
 /** @internal */
@@ -387,7 +389,7 @@ export abstract class RenderSystem implements IDisposable {
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
 
   /** @internal */
-  public createPlanarGrid(_frustum: Frustum,_grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
+  public createPlanarGrid(_frustum: Frustum, _grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
@@ -478,12 +480,14 @@ export abstract class RenderSystem implements IDisposable {
    */
   public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number, _elevation: number): RenderGraphic { return graphic; }
 
-  /** Find a previously-created [[RenderTexture]] by its ID.
-   * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.
+  /** Find a previously-created [[RenderTexture]] by its key.
+   * @param _key The unique key of the texture within the context of the IModelConnection. Typically an element Id.
    * @param _imodel The IModelConnection with which the texture is associated.
-   * @returns A previously-created texture matching the specified ID, or undefined if no such texture exists.
+   * @returns A previously-created texture matching the specified key, or undefined if no such texture exists.
    */
-  public findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+  public findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined {
+    return undefined;
+  }
 
   /** Find or create a [[RenderTexture]] from a persistent texture element.
    * @param id The ID of the texture element.
@@ -499,7 +503,14 @@ export abstract class RenderSystem implements IDisposable {
       const image = await this.loadTextureImage(id, iModel);
       if (undefined !== image) {
         // This will return a pre-existing RenderTexture if somebody else loaded it while we were awaiting the image.
-        texture = this.createTextureFromImage(image.image!, ImageSourceFormat.Png === image.format, iModel, new RenderTexture.Params(id.toString()));
+        texture = this.createTexture({
+          type: RenderTexture.Type.Normal,
+          ownership: { key: id, iModel },
+          image: {
+            source: image.image,
+            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+          },
+        });
       }
     }
 
@@ -514,7 +525,7 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderSystem.loadTexture]]
    * @internal
    */
-  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined> {
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined> {
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
       return undefined;
@@ -536,33 +547,99 @@ export abstract class RenderSystem implements IDisposable {
    * @param _symb The description of the gradient.
    * @param _imodel The IModelConnection with which the texture is associated.
    * @returns A texture created from the gradient image, or undefined if the texture could not be created.
-   * @note If a texture matching the specified gradient already exists, it will be returned.
-   * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
-   * return the previously-created texture.
+   * @note If a texture matching the specified gradient is already cached on the iModel, it will be returned.
+   * Otherwise, if an iModel is supplied, the newly-created texture will be cached on the iModel such that subsequent calls with an equivalent gradient and the
+   * same iModel will return the cached texture instead of creating a new one.
    */
-  public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined { return undefined; }
+  public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined {
+    return undefined;
+  }
 
-  /** Create a new texture from an [[ImageBuffer]]. */
-  public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
-
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]] */
-  public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
-
-  /** Create a new texture from an [[ImageSource]]. */
-  public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const promise = imageElementFromImageSource(source);
-    return promise.then((image: HTMLImageElement) => {
-      return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
+  /** Create a new texture from an [[ImageBuffer]].
+   * @deprecated Use [[createTexture]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
+  public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+    const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
+    return this.createTexture({
+      type: params.type,
+      ownership,
+      image: {
+        source: image,
+        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+      },
     });
   }
 
+  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
+   * @deprecated Use [[createTexture]].
+   */
+  // eslint-disable-next-line deprecation/deprecation
+  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
+    const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
+    return this.createTexture({
+      type: params.type,
+      ownership,
+      image: {
+        source: image,
+        transparency: hasAlpha ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+      },
+    });
+  }
+
+  /** Create a new texture from an ImageSource.
+   * @deprecated Use RenderSystem.createTextureFromSource.
+   */
+  // eslint-disable-next-line deprecation/deprecation
+  public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+    const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
+    return this.createTextureFromSource({
+      type: params.type,
+      source,
+      ownership,
+      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Translucent,
+    });
+  }
+
+  /** Create a texture from an ImageSource. */
+  public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
+    try {
+      // JPEGs don't support transparency.
+      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+      const image = await imageElementFromImageSource(args.source);
+      if (!IModelApp.hasRenderSystem)
+        return undefined;
+
+      return this.createTexture({
+        type: args.type,
+        ownership: args.ownership,
+        image: {
+          source: image,
+          transparency,
+        },
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
+  // eslint-disable-next-line deprecation/deprecation
+  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
+    return undefined;
+  }
+
+  public createTexture(_args: CreateTextureArgs): RenderTexture | undefined {
+    return undefined;
+  }
 
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
-  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
+  // eslint-disable-next-line deprecation/deprecation
+  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
+    return undefined;
+  }
 
   /** @internal */
   public onInitialized(): void { }
@@ -595,7 +672,7 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[TileAdmin.totalTileContentBytes]] for the amount of GPU memory allocated for tile graphics.
    */
   public static async contextLossHandler(): Promise<any> {
-    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
+    const msg = IModelApp.localization.getLocalizedString("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
   }
 }

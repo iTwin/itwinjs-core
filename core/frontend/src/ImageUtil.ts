@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { Point2d } from "@itwin/core-geometry";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {
@@ -221,7 +221,7 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
 export async function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined> {
   try {
     return await imageElementFromUrl(url);
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }

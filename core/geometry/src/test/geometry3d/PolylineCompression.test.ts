@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
-import { Point3dArray, PolygonOps } from "../../geometry-core";
+import { Point3dArray, PolygonOps } from "../../core-geometry";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";

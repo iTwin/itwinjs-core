@@ -13,7 +13,6 @@ module.exports = {
     path: path.resolve(__dirname, "lib/dist"),
     filename: "bundled-tests.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
-    libraryTarget: 'umd',
     globalObject: "this",
   },
   devtool: "nosources-source-map",

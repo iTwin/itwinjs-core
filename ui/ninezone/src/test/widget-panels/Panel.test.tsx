@@ -6,14 +6,14 @@ import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Size } from "@bentley/ui-core";
+import { Size } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
-} from "../../ui-ninezone";
-import { createDragItemInfo, NineZoneProvider, setRefValue } from "../Providers";
+} from "../../appui-layout-react";
+import { createDragItemInfo, setRefValue, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanelProvider", () => {
   it("should render vertical", () => {
@@ -24,13 +24,13 @@ describe("WidgetPanelProvider", () => {
       stateDraft.panels.left.size = 200;
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="left"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -43,13 +43,13 @@ describe("WidgetPanelProvider", () => {
       stateDraft.panels.top.size = 200;
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="top"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -62,13 +62,13 @@ describe("WidgetPanelProvider", () => {
       stateDraft.panels.left.collapsed = true;
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="left"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -78,7 +78,7 @@ describe("WidgetPanelProvider", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <DraggedPanelSideContext.Provider value="left">
@@ -86,7 +86,7 @@ describe("WidgetPanelProvider", () => {
             side="left"
           />
         </DraggedPanelSideContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -99,13 +99,13 @@ describe("WidgetPanelProvider", () => {
       stateDraft.panels.top.span = true;
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="top"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -121,13 +121,13 @@ describe("WidgetPanelProvider", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="left"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -143,13 +143,13 @@ describe("WidgetPanelProvider", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="left"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -161,14 +161,14 @@ describe("WidgetPanelProvider", () => {
     nineZone = addTab(nineZone, "t1");
     sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 300 }));
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <WidgetPanelProvider
           side="left"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     dispatch.calledOnceWithExactly(sinon.match({
       type: "PANEL_INITIALIZE",
@@ -184,13 +184,13 @@ describe("WidgetPanelProvider", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelProvider
           side="left"
         />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -205,7 +205,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -248,7 +248,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -286,7 +286,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -342,7 +342,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider state={nineZone} dispatch={dispatch} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} dispatch={dispatch} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -379,7 +379,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           state={nineZone}
           dragManagerRef={dragManager}
           {...props}
@@ -422,7 +422,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           state={nineZone}
           {...props}
         />,
@@ -474,7 +474,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           state={nineZone}
           {...props}
         />,
@@ -506,7 +506,7 @@ describe("WidgetPanelProvider", () => {
         side="top"
       />,
       {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           state={nineZone}
           {...props}
         />,
@@ -546,7 +546,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <NineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -580,13 +580,13 @@ describe("useAnimatePanelWidgets", () => {
       onAfterRender && onAfterRender();
     });
     return (
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={state}
       >
         <PanelStateContext.Provider value={state.panels[side]}>
           {children}
         </PanelStateContext.Provider>
-      </NineZoneProvider>
+      </TestNineZoneProvider>
     );
   }
   const wrapper = Wrapper;

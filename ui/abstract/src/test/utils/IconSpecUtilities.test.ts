@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IconSpecUtilities } from "../../ui-abstract/utils/IconSpecUtilities";
+import { IconSpecUtilities } from "../../appui-abstract/utils/IconSpecUtilities";
 
 describe("IconSpecUtilities", () => {
 

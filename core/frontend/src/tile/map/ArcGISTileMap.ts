@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { assert, ClientRequestContext, compareStrings, Dictionary } from "@bentley/bentleyjs-core";
 import { getJson} from "@bentley/itwin-client";
+import { assert, compareStrings, Dictionary } from "@itwin/core-bentley";
 import { QuadId } from "../internal";
 
 const nonVisibleChildren = [false, false, false, false];
@@ -19,17 +19,15 @@ export class ArcGISTileMap {
   private _callQueues: Array<Promise<boolean[]>> | undefined;
   private _tilesCache = new Dictionary<string, boolean>((lhs, rhs) => compareStrings(lhs, rhs));
   private _restBaseUrl: string;
-  private _requestContext: ClientRequestContext;
-  constructor(restBaseUrl: string, context?: ClientRequestContext, nbLods?: number) {
+  constructor(restBaseUrl: string, nbLods?: number) {
     this._restBaseUrl = restBaseUrl;
     if (nbLods !== undefined && nbLods > 0) {
       this._callQueues = new Array<Promise<boolean[]>>(nbLods).fill(Promise.resolve<boolean[]>(nonVisibleChildren));
     }
 
-    this._requestContext = context ?? new ClientRequestContext("");
   }
   protected async fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any> {
-    return getJson(this._requestContext, `${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`);
+    return getJson(`${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`);
   }
 
   protected getAvailableTilesFromCache(tiles: QuadId[]): {allTilesFound: boolean, available: boolean[]} {

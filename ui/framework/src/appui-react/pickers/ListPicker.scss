@@ -1,0 +1,300 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/toolbar/item/expandable/group/tool/Tool";
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/footer/_variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/typography";
+
+$no-shadow: none;
+$shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);
+$space-after-label: 16px;
+$space-before-label: 16px;
+$label-color: $buic-text-color;
+$border-color: $buic-background-control-stroke;
+$item-height: 32px;
+
+.ListPicker-separator {
+  height: 1px;
+  background: $buic-background-divider;
+  border-bottom: 1px solid $buic-background-control-stroke;
+}
+
+.ListPicker-column {
+  @include uicore-scrollbar();
+  overflow: auto;
+  height: 40vh;
+  width: 30vh;
+}
+
+.ListPickerInnerContainer {
+  border: 1px solid $border-color;
+  margin-left: 10px;
+  margin-right: 10px;
+  overflow: hidden;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  background-color: $buic-background-window;
+}
+
+.ListPickerInnerContainer-expander {
+  height: $item-height;
+  width: 16px;
+  padding-right: 8px;
+  padding-left: 8px;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.ListPickerInnerContainer-header-content {
+  display: table-row;
+}
+
+.ListPickerInnerContainer-header {
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-right: 0px;
+  margin-left: 0px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  cursor: pointer;
+  white-space: nowrap;
+  height: $item-height;
+  color: $label-color;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.ListPickerInnerContainer-header-expanded {
+  @extend .ListPickerInnerContainer-header;
+  border-bottom: 1px solid $border-color;
+}
+
+.ListPickerInnerContainer-title {
+  vertical-align: middle;
+  display: table-cell;
+}
+
+
+.ListPicker-item {
+  $label-color: $buic-text-color;
+  $pressed-label-color: $buic-foreground-activehover;
+  $hovered-label-color: $buic-foreground-primary-tone;
+  $focused-label-color: $buic-foreground-primary-tone;
+  $active-label-color: $buic-foreground-primary-tone;
+  $item-height: 32px;
+  $item-border-width: 2px;
+  $active-tool-stripe-height: 22px;
+  $active-tool-stripe-width: 2px;
+
+  white-space: nowrap;
+  height: $item-height;
+  color: $label-color;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+
+  @include body;
+
+  >.label {
+    display: inline-block;
+    margin-right: $space-after-label;
+    margin-left: $space-before-label;
+    line-height: $item-height;
+    filter: $shadow;
+
+    &:after {
+      display: block;
+      content: attr(title);
+      font-weight: bold;
+      height: 1px;
+      color: transparent;
+      overflow: hidden;
+      visibility: hidden;
+    }
+  }
+
+  &:hover {
+    color: $hovered-label-color;
+
+    @include body1;
+
+    >.icon,
+    .label {
+      filter: $shadow;
+    }
+  }
+
+  &:active {
+    background: $buic-row-selection;
+    color: $pressed-label-color;
+
+    >.icon,
+    .label {
+      filter: $no-shadow;
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &.is-focused {
+    color: $focused-label-color;
+    border-color: $buic-foreground-primary;
+    border-width: $item-border-width;
+    border-style: solid;
+
+    @include body1;
+
+    >.icon,
+    .label {
+      filter: $shadow;
+    }
+  }
+
+  &.is-active {
+    color: $active-label-color;
+
+    @include body1;
+
+    &::before {
+      content: '';
+      background-color: $active-label-color;
+      display: block;
+      position: relative;
+      top: 0;
+      left: $item-border-width + 1;
+      width: $active-tool-stripe-width;
+      height: $active-tool-stripe-height;
+      border-radius: 2px;
+    }
+
+    >.icon,
+    .label {
+      filter: $no-shadow;
+    }
+  }
+}
+
+.ListPickerWidget-item {
+  $label-color: $buic-text-color;
+  $pressed-label-color: $buic-foreground-activehover;
+  $hovered-label-color: $buic-foreground-primary;
+  $focused-label-color: $buic-foreground-primary;
+  $active-label-color: $buic-foreground-primary;
+  $item-height: 32px;
+  $item-border-width: 2px;
+  $active-tool-stripe-height: 22px;
+  $active-tool-stripe-width: 2px;
+
+  white-space: nowrap;
+  height: $item-height;
+  color: $label-color;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+
+  @include body;
+
+  >.label {
+    display: inline-block;
+    margin-right: $space-after-label;
+    margin-left: $space-before-label;
+    line-height: $item-height;
+    filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+
+    &:after {
+      display: block;
+      content: attr(title);
+      font-weight: normal;
+      height: 1px;
+      color: transparent;
+      overflow: hidden;
+      visibility: hidden;
+    }
+  }
+
+  &:hover {
+    color: $hovered-label-color;
+
+    @include body1;
+
+    >.icon,
+    .label {
+      filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+    }
+  }
+
+  &:active {
+    background: $buic-foreground-primary-tone;
+    color: $pressed-label-color;
+
+    >.icon,
+    .label {
+      filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+    }
+  }
+
+  &.is-focused {
+    color: $focused-label-color;
+    border-color: $buic-foreground-primary;
+    border-width: $item-border-width;
+    border-style: solid;
+
+    @include body1;
+
+    >.icon,
+    .label {
+      filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+    }
+  }
+
+  &.is-active {
+    color: $active-label-color;
+
+    @include body1;
+
+    &::before {
+      content: '';
+      background-color: $active-label-color;
+      display: block;
+      position: relative;
+      top: 0;
+      left: $item-border-width + 1;
+      width: $active-tool-stripe-width;
+      height: $active-tool-stripe-height;
+      border-radius: 2px;
+    }
+
+    >.icon,
+    .label {
+      filter: $no-shadow;
+    }
+  }
+}
+
+.ListPickerWidget-title {
+  $horizontal-margin: 20px;
+
+  white-space: nowrap;
+  text-align: center;
+  color: $buic-text-color;
+  filter: drop-shadow(0 1px 0 $buic-text-color-reverse);
+  margin-bottom: 9px;
+  margin-left: $horizontal-margin;
+  margin-right: $horizontal-margin;
+
+  @include title;
+}

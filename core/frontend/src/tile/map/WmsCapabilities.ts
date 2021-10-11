@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapSubLayerProps } from "@itwin/core-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
+import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
-import WMS = require("wms-capabilities");
 
 /** @packageDocumentation
  * @module Views
@@ -17,7 +16,7 @@ import WMS = require("wms-capabilities");
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(requestContext: ClientRequestContext, url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "text",
@@ -25,7 +24,7 @@ async function getXml(requestContext: ClientRequestContext, url: string, credent
     retries: 2,
     auth: credentials,
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.text;
 }
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
@@ -187,7 +186,7 @@ export class WmsCapabilities {
         return cached;
     }
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
+    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;

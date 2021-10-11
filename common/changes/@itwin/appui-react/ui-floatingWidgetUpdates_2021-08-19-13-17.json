@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Allow widgets supplied by a UiItemsProvider to specify a default state of floating.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

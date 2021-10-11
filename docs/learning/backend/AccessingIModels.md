@@ -45,7 +45,7 @@ The second method creates an *empty* Snapshot iModel given a filename. This is u
 
 ## The `@bentley/imodeljs-native` module
 
-The `@bentley/imodeljs-native` module is written in C++, is delivered as a platform-specific binary, and is *not* open source. It contains the SQLite code that directly accesses iModel files and implements all the low-level APIs upon which `@bentley/imodeljs-backend` is based. It is always required for all backends.
+The `@bentley/imodeljs-native` module is written in C++, is delivered as a platform-specific binary, and is *not* open source. It contains the SQLite code that directly accesses iModel files and implements all the low-level APIs upon which `@itwin/core-backend` is based. It is always required for all backends.
 
 `@bentley/imodeljs-native` implements the authentication and access enforcement expressed by iModel owners for (non-Snapshot) iModels. User authentication and access rights are a service of Bentley Systems, as a part of if its iTwin Services offerings. Bentley may also license third parties to supply similar services. **This is Bentley Systems' commercial motivation for creating iTwin.js**. Any attempt to circumvent or disrupt this checking is a violation of the [license agreement](https://github.com/imodeljs/imodeljs/blob/master/core/backend/src/imodeljs-native-LICENSE.md).
 

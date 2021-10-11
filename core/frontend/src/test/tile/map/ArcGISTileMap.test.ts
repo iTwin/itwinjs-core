@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
 import { expect } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 
 import {
   ArcGISTileMap, QuadId,
 } from "../../../tile/internal";
-
-chai.use(chaiAsPromised);
 
 const fakeArcGisUrl = "https:localhost/test/rest";
 // This tilemap for parent tile (9,5,5),
@@ -186,7 +182,7 @@ describe.only("ArcGISTileMap", () => {
 
     const parentQuadId = QuadId.createFromContentId(dataset1.parentContentId);
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, undefined, 24);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, 24);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -208,7 +204,7 @@ describe.only("ArcGISTileMap", () => {
 
     const parentQuadId = QuadId.createFromContentId(dataset3.parentContentId);
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, undefined, 24);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, 24);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 

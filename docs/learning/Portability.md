@@ -50,7 +50,7 @@ A backend can use platform-specific globals and modules, but only in guarded cod
 For example, a backend can use node builtins in guarded code, like this:
 
 ```ts
-  import { Platform } from "@bentley/imodeljs-backend";
+  import { Platform } from "@itwin/core-backend";
 
   if (Platform.isNodeJs()) {
     // access nodejs-specific modules and/or globals

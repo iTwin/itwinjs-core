@@ -1,0 +1,27 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.inline-edit-input {
+  color: $buic-foreground-body;
+  background: inherit;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+
+  &.iui-input {
+    padding: 0px;
+  }
+
+  &:hover {
+    border: 1px solid $buic-background-5;
+  }
+
+  &:focus {
+    background: $buic-background-1;
+    border: 1px solid $buic-background-5;
+    outline: none;
+    color: $buic-foreground-activehover;
+  }
+}

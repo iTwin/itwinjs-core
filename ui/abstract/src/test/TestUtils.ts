@@ -2,28 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UiAbstract } from "../ui-abstract/UiAbstract";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { UiAbstract } from "../appui-abstract/UiAbstract";
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: I18N;
+  private static _i18n?: ITwinLocalization;
   private static _uiAbstractInitialized = false;
 
-  public static get i18n(): I18N {
+  public static get i18n(): ITwinLocalization {
     if (!TestUtils._i18n) {
       // const port = process.debugPort;
       // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new I18N();
+      TestUtils._i18n = new ITwinLocalization();
     }
     return TestUtils._i18n;
   }
 
   public static async initializeUiAbstract() {
     if (!TestUtils._uiAbstractInitialized) {
-      // This is required by our I18n module (specifically the i18next package).
-      (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
       await UiAbstract.initialize(TestUtils.i18n);
       TestUtils._uiAbstractInitialized = true;
     }

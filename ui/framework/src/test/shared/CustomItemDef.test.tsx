@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { CustomItemDef } from "../../ui-framework/shared/CustomItemDef";
+import { CustomItemDef } from "../../appui-react/shared/CustomItemDef";
 import TestUtils from "../TestUtils";
 
 describe("CustomItemDef", () => {

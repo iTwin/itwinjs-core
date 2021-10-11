@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "remove unused ClientRequestContext.useContextForRpc",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

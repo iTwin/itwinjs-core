@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Overflow } from "../../../ui-ninezone";
+import { Overflow } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<Overflow />", () => {

@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@itwin/presentation-common";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
+import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
-import { SpatialContainmentTree } from "../../../ui-framework";
+import { SpatialContainmentTree } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 describe("SpatialContainmentTree", () => {
@@ -45,7 +45,7 @@ describe("SpatialContainmentTree", () => {
     };
 
     beforeEach(() => {
-      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() =>imodelMock.object);
+      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() => imodelMock.object);
       sinon.stub(PresentationTreeDataProvider.prototype, "rulesetId").get(() => "");
       sinon.stub(PresentationTreeDataProvider.prototype, "dispose");
       sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves([]);

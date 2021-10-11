@@ -1,0 +1,56 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/base/base";
+@import "~@itwin/core-react/lib/cjs/core-react/text/mixins";
+
+.uifw-accudraw-input-label {
+  min-width: 16px;
+  margin-right: 4px;
+
+  display: flex;
+  align-items: center;
+
+  @include uicore-text(leading-2);
+
+  &.uifw-label-centered {
+    justify-content: center;
+  }
+
+  .icon {
+    width: 16px;
+    height: 16px;
+
+    margin-top: 2px;
+    @include uicore-centered;
+  }
+}
+
+.uifw-accudraw-input-field {
+  flex: 1;
+}
+
+.uifw-accudraw-lock {
+  width: 22px;
+  @include uicore-centered;
+}
+
+.uifw-accudraw-x-value {
+  background-color: $buic-accessory-alert;
+  color: $buic-accessory-hollow;
+}
+
+.uifw-accudraw-y-value {
+  background-color: $buic-accessory-success;
+  color: $buic-accessory-hollow;
+}
+
+.uifw-accudraw-z-value {
+  background-color: $buic-accessory-primary;
+  color: $buic-accessory-hollow;
+}
+
+.uifw-accudraw-angle-value {}
+
+.uifw-accudraw-distance-value {}

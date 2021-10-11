@@ -5,15 +5,15 @@
 import "./VisibilityWidget.scss";
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@bentley/ui-components";
-import { Icon, WebFontIcon } from "@bentley/ui-core";
+import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
+import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@itwin/components-react";
+import { Icon, WebFontIcon } from "@itwin/core-react";
 import {
   CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
   WidgetControl,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SampleAppIModelApp } from "../..";
 import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";
@@ -46,14 +46,14 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   const { imodel, activeView, enablePreloading } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
-  const selectLabel = IModelApp.i18n.translate("UiFramework:visibilityWidget.options");
+  const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
   const filteredElementIds = useElementIdsFiltering(props.activeView);
   return (
     <div className="ui-test-app-visibility-widget">
       <SelectableContent defaultSelectedContentId="models-tree" selectAriaLabel={selectLabel}>
         {[{
           id: "models-tree",
-          label: IModelApp.i18n.translate("UiFramework:visibilityWidget.modeltree"),
+          label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.modeltree"),
           render: React.useCallback(
             () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
             [imodel, activeView, enablePreloading, modelsTreeProps, filteredElementIds],
@@ -61,7 +61,7 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
         },
         {
           id: "categories-tree",
-          label: IModelApp.i18n.translate("UiFramework:visibilityWidget.categories"),
+          label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.categories"),
           render: React.useCallback(
             () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...categoriesTreeProps} />,
             [imodel, activeView, enablePreloading, categoriesTreeProps],
@@ -346,7 +346,7 @@ export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
       iconSpec: `svg:${cancelFilterIconSvg}`,
       commandId: "CancelFilterHierarchyByVisibleElementIds",
       label: "Cancel filter tree by visible elements",
-      execute: async () => {await IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
+      execute: async () => { await IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
     });
   }
 }

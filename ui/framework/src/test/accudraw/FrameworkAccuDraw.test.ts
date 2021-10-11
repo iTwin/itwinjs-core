@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@itwin/core-frontend";
 import TestUtils, { storageMock } from "../TestUtils";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
+import { UiFramework } from "../../appui-react/UiFramework";
 
 // cspell:ignore dont uiadmin
 
@@ -205,7 +205,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       expect(FrameworkAccuDraw.displayNotifications).to.be.false;
 
       const instance = new FrameworkAccuDraw();
-      await instance.loadUserSettings (UiFramework.getUiSettingsStorage());
+      await instance.loadUserSettings(UiFramework.getUiSettingsStorage());
       await TestUtils.flushAsyncOperations();
       expect(FrameworkAccuDraw.displayNotifications).to.be.false;
     });

@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
-import { using } from "@bentley/bentleyjs-core";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "typemoq";
+import { using } from "@itwin/core-bentley";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {

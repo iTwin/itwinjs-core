@@ -5,12 +5,16 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { DbResult, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
-  SqliteValue, SqliteValueType,
-} from "../../imodeljs-backend";
+  Code, ColorDef, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+} from "@itwin/core-common";
+import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
+import { DrawingCategory } from "../../Category";
+import {
+  BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+} from "../../core-backend";
+import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -31,8 +35,8 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 }
 
 describe("IModelWriteTest (#integration)", () => {
-  let managerUser: AuthorizedBackendRequestContext;
-  let superUser: AuthorizedBackendRequestContext;
+  let managerAccessToken: AccessToken;
+  let superAccessToken: AccessToken;
   let testITwinId: string;
   let readWriteTestIModelId: GuidString;
 
@@ -42,21 +46,20 @@ describe("IModelWriteTest (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("IModelWriteTest");
 
-    managerUser = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    superUser = await IModelTestUtils.getUserContext(TestUserType.Super);
-    (superUser as any).activityId = "IModelWriteTest (#integration)";
+    managerAccessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    superAccessToken = await IModelTestUtils.getAccessToken(TestUserType.Super);
 
-    testITwinId = await HubUtility.getTestITwinId(managerUser);
+    testITwinId = await HubUtility.getTestITwinId(managerAccessToken);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubUtility.recreateIModel({ user: managerUser, iTwinId: testITwinId, iModelName: readWriteTestIModelName });
+    readWriteTestIModelId = await HubUtility.recreateIModel({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelName: readWriteTestIModelName });
 
     // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcasesById(managerUser, readWriteTestIModelId);
+    await HubUtility.purgeAcquiredBriefcasesById(managerAccessToken, readWriteTestIModelId);
   });
 
   after(async () => {
     try {
-      await HubUtility.deleteIModel(managerUser, "iModelJsIntegrationTest", readWriteTestIModelName);
+      await HubUtility.deleteIModel(managerAccessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -65,22 +68,21 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should handle undo/redo (#integration)", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const adminAccessToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user: adminRequestContext, iTwinId: testITwinId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelName });
     if (iModelId)
-      await IModelHost.hubAccess.deleteIModel({ user: adminRequestContext, iTwinId: testITwinId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelId });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user: adminRequestContext, iTwinId: testITwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: adminRequestContext, iTwinId: testITwinId, iModelId: rwIModelId });
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelId: rwIModelId });
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code1, true);
-
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
     // create a local txn with that change
@@ -101,7 +103,6 @@ describe("IModelWriteTest (#integration)", () => {
     // Create and insert a model with code2
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code2, true);
-
     rwIModel.saveChanges("inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
@@ -109,7 +110,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Push the changes to the hub
     const prePushChangeset = rwIModel.changeset;
-    await rwIModel.pushChanges({ user: adminRequestContext, description: "test" });
+    await rwIModel.pushChanges({ accessToken: adminAccessToken, description: "test" });
     const postPushChangeset = rwIModel.changeset;
     assert(!!postPushChangeset);
     expect(prePushChangeset !== postPushChangeset);
@@ -124,7 +125,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against fixed version connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: managerUser, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -189,14 +190,14 @@ describe("IModelWriteTest (#integration)", () => {
       if (iModel.isOpen)
         briefcasePath = iModel.pathName;
 
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(managerUser, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(managerAccessToken, iModel);
       if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath))
         IModelJsFs.unlinkSync(briefcasePath);
     }
   });
 
   it("Run plain SQL against readonly connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user: managerUser, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount = 0;
@@ -234,7 +235,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should be able to upgrade a briefcase with an older schema", async () => {
-    const iTwinId = await HubUtility.getTestITwinId(managerUser);
+    const iTwinId = await HubUtility.getTestITwinId(managerAccessToken);
 
     /**
      * Test validates that -
@@ -245,17 +246,17 @@ describe("IModelWriteTest (#integration)", () => {
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const hubName = HubUtility.generateUniqueName("CompatibilityTest");
-    const iModelId = await HubUtility.pushIModel(managerUser, iTwinId, pathname, hubName, true);
+    const iModelId = await HubUtility.pushIModel(managerAccessToken, iTwinId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
     const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
-    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase({ user: managerUser, ...args });
-    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase({ user: superUser, ...args });
+    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: managerAccessToken, ...args });
+    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken: superAccessToken, ...args });
 
     /* User "manager" upgrades the briefcase */
 
     // Validate the original state of the BisCore schema in the briefcase
-    let iModel = await BriefcaseDb.open({ user: managerUser, fileName: managerBriefcaseProps.fileName });
+    let iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -266,10 +267,10 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas
-    await BriefcaseDb.upgradeSchemas({ user: managerUser, ...managerBriefcaseProps });
+    await BriefcaseDb.upgradeSchemas(managerBriefcaseProps);
 
     // Validate state after upgrade
-    iModel = await BriefcaseDb.open({ user: managerUser, fileName: managerBriefcaseProps.fileName });
+    iModel = await BriefcaseDb.open({ fileName: managerBriefcaseProps.fileName });
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -294,8 +295,8 @@ describe("IModelWriteTest (#integration)", () => {
     // assert.strictEqual(result, IModelHubStatus.PullIsRequired);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.open({ user: superUser, fileName: superBriefcaseProps.fileName });
-    (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ user: superUser });
+    const superIModel = await BriefcaseDb.open({ fileName: superBriefcaseProps.fileName });
+    (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ accessToken: superAccessToken });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
@@ -307,7 +308,394 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpToDate);
 
     // Upgrade the schemas - ensure this is a no-op
-    await BriefcaseDb.upgradeSchemas({ user: superUser, ...superBriefcaseProps });
-    await IModelHost.hubAccess.deleteIModel({ user: managerUser, iTwinId, iModelId });
+    await BriefcaseDb.upgradeSchemas(superBriefcaseProps);
+    await IModelHost.hubAccess.deleteIModel({ accessToken: managerAccessToken, iTwinId, iModelId });
+  });
+  it("changeset size and ec schema version change", async () => {
+    const adminToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
+    const iTwinId = await HubUtility.getTestITwinId(adminToken);
+    const iModelName = HubUtility.generateUniqueName("changeset_size");
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "schema changeset" }));
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeset.id;
+      await rwIModel.pushChanges({ description: "push schema changeset", accessToken: adminToken });
+      const postPushChangeSetId = rwIModel.changeset.id;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      assert.equal(changesets.length, 1);
+    }
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    let totalEl = 0;
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+      for (let m = 0; m < noOfElements; ++m) {
+        const geomArray: Arc3d[] = [
+          Arc3d.createXY(Point3d.create(0, 0), 5),
+          Arc3d.createXY(Point3d.create(5, 5), 2),
+          Arc3d.createXY(Point3d.create(-5, -5), 20),
+        ];
+        const geometryStream: GeometryStreamProps = [];
+        for (const geom of geomArray) {
+          const arcData = IModelJson.Writer.toIModelJson(geom);
+          geometryStream.push(arcData);
+        }
+        const prop = userProp(++totalEl);
+        // Create props
+        const geomElement = {
+          classFullName: `TestDomain:${className}`,
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          geom: geometryStream,
+          ...prop,
+        };
+        const id = imodel.elements.insertElement(geomElement);
+        assert.isTrue(Id64.isValidId64(id), "insert worked");
+      }
+    };
+    const str = new Array(1024).join("x");
+    insertElements(rwIModel, "Test2dElement", 1024, () => {
+      return { s: str };
+    });
+    assert.equal(1357661, rwIModel.nativeDb.getChangesetSize());
+
+    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data" }));
+    assert.equal(0, rwIModel.nativeDb.getChangesetSize());
+    await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
+    rwIModel.close();
+  });
+  it("clear cache on schema changes", async () => {
+    const adminToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
+    const userToken = await IModelTestUtils.getAccessToken(TestUserType.Super);
+    const iTwinId = await HubUtility.getTestITwinId(adminToken);
+    // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
+    const iModelName = HubUtility.generateUniqueName("SchemaChanges");
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ noLocks: true, iTwinId, iModelName, description: "TestSubject" });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    const rwIModel2 = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
+
+    // enable change tracking
+    assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+    assert.equal(rwIModel2.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
+
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+
+    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "schema changeset" }));
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeset.id;
+      await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
+      const postPushChangeSetId = rwIModel.changeset.id;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      assert.equal(changesets.length, 1);
+    }
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    let totalEl = 0;
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
+      for (let m = 0; m < noOfElements; ++m) {
+        const geomArray: Arc3d[] = [
+          Arc3d.createXY(Point3d.create(0, 0), 5),
+          Arc3d.createXY(Point3d.create(5, 5), 2),
+          Arc3d.createXY(Point3d.create(-5, -5), 20),
+        ];
+        const geometryStream: GeometryStreamProps = [];
+        for (const geom of geomArray) {
+          const arcData = IModelJson.Writer.toIModelJson(geom);
+          geometryStream.push(arcData);
+        }
+        const prop = userProp(++totalEl);
+        // Create props
+        const geomElement = {
+          classFullName: `TestDomain:${className}`,
+          model: drawingModelId,
+          category: drawingCategoryId,
+          code: Code.createEmpty(),
+          geom: geometryStream,
+          ...prop,
+        };
+        const id = imodel.elements.insertElement(geomElement);
+        assert.isTrue(Id64.isValidId64(id), "insert worked");
+      }
+    };
+
+    insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
+      return { s: `s-${n}` };
+    });
+
+    assert.equal(3902, rwIModel.nativeDb.getChangesetSize());
+    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data changeset" }));
+
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeset.id;
+      await rwIModel.pushChanges({ description: "10 instances of test2dElement", accessToken: adminToken });
+      const postPushChangeSetId = rwIModel.changeset.id;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      assert.equal(changesets.length, 2);
+    }
+    let rows: any[] = [];
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+      }
+    });
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+    rows = [];
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      rows.push(row);
+    }
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+    // ====================================================================================================
+    if ("user pull/merge") {
+      // pull and merge changes
+      await rwIModel2.pullChanges({ accessToken: userToken });
+      rows = [];
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
+      });
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+      rows = [];
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+        rows.push(row);
+      }
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
+      // create some element and push those changes
+      insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
+        return { s: `s-${n}` };
+      });
+      assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+      rwIModel2.saveChanges(JSON.stringify({ userId: "user2", description: "data changeset" }));
+
+      if ("push changes") {
+        // Push the changes to the hub
+        const prePushChangeSetId = rwIModel2.changeset.id;
+        await rwIModel2.pushChanges({ accessToken: userToken, description: "10 instances of test2dElement" });
+        const postPushChangeSetId = rwIModel2.changeset.id;
+        assert(!!postPushChangeSetId);
+        expect(prePushChangeSetId !== postPushChangeSetId);
+        const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: userToken });
+        assert.equal(changesets.length, 3);
+      }
+    }
+    await rwIModel.pullChanges({ accessToken: adminToken });
+    // second schema import ==============================================================
+    const schemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="s" typeName="string"/>
+            <ECProperty propertyName="v" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Test2dElement2nd">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="t" typeName="string"/>
+            <ECProperty propertyName="r" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schemaV2]);
+    assert.equal(0, rwIModel.nativeDb.getChangesetSize());
+    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "schema changeset2" }));
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeset.id;
+      await rwIModel.pushChanges({ accessToken: adminToken, description: "schema changeset" });
+      const postPushChangeSetId = rwIModel.changeset.id;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      assert.equal(changesets.length, 4);
+    }
+    // create some element and push those changes
+    insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
+      return {
+        s: `s-${n}`, v: `v-${n}`,
+      };
+    });
+
+    // create some element and push those changes
+    insertElements(rwIModel, "Test2dElement2nd", 10, (n: number) => {
+      return {
+        t: `t-${n}`, r: `r-${n}`,
+      };
+    });
+    assert.equal(6279, rwIModel.nativeDb.getChangesetSize());
+    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data changeset" }));
+
+    if ("push changes") {
+      // Push the changes to the hub
+      const prePushChangeSetId = rwIModel.changeset.id;
+      await rwIModel.pushChanges({ accessToken: adminToken, description: "10 instances of test2dElement" });
+      const postPushChangeSetId = rwIModel.changeset.id;
+      assert(!!postPushChangeSetId);
+      expect(prePushChangeSetId !== postPushChangeSetId);
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
+      assert.equal(changesets.length, 5);
+    }
+    rows = [];
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+      }
+    });
+    assert.equal(rows.length, 30);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+    assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+    rows = [];
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      rows.push(row);
+    }
+    assert.equal(rows.length, 30);
+    assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+    assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+
+    rows = [];
+    rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        rows.push(stmt.getRow());
+      }
+    });
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+    assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+    rows = [];
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      rows.push(row);
+    }
+    assert.equal(rows.length, 10);
+    assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+    assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+
+    // ====================================================================================================
+    if ("user pull/merge") {
+      // pull and merge changes
+      await rwIModel2.pullChanges({ accessToken: userToken });
+      rows = [];
+      // Following fail without the fix in briefcase manager where we clear statement cache on schema changeset apply
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
+      });
+      assert.equal(rows.length, 30);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+      assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+      rows = [];
+      // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+        rows.push(row);
+      }
+      assert.equal(rows.length, 30);
+      assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
+      assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
+      for (const row of rows) {
+        const el: any = rwIModel2.elements.getElementProps(row.id);
+        assert.isDefined(el);
+        if (row.s) {
+          assert.equal(row.s, el.s);
+        } else {
+          assert.isUndefined(el.s);
+        }
+        if (row.v) {
+          assert.equal(row.v, el.v);
+        } else {
+          assert.isUndefined(el.v);
+        }
+      }
+      rows = [];
+      rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          rows.push(stmt.getRow());
+        }
+      });
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+      assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+      for (const row of rows) {
+        const el: any = rwIModel2.elements.getElementProps(row.id);
+        assert.isDefined(el);
+        if (row.s) {
+          assert.equal(row.s, el.s);
+        } else {
+          assert.isUndefined(el.s);
+        }
+        if (row.v) {
+          assert.equal(row.v, el.v);
+        } else {
+          assert.isUndefined(el.v);
+        }
+      }
+      rows = [];
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+        rows.push(row);
+      }
+      assert.equal(rows.length, 10);
+      assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
+      assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
+      for (const row of rows) {
+        const el: any = rwIModel2.elements.getElementProps(row.id);
+        assert.isDefined(el);
+        if (row.t) {
+          assert.equal(row.t, el.t);
+        } else {
+          assert.isUndefined(el.t);
+        }
+        if (row.r) {
+          assert.equal(row.r, el.r);
+        } else {
+          assert.isUndefined(el.r);
+        }
+      }
+    }
+    rwIModel.close();
+    rwIModel2.close();
   });
 });

@@ -5,15 +5,15 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DraggedWidgetIdContext, DragManager, WidgetIdContext, WidgetTabTarget } from "../../ui-ninezone";
-import { createDragStartArgs, NineZoneProvider } from "../Providers";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, DraggedWidgetIdContext, DragManager, WidgetIdContext, WidgetTabTarget } from "../../appui-layout-react";
+import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTabTarget ", () => {
   it("should render with cursor type", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetIdContext.Provider value="w1">
@@ -21,7 +21,7 @@ describe("WidgetTabTarget ", () => {
             <WidgetTabTarget tabIndex={0} />
           </CursorTypeContext.Provider>
         </WidgetIdContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -30,7 +30,7 @@ describe("WidgetTabTarget ", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <DraggedWidgetIdContext.Provider value="w1">
@@ -38,7 +38,7 @@ describe("WidgetTabTarget ", () => {
             <WidgetTabTarget tabIndex={0} />
           </WidgetIdContext.Provider>
         </DraggedWidgetIdContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -48,14 +48,14 @@ describe("WidgetTabTarget ", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dragManagerRef={dragManager}
       >
         <WidgetIdContext.Provider value="w1">
           <WidgetTabTarget tabIndex={0} />
         </WidgetIdContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
 
     const target = container.getElementsByClassName("nz-widget-tabTarget")[0];

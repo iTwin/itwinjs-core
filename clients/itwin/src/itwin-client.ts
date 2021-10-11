@@ -2,14 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./AuthorizationClient";
-export * from "./AuthorizedClientRequestContext";
 export * from "./Client";
 export * from "./ITwinClientLoggerCategory";
 export * from "./FileHandler";
 export * from "./Request";
 export * from "./Token";
-export * from "./UserInfo";
 export * from "./ImsAuthorizationClient";
 
 /** @docs-package-description

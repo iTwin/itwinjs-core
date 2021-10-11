@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
@@ -16,19 +16,20 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 
 enum AppMode {
   MilestoneReview = "1",
 }
 
 /** An http protocol for Bentley cloud RPC interface deployments.
- * @public
+ * @internal
  */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override checkToken = true;
 
   /** The name of various HTTP request headers based on client's request context */
-  public override serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+  public override serializedClientRequestContextHeaderNames: SerializedRpcActivity = {
     /** The name of the HTTP request id header. */
     id: "X-Correlation-Id",
 
@@ -43,9 +44,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     /** The name of the HTTP authorization header. */
     authorization: "Authorization",
-
-    /** The id of the authorized user */
-    userId: "X-User-Id",
   };
 
   /** The name of the RPC protocol version header. */

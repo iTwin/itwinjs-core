@@ -6,7 +6,7 @@ import { expect } from "chai";
 import {
   isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw, ITreeDataProvider, TreeDataProviderMethod,
   TreeDataProviderPromise, TreeDataProviderRaw,
-} from "../../ui-components/tree/TreeDataProvider";
+} from "../../components-react/tree/TreeDataProvider";
 
 describe("TreeDataProvider", () => {
 

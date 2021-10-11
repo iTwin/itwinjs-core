@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { ByteStream, IDisposable } from "@itwin/core-bentley";
+import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
-} from "@bentley/imodeljs-frontend";
-import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend";
+import { MeshArgs } from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -146,12 +146,16 @@ describe("Disposal of System", () => {
     assert.isDefined(imageBuff);
 
     // Texture from image buffer
+    // eslint-disable-next-line deprecation/deprecation
     const textureParams0 = new RenderTexture.Params("-192837465");
+    // eslint-disable-next-line deprecation/deprecation
     const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
     assert.isDefined(texture0);
 
     // Texture from image source
+    // eslint-disable-next-line deprecation/deprecation
     const textureParams1 = new RenderTexture.Params("-918273645");
+    // eslint-disable-next-line deprecation/deprecation
     const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
     assert.isDefined(texture1);
 
@@ -417,7 +421,9 @@ describe("Disposal of WebGL Resources", () => {
     const exposedTarget = new ExposedTarget(target);
 
     // Create a graphic and a texture
+    // eslint-disable-next-line deprecation/deprecation
     const textureParams = new RenderTexture.Params("-192837465");
+    // eslint-disable-next-line deprecation/deprecation
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
@@ -436,6 +442,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(texture));
     assert.isTrue(isDisposed(graphic));
 
+    // eslint-disable-next-line deprecation/deprecation
     texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
     assert.isFalse(isDisposed(texture));
 

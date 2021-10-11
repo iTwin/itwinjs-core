@@ -7,7 +7,7 @@
  */
 
 import * as deepAssign from "deep-assign";
-import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger } from "@bentley/bentleyjs-core";
+import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger } from "@itwin/core-bentley";
 import { ResponseError } from "@bentley/itwin-client";
 import { WsgError, WSStatus } from "../wsg/WsgClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";

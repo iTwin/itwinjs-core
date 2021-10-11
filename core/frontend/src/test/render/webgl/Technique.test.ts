@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";

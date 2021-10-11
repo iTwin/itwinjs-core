@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
+import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
 import { openIModel } from "./openIModel";
@@ -94,6 +94,9 @@ const dtaFrontendMain = async () => {
 
   if (false === configuration.useProjectExtents)
     tileAdminProps.useProjectExtents = false;
+
+  if (configuration.cacheTileMetadata)
+    tileAdminProps.cacheTileMetadata = true;
 
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;

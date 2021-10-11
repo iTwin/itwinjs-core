@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { DisplayValuePropertyDataFilterer } from "../../../../ui-components/propertygrid/dataproviders/filterers/DisplayValuePropertyDataFilterer";
-import { FilteredType } from "../../../../ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { DisplayValuePropertyDataFilterer } from "../../../../components-react/propertygrid/dataproviders/filterers/DisplayValuePropertyDataFilterer";
+import { FilteredType } from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import { TestUtils } from "../../../TestUtils";
 
 describe("DisplayValuePropertyDataFilterer", () => {

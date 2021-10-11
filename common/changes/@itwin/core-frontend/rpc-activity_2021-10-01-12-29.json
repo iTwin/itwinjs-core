@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "rename IModelReadRpcInterface.openForRead to getConnectionProps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

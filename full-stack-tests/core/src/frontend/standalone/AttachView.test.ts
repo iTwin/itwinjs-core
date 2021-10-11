@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 describe("ViewState attached to Viewport", async () => {
   let imodel: SnapshotConnection;
