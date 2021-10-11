@@ -19,7 +19,6 @@ import { DisplayLabelsRequestOptions } from '@itwin/presentation-common';
 import { DisplayValueGroup } from '@itwin/presentation-common';
 import { DistinctValuesRequestOptions } from '@itwin/presentation-common';
 import { ElementProperties } from '@itwin/presentation-common';
-import { ElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Field } from '@itwin/presentation-common';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
@@ -36,6 +35,7 @@ import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Localization } from '@itwin/core-common';
+import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
@@ -49,6 +49,7 @@ import { RulesetVariable } from '@itwin/presentation-common';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SetRulesetVariableParams } from '@itwin/presentation-common';
+import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
 import { UnsetRulesetVariableParams } from '@itwin/presentation-common';
 import { UpdateHierarchyStateParams } from '@itwin/presentation-common';
@@ -300,7 +301,9 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     // @beta
-    getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
+    getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
+    // @alpha
+    getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]>;
