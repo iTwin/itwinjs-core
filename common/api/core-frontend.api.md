@@ -10687,12 +10687,11 @@ export class Tool {
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
-    static localization: Localization;
     static get maxArgs(): number | undefined;
     static get minArgs(): number;
     static namespace: string;
     parseAndRun(..._args: string[]): Promise<boolean>;
-    static register(namespace?: string, localization?: Localization): void;
+    static register(namespace?: string): void;
     run(..._args: any[]): Promise<boolean>;
     static toolId: string;
     get toolId(): string;
@@ -10955,9 +10954,11 @@ export class ToolRegistry {
     getToolList(): ToolList;
     parseAndRun(keyin: string): Promise<ParseAndRunResult>;
     parseKeyin(keyin: string): ParseKeyinResult;
-    register(toolClass: ToolType, namespace?: string, localization?: Localization): void;
-    registerModule(moduleObj: any, namespace?: string, localization?: Localization): void;
+    register(toolClass: ToolType, namespace?: string): void;
+    registerModule(moduleObj: any, namespace?: string): void;
     run(toolId: string, ...args: any[]): Promise<boolean>;
+    // (undocumented)
+    shutdown(): void;
     // (undocumented)
     readonly tools: Map<string, typeof Tool>;
     unRegister(toolId: string): void;

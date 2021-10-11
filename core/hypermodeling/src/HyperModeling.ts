@@ -56,6 +56,10 @@ export class HyperModeling {
   private static _markerConfig: SectionMarkerConfig = {};
   private static _graphicsConfig: SectionGraphicsConfig = {};
 
+  public static shutdown() {
+    this.resources = undefined;
+  }
+
   /** Invoke this method to initialize the hypermodeling package for use. You *must* await the result before using any of this package's APIs.
    * Typically an application would invoke this after [IModelApp.startup]($frontend), e.g.,
    * ```ts
@@ -92,7 +96,7 @@ export class HyperModeling {
       },
     };
 
-    registerTools(namespace, IModelApp.localization);
+    registerTools(namespace);
     this.replaceConfiguration(config);
   }
 

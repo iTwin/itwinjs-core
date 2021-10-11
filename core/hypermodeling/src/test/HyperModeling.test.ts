@@ -17,6 +17,7 @@ describe("Package initialization", () => {
   });
 
   after(async () => {
+    HyperModeling.shutdown();
     await IModelApp.shutdown();
   });
 
@@ -40,11 +41,12 @@ describe("Package initialization", () => {
 
 describe("Package configuration", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ localization: new ITwinLocalization() });
     await HyperModeling.initialize();
   });
 
   after(async () => {
+    HyperModeling.shutdown();
     await IModelApp.shutdown();
   });
 

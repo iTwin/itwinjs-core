@@ -1366,7 +1366,7 @@ The `ninezone-test-app` was used to test and demonstrate the now deprecated "nin
 
 ## Localization Changes
 
-In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an object that implements [Localization]($common) via [IModelAppOptions.localization]($frontend). If none is supplied, an [EmptyLocalization]($common) will be used and strings will not be localized.
+In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an object that implements [Localization]($common) via [IModelAppOptions.localization]($frontend). If none is supplied, strings will not be localized.
 
 The [ITwinLocalization]($i18n) class supplies the default implementation of [Localization]($common), and may be customized via [LocalizationOptions]($i18n) in the constructor.
 

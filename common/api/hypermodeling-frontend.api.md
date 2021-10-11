@@ -46,6 +46,8 @@ export class HyperModeling {
     static replaceConfiguration(config?: HyperModelingConfig): void;
     // @internal (undocumented)
     static resources?: Resources;
+    // (undocumented)
+    static shutdown(): void;
     static start(viewport: ScreenViewport): Promise<HyperModelingDecorator | undefined>;
     static startOrStop(viewport: ScreenViewport, start?: boolean): Promise<HyperModelingDecorator | undefined>;
     static stop(viewport: ScreenViewport): void;
