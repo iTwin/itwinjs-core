@@ -1,13 +1,13 @@
 # SearchBox
 
-The [SearchBox]($ui-core) React component displays an
+The [SearchBox]($core-react) React component displays an
 input box with an icon right justified bounded by the SearchBox.
 When the input box is empty, a magnifying glass icon is displayed.
 When text has been entered, a 'X' close, or clear, icon is displayed.
 
 ## Properties
 
-The SearchBox component has numerous properties, as defined in the [SearchBoxProps]($ui-core) interface.
+The SearchBox component has numerous properties, as defined in the [SearchBoxProps]($core-react) interface.
 
 There is one required prop: `onValueChanged`, which is triggered when the content of SearchBox is changed. Use this function to react to the text entered in the SearchBox. The frequency of polling for changes can be controlled by the `valueChangedDelay` prop.
 
@@ -39,4 +39,4 @@ After some text has been entered, the icon switches to the X/Clear icon.
 
 ## API Reference
 
-- [SearchBox]($ui-core:SearchBox)
+- [SearchBox]($core-react:SearchBox)

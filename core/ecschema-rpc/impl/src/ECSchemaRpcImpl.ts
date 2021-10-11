@@ -1,11 +1,11 @@
+import * as backend from "@itwin/core-backend";
+import { IModelRpcProps, QueryRowFormat, RpcManager } from "@itwin/core-common";
+import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
-import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import * as backend from "@bentley/imodeljs-backend";
-import { SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**
  * Defines the interface how the rows of the iModel query look like.
@@ -55,7 +55,8 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
     // a typed row instance instead of any.
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
-    for await (const schemaDefinitionRow of iModelDb.query(schemaNameQuery) as AsyncIterableIterator<SchemaNameRow>) {
+    for await (const row of iModelDb.query(schemaNameQuery, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      const schemaDefinitionRow = row as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
       const read = Number(schemaDefinitionRow.read);
       const write = Number(schemaDefinitionRow.write);

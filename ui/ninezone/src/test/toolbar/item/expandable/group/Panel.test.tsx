@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Panel } from "../../../../../ui-ninezone";
+import { Panel } from "../../../../../appui-layout-react";
 import { mount } from "../../../../Utils";
 
 describe("<Panel />", () => {

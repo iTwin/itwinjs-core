@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { WidgetPanelsContent } from "../../ui-ninezone";
+import { WidgetPanelsContent } from "../../appui-layout-react";
 
 describe("WidgetPanelsContent", () => {
   it("should render", () => {

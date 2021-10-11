@@ -9,10 +9,10 @@
 import "./DisplayStyleField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+import { Id64String } from "@itwin/core-bentley";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 interface DisplayStyleFieldState {
@@ -26,8 +26,8 @@ interface DisplayStyleFieldState {
  * It is used to enable/disable display of shadows.
  */
 export class DisplayStyleField extends React.Component<StatusFieldProps, DisplayStyleFieldState> {
-  private _label = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.label");
-  private _tooltip = IModelApp.i18n.translate("SampleApp:statusFields.displayStyle.tooltip");
+  private _label = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.label");
+  private _tooltip = IModelApp.localization.getLocalizedString("SampleApp:statusFields.displayStyle.tooltip");
 
   constructor(props: StatusFieldProps) {
     super(props);
@@ -37,7 +37,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
 
   private async setStateFromActiveContent(contentControl?: ContentControl): Promise<void> {
     if (contentControl && contentControl.viewport) {
-      const unnamedPrefix = IModelApp.i18n.translate("SampleApp:statusFields.unnamedDisplayStyle");
+      const unnamedPrefix = IModelApp.localization.getLocalizedString("SampleApp:statusFields.unnamedDisplayStyle");
       const displayStyles = new Map<Id64String, DisplayStyleState>();
       const view = contentControl.viewport.view;
       const is3d = view.is3d();

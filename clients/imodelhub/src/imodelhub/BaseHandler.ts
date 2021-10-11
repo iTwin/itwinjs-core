@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { AuthorizedClientRequestContext, FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { AccessToken } from "@itwin/core-bentley";
+import { FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
 import { DefaultWsgRequestOptionsProvider, HttpRequestOptions, WsgClient, WsgRequestOptions } from "../wsg/WsgClient";
@@ -94,7 +95,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * @internal
    */
-  public formatContextIdForUrl(contextId: string) { return contextId; }
+  public formatITwinIdForUrl(iTwinId: string) { return iTwinId; }
 
   /**
    * @internal
@@ -164,8 +165,8 @@ export class IModelBaseHandler extends WsgClient {
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
-  public override async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    return super.delete(requestContext, relativeUrlPath, httpRequestOptions);
+  public override async delete(accessToken: AccessToken, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
+    return super.delete(accessToken, relativeUrlPath, httpRequestOptions);
   }
 
   /**
@@ -176,14 +177,14 @@ export class IModelBaseHandler extends WsgClient {
    * @param requestOptions WSG options for the request.
    * @returns Promise resolves after successfully deleting instance.
    */
-  public override async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+  public override async deleteInstance<T extends WsgInstance>(accessToken: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
       requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
     }
-    return super.deleteInstance<T>(requestContext, relativeUrlPath, instance, requestOptions);
+    return super.deleteInstance<T>(accessToken, relativeUrlPath, instance, requestOptions);
   }
 
   /**
@@ -196,14 +197,14 @@ export class IModelBaseHandler extends WsgClient {
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns The posted instance that's returned back from the server.
    */
-  public override async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
+  public override async postInstance<T extends WsgInstance>(accessToken: AccessToken, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
       }
       requestOptions.CustomOptions = this._customRequestOptions.insertCustomOptions(requestOptions.CustomOptions);
     }
-    return super.postInstance<T>(requestContext, typedConstructor, relativeUrlPath, instance, requestOptions, this.setupHttpOptions(httpRequestOptions));
+    return super.postInstance<T>(accessToken, typedConstructor, relativeUrlPath, instance, requestOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -216,8 +217,8 @@ export class IModelBaseHandler extends WsgClient {
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns The posted instances that's returned back from the server.
    */
-  public override async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    return super.postInstances(requestContext, typedConstructor, relativeUrlPath, instances, requestOptions, this.setupHttpOptions(httpRequestOptions));
+  public override async postInstances<T extends WsgInstance>(accessToken: AccessToken, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.postInstances(accessToken, typedConstructor, relativeUrlPath, instances, requestOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -229,8 +230,8 @@ export class IModelBaseHandler extends WsgClient {
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  public override async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    return super.getInstances(requestContext, typedConstructor, relativeUrlPath, queryOptions, this.setupHttpOptions(httpRequestOptions));
+  public override async getInstances<T extends WsgInstance>(accessToken: AccessToken, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.getInstances(accessToken, typedConstructor, relativeUrlPath, queryOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -243,8 +244,8 @@ export class IModelBaseHandler extends WsgClient {
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  public override async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    return super.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions, this.setupHttpOptions(httpRequestOptions));
+  public override async getInstancesChunk<T extends WsgInstance>(accessToken: AccessToken, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.getInstancesChunk(accessToken, url, chunkedQueryContext, typedConstructor, queryOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**
@@ -256,8 +257,8 @@ export class IModelBaseHandler extends WsgClient {
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Array of strongly typed instances.
    */
-  public override async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    return super.postQuery(requestContext, typedConstructor, relativeUrlPath, queryOptions, this.setupHttpOptions(httpRequestOptions));
+  public override async postQuery<T extends WsgInstance>(accessToken: AccessToken, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+    return super.postQuery(accessToken, typedConstructor, relativeUrlPath, queryOptions, this.setupHttpOptions(httpRequestOptions));
   }
 
   /**

@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Rectangle } from "@itwin/core-react";
+import { createNineZoneState, DragManager, DragManagerContext, NineZoneProvider, ToolSettingsStateContext } from "@itwin/appui-layout-react";
+import { render } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createNineZoneState, DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
-import { NineZoneProvider } from "@bentley/ui-ninezone/lib/test/Providers";
-import { render } from "@testing-library/react";
-import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
   ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 
 describe("WidgetPanelsToolSettings", () => {
   it("should not render w/o tool settings top center zone", () => {
@@ -96,7 +96,11 @@ describe("ToolSettingsContent", () => {
     });
     const { container } = render(
       <ToolSettingsStateContext.Provider value={{ type: "widget" }}>
-        <NineZoneProvider state={state}>
+        <NineZoneProvider
+          state={state}
+          dispatch={sinon.stub()}
+          measure={() => new Rectangle()}
+        >
           <div className="nz-floating-toolsettings">
             <ToolSettingsContent />
           </div>

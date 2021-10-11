@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Icon } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { Icon } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@itwin/appui-react";
 import { Input, Slider } from "@itwin/itwinui-react";
 
 function showSliderValues(values: ReadonlyArray<number>) {
@@ -55,8 +55,8 @@ class Tool2UiProvider extends ToolUiProvider {
 
   private getHorizontalToolSettings(): ToolSettingsEntry[] | undefined {
     return [
-      { labelNode: <label htmlFor="month">{IModelApp.i18n.translate("SampleApp:tool2.month")}</label>, editorNode: <input name="month" type="month" /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool2.number"), editorNode: <input type="number" min="10" max="20" /> },
+      { labelNode: <label htmlFor="month">{IModelApp.localization.getLocalizedString("SampleApp:tool2.month")}</label>, editorNode: <input name="month" type="month" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool2.number"), editorNode: <input type="number" min="10" max="20" /> },
       { labelNode: "Slider", editorNode: <BasicSlider /> },
       { labelNode: "Slider w/ Ticks", editorNode: <FancySlider /> },
       { labelNode: "Input", editorNode: <Input /> },

@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ModelsTab.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { RegisteredRuleset } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components";
-import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
+import { Id64String } from "@itwin/core-bentley";
+import { ModelProps, ModelQueryParams, QueryRowFormat } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
 import { Button, Checkbox } from "@itwin/itwinui-react";
+import { RegisteredRuleset } from "@itwin/presentation-common";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 
 interface ModelInfo {
   name: string;
@@ -245,7 +244,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
     const rows = [];
-    for await (const row of this.props.iModelConnection.query(ecsql)) {
+    for await (const row of this.props.iModelConnection.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     if (rows.length !== 1)
@@ -254,7 +253,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    for await (const model of this.props.iModelConnection.query(ecsql2)) {
+    for await (const model of this.props.iModelConnection.query(ecsql2, undefined, QueryRowFormat.UseJsPropertyNames)) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;
@@ -359,8 +358,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
       viewedModels = this._getModelsFromDocCodes();
     } else {
       this.state.models.forEach((model: ModelInfo) => {
-        if (model.checked) {
-          viewedModels.push(model.modelProps!.id!);
+        if (model.checked && model.modelProps) {
+          viewedModels.push(model.modelProps.id!);
         }
       });
     }
@@ -458,8 +457,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   private renderToastMessage() {
-    const toastTitle = UiFramework.translate("iModelIndex.toastTitle");
-    const toastMessage = UiFramework.translate("iModelIndex.toastMessage");
+    const toastTitle = IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.toastTitle");
+    const toastMessage = IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.toastMessage");
     return (
       <div className="toast slide">
         <div className="toast-image"><span className="icon icon-info-hollow"></span></div>
@@ -467,7 +466,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastTitle}</span>
           <span>{toastMessage}</span>
         </div>
-        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.translate("iModelIndex.learnMore")}</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.learnMore")}</a>
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );
@@ -477,7 +476,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     return (
       <div className="modelstab-container">
         {this.renderContent()}
-        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{UiFramework.translate("iModelIndex.enteriModel")}</Button>}
+        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.enteriModel")}</Button>}
         {this.state.showToast && this.renderToastMessage()}
       </div>
     );

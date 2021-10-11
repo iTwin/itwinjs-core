@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-footer-message-toast {
+  &.nz-stage-animating {
+    >.nz-toast {
+      opacity: 0;
+      overflow: hidden;
+      transition: 1s ease-in-out;
+    }
+  }
+
+  &.nz-stage-animated {
+    >.nz-toast {
+      display: none;
+    }
+  }
+}

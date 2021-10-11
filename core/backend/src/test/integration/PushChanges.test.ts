@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometryParams, GeometryPartProps,
   GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
-import { assert } from "chai";
+} from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
-import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -78,18 +76,17 @@ class TestIModelWriter {
 
 describe("PushChangesTest (#integration)", () => {
   let iTwinId: GuidString;
-  let user: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("PushChangesTest");
 
-    user = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    iTwinId = await HubUtility.getTestITwinId(user);
+    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    iTwinId = await HubUtility.getTestITwinId(accessToken);
 
     IModelHost.authorizationClient = {
-      isAuthorized: true,
-      getAccessToken: async (_requestContext?: ClientRequestContext) => user.accessToken,
+      getAccessToken: async () => accessToken,
     };
   });
 
@@ -97,14 +94,14 @@ describe("PushChangesTest (#integration)", () => {
     HubMock.shutdown();
   });
 
-  it("Push changes while refreshing token", async () => {
+  it.skip("Push changes while refreshing token", async () => {
     const iModelName = HubUtility.generateUniqueName("PushChangesTest");
-    const iModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName, noLocks: true });
+    const iModelId = await HubUtility.recreateIModel({ accessToken, iTwinId, iModelName, noLocks: true });
 
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;
     try {
-      iModel = await BriefcaseDb.open({ user, fileName: briefcaseProps.fileName });
+      iModel = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
 
       // Initialize project extents
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
@@ -126,22 +123,14 @@ describe("PushChangesTest (#integration)", () => {
 
       iModel.saveChanges();
 
-      // Set the token to expire four minutes from now
-      const jwt = user.accessToken;
-      const fourMinFromNow = new Date(Date.now() + 2 * 60 * 1000);
-      const expiringToken = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), fourMinFromNow, jwt.getUserInfo());
-      const expiringContext = new AuthorizedClientRequestContext(expiringToken);
-
       // Push changes
-      await iModel.pushChanges({ user: expiringContext, description: "Some changes" });
+      await iModel.pushChanges({ description: "Some changes" });
 
       // Validate that the token did refresh before the push
-      assert.notStrictEqual(expiringContext.accessToken.getExpiresAt(), expiringToken.getExpiresAt());
-      assert.strictEqual(expiringContext.accessToken.getExpiresAt(), user.accessToken.getExpiresAt());
     } finally {
       if (iModel !== undefined)
         iModel.close();
-      await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, user);
+      await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, accessToken);
     }
   });
 

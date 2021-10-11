@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -33,11 +33,12 @@ class TestImmediate extends Tool {
 
 // spell-checker: disable
 class TestCommandApp extends MockRender.App {
-  public static testNamespace?: I18NNamespace;
+  public static testNamespace?: string;
 
   public static override async startup(): Promise<void> {
-    await IModelApp.startup({ i18n: this.supplyI18NOptions() });
-    this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
+    await IModelApp.startup({ localization: new ITwinLocalization(this.supplyI18NOptions()) });
+    this.testNamespace = "TestApp";
+    await IModelApp.localization.registerNamespace(this.testNamespace);
     TestImmediate.register(this.testNamespace);
   }
 
@@ -47,8 +48,6 @@ class TestCommandApp extends MockRender.App {
 async function setupToolRegistryTests() {
   await TestCommandApp.startup();
   createTestTools();
-  await IModelApp.i18n.waitForAllRead();
-
 }
 
 function logResult(..._args: any[]) {
@@ -226,7 +225,7 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
   }
 }
 
-function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
+function registerTestClass(id: string, keyin: string, ns: string) {
   (class extends Tool {
     public static override toolId = id;
     public override async run(): Promise<boolean> { lastCommand = keyin; return true; }
@@ -237,7 +236,7 @@ function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
 
 function createTestTools(): void {
   const testCommandEntries: any = JSON.parse(testCommandsString);
-  const ns: I18NNamespace = TestCommandApp.testNamespace!;
+  const ns: string = TestCommandApp.testNamespace!;
   for (const thisEntry of testCommandEntries) {
     // create a tool id by concatenating the words of the keyin.
     const toolId: string = thisEntry.commandString.replace(/ /g, ".");

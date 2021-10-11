@@ -8,15 +8,14 @@ import * as fsextra from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
+import { Logger } from "@itwin/core-bentley";
+import { IModelBankClient, IModelBankFileSystemITwinClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
 import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
+import { AuthorizationClient } from "@itwin/core-common";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
@@ -28,14 +27,14 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 
 let imodelBankClient: IModelBankClient;
 
-const authorizationClientFactory = (authScheme: string, userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient => {
+const authorizationClientFactory = (authScheme: string, userCredentials: any): AuthorizationClient => {
   switch (authScheme) {
     case "bearer":
-      return new TestIModelHubOidcAuthorizationClient(userInfo, userCredentials);
+      return new TestIModelHubOidcAuthorizationClient(userCredentials);
     case "basic":
-      return new IModelBankBasicAuthorizationClient(userInfo, userCredentials);
+      return new IModelBankBasicAuthorizationClient(userCredentials);
     default:
-      return new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      return new IModelBankDummyAuthorizationClient(userCredentials);
   }
 };
 
@@ -50,8 +49,8 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   const orchestratorUrl: string = process.env.IMJS_TEST_IMODEL_BANK_URL ?? "";
 
   const authScheme: string = (process.env.IMJS_TEST_IMODEL_BANK_AUTH_SCHEME ?? "").toLowerCase();
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
-    authorizationClientFactory(authScheme, userInfo, userCredentials);
+  const getAuthorizationClient = (userCredentials: any): AuthorizationClient =>
+    authorizationClientFactory(authScheme, userCredentials);
 
   let bankClient: IModelBankClient;
   if (imodelBankClient)
@@ -59,11 +58,11 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   else
     bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
 
-  const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+  const iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    contextMgr,
+    iTwinMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
     shutdown: async () => 0,
@@ -164,16 +163,16 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   }
 
   const authScheme: string = (process.env.IMJS_TEST_IMODEL_BANK_AUTH_SCHEME ?? "").toLowerCase();
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
-    authorizationClientFactory(authScheme, userInfo, userCredentials);
+  const getAuthorizationClient = (userCredentials: any): AuthorizationClient =>
+    authorizationClientFactory(authScheme, userCredentials);
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, createIModelBankFileHandler());
-  const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+  const iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    contextMgr,
+    iTwinMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
     shutdown: doShutdown,

@@ -5,17 +5,17 @@
 
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { BentleyError } from "@itwin/core-bentley";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
-  ChangesetIdWithIndex,
-  IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
-  RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
-} from "@bentley/imodeljs-common";
+  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
+  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
+  SerializedRpcActivity, WipRpcInterface,
+} from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2,
-  TokenValues, ZeroMajorRpcInterface,
+  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
+  TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
@@ -224,7 +224,7 @@ describe("RpcInterface", () => {
 
     const endpoints = await RpcManager.describeAvailableEndpoints();
     assert.equal(endpoints[0].interfaceName, "IModelReadRpcInterface");
-    assert.equal(endpoints[0].operationNames[0], "openForRead");
+    assert.equal(endpoints[0].operationNames[0], "getConnectionProps");
     assert(typeof (endpoints[0].interfaceVersion) === "string");
     assert.isTrue(endpoints[0].compatible);
 
@@ -445,12 +445,13 @@ describe("RpcInterface", () => {
   it("should send app version to backend", async () => {
     const backupFn = RpcConfiguration.requestContext.serialize;
 
-    RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedClientRequestContext> => {
-      const serializedContext: SerializedClientRequestContext = {
+    RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedRpcActivity> => {
+      const serializedContext: SerializedRpcActivity = {
         id: _request.id,
         applicationId: "",
         applicationVersion: "testbed1",
         sessionId: "",
+        authorization: "",
       };
       return serializedContext;
     };
@@ -475,10 +476,10 @@ describe("RpcInterface", () => {
     }
 
     const change1 = { id: "change1" };
-    await check("key1", "context1", "imodel1", change1);
-    await check("key1", "context1", "imodel1", undefined);
-    await check("key1", "context1", "imodel1", { id: "" });
-    await check("", "context1", "imodel1", change1);
+    await check("key1", "itwin1", "imodel1", change1);
+    await check("key1", "itwin1", "imodel1", undefined);
+    await check("key1", "itwin1", "imodel1", { id: "" });
+    await check("", "itwin1", "imodel1", change1);
   });
 
   it("should recover when the underlying transport is replaced, resend all active requests, and disregard any zombie responses", async () => {

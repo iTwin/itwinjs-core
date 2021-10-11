@@ -5,9 +5,9 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { StagePanelLocation } from "@bentley/ui-abstract";
-import { StagePanel as NZ_StagePanel, StagePanelTarget } from "@bentley/ui-ninezone";
-import { FrameworkStagePanel, FrameworkStagePanelProps, SplitterPaneTarget, StagePanelState } from "../../ui-framework";
+import { StagePanelLocation } from "@itwin/appui-abstract";
+import { StagePanel as NZ_StagePanel, StagePanelTarget } from "@itwin/appui-layout-react";
+import { FrameworkStagePanel, FrameworkStagePanelProps, SplitterPaneTarget, StagePanelState } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 describe("FrameworkStagePanel", () => {

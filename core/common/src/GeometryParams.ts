@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { LineStyle } from "./geometry/LineStyle";

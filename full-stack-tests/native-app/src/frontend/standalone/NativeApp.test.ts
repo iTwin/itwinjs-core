@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { NativeApp } from "@bentley/imodeljs-frontend";
-import { NativeAppTest } from "../NativeAppTest";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { NativeApp } from "@itwin/core-frontend";
 import { usingOfflineScope } from "../HttpRequestHook";
+import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp startup", () => {
   before(async () => ElectronApp.startup());

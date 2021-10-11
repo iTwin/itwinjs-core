@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { DbResult, StopWatch, using } from "@bentley/bentleyjs-core";
+import { DbResult, StopWatch, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode } from "../ECDb";
 import { IModelHost } from "../IModelHost";
 import { SqliteStatement } from "../SqliteStatement";

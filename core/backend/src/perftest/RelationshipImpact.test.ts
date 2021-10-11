@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+} from "@itwin/core-common";
+import { Reporter } from "@itwin/perf-tools";
 import { SpatialCategory } from "../Category";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { IModelDb, SnapshotDb } from "../IModelDb";

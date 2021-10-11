@@ -4,19 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
-import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: StandaloneDb;
 
-  const accessToken: AccessToken = (AccessToken as any);
-  const user = new AuthorizedClientRequestContext(accessToken);
+  const accessToken: AccessToken = "";
 
   before(async () => {
     iModel = IModelTestUtils.openIModelForWrite("test.bim");
@@ -59,7 +57,7 @@ describe("Example Code", () => {
       briefcaseDb.saveChanges("inserted generic objects");
 
       // When all local changes are saved in the briefcase, we push them to the iModel server.
-      await briefcaseDb.pushChanges({ user, description: "comment" });
+      await briefcaseDb.pushChanges({ accessToken, description: "comment" });
     }
 
     // assertions to ensure example code is working properly

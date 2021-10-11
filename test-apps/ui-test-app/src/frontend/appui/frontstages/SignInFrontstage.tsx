@@ -3,29 +3,35 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-} from "@bentley/ui-framework";
-import { SignIn } from "../oidc/SignIn";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@itwin/appui-react";
+import { IModelApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { Centered } from "@itwin/core-react";
 import { SampleAppIModelApp } from "../../index";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { SignIn } from "../oidc/SignIn";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     const client = IModelApp.authorizationClient;
-    if (isFrontendAuthorizationClient(client))
-      this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
-    else
-      this.reactNode = null;
+    if ((client as BrowserAuthorizationClient).signIn !== undefined) {
+      this.reactNode = <SignIn onSignIn={this._onSignIn} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+    } else {
+      this.reactNode = <Centered>{"No authorization client available"}</Centered>;
+    }
   }
 
   // user chose to work offline from the sign in page
   private _onWorkOffline = async () => {
     await SampleAppIModelApp.handleWorkOffline();
+  };
+
+  private _onSignIn = () => {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+      IModelApp.authorizationClient.signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    }
   };
 
   private _onRegister = () => {
@@ -55,6 +61,7 @@ export class SignInFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}
+        isIModelIndependent={true}
         usage={StageUsage.Private}
       />
     );

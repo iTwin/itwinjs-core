@@ -10,11 +10,11 @@
 
 import {
   assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
-} from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
@@ -126,7 +126,7 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
 
   /** Settings controlling display of map within views of geolocated models. */
-  backgroundMap?: BackgroundMapProps;
+  backgroundMap?: PersistentBackgroundMapProps;
   /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
@@ -137,7 +137,7 @@ export interface DisplayStyleSettingsProps {
   mapImagery?: MapImageryProps;
   /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core). */
+  /** Style applied by the view's [ClipVector]($core-geometry). */
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
@@ -192,15 +192,15 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 }
 
 /** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
- * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
- * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
- * for use with any iModel or project. This is the default behavior if no more specific options are provided.
+ * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given iTwin, like the set of displayed context reality models. Such settings can be useful
+ * when creating display style overrides intended for use with a specific iModel or iTwin, but should be omitted when creating general-purpose display style overrides intended
+ * for use with any iModel or iTwin. This is the default behavior if no more specific options are provided.
  * @public
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
   includeAll?: true;
-  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
+  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all iTwin-specific settings will be serialized too.
    * The following are iModel-specific settings:
    *  * Subcategory overrides.
    *  * Model Appearance overrides.
@@ -213,12 +213,12 @@ export interface DisplayStyleOverridesOptions {
    *    * If the display style settings are associated with a [DisplayStyleState]($frontend), then overriding thematic settings will compute a default height range based on the iModel's project extents.
    */
   includeIModelSpecific?: true;
-  /** Serialize project-specific settings. These settings are only meaningful within the context of a specific project. These settings are always included if `includeIModelSpecific` is `true`.
-   * The following are project-specific settings:
+  /** Serialize iTwin-specific settings. These settings are only meaningful within the context of a specific iTwin. These settings are always included if `includeIModelSpecific` is `true`.
+   * The following are iTwin-specific settings:
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
-  includeProjectSpecific?: true;
+  includeITwinSpecific?: true;
   /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
   includeDrawingAids?: true;
   /** Serialize the background map settings. */
@@ -455,7 +455,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[backgroundMap]] property. */
   public readonly onBackgroundMapChanged = new BeEvent<(newMap: BackgroundMapSettings) => void>();
   /** Event raised just prior to assignment to the [[mapImagery]] property.
-   * @alpha
+   * @beta
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
@@ -517,8 +517,12 @@ export class DisplayStyleSettings {
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white;
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
-    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
-    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
+    this._backgroundMap = BackgroundMapSettings.fromPersistentJSON(this._json.backgroundMap);
+    this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
+
+    // Ensure that if we used the deprecated imagery properties from this._backgroundMap to set up the base layer of this._mapImagery,
+    // we update our JSON to include that base layer.
+    this._json.mapImagery = this._mapImagery.toJSON();
 
     this._excludedElements = new ExcludedElements(this._json);
 
@@ -611,16 +615,12 @@ export class DisplayStyleSettings {
     if (!this.backgroundMap.equals(map)) {
       this.onBackgroundMapChanged.raiseEvent(map);
       this._backgroundMap = map; // it's an immutable type.
-      this._json.backgroundMap = map.toJSON();
+      this._json.backgroundMap = map.toPersistentJSON();
     }
   }
 
-  /** Get the map imagery for this display style.  Map imagery includes the background map base as well as background layers and overlay layers.
-   * In earlier versions only a background map image was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
-   * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
-   * the settings are compatible.  The map imagery typically only should be modified only through  [DisplayStyleState]($frontend) methods.
-   * Map imagery should only be modified from backend, changes to map imagery from front end should be handled only through [DisplayStyleState]($frontend) methods.
-   * @alpha
+  /** Settings defining the map imagery layers to be displayed within the view.
+   * @beta
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
 
@@ -831,7 +831,7 @@ export class DisplayStyleSettings {
     this.onExcludedElementsChanged.raiseEvent();
   }
 
-  /** The style applied to the view's [ClipVector]($geometry-core). */
+  /** The style applied to the view's [ClipVector]($core-geometry). */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
   }
@@ -850,7 +850,7 @@ export class DisplayStyleSettings {
   }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
-   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
+   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or iTwin (e.g., context reality models)
    * are omitted, as are drawing aids (e.g., ACS triad and grid).
    * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
    * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
@@ -872,17 +872,19 @@ export class DisplayStyleSettings {
       whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
-    if (options?.includeBackgroundMap)
-      props.backgroundMap = this.backgroundMap.toJSON();
-    else
+    if (options?.includeBackgroundMap) {
+      props.backgroundMap = this.backgroundMap.toPersistentJSON();
+      props.mapImagery = this.mapImagery.toJSON();
+    } else {
       delete viewflags.backgroundMap;
+    }
 
     if (!options?.includeDrawingAids) {
       delete viewflags.acs;
       delete viewflags.grid;
     }
 
-    if (options?.includeProjectSpecific || options?.includeIModelSpecific) {
+    if (options?.includeITwinSpecific || options?.includeIModelSpecific) {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {
         props.contextRealityModels = this._json.contextRealityModels;
@@ -955,7 +957,10 @@ export class DisplayStyleSettings {
       this.monochromeMode = overrides.monochromeMode;
 
     if (overrides.backgroundMap)
-      this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+      this.backgroundMap = BackgroundMapSettings.fromPersistentJSON(overrides.backgroundMap);
+
+    if (overrides.mapImagery)
+      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toPersistentJSON());
 
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;

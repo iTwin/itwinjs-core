@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { Point3d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, EventHandled, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
-import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { DialogItemValue, DialogPropertySyncItem } from "@itwin/appui-abstract";
 
 export class Tool1 extends PrimitiveTool {
   public static override toolId = "Tool1";
@@ -61,7 +61,7 @@ export class Tool1 extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.Tool2.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.Tool2.Prompts.GetPoint"));
 
     const instruction1 = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
     const instruction2 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["A"]), "Press a key");

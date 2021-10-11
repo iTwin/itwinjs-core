@@ -5,20 +5,20 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { ActiveTabIdContext, createNineZoneState, NineZoneDispatch, PanelStateContext, PopoutToggle } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { ActiveTabIdContext, createNineZoneState, NineZoneDispatch, PanelStateContext, PopoutToggle } from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("PopoutToggle", () => {
   it("should render", () => {
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider>
+      <TestNineZoneProvider>
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <ActiveTabIdContext.Provider value={"t1"}>
             <PopoutToggle />
           </ActiveTabIdContext.Provider>
         </PanelStateContext.Provider>
-      </NineZoneProvider>
+      </TestNineZoneProvider>
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -27,7 +27,7 @@ describe("PopoutToggle", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -36,7 +36,7 @@ describe("PopoutToggle", () => {
             <PopoutToggle />
           </ActiveTabIdContext.Provider>
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const button = container.getElementsByClassName("nz-widget-popoutToggle")[0];
     fireEvent.click(button);

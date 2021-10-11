@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { cleanup, render } from "@testing-library/react";
-import { BeDragDropContext } from "../../../ui-components/table/component/dragdrop/BeDragDropContext";
+import { BeDragDropContext } from "../../../components-react/table/component/dragdrop/BeDragDropContext";
 
 describe("BeDragDropContext", () => {
 

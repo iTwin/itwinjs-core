@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

@@ -5,8 +5,8 @@
 // cSpell:ignore typemoq
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ViewUtilities } from "../../ui-framework";
+import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
+import { ViewUtilities } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("ViewUtilities", () => {

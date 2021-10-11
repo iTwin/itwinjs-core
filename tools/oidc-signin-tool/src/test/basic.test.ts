@@ -95,9 +95,4 @@ describe("TestUsers utility (#integration)", () => {
     assert.exists(token);
   });
 
-  it("can construct request context for integration test users", async () => {
-    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    assert.exists(requestContext);
-  });
-
 });

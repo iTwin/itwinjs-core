@@ -9,7 +9,7 @@
 import {
   CustomAttributeClass, CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
   SchemaItemKey, SchemaKey,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableCAClass } from "./Mutable/MutableCAClass";

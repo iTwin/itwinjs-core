@@ -6,10 +6,10 @@
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
 import * as path from "path";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
+import { IModelJsExpressServer } from "@itwin/express-server";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
+import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
 import { getRpcInterfaces, Settings } from "../common/Settings";
 import * as fs from "fs";
 
@@ -30,7 +30,6 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
-process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
@@ -38,8 +37,6 @@ process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

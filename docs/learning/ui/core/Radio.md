@@ -1,6 +1,6 @@
 # Radio
 
-The [Radio]($ui-core) component is a wrapper for the `<input type="radio">` HTML element.
+The [Radio]($core-react) component is a wrapper for the `<input type="radio">` HTML element.
 A Radio button allows the selection of a single option amongst a predefined set of choices.
 
 ```tsx
@@ -19,4 +19,4 @@ A Radio button allows the selection of a single option amongst a predefined set 
 
 ## API Reference
 
-- [Radio]($ui-core:Radio)
+- [Radio]($core-react:Radio)

@@ -3,24 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@itwin/core-bentley";
+import { ViewDefinitionProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { FillCentered } from "@bentley/ui-core";
+import { FillCentered } from "@itwin/core-react";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { hasSavedViewLayoutProps } from "../../tools/UiProviderTool";
 import { ViewsFrontstage } from "./ViewsFrontstage";
 
@@ -73,6 +73,7 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}
+        isIModelIndependent={true}
         usage={StageUsage.Private}
         contentManipulationTools={
           <Zone
@@ -199,7 +200,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
     }
 
     if (!this.state.iModelConnection) {
-      const title = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
+      const title = UiFramework.localization.getLocalizedString("SampleApp:localFileStage.localFile");
 
       return (
         <>
@@ -213,7 +214,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
                 style={{ display: "none" }} />
             }
             <Button size="large" styleType="cta" onClick={this._handleButtonClick}>
-              {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
+              {UiFramework.localization.getLocalizedString("SampleApp:localFileStage.selectFile")}
             </Button>
           </FillCentered >
         </>

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { testOnScreenViewport } from "../TestViewport";
 
 /* eslint-disable deprecation/deprecation */

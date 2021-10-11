@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyDescription } from "@bentley/ui-abstract";
-import { EnumTypeConverter } from "../../ui-components";
+import { PropertyDescription } from "@itwin/appui-abstract";
+import { EnumTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 describe("EnumTypeConverter", () => {

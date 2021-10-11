@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools";
 import { IModelJsFs } from "../IModelJsFs";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { PerfTestDataMgr } from "./PerfTestUtils";

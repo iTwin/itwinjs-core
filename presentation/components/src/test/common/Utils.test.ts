@@ -7,15 +7,14 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
-  createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation } from "@bentley/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
+  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
+  createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation } from "@itwin/presentation-frontend";
+import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {
@@ -88,11 +87,11 @@ describe("Utils", () => {
   });
 
   describe("initializeLocalization", () => {
-    const i18nMock = moq.Mock.ofType<I18N>();
+    const i18nMock = moq.Mock.ofType<ITwinLocalization>();
 
     beforeEach(() => {
-      i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
-      Presentation.setI18nManager(i18nMock.object);
+      i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
+      Presentation.setLocalization(i18nMock.object);
     });
 
     afterEach(() => {
@@ -101,7 +100,7 @@ describe("Utils", () => {
 
     it("registers and unregisters namespace", async () => {
       const terminate = await utils.initializeLocalization();
-      i18nMock.verify((x) => x.registerNamespace(moq.It.isAny()), moq.Times.once());
+      i18nMock.verify(async (x) => x.registerNamespace(moq.It.isAny()), moq.Times.once());
       terminate();
       i18nMock.verify((x) => x.unregisterNamespace(moq.It.isAny()), moq.Times.once());
     });

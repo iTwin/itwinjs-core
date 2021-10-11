@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { RpcInterfaceDefinition } from "@itwin/core-common";
 import { SampleIpcHandler } from "../SampleIpcHandler";
 
 /**

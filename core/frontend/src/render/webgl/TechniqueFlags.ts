@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { RenderMode } from "@bentley/imodeljs-common";
+import { RenderMode } from "@itwin/core-common";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 

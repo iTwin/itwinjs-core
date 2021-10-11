@@ -12,7 +12,7 @@
     ]
   },
   "mochaOptions": {
-    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
       "mochaFile": "lib/test/junit_results.xml"
     }

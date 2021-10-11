@@ -5,21 +5,20 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelJsFs, LinkElement,
   PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType, RecipeDefinitionElement, RepositoryLink, SnapshotDb,
   SpatialCategory, TemplateRecipe2d, TemplateRecipe3d, TypeDefinitionElement,
-} from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
-import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
+} from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
-import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../imodeljs-transformer";
+} from "@itwin/core-common";
+import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 

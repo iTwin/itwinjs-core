@@ -1,0 +1,49 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "variables";
+
+.components-toolbar-button-item.components-ellipsis-icon {
+  position: relative;
+  $ellipsis-size: 4px;
+  $ellipsis-spacing: 8px;
+
+  >.components-icon {
+    .components-ellipsis {
+      position: relative;
+      width: $ellipsis-size;
+      height: $ellipsis-size;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .components-ellipsis:before {
+      content: '';
+      position: absolute;
+      left: -$ellipsis-spacing;
+      width: $ellipsis-size;
+      height: $ellipsis-size;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    .components-ellipsis:after {
+      content: '';
+      position: absolute;
+      left: $ellipsis-spacing;
+      width: $ellipsis-size;
+      height: $ellipsis-size;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+  }
+}
+
+.components-toolbar-overflow_popup {
+  border: none;
+  background: none;
+
+  @include uicore-z-index(toolbar-panels);
+}

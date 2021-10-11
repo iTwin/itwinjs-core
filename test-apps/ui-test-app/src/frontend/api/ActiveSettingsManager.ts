@@ -1,11 +1,11 @@
+import { UiFramework } from "@itwin/appui-react";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "@bentley/ui-framework";
+import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { IModelError, QueryRowFormat } from "@itwin/core-common";
+import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
 import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();
@@ -46,7 +46,7 @@ export class ModelNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`)) {
+    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`, undefined, QueryRowFormat.UseJsPropertyNames)) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
@@ -58,7 +58,7 @@ export class CategoryNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`)) {
+    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`, undefined, QueryRowFormat.UseJsPropertyNames)) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();

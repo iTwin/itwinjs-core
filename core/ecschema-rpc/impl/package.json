@@ -1,17 +1,18 @@
 {
-  "name": "@bentley/ecschema-rpcinterface-impl",
-  "version": "3.0.0-dev.65",
+  "name": "@itwin/ecschema-rpcinterface-impl",
+  "version": "3.0.0-dev.83",
   "description": "Schema RPC Interface backend implementation",
-  "main": "lib/ecschema-rpc-impl.js",
-  "typings": "lib/ecschema-rpc-impl",
+  "main": "lib/cjs/ecschema-rpc-impl.js",
+  "typings": "lib/cjs/ecschema-rpc-impl",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-rpc/impl"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
@@ -30,34 +31,32 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
-    "@bentley/ecschema-rpcinterface-common": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
-    "@bentley/ecschema-rpcinterface-common": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

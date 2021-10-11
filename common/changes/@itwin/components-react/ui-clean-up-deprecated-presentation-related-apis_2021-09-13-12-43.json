@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Make `width` and `height` props required for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

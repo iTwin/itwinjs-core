@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
-import { Capabilities, WebGLContext } from "@bentley/webgl-compatibility";
+import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
+import { TextureTransparency } from "../../../render/RenderTexture";
 import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
 
@@ -170,9 +171,11 @@ describe("RenderSystem", () => {
         const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
 
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        map.createTextureFromImageSource = async (source: ImageSource, params: RenderTexture.Params) => {
-          TestSystem.requestedIds.push(params.key);
-          return createTextureFromImageSource(source, params);
+        map.createTextureFromImageSource = async (args) => {
+          expect(typeof args.ownership).to.equal("object");
+          const key = (args.ownership as any).key;
+          TestSystem.requestedIds.push(key);
+          return createTextureFromImageSource(args, key);
         };
       }
     }
@@ -201,8 +204,11 @@ describe("RenderSystem", () => {
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
-      const params = new RenderTexture.Params(key, RenderTexture.Type.Normal);
-      return IModelApp.renderSystem.createTextureFromImageSource(source ?? imageSource, imodel, params);
+      return IModelApp.renderSystem.createTextureFromSource({
+        source: source ?? imageSource,
+        transparency: TextureTransparency.Translucent,
+        ownership: key ? { iModel: imodel, key } : undefined,
+      });
     }
 
     function expectPendingRequests(expectedCount: number): void {
@@ -255,7 +261,7 @@ describe("RenderSystem", () => {
       const p1 = requestTexture(undefined);
       const p2 = requestTexture(undefined);
       expectPendingRequests(0);
-      expectRequestedIds([undefined, undefined]);
+      expectRequestedIds([]);
 
       const t1 = await p1;
       const t2 = await p2;

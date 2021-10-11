@@ -27,13 +27,13 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 # The three main folder patterns that covered are:
 #   1. /common/api/{packageName}.api.md
 #   1. /common/api/summary/{packageName}.exports.csv
-#   1. /common/changes/@bentley/{packageName}/*.json
+#   1. /common/changes/@itwin/{packageName}/*.json
 
 /common/**/analytical-backend.*                   @calebmshafer @diegoalexdiaz
 /common/**/analytical-backend/                    @calebmshafer @diegoalexdiaz
 /common/**/backend-webpack-tools/                 @calebmshafer @wgoehrig
-/common/**/bentleyjs-core.*                       @imodeljs/admins
-/common/**/bentleyjs-core/                        @imodeljs/admins
+/common/**/core-bentley.*                       @imodeljs/admins
+/common/**/core-bentley/                        @imodeljs/admins
 /common/**/build-tools/                           @calebmshafer @wgoehrig
 /common/**/certa/                                 @calebmshafer @wgoehrig
 
@@ -54,41 +54,41 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/ecschema-rpcinterface-tests/           @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                          @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                           @calebmshafer @ColinKerr @wgoehrig
-/common/**/electron-manager.*                     @wgoehrig @ramanujam-raman
-/common/**/electron-manager/                      @wgoehrig @ramanujam-raman
+/common/**/core-electron.*                        @wgoehrig @ramanujam-raman
+/common/**/core-electron/                         @wgoehrig @ramanujam-raman
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
-/common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
-/common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/core-geometry.*                        @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/core-geometry/                         @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
 /common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
 /common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
-/common/**/imodeljs-backend.*                     @imodeljs/admins
-/common/**/imodeljs-backend/                      @imodeljs/admins
-/common/**/imodeljs-transformer.*                 @MichaelBelousov @ColinKerr
-/common/**/imodeljs-transformer/                  @MichaelBelousov @ColinKerr
-/common/**/imodeljs-common.*                      @imodeljs/admins @imodeljs/display
-/common/**/imodeljs-common/                       @imodeljs/admins @imodeljs/display
-/common/**/imodeljs-editor-*.*                    @bbastings @kabentley @pmconne
-/common/**/imodeljs-editor-*/                     @bbastings @kabentley @pmconne
-/common/**/imodeljs-frontend.*                    @kabentley @bbastings @imodeljs/display
-/common/**/imodeljs-frontend/                     @kabentley @bbastings @imodeljs/display
-/common/**/imodeljs-i18n.*                        @calebmshafer @wgoehrig
-/common/**/imodeljs-i18n/                         @calebmshafer @wgoehrig
-/common/**/imodeljs-markup.*                      @kabentley @pmconne @bbastings
-/common/**/imodeljs-markup/                       @kabentley @pmconne @bbastings
-/common/**/imodeljs-quantity.*                    @bsteinbk @calebmshafer
-/common/**/imodeljs-quantity/                     @bsteinbk @calebmshafer
+/common/**/core-backend.*                     @imodeljs/admins
+/common/**/core-backend/                      @imodeljs/admins
+/common/**/core-transformer.*                 @MichaelBelousov @ColinKerr
+/common/**/core-transformer/                  @MichaelBelousov @ColinKerr
+/common/**/core-common.*                      @imodeljs/admins @imodeljs/display
+/common/**/core-common/                       @imodeljs/admins @imodeljs/display
+/common/**/editor-*.*                    @bbastings @kabentley @pmconne
+/common/**/editor-*/                     @bbastings @kabentley @pmconne
+/common/**/core-frontend.*                    @kabentley @bbastings @imodeljs/display
+/common/**/core-frontend/                     @kabentley @bbastings @imodeljs/display
+/common/**/core-i18n.*                        @calebmshafer @wgoehrig
+/common/**/core-i18n/                         @calebmshafer @wgoehrig
+/common/**/core-markup.*                      @kabentley @pmconne @bbastings
+/common/**/core-markup/                       @kabentley @pmconne @bbastings
+/common/**/core-quantity.*                    @bsteinbk @calebmshafer
+/common/**/core-quantity/                     @bsteinbk @calebmshafer
 /common/**/linear-referencing-backend.*           @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-backend/            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/             @calebmshafer @diegoalexdiaz
 /common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
-/common/**/orbitgt-core.*                         @imodeljs/display
-/common/**/orbitgt-core/                          @imodeljs/display
+/common/**/core-orbitgt.*                         @imodeljs/display
+/common/**/core-orbitgt/                          @imodeljs/display
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
 /common/**/perf-tools/                            @calebmshafer @wgoehrig
 /common/**/physical-material-backend.*            @bbastings @jchick-bentley
@@ -100,7 +100,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/ui-*/                                  @imodeljs/ui
 /common/**/webgl-compatibility.*                  @imodeljs/display @Ellord207
 /common/**/webgl-compatibility/                   @imodeljs/display @Ellord207
-/common/**/webpack-tools-core/                    @calebmshafer @wgoehrig @aruniverse
+/common/**/core-webpack-tools/                    @calebmshafer @wgoehrig @aruniverse
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
@@ -113,7 +113,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-editing          @calebmshafer @ColinKerr @wgoehrig
-/core/electron-manager          @wgoehrig @ramanujam-raman
+/core/electron                  @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @kabentley @bbastings @imodeljs/display
 /core/frontend/src/oidc         @calebmshafer @ramanujam-raman
@@ -181,6 +181,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
 /ui @imodeljs/ui
-/ui/components/src/ui-components/properties   @imodeljs/ui @imodeljs/presentation
-/ui/components/src/ui-components/propertygrid @imodeljs/ui @imodeljs/presentation
-/ui/components/src/ui-components/tree         @imodeljs/ui @imodeljs/presentation
+/ui/components/src/components-react/properties   @imodeljs/ui @imodeljs/presentation
+/ui/components/src/components-react/propertygrid @imodeljs/ui @imodeljs/presentation
+/ui/components/src/components-react/tree         @imodeljs/ui @imodeljs/presentation

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { Message, Status } from "../../../ui-ninezone";
+import { Message, Status } from "../../../appui-layout-react";
 import { mount } from "../../Utils";
 
 describe("<Message />", () => {

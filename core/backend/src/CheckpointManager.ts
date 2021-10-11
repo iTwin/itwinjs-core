@@ -9,12 +9,12 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
+import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
+import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { SnapshotDb, UserArg } from "./IModelDb";
+import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -24,10 +24,10 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * Properties of a checkpoint
  * @public
  */
-export interface CheckpointProps extends UserArg {
+export interface CheckpointProps extends TokenArg {
   readonly expectV2?: boolean;
 
-  /** Context (Project or Asset) that the iModel belongs to */
+  /** iTwin that the iModel belongs to */
   readonly iTwinId: GuidString;
 
   /** Id of the iModel */
@@ -35,6 +35,9 @@ export interface CheckpointProps extends UserArg {
 
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
+
+  /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
+  readonly reattachSafetySeconds?: number;
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
@@ -229,10 +232,10 @@ export class CheckpointManager {
         // Apply change sets if necessary
         const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
         if (currentChangeset.id !== checkpoint.changeset.id) {
-          const user = checkpoint.user;
+          const accessToken = checkpoint.accessToken;
           const toIndex = checkpoint.changeset.index ??
-            (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
-          await BriefcaseManager.pullAndApplyChangesets(db, { user, toIndex });
+            (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
+          await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           currentChangeset.index = checkpoint.changeset.index!;

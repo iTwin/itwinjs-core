@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import { StructPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/StructPropertyValueRenderer";
-import { TableNonPrimitiveValueRenderer } from "../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
-import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
+import { Orientation } from "@itwin/core-react";
+import { StructPropertyValueRenderer } from "../../../../components-react/properties/renderers/value/StructPropertyValueRenderer";
+import { TableNonPrimitiveValueRenderer } from "../../../../components-react/properties/renderers/value/table/NonPrimitiveValueRenderer";
+import { PropertyContainerType } from "../../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 
 describe("StructPropertyValueRenderer", () => {

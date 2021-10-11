@@ -8,8 +8,8 @@ import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
   WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
-} from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+} from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTab", () => {
   it("should render active", () => {
@@ -17,7 +17,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
@@ -29,7 +29,7 @@ describe("WidgetTab", () => {
             />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -39,7 +39,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
@@ -49,7 +49,7 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -59,7 +59,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { minimized: true });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
@@ -69,7 +69,7 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -79,7 +79,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
@@ -89,7 +89,7 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} firstInactive />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -99,7 +99,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
@@ -109,7 +109,7 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -119,7 +119,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         tab={<WidgetTab badge="Badge" />}
       >
@@ -132,7 +132,7 @@ describe("WidgetTab", () => {
             />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -145,7 +145,7 @@ describe("WidgetTab", () => {
     nineZone = addTab(nineZone, "t1");
     const close = sinon.spy();
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -160,7 +160,7 @@ describe("WidgetTab", () => {
             </WidgetTabsEntryContext.Provider>
           </WidgetStateContext.Provider>
         </PanelSideContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
@@ -185,7 +185,7 @@ describe("WidgetTab", () => {
     nineZone = addTab(nineZone, "t1");
     const close = sinon.spy();
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -200,7 +200,7 @@ describe("WidgetTab", () => {
             </WidgetTabsEntryContext.Provider>
           </WidgetStateContext.Provider>
         </PanelSideContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
@@ -226,7 +226,7 @@ describe("WidgetTab", () => {
     nineZone = addTab(nineZone, "t1");
     const close = sinon.spy();
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -237,7 +237,7 @@ describe("WidgetTab", () => {
             </WidgetOverflowContext.Provider>
           </WidgetStateContext.Provider>
         </WidgetContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
@@ -258,14 +258,14 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
           <WidgetTabProvider tab={nineZone.tabs.t1} />
         </WidgetStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
@@ -282,7 +282,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -291,7 +291,7 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetStateContext.Provider>
         </WidgetContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
@@ -309,7 +309,7 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
       >
@@ -318,7 +318,7 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetStateContext.Provider>
         </FloatingWidgetIdContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {

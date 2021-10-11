@@ -1,0 +1,126 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/index";
+@import "../widget/variables";
+@import "../safearea";
+
+.nz-stagePanels-stagePanel {
+  $min-size: 6px;
+
+  position: relative;
+  height: 100%;
+  pointer-events: all;
+  background-color: $buic-background-widget;
+
+  >div:first-child {
+    height: 100%;
+  }
+
+  &.nz-panel-bottom {
+    >.nz-resize-grip {
+      top: -$nz-resize-grip-size * 0.5;
+      left: 0;
+    }
+  }
+
+  &.nz-panel-left {
+    >.nz-resize-grip {
+      right: -$nz-resize-grip-size * 0.5;
+      top: 0;
+    }
+  }
+
+  &.nz-panel-right {
+    >.nz-resize-grip {
+      left: -$nz-resize-grip-size * 0.5;
+      top: 0;
+    }
+  }
+
+  &.nz-panel-top {
+    >.nz-resize-grip {
+      bottom: -$nz-resize-grip-size * 0.5;
+      left: 0;
+    }
+  }
+
+  &.nz-panel-bottom,
+  &.nz-panel-top {
+    min-height: $min-size;
+
+    @include for-tablet-landscape-down {
+      min-height: $nz-resize-grip-size-large;
+    }
+  }
+
+  &.nz-panel-left,
+  &.nz-panel-right {
+    min-width: $min-size;
+
+    @include for-tablet-landscape-down {
+      min-width: $nz-resize-grip-size-large;
+    }
+  }
+
+  &:hover {
+    --buic-widget-opacity: 1;
+  }
+
+  &.nz-safe-area-left {
+    &.nz-panel-left {
+      @include nz-safe-area-left;
+    }
+
+    &.nz-panel-top {
+      @include nz-safe-area-left;
+    }
+
+    &.nz-panel-bottom {
+      @include nz-safe-area-left;
+    }
+  }
+
+  &.nz-safe-area-top {
+    &.nz-panel-left {
+      @include nz-safe-area-top;
+    }
+
+    &.nz-panel-top {
+      @include nz-safe-area-top;
+    }
+
+    &.nz-panel-right {
+      @include nz-safe-area-top;
+    }
+  }
+
+  &.nz-safe-area-right {
+    &.nz-panel-top {
+      @include nz-safe-area-right;
+    }
+
+    &.nz-panel-right {
+      @include nz-safe-area-right;
+    }
+
+    &.nz-panel-bottom {
+      @include nz-safe-area-right;
+    }
+  }
+
+  &.nz-safe-area-bottom {
+    &.nz-panel-left {
+      @include nz-safe-area-bottom;
+    }
+
+    &.nz-panel-right {
+      @include nz-safe-area-bottom;
+    }
+
+    &.nz-panel-bottom {
+      @include nz-safe-area-bottom;
+    }
+  }
+}

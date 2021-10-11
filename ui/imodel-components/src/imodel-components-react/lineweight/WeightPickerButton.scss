@@ -1,0 +1,53 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/button/button";
+
+.components-weightpicker-button {
+  color: $buic-foreground-body;
+  background: $buic-background-control;
+  border: 1px solid $buic-inputs-border;
+  border-radius: 3px;
+  min-width: 100px;
+
+  &:not(.readonly):not([disabled]) {
+    cursor: pointer;
+  }
+
+  &:active,
+  &:focus {
+    @include uicore-buttons-button-focused;
+  }
+}
+
+.components-weightpicker-popup {
+
+  &.core-popup {
+    background: $buic-background-control;
+    border: 1px solid $buic-inputs-border;
+  }
+
+  .components-weightpicker-popup-container {
+    color: $buic-foreground-body;
+    background: $buic-background-control;
+    min-width: 60px;
+    padding: 0 4px;
+    border-radius: 4px;
+
+    >ul {
+      padding: 4px 0;
+      list-style: none;
+      margin: 0.25rem 0;
+
+      >.components-weightpicker-swatch:hover {
+        background: $buic-row-hover;
+      }
+
+      >.components-weightpicker-swatch.active {
+        background: $buic-row-selection;
+      }
+    }
+  }
+}

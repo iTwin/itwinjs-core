@@ -6,21 +6,21 @@
  * @module WebGL
  */
 
-import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@bentley/geometry-core";
-import { Frustum, QPoint2dList, QPoint3dList } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
+import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
+import { GraphicBranch } from "../GraphicBranch";
+import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
+import { PlanarGridProps, RenderSystem } from "../RenderSystem";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { GL } from "./GL";
+import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import assert = require("assert");
-import { RenderGraphic } from "../RenderGraphic";
-import { GraphicBranch } from "../GraphicBranch";
-import { PlanarGridProps, RenderSystem } from "../RenderSystem";
-import { Primitive } from "./Primitive";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {
 

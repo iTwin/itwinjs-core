@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as Azure from "@azure/storage-blob";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
-} from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+} from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import * as zlib from "zlib";
 import { IModelDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { RpcTrace } from "../../RpcBackend";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -59,9 +60,9 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
 }
 
 describe("TileUpload (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let accessToken: AccessToken;
   let testIModelId: GuidString;
-  let testContextId: GuidString;
+  let testITwinId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
   let blobService: Azure.BlobServiceClient;
 
@@ -86,9 +87,9 @@ describe("TileUpload (#integration)", () => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestITwinId(user);
-    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
     const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
@@ -99,9 +100,9 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 
   after(async () => {
@@ -111,13 +112,19 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    const tile = await RpcTrace.run({
+      accessToken,
+      activityId: "",
+      applicationId: "",
+      applicationVersion: "",
+      sessionId: "",
+    }, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
 
     assert.equal(tile, TileContentSource.ExternalCache);
 
@@ -142,7 +149,7 @@ describe("TileUpload (#integration)", () => {
     assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
 
     await blob.delete();
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 });
 

@@ -1,0 +1,75 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+.components-iconpicker-button {
+  color: $buic-foreground-body;
+  background: $buic-background-control;
+  box-sizing: border-box;
+  border: 1px solid $buic-inputs-border;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+
+  .iconpicker-button-sprite {
+    width: 18px;
+    height: 18px;
+    margin: 4px;
+  }
+
+  .icon {
+    margin-left: 4px;
+    font-size: 10px;
+    transition: color .1s ease;
+  }
+
+  &:not(.readonly) {
+    cursor: pointer;
+  }
+
+  &:hover .icon {
+    color: $buic-foreground-primary;
+  }
+}
+
+.components-iconpicker-popup {
+  border: 1px solid $buic-inputs-border;
+  @include uicore-z-index(dialog-popup);
+
+  .components-iconpicker-popup-container {
+    color: $buic-foreground-body;
+    background: $buic-background-control;
+
+    .components-iconpicker-popup-icons {
+      display: grid;
+      grid-gap: 8px;
+      padding: 8px;
+
+      .components-icon-swatch {
+        width: 34px;
+        height: 34px;
+        padding: 4px;
+        border-width: 1px;
+        border-radius: 3px;
+        border-style: solid;
+        border-color: rgba(0, 0, 0, 0.2);
+        background: $buic-background-control;
+        transition: scale 0.2s ease;
+        cursor: pointer;
+        outline: none;
+
+        &:hover {
+          transform: scale(1.15);
+        }
+
+        &[disabled] {
+          opacity: .2;
+        }
+      }
+    }
+  }
+}

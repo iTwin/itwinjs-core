@@ -6,7 +6,7 @@
  * @module QuantityFormatting
  */
 
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey } from "./QuantityFormatter";
 import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider";
 

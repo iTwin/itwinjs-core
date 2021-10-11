@@ -5,9 +5,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue } from "@bentley/imodeljs-common";
+import { Guid, OpenMode } from "@itwin/core-bentley";
+import { IModelHost } from "@itwin/core-backend";
+import { BriefcaseIdValue } from "@itwin/core-common";
 
 let prefix = "";
 
@@ -28,7 +28,7 @@ function log(msg: string) {
  * This utility will change an existing iModel file to be a standalone iModel. It does so by
  * clearing the iTwinId, and resetting the briefcaseId to 0.
  *
- * This should only be done for testing, with the project owner's permission.
+ * This should only be done for testing, with the iTwin owner's permission.
  *
  * To run:
 ```

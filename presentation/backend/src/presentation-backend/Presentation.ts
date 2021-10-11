@@ -6,11 +6,12 @@
  * @module Core
  */
 
-import { DisposeFunc, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";
+import { IModelHost, IpcHost } from "@itwin/core-backend";
+import { DisposeFunc, Logger } from "@itwin/core-bentley";
+import { RpcManager } from "@itwin/core-common";
+import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
+import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { TemporaryStorage } from "./TemporaryStorage";
@@ -77,7 +78,7 @@ interface ClientStoreItem {
  * Basically what it does is:
  * - Register a RPC implementation
  * - Create a singleton [[PresentationManager]] instance
- * - Subscribe for [IModelHost.onBeforeShutdown]($imodeljs-backend) event and terminate
+ * - Subscribe for [IModelHost.onBeforeShutdown]($core-backend) event and terminate
  *   the presentation manager when that happens.
  *
  * @public
@@ -87,6 +88,7 @@ export class Presentation {
   private static _initProps: PresentationProps | undefined;
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
   private static _requestTimeout: number | undefined;
+  private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
   private static _manager: PresentationManager | undefined;
 
@@ -101,17 +103,14 @@ export class Presentation {
    *
    * See [this]($docs/presentation/Setup/index.md#backend) for an example.
    *
-   * **Important:** The method should be called after a call to [IModelHost.startup]($imodeljs-backend)
+   * **Important:** The method should be called after a call to [IModelHost.startup]($core-backend)
    *
    * @param props Optional properties for [[PresentationManager]]
    */
   public static initialize(props?: PresentationProps): void {
-    try {
-      RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
-    } catch (_e) {
-      // note: RpcManager.registerImpl throws when called more than once with the same
-      // rpc interface. However, it doesn't provide any way to unregister a, interface so we end up
-      // using the one registered first. At least we can avoid an exception...
+    RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
+    if (IpcHost.isValid) {
+      this._disposeIpcHandler = PresentationIpcHandler.register();
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
@@ -139,7 +138,7 @@ export class Presentation {
 
   /**
    * Terminates Presentation. Consumers don't need to call this as it's automatically
-   * called on [IModelHost.onBeforeShutdown]($imodeljs-backend) event.
+   * called on [IModelHost.onBeforeShutdown]($core-backend) event.
    */
   public static terminate(): void {
     if (this._clientsStorage) {
@@ -153,6 +152,10 @@ export class Presentation {
     if (this._manager) {
       this._manager.dispose();
       this._manager = undefined;
+    }
+    RpcManager.unregisterImpl(PresentationRpcInterface);
+    if (this._disposeIpcHandler) {
+      this._disposeIpcHandler();
     }
     this._initProps = undefined;
     if (this._requestTimeout)

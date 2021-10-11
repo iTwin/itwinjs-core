@@ -6,11 +6,10 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { AccessToken, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { IModelVersion } from "@itwin/core-common";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { Reporter } from "@itwin/perf-tools";
 import { StandaloneDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { IModelTestUtils } from "../test/IModelTestUtils";
@@ -33,7 +32,7 @@ interface TileResult {
 }
 
 interface ConfigData {
-  contextId: string;
+  iTwinId: string;
   iModelName: string;
   changesetId: string;
   genParams: TileGenParams;
@@ -116,7 +115,7 @@ async function generateResultFiles(result: TileResult, configData: ConfigData, r
   await writeOverallStats(result, configData, resultFilePath);
 }
 
-async function generateIModelDbTiles(user: AuthorizedClientRequestContext, config: ConfigData): Promise<TileResult | undefined> {
+async function generateIModelDbTiles(accessToken: AccessToken, config: ConfigData): Promise<TileResult | undefined> {
   let peakMemUsage: number = 0;
   let peakCPUUsage: number = 0;
 
@@ -126,10 +125,10 @@ async function generateIModelDbTiles(user: AuthorizedClientRequestContext, confi
   if (config.localPath) {
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
-    const iModelId = await HubUtility.queryIModelIdByName(user, config.contextId, config.iModelName);
+    const iModelId = await HubUtility.queryIModelIdByName(accessToken, config.iTwinId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
-    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: config.contextId, iModelId, asOf: version.toJSON() });
+    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 
@@ -189,23 +188,23 @@ async function generateIModelDbTiles(user: AuthorizedClientRequestContext, confi
 describe("TilesGenerationPerformance", () => {
   if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
     throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  // TODO: Update config to use iTwin terminology
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
-  let requestContext: AuthorizedClientRequestContext;
+  let requestContext: AccessToken;
   let csvResultPath: string;
 
   before(async () => {
     assert.isDefined(config.regionId, "No Region defined");
-    assert.isDefined(config.contextId, "No ContextId defined");
-    imodels.forEach((element) => element.contextId = config.contextId);
+    assert.isDefined(config.iTwinId, "No iTwinId defined");
+    imodels.forEach((element) => element.iTwinId = config.iTwinId);
 
     IModelTestUtils.setupLogging();
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
-    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = config.regionId;
     if (IModelJsFs.existsSync(config.iModelLocation)) {
       imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));
       // delete the .tile file
@@ -213,7 +212,7 @@ describe("TilesGenerationPerformance", () => {
       for (const tileFile of tileFiles)
         IModelJsFs.removeSync(path.join(config.iModelLocation, tileFile));
     } else {
-      requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
+      requestContext = await TestUtility.getAccessToken(TestUsers.regular);
     }
   });
 

@@ -7,25 +7,26 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { ITwin } from "@bentley/context-registry-client";
+import { AccessToken, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { ITwin } from "@bentley/itwin-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemITwinClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, ProgressInfo, UserInfo } from "@bentley/itwin-client";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { ProgressInfo } from "@bentley/itwin-client";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { createFileHandler } from "./FileHandler";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
+import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
-const bankProjects: string[] = [];
+const bankITwins: string[] = [];
 
 export const sharedimodelName = "imodeljs-clients Shared iModel";
 
@@ -41,7 +42,6 @@ function configMockSettings() {
     return;
 
   process.env.IMJS_IMODELHUB_URL = "https://api.bentley.com/imodelhub";
-  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = "0";
   process.env.IMJS_URL_PREFIX = "";
   process.env.IMJS_TEST_SERVICEACCOUNT1_USER_NAME = "test";
   process.env.IMJS_TEST_SERVICEACCOUNT1_USER_PASSWORD = "test";
@@ -90,23 +90,6 @@ function removeFileUrlExpirationTime(url?: string) {
 }
 
 /** Other services */
-export class MockAccessToken extends AccessToken {
-  public constructor() {
-    super("");
-  }
-
-  public override getUserInfo(): UserInfo | undefined {
-    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-    const email = { id: "testuser001@mailinator.com" };
-    const profile = { firstName: "test", lastName: "user" };
-    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-    return new UserInfo(id, email, profile, organization, featureTracking);
-  }
-
-  public override toTokenString() { return ""; }
-}
-
 export type RequestBehaviorOptionsList =
   "DoNotScheduleRenderThumbnailJob" |
   "DisableGlobalEvents" |
@@ -208,22 +191,22 @@ export async function delay(ms: number) {
 
 export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken> {
   if (TestConfig.enableMocks)
-    return new MockAccessToken();
-  const authorizationClient = getCloudEnv().getAuthorizationClient(undefined, userCredentials);
-  const requestContext = new ClientRequestContext();
+    return "";
+  const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);
 
-  await authorizationClient.signIn(requestContext);
-  return authorizationClient.getAccessToken(requestContext);
+  await (authorizationClient as TestIModelHubOidcAuthorizationClient).signIn();
+  return (await authorizationClient.getAccessToken())!;
 }
 
-export async function bootstrapBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-  if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
+export async function bootstrapBankITwin(accessToken: AccessToken, name: string): Promise<void> {
+  if (getCloudEnv().isIModelHub || bankITwins.includes(name))
     return;
 
-  const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+  const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
   let iTwin: ITwin | undefined;
   try {
-    iTwin = await bankContext.getITwinByName(requestContext, projectName);
+    iTwin = await bankContext.getITwinByName(accessToken, name);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
       iTwin = undefined;
@@ -232,39 +215,23 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     }
   }
   if (!iTwin)
-    await bankContext.createContext(requestContext, projectName);
+    await bankContext.createITwin(accessToken, name);
 
-  bankProjects.push(projectName);
+  bankITwins.push(name);
 }
 
-export async function getAssetId(requestContext: AuthorizedClientRequestContext, assetName?: string): Promise<string> {
+export async function getITwinId(accessToken: AccessToken, iTwinName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
-  assetName = assetName || TestConfig.assetName;
+  iTwinName = iTwinName || TestConfig.iTwinName;
 
-  await bootstrapBankProject(requestContext, assetName);
+  await bootstrapBankITwin(accessToken, iTwinName);
 
-  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, assetName);
-
-  if (!iTwin || !iTwin.id)
-    throw new Error(`Asset with name ${assetName} doesn't exist.`);
-
-  return iTwin.id;
-}
-
-export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
-  if (TestConfig.enableMocks)
-    return Guid.createValue();
-
-  projectName = projectName || TestConfig.projectName;
-
-  await bootstrapBankProject(requestContext, projectName);
-
-  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, projectName);
+  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(accessToken, iTwinName);
 
   if (!iTwin || !iTwin.id)
-    throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
+    throw new Error(`iTwin with name ${TestConfig.iTwinName} doesn't exist.`);
 
   return iTwin.id;
 }
@@ -276,7 +243,7 @@ export function getUniqueIModelName(imodelName: string): string {
   return `${imodelName} - ${getTestInstanceId()}`;
 }
 
-export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, contextId: string, imodelName: string, useUniqueName = true): Promise<void> {
+export async function deleteIModelByName(accessToken: AccessToken, iTwinId: string, imodelName: string, useUniqueName = true): Promise<void> {
   if (TestConfig.enableMocks)
     return;
 
@@ -284,24 +251,24 @@ export async function deleteIModelByName(requestContext: AuthorizedClientRequest
     imodelName = getUniqueIModelName(imodelName);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(accessToken, iTwinId, new IModelQuery().byName(imodelName));
 
   for (const imodel of imodels) {
-    await client.iModels.delete(requestContext, contextId, imodel.id!);
+    await client.iModels.delete(accessToken, iTwinId, imodel.id!);
   }
 }
 
-export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string, useUniqueName = true): Promise<GuidString> {
+export async function getIModelId(accessToken: AccessToken, imodelName: string, iTwinId?: string, useUniqueName = true): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
   if (useUniqueName)
     imodelName = getUniqueIModelName(imodelName);
 
-  projectId = projectId ?? await getProjectId(requestContext);
+  iTwinId = iTwinId ?? await getITwinId(accessToken);
 
   const client = getDefaultClient();
-  const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(accessToken, iTwinId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
     throw new Error(`iModel with name ${imodelName} doesn't exist.`);
@@ -327,7 +294,7 @@ export function mockUploadFile(imodelId: GuidString, chunks = 1) {
 }
 
 /** Briefcases */
-export async function getBriefcases(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, count: number): Promise<Briefcase[]> {
+export async function getBriefcases(accessToken: AccessToken, imodelId: GuidString, count: number): Promise<Briefcase[]> {
   if (TestConfig.enableMocks) {
     let briefcaseId = 2;
     const fileId: GuidString = Guid.createValue();
@@ -340,12 +307,12 @@ export async function getBriefcases(requestContext: AuthorizedClientRequestConte
   }
 
   const client = getDefaultClient();
-  let briefcases = await client.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
+  let briefcases = await client.briefcases.get(accessToken, imodelId, new BriefcaseQuery().ownedByMe());
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
-      await client.briefcases.create(requestContext, imodelId);
+      await client.briefcases.create(accessToken, imodelId);
     }
-    briefcases = await client.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
+    briefcases = await client.briefcases.get(accessToken, imodelId, new BriefcaseQuery().ownedByMe());
   }
   return briefcases;
 }
@@ -535,12 +502,12 @@ export function incrementLockObjectId(objectId: Id64String): Id64String {
   return Id64.fromUint32Pair(low, high);
 }
 
-export async function getLastLockObjectId(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<Id64String> {
+export async function getLastLockObjectId(accessToken: AccessToken, imodelId: GuidString): Promise<Id64String> {
   if (TestConfig.enableMocks)
     return Id64.fromString("0x0");
 
   const client = getDefaultClient();
-  const locks = await client.locks.get(requestContext, imodelId);
+  const locks = await client.locks.get(accessToken, imodelId);
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!.toString(), 16) > parseInt(lock2.objectId!.toString(), 16) ? -1 : 1));
 
@@ -731,7 +698,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
-export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
+export async function createIModel(accessToken: AccessToken, name: string, iTwinId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
 
@@ -741,22 +708,22 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   if (useUniqueName)
     name = getUniqueIModelName(name);
 
-  contextId = contextId || await getProjectId(requestContext, TestConfig.projectName);
+  iTwinId = iTwinId || await getITwinId(accessToken, TestConfig.iTwinName);
 
   const client = getDefaultClient();
 
-  const imodels = await client.iModels.get(requestContext, contextId, new IModelQuery().byName(name));
+  const imodels = await client.iModels.get(accessToken, iTwinId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await client.iModels.delete(requestContext, contextId, imodels[0].id!);
+      await client.iModels.delete(accessToken, iTwinId, imodels[0].id!);
     } else {
       return;
     }
   }
 
   const pathName = fromSeedFile && !TestConfig.enableIModelBank ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, contextId, name,
+  return client.iModels.create(accessToken, iTwinId, name,
     { path: pathName, timeOutInMilliseconds: TestConfig.initializeiModelTimeout });
 }
 
@@ -825,7 +792,7 @@ export function getMockChangeSetPath(index: number, changeSetId: string) {
   return path.join(assetsPath, "SeedFile", `${index}_${changeSetId}.cs`);
 }
 
-export async function createChangeSets(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase,
+export async function createChangeSets(accessToken: AccessToken, imodelId: GuidString, briefcase: Briefcase,
   startingId = 0, count = 1, atLeastOneChangeSetWithBridgeProperties = false): Promise<ChangeSet[]> {
   if (TestConfig.enableMocks)
     return getMockChangeSets(briefcase).slice(startingId, startingId + count);
@@ -842,7 +809,7 @@ export async function createChangeSets(requestContext: AuthorizedClientRequestCo
   if (atLeastOneChangeSetWithBridgeProperties)
     changeSetQuery.selectBridgeProperties();
 
-  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId, changeSetQuery);
+  const existingChangeSets: ChangeSet[] = await client.changeSets.get(accessToken, imodelId, changeSetQuery);
   const result: ChangeSet[] = existingChangeSets.slice(startingId);
 
   if (atLeastOneChangeSetWithBridgeProperties && existingChangeSets.length >= startingId + count) {
@@ -871,20 +838,20 @@ export async function createChangeSets(requestContext: AuthorizedClientRequestCo
       changeSets[i].bridgeChangedFiles = Array.from(generatedBridgeProperties.changedFiles!.values());
       bridgePropertiesExist = true;
     }
-    const changeSet = await client.changeSets.create(requestContext, imodelId, changeSets[i], changeSetPath);
+    const changeSet = await client.changeSets.create(accessToken, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);
   }
 
   return result;
 }
 
-export async function createLocks(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase, count = 1,
+export async function createLocks(accessToken: AccessToken, imodelId: GuidString, briefcase: Briefcase, count = 1,
   lockType: LockType = 1, lockLevel: LockLevel = 1, releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string) {
   if (TestConfig.enableMocks)
     return;
 
   const client = getDefaultClient();
-  let lastObjectId: Id64String = await getLastLockObjectId(requestContext, imodelId);
+  let lastObjectId: Id64String = await getLastLockObjectId(accessToken, imodelId);
   const generatedLocks: Lock[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -894,19 +861,19 @@ export async function createLocks(requestContext: AuthorizedClientRequestContext
       releasedWithChangeSet, releasedWithChangeSetIndex));
   }
 
-  await client.locks.update(requestContext, imodelId, generatedLocks);
+  await client.locks.update(accessToken, imodelId, generatedLocks);
 }
 
-export async function createVersions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, changesetIds: string[], versionNames: string[]) {
+export async function createVersions(accessToken: AccessToken, imodelId: GuidString, changesetIds: string[], versionNames: string[]) {
   if (TestConfig.enableMocks)
     return;
 
   const client = getDefaultClient();
   for (let i = 0; i < changesetIds.length; i++) {
     // check if changeset does not have version
-    const version = await client.versions.get(requestContext, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
+    const version = await client.versions.get(accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
     if (!version || version.length === 0) {
-      await client.versions.create(requestContext, imodelId, changesetIds[i], versionNames[i]);
+      await client.versions.create(accessToken, imodelId, changesetIds[i], versionNames[i]);
     }
   }
 }

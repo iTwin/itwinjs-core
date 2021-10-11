@@ -1,29 +1,30 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.83",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "lib/backend-itwin-client.js",
+  "main": "lib/cjs/backend-itwin-client.js",
+  "typings": "lib/cjs/backend-itwin-client",
   "browser": {
-    "./lib/backend-itwin-client.js": "./lib/backend-itwin-client-mobile.js"
+    "./lib/cjs/backend-itwin-client.js": "./lib/cjs/backend-itwin-client-mobile.js"
   },
-  "typings": "lib/backend-itwin-client",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
+    "cover": "nyc npm -s test",
+    "cover:integration": "nyc --report-dir ./lib/cjs/test/coverage/integration npm run -s test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "npm run copy:test-assets",
+    "pretest": "npm run -s copy:test-assets",
     "test": "mocha --grep=\"#integration\" --invert",
-    "test:integration": "npm run pretest && mocha --grep=\"#integration\"",
+    "test:integration": "",
     "copy:config": "internal-tools copy-config"
   },
   "repository": {
@@ -38,29 +39,27 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.65",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.65",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.65"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.83",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.83",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.83",
+    "@itwin/core-common": "workspace:^3.0.0-dev.83",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.83",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.83"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
@@ -102,15 +101,15 @@
     "proper-lockfile": "^4.1.2"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@bentley/no-internal-barrel-imports": [
+      "@itwin/no-internal-barrel-imports": [
         "error",
         {
           "ignored-barrel-modules": [
@@ -128,7 +127,7 @@
           "**/test/**/*.tsx"
         ],
         "rules": {
-          "@bentley/no-internal-barrel-imports": "off"
+          "@itwin/no-internal-barrel-imports": "off"
         }
       }
     ]

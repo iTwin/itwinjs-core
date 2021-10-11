@@ -139,3 +139,6 @@ afterEach(async () => {
     sinon.restore();
   } catch (e) { }
 });
+
+// This is required by our I18n module (specifically the i18next-http-backend package).
+global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;

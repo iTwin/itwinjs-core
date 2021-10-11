@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { Rectangle } from "@itwin/core-react";
+import * as ResizeObserverModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/ResizeObserverPolyfill";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { Rectangle } from "@bentley/ui-core";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
-import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 import { createRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
@@ -112,11 +112,11 @@ describe("<NineZone />", () => {
   });
 });
 
-describe("<NineZoneProvider />", () => {
+describe("<TestNineZoneProvider />", () => {
   it("renders correctly", () => {
-    const { container } = render(<NineZoneProvider>
+    const { container } = render(<TestNineZoneProvider>
       9-Zone
-    </NineZoneProvider>);
+    </TestNineZoneProvider>);
     container.firstChild!.should.matchSnapshot();
   });
 });

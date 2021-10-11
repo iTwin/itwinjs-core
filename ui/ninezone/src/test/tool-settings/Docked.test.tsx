@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
+import * as ResizeObserverModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/ResizeObserverPolyfill";
 import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import {
   DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 import { flushAsyncOperations, ResizeObserverMock } from "../Utils";
 import { DragManagerProvider } from "../Providers";
 

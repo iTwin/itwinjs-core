@@ -15,7 +15,7 @@ export interface ApplicationHeaderProps {
 }
 
 /**
- * ApplicationHeader React component used as a header on the iModel and Project selectors.
+ * ApplicationHeader React component used as a header on the iModel and iTwin selectors.
  */
 export class ApplicationHeader extends React.Component<ApplicationHeaderProps> {
 

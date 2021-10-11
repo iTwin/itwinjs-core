@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";
+import { LogLevel } from "@itwin/core-bentley";
+import { IModelReadRpcInterface } from "@itwin/core-common";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export interface Backend {
   version: string;
@@ -18,9 +18,9 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  useProjectName: boolean;
-  projectId?: string;
-  projectName?: string;
+  useITwinName: boolean;
+  iTwinId?: string;
+  iTwinName?: string;
   changeSetId?: string;
 }
 
@@ -109,9 +109,9 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
-      useProjectName: !process.env.IMODEL_PROJECTID,
-      projectId: process.env.IMODEL_PROJECTID,
-      projectName: process.env.IMODEL_PROJECTNAME,
+      useITwinName: !process.env.IMODEL_PROJECTID,
+      iTwinId: process.env.IMODEL_PROJECTID,
+      iTwinName: process.env.IMODEL_PROJECTNAME,
       changeSetId: process.env.IMODEL_CHANGESETID,
     };
 

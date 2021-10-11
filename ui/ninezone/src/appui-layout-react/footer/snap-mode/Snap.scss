@@ -1,0 +1,48 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-footer-snapMode-snap {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-gap: 8px;
+  padding: 4px 8px;
+  align-items: center;
+  cursor: pointer;
+  color: $buic-text-color;
+  position: relative;
+
+  >.nz-icon {
+    grid-row: 1;
+    color: $buic-icon-color;
+  }
+
+  >.nz-label {
+    grid-row: 1;
+  }
+
+  &.nz-active {
+    color: $buic-foreground-primary;
+
+    &:before {
+      content: '';
+      display: block;
+      position: absolute;
+      background-color: $buic-foreground-primary;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+    }
+  }
+
+  &:hover {
+    color: $buic-foreground-primary-tone;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}

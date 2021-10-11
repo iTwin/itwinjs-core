@@ -6,29 +6,30 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActivityMessagePopup, IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { AccessToken, BeDuration } from "@itwin/core-bentley";
+import { ITwin, ITwinAccessClient } from "@bentley/itwin-registry-client";
+import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
+import { ActivityMessagePopup } from "@itwin/appui-react";
+import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { BasicIModelInfo, IModelInfo } from "../ExternalIModel";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
-import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Button } from "@itwin/itwinui-react";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
-import { AccessToken } from "@bentley/itwin-client";
+import { ITwinDropdown } from "./ITwinDropdown";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
-  getAccessToken?: () => Promise<AccessToken | undefined>;
-  onIModelSelected?: (iModelInfo: IModelInfo) => void;
+  getAccessToken: () => Promise<AccessToken>;
+  onIModelSelected?: (iModelInfo: BasicIModelInfo) => void;
   initialIModels?: IModelInfo[];
 }
 
 interface IModelOpenState {
-  isLoadingProjects: boolean;
-  isLoadingiModels: boolean;
-  isLoadingiModel: boolean;
+  isLoadingITwins: boolean;
+  isLoadingIModels: boolean;
+  isLoadingIModel: boolean;
   recentITwins?: ITwin[];
   iModels?: IModelInfo[];
   currentITwin?: ITwin;
@@ -37,7 +38,7 @@ interface IModelOpenState {
 }
 
 /**
- * Open component showing projects and iModels
+ * Open component showing iTwins and iModels
  */
 export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState> {
 
@@ -45,59 +46,88 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     super(props, context);
 
     this.state = {
-      isLoadingProjects: true,
-      isLoadingiModels: false,
-      isLoadingiModel: false,
+      isLoadingITwins: true,
+      isLoadingIModels: false,
+      isLoadingIModel: false,
       isNavigationExpanded: false,
-      prompt: "Fetching project information...",
+      prompt: "Fetching iTwin information...",
     };
   }
 
   public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
       this.setState({
-        isLoadingProjects: false,
-        isLoadingiModels: false,
-        isLoadingiModel: false,
+        isLoadingITwins: false,
+        isLoadingIModels: false,
+        isLoadingIModel: false,
         currentITwin: {
-          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @bentley/react-set-state-usage
+          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @itwin/react-set-state-usage
         },
-        iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
+        iModels: this.props.initialIModels,  // eslint-disable-line @itwin/react-set-state-usage
       });
     }
 
-    if (undefined === this.props.getAccessToken)
-      return;
-
     const token = await this.props.getAccessToken();
-    if (undefined === token)
+    if ("" === token)
       return;
 
-    const ctx = new AuthorizedFrontendRequestContext(token);
-
+    const accessToken = await IModelApp.getAccessToken();
     const client = new ITwinAccessClient();
-    const iTwins = await client.getAll(ctx, { pagination: { skip: 0, top: 10 } });
+    const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
     this.setState({
-      isLoadingProjects: false,
-      isLoadingiModels: true,
+      isLoadingITwins: false,
+      isLoadingIModels: true,
       recentITwins: iTwins,
     });
     if (iTwins.length > 0)
       this._selectITwin(iTwins[0]);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
+  public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
+
+    const accessToken = await IModelApp.getAccessToken();
+    const hubAccess = new IModelHubFrontend();
+
+    const iModelInfos: IModelInfo[] = [];
+    const queryOptions = new IModelQuery();
+    queryOptions.select("*").top(top).skip(skip);
+    try {
+      const iModels: HubIModel[] = await hubAccess.hubClient.iModels.get(accessToken, iTwinId, queryOptions);
+      for (const imodel of iModels) {
+        const versions: Version[] = await hubAccess.hubClient.versions.get(accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        if (versions.length > 0) {
+          imodel.latestVersionName = versions[0].name;
+          imodel.latestVersionChangeSetId = versions[0].changeSetId;
+        }
+      }
+      for (const thisIModel of iModels) {
+        iModelInfos.push({
+          iTwinId,
+          id: thisIModel.id!,
+          name: thisIModel.name!,
+          createdDate: new Date(thisIModel.createdDate!),
+        });
+      }
+    } catch (e) {
+      alert(JSON.stringify(e));
+      throw e;
+    }
+    return iModelInfos;
+  }
+
+  // retrieves the IModels for a iTwin. Called when first mounted and when a new iTwin is selected.
   private startRetrieveIModels = async (iTwin: ITwin) => {
     this.setState({
       prompt: "Fetching iModel information...",
-      isLoadingiModels: true,
-      isLoadingProjects: false,
+      isLoadingIModels: true,
+      isLoadingITwins: false,
       currentITwin: iTwin,
-    });
-    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(iTwin.id, 80, 0);
-    this.setState({
-      isLoadingiModels: false,
-      iModels: iModelInfos,
+    }, async () => {
+      const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
+      this.setState({
+        isLoadingIModels: false,
+        iModels: iModelInfos,
+      });
     });
   };
 
@@ -109,10 +139,10 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     return this.startRetrieveIModels(iTwin);
   };
 
-  private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
+  private _handleIModelSelected = (iModelInfo: BasicIModelInfo): void => {
     this.setState({
       prompt: `Opening '${iModelInfo.name}'...`,
-      isLoadingiModel: true,
+      isLoadingIModel: true,
     }, () => {
       if (this.props.onIModelSelected)
         this.props.onIModelSelected(iModelInfo);
@@ -120,7 +150,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   };
 
   private renderIModels() {
-    if (this.state.isLoadingProjects || this.state.isLoadingiModels) {
+    if (this.state.isLoadingITwins || this.state.isLoadingIModels) {
       return (
         <BlockingPrompt prompt={this.state.prompt} />
       );
@@ -129,7 +159,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         <>
           <IModelList iModels={this.state.iModels}
             onIModelSelected={this._handleIModelSelected} />
-          {this.state.isLoadingiModel &&
+          {this.state.isLoadingIModel &&
             <BlockingPrompt prompt={this.state.prompt} />
           }
         </>
@@ -167,10 +197,10 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <div className="backstage-icon">
               <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
             </div>
-            <div className="project-picker-content">
-              <span className="projects-label">Projects</span>
-              <div className="project-picker">
-                <ProjectDropdown currentProject={this.state.currentITwin} recentProjects={this.state.recentITwins} onProjectClicked={this._selectITwin.bind(this)} />
+            <div className="itwin-picker-content">
+              <span className="itwins-label">iTwins</span>
+              <div className="itwin-picker">
+                <ITwinDropdown currentITwin={this.state.currentITwin} recentITwins={this.state.recentITwins} onITwinClicked={this._selectITwin.bind(this)} />
               </div>
             </div>
             <Button styleType="cta" style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>
@@ -183,7 +213,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <NavigationItem label="Share" icon="icon-placeholder" />
             <NavigationItem label="Share Point" icon="icon-placeholder" />
             <NavigationItem label="Reality Data" icon="icon-placeholder" />
-            <NavigationItem label="New Project..." icon="icon-placeholder" />
+            <NavigationItem label="New iTwin..." icon="icon-placeholder" />
           </NavigationList>
           <div className={contentStyle}>
             {this.renderIModels()}

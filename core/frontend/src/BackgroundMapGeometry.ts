@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { WebMercatorTilingScheme } from "./tile/internal";
@@ -61,7 +61,7 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
   const intersectRange = Range3d.createNull();
   accumulateFrustumPlaneDepthRange(frustum, plane, viewRotation, intersectRange, eyePoint);
 
-  return intersectRange.isNull ? Range1d.createNull(): Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
+  return intersectRange.isNull ? Range1d.createNull() : Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
 }
 
 /** Geometry of background map - either an ellipsoid or a plane as defined by GlobeMode.
@@ -406,9 +406,9 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
   const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
-  const ecefOrigin = Cartographic.fromDegrees({longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z}).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees({longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z}).toEcef()!;
-  const ecefEast = Cartographic.fromDegrees({longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z}).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees({ longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z }).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees({ longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z }).toEcef()!;
+  const ecefEast = Cartographic.fromDegrees({ longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z }).toEcef()!;
 
   const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);

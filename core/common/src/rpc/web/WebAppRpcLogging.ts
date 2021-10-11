@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
@@ -54,13 +54,14 @@ export class WebAppRpcLogging {
   }
 
   private static findPathIds(path: string) {
-    let contextId = "";
+    let iTwinId = "";
     let iModelId = "";
 
     const tokens = path.split("/");
     for (let i = 0; i !== tokens.length; ++i) {
-      if ((/^context$/i).test(tokens[i])) {
-        contextId = tokens[i + 1] || "";
+      // For backwards compatibility, find old "context" or current "iTwin" terminology
+      if ((/^context$/i).test(tokens[i]) || (/^itwin$/i).test(tokens[i])) {
+        iTwinId = tokens[i + 1] || "";
       }
 
       if ((/^imodel$/i).test(tokens[i])) {
@@ -68,7 +69,7 @@ export class WebAppRpcLogging {
       }
     }
 
-    return { contextId, iModelId };
+    return { iTwinId, iModelId };
   }
 
   private static buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string {

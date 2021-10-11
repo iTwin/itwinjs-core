@@ -6,12 +6,12 @@
  * @module NativeApp
  */
 
-import { getErrorMessage, getErrorStack, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
   TileTreeContentIds, TxnNotifications,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
@@ -162,12 +162,12 @@ export abstract class IpcHandler {
         const ret: IpcInvokeReturn = {
           error: {
             name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
-            message: getErrorMessage(err),
+            message: BentleyError.getErrorMessage(err),
             errorNumber: (err as any).errorNumber ?? 0,
           },
         };
         if (!IpcHost.noStack)
-          ret.error.stack = getErrorStack(err);
+          ret.error.stack = BentleyError.getErrorStack(err);
         return ret;
       }
     });
@@ -181,8 +181,22 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
-    Logger.logRaw(level, category, message, () => metaData);
+    switch (level) {
+      case LogLevel.Error:
+        Logger.logError(category, message, metaData);
+        break;
+      case LogLevel.Info:
+        Logger.logInfo(category, message, metaData);
+        break;
+      case LogLevel.Trace:
+        Logger.logTrace(category, message, metaData);
+        break;
+      case LogLevel.Warning:
+        Logger.logWarning(category, message, metaData);
+        break;
+    }
   }
+
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
   }

@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -16,7 +16,7 @@ import { PresentationManager, PresentationManagerProps } from "./PresentationMan
 import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
-let i18n: I18N | undefined;
+let localization: Localization | undefined;
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
@@ -60,20 +60,20 @@ export class Presentation {
    * [[include:Presentation.Frontend.Initialization]]
    * ```
    *
-   * The method should be called after a call to [IModelApp.startup]($imodeljs-frontend).
+   * The method should be called after a call to [IModelApp.startup]($core-frontend).
    */
   public static async initialize(props?: PresentationProps): Promise<void> {
     if (!IModelApp.initialized) {
       throw new PresentationError(PresentationStatus.NotInitialized,
         "IModelApp.startup must be called before calling Presentation.initialize");
     }
-    if (!i18n) {
-      i18n = IModelApp.i18n;
+    if (!localization) {
+      localization = IModelApp.localization;
     }
     if (!presentationManager) {
       const managerProps = props?.presentation ?? {};
       if (!managerProps.activeLocale) {
-        const languages = Presentation.i18n.languageList();
+        const languages = Presentation.localization.getLanguageList();
         managerProps.activeLocale = (languages.length ? languages[0] : undefined);
       }
       presentationManager = PresentationManager.create(managerProps);
@@ -103,13 +103,13 @@ export class Presentation {
 
   /**
    * Terminates Presentation library frontend. This method should be called
-   * before a call to [IModelApp.shutdown]($imodeljs-frontend)
+   * before a call to [IModelApp.shutdown]($core-frontend)
    */
   public static terminate(): void {
     terminationHandlers.forEach((handler) => handler());
     terminationHandlers.length = 0;
 
-    if (i18n)
+    if (localization)
       LocalizationHelper.unregisterNamespaces();
 
     if (presentationManager)
@@ -121,7 +121,7 @@ export class Presentation {
     favoritePropertiesManager = undefined;
 
     selectionManager = undefined;
-    i18n = undefined;
+    localization = undefined;
   }
 
   /**
@@ -180,14 +180,14 @@ export class Presentation {
   /**
    * The localization manager used by Presentation frontend. Returns the result of `IModelApp.i18n`.
    */
-  public static get i18n(): I18N {
-    if (!i18n)
+  public static get localization(): Localization {
+    if (!localization)
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
-    return i18n;
+    return localization;
   }
 
   /** @internal */
-  public static setI18nManager(value: I18N) {
-    i18n = value;
+  public static setLocalization(value: Localization) {
+    localization = value;
   }
 }

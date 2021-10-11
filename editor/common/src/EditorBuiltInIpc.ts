@@ -6,9 +6,9 @@
  * @module Editing
  */
 
-import { CompressedId64Set, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Matrix3dProps, Range3dProps, TransformProps, XYZProps } from "@bentley/geometry-core";
-import { ColorDefProps, EcefLocationProps, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@bentley/imodeljs-common";
+import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { Matrix3dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
+import { ColorDefProps, EcefLocationProps, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
@@ -230,10 +230,41 @@ export interface OffsetFacesProps {
 }
 
 /** @alpha */
+export interface SubEntityFilter {
+  /** true to reject non-planar faces */
+  nonPlanarFaces?: true;
+  /** true to reject non-linear edges */
+  nonLinearEdges?: true;
+  /** true to reject laminar edges */
+  laminarEdges?: true;
+  /** true to reject smooth edges */
+  smoothEdges?: true;
+  /** true to reject smooth vertices */
+  smoothVertices?: true;
+}
+
+/** @alpha */
+export interface LocateSubEntityProps {
+  /** The maximum number of face hits to return. Pass 0 to not pick faces. */
+  maxFace: number;
+  /** The maximum number of edge hits to return. Pass 0 to not pick edges. */
+  maxEdge: number;
+  /** The maximum number of vertex hits to return. Pass 0 to not pick vertices. */
+  maxVertex: number;
+  /** An edge will be picked if it is within this distance from the ray, a vertex twice this distance. */
+  maxDistance?: number;
+  /** When not locating faces, true to allow locate of back edges and vertices. */
+  hiddenEdgesVisible: boolean;
+  /** Optional filter to reject common types of faces, edges, and vertices. */
+  filter?: SubEntityFilter;
+}
+
+/** @alpha */
 export interface SolidModelingCommandIpc extends EditCommandIpc {
   clearElementGeometryCache(): Promise<void>;
   createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
   getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+  locateSubEntities(id: Id64String, spacePoint: XYZProps, direction: XYZProps, opts: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
   getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
   offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
 }

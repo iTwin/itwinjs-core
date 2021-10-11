@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { FloatTypeConverter, IntTypeConverter } from "../../ui-components";
+import { FloatTypeConverter, IntTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 describe("IntTypeConverter", () => {

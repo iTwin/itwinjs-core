@@ -6,7 +6,7 @@
  * @module QuantityFormatting
  */
 
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectedViewportChangedArgs } from "../ViewManager";

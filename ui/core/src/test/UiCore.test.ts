@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
-import { UiCore } from "../ui-core/UiCore";
+import { Logger } from "@itwin/core-bentley";
+import { UiCore } from "../core-react/UiCore";
 import TestUtils from "./TestUtils";
 
 describe("UiCore", () => {
@@ -15,7 +15,7 @@ describe("UiCore", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiCore.i18n).to.throw(Error);
+    expect(() => UiCore.localization).to.throw(Error);
   });
 
   it("terminate should run even if no i18n to unregister", () => {
@@ -23,11 +23,11 @@ describe("UiCore", () => {
   });
 
   it("i18nNamespace should return UiCore", () => {
-    expect(UiCore.i18nNamespace).to.eq("UiCore");
+    expect(UiCore.localizationNamespace).to.eq("UiCore");
   });
 
-  it("packageName should return ui-core", () => {
-    expect(UiCore.packageName).to.eq("ui-core");
+  it("packageName should return core-react", () => {
+    expect(UiCore.packageName).to.eq("core-react");
   });
 
   it("translate should return the key (in test environment)", async () => {
@@ -43,8 +43,8 @@ describe("UiCore", () => {
     (Logger.logError as any).restore();
   });
 
-  it("loggerCategory passed null should return 'ui-core'", () => {
-    expect(UiCore.loggerCategory(null)).to.eq("ui-core");
+  it("loggerCategory passed null should return 'core-react'", () => {
+    expect(UiCore.loggerCategory(null)).to.eq("core-react");
   });
 
   it("calling initialize twice should log", async () => {

@@ -5,8 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
-import { BackArrow } from "../../../../../ui-ninezone";
+import * as useTargetedModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/useTargeted";
+import { BackArrow } from "../../../../../appui-layout-react";
 import { mount } from "../../../../Utils";
 
 describe("<BackArrow />", () => {

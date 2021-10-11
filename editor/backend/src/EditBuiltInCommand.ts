@@ -6,21 +6,21 @@
  * @module Editing
  */
 
-import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { GeometricElement, IModelDb } from "@bentley/imodeljs-backend";
+} from "@itwin/core-geometry";
+import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import {
   BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry,
   ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps,
   GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps,
-  FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, OffsetFacesProps, SolidModelingCommandIpc,
+  FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, LocateSubEntityProps, OffsetFacesProps, SolidModelingCommandIpc,
   SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps,
-} from "@bentley/imodeljs-editor-common";
+} from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
@@ -291,6 +291,7 @@ interface SubEntityGeometryResponseProps {
 
 type SubEntityGeometryFunction = (info: SubEntityGeometryResponseProps) => void;
 type ClosestFaceFunction = (info: SubEntityLocationProps) => void;
+type LocateSubEntityFunction = (info: SubEntityLocationProps[]) => void;
 
 interface SubEntityGeometryRequestProps {
   /** Sub-entity to return geometry for */
@@ -308,12 +309,24 @@ interface ClosestFaceRequestProps {
   onResult: ClosestFaceFunction;
 }
 
+interface LocateSubEntityRequestProps  {
+  /** Space point for boresite origin */
+  point: XYZProps;
+  /** Vector for bosite direction */
+  direction: XYZProps;
+  /** The maximum number of faces, edges, and vertices to return */
+  options: LocateSubEntityProps;
+  /** Callback for result */
+  onResult: LocateSubEntityFunction;
+}
+
 interface ElementGeometryCacheOperationRequestProps {
   /** Target element id, tool element ids supplied by operations between elements... */
   id: Id64String;
   /** Callback for result when element's geometry stream is requested in flatbuffer or graphic formats */
   onGeometry?: ElementGeometryFunction;
   onSubEntityGeometry?: SubEntityGeometryRequestProps;
+  onLocateSubEntity?: LocateSubEntityRequestProps;
   onClosestFace?: ClosestFaceRequestProps;
   onOffsetFaces?: OffsetFacesProps;
 }
@@ -417,6 +430,17 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     resultProps.graphic = await this.iModel.generateElementGraphics(requestProps);
 
     return resultProps;
+  }
+
+  public async locateSubEntities(id: Id64String, point: XYZProps, direction: XYZProps, options: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined> {
+    let accepted: SubEntityLocationProps[] | undefined;
+    const onResult: LocateSubEntityFunction = (info: SubEntityLocationProps[]): void => {
+      accepted = info;
+    };
+    const opProps: LocateSubEntityRequestProps = { point, direction, options, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, onLocateSubEntity: opProps };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
   }
 
   public async getClosestFace(id: Id64String, point: XYZProps, direction?: XYZProps): Promise<SubEntityLocationProps | undefined> {

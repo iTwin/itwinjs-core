@@ -10,9 +10,9 @@ import {
   StandardStatusbarItemsProvider,
   SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework,
-} from "@bentley/ui-framework";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+} from "@itwin/appui-react";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
 import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";
@@ -65,7 +65,7 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
     }
 
     return new ContentGroup({
-      id: "main-content-group",
+      id: "ui2-frontstage-main-content-group",
       layout: StandardContentLayouts.singleView,
       contents: [
         {
