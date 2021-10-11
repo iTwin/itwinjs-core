@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
-import { IModelApp } from "@itwin/core-frontend";
-import { BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelApp,  } from "@itwin/core-frontend";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken } from "@itwin/core-bentley";
 
 // Wraps the signIn process
@@ -27,6 +27,7 @@ export async function signIn(): Promise<boolean> {
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
     responseType: "code",
+    authority: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
   });
   try {
     await browserAuth.signInSilent();

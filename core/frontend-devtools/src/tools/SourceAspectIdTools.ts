@@ -8,6 +8,7 @@
  */
 
 import { BentleyError } from "@itwin/core-bentley";
+import { QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -42,7 +43,7 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      for await (const row of imodel.query(this.getECSql(queryId), undefined, 1))
+      for await (const row of imodel.query(this.getECSql(queryId), undefined, QueryRowFormat.UseJsPropertyNames, { limit: { count: 1 } }))
         resultId = row.resultId;
     } catch (ex) {
       resultId = BentleyError.getErrorMessage(ex);

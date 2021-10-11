@@ -6,7 +6,7 @@ import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { BentleyCloudRpcManager } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
@@ -58,7 +58,7 @@ export class SampleApp {
     await Presentation.initialize({
       presentation: {
         // specify locale for localizing presentation data, it can be changed afterwards
-        activeLocale: IModelApp.localization.languageList()[0],
+        activeLocale: IModelApp.localization.getLanguageList()[0],
 
         // specify the preferred unit system
         activeUnitSystem: "metric",

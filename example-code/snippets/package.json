@@ -1,5 +1,6 @@
 {
   "name": "example-code-snippets",
+  "version": "0.0.0",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
@@ -26,6 +27,7 @@
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/service-authorization": "^0.2.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "^14.0.0",
@@ -34,7 +36,6 @@
     "fuse.js": "^3.3.0",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
-    "i18next-xhr-backend": "^2.0.1",
     "js-base64": "^3.6.1",
     "save": "^2.3.3",
     "webpack": "4.42.0"

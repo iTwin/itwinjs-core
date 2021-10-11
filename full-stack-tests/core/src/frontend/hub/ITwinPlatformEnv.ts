@@ -8,11 +8,9 @@ import {
   BriefcaseQuery,
   ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
+import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { ITwinRegistryClientWrapper } from "../../common/ITwinRegistryClientWrapper";
-import { AuthorizationClient } from "@bentley/itwin-client";
-
 export interface IModelNameArg {
   readonly iModelName: string;
   readonly iTwinId: GuidString;
@@ -94,7 +92,7 @@ export interface ITwinPlatformAbstraction {
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly iTwinMgr = new ITwinRegistryClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
   public readonly hubAccess = new IModelHubFrontend();
-  public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
+  public readonly authClient?: AuthorizationClient;
 
   public constructor(authClient?: AuthorizationClient) {
     this.authClient = authClient;

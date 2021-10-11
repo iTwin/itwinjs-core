@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // required to get certa to read the .env file - should be reworked
-import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
@@ -17,7 +17,7 @@ import {
 } from "@itwin/core-backend";
 import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestITwinProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
@@ -112,8 +112,6 @@ async function init() {
   // Start the backend
   const iModelHost = new IModelHostConfiguration();
   iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  iModelHost.concurrentQuery.concurrent = 2;
-  iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.cacheDir = path.join(__dirname, "out");
 
   await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });

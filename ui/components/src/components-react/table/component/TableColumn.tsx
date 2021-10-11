@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Table
  */
 
-// Matches how react-data-grid is exported
-// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
-
+import ReactDataGrid from "react-data-grid";
 import { DistinctValueCollection, FilterableColumn, FilterableTable } from "../columnfiltering/ColumnFiltering";
 import { FilterableColumnBase } from "../columnfiltering/FilterableColumnBase";
 import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
@@ -17,7 +15,7 @@ import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
 // cSpell:ignore columnfiltering
 
 /** ReactDataGrid.Column with additional properties
- * @public
+ * @public @deprecated
  */
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
   /** Indicates whether the display value for the cell is treated as an icon spec. */

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Table
  */
@@ -12,6 +13,7 @@ import classnames from "classnames";
 import classnamesDedupe from "classnames/dedupe";
 import { memoize } from "lodash";
 import * as React from "react";
+import ReactDataGrid from "react-data-grid";
 import { DisposableList, Guid, GuidString } from "@itwin/core-bentley";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import {
@@ -39,10 +41,6 @@ import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell";
 import { ReactDataGridColumn, TableColumn } from "./TableColumn";
 
-// Matches how react-data-grid is exported
-// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
-
 // cspell:ignore Overscan columnfiltering Dedupe popout
 
 const TABLE_ROW_HEIGHT = 27;
@@ -50,7 +48,7 @@ const TABLE_FILTER_ROW_HEIGHT = 32;
 
 /**
  * Specifies table selection target.
- * @public
+ * @public @deprecated
  */
 export enum TableSelectionTarget {
   Row,
@@ -85,7 +83,7 @@ interface ScrollState {
 }
 
 /** Properties for the Table React component
- * @public
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
@@ -159,7 +157,7 @@ export interface TableProps extends CommonProps {
 }
 
 /** Properties for a Table cell
- * @public
+ * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
  */
 export interface CellProps {
   item: CellItem;
@@ -168,7 +166,7 @@ export interface CellProps {
 }
 
 /** Properties for a Table row
- * @public
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface RowProps {
   index: number;
@@ -191,7 +189,7 @@ interface ReactDataGridColumnEventArgs {
 }
 
 /** Cell/Property Editor state
- * @public
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface TableCellEditorState {
   active: boolean;
@@ -201,7 +199,7 @@ export interface TableCellEditorState {
 }
 
 /** Cell/Property Updated Args
- * @public
+ * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
  */
 export interface TableCellUpdatedArgs {
   rowIndex: number;
@@ -210,7 +208,7 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @public
+ * @public @deprecated Use the Table component in @itwin/itwinui-react
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */
@@ -285,7 +283,7 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
 
 /**
  * Table React component that displays rows and columns in a grid along with a header
- * @public
+ * @public @deprecated Use the Table component in @iTwin/@iTwinUI-react
  */
 export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;

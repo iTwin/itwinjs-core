@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@itwin/core-react/lib/core-react/style/themecolors";
-@import "~@itwin/core-react/lib/core-react/text/mixins";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/text/mixins";
 
 .uifw-popup-message-inputField {
   background-color: $buic-background-control;

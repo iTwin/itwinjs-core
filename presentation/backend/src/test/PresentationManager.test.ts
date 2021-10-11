@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-common/lib/test/_helpers/Promises";
+import "@itwin/presentation-common/lib/cjs/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
@@ -13,22 +13,21 @@ import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  FieldDescriptor, FieldDescriptorType, FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset,
-  SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo,
+  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
+  LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSelectClassInfo, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "@itwin/presentation-common/lib/test/_helpers/EC";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
   createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset,
-} from "@itwin/presentation-common/lib/test/_helpers/random";
+  createRandomNodePathElementJSON, createRandomRelationshipPath, createRandomRuleset, createTestCategoryDescription, createTestContentDescriptor,
+  createTestContentItem, createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath, createTestSelectClassInfo,
+  createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import {
@@ -663,6 +662,7 @@ describe("PresentationManager", () => {
           level: faker.random.number(),
         } as SelectionInfo,
       };
+      imodelMock.reset();
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       manager = new PresentationManager({ addon: nativePlatformMock.object });
@@ -1680,7 +1680,7 @@ describe("PresentationManager", () => {
 
     describe("getElementProperties", () => {
 
-      it("returns element properties", async () => {
+      it("returns single element properties", async () => {
         // what the addon receives
         const elementKey = { className: "BisCore:Element", id: "0x123" };
         setupIModelForElementKey(imodelMock, elementKey);
@@ -1725,7 +1725,7 @@ describe("PresentationManager", () => {
         setup(addonContentResponse);
 
         // test
-        const options: ElementPropertiesRequestOptions<IModelDb> = {
+        const options: SingleElementPropertiesRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
           elementId: elementKey.id,
         };
@@ -1744,6 +1744,114 @@ describe("PresentationManager", () => {
               },
             },
           },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
+      });
+
+      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsByClass);
+      }
+
+      it("returns multiple elements properties", async () => {
+        // what the addon receives
+        const elementKeys = [{ className: "TestSchema:TestClass", id: "0x123" }, { className: "TestSchema:TestClass", id: "0x124" }];
+        setupIModelForElementIds(imodelMock, new Map<string, string[]>([["TestSchema:TestClass", ["0x123", "0x124"]]]), 2);
+        elementKeys.forEach((key) => setupIModelForElementKey(imodelMock, key));
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: getKeysForContentRequest(new KeySet(elementKeys)),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label 1",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value 1",
+              },
+              displayValues: {
+                test: "test display value 1",
+              },
+            }),
+            createTestContentItem({
+              label: "test label 2",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x124" }],
+              values: {
+                test: "test value 2",
+              },
+              displayValues: {
+                test: "test display value 2",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+        };
+        const expectedResponse = {
+          total: 2,
+          items: [
+            {
+              class: "Test Class",
+              id: "0x123",
+              label: "test label 1",
+              items: {
+                ["Test Category"]: {
+                  type: "category",
+                  items: {
+                    ["Test Field"]: {
+                      type: "primitive",
+                      value: "test display value 1",
+                    },
+                  },
+                },
+              },
+            },
+            {
+              class: "Test Class",
+              id: "0x124",
+              label: "test label 2",
+              items: {
+                ["Test Category"]: {
+                  type: "category",
+                  items: {
+                    ["Test Field"]: {
+                      type: "primitive",
+                      value: "test display value 2",
+                    },
+                  },
+                },
+              },
+            },
+          ],
         };
         const result = await manager.getElementProperties(options);
         verifyMockRequest(expectedContentParams);

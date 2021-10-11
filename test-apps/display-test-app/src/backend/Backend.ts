@@ -13,7 +13,7 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
@@ -145,6 +145,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
       applicationName: "display-test-app",
     },
     mobileHost: hostOpts?.mobileHost,
+    localhostIpcHost: {
+      noServer: true,
+    },
   };
 
   /** register the implementation of our RPCs. */
@@ -164,6 +167,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     await AndroidHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
+    EditCommandAdmin.registerModule(editorBuiltInCommands);
   }
 
   // Set up logging (by default, no logging is enabled)

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Table
  */
@@ -19,7 +20,7 @@ import { CellItem } from "../TableDataProvider";
 
 /**
  * Properties of the [[TableCell]] React component
- * @public
+ * @public @deprecated
  */
 export interface TableCellProps extends CommonProps {
   /** Additional class name for the cell container */
@@ -40,7 +41,7 @@ export interface TableCellProps extends CommonProps {
 
 /**
  * A React component that renders a table cell
- * @public
+ * @public @deprecated
  */
 export class TableCell extends React.PureComponent<TableCellProps> {
   /** @internal */
@@ -77,7 +78,7 @@ export class TableCell extends React.PureComponent<TableCellProps> {
 }
 
 /** Properties of the [[TableCellContent]] React component
- * @public
+ * @public @deprecated
  */
 export interface TableCellContentProps extends CommonProps {
   /** Indicates, whether container cell is selected or not */
@@ -93,7 +94,7 @@ export interface TableCellContentProps extends CommonProps {
 }
 
 /** State of the [[TableCellContent]] React component
- * @internal
+ * @internal @deprecated
  */
 interface TableCellContentState {
   /** Rendered content */
@@ -101,7 +102,7 @@ interface TableCellContentState {
 }
 
 /** A React component that renders table cell content
- * @public
+ * @public @deprecated
  */
 export class TableCellContent extends React.PureComponent<TableCellContentProps, TableCellContentState> {
   /** @internal */

@@ -7,8 +7,8 @@
  */
 
 import { AccessToken, assert, AuthStatus } from "@itwin/core-bentley";
-import { IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
-import { AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient, IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend

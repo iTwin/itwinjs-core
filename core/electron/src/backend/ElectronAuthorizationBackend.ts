@@ -12,7 +12,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { AccessToken, assert, AuthStatus, BeEvent, BentleyError, Logger } from "@itwin/core-bentley";
-import { IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
+import { AuthorizationClient, IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
   BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, StringMap,
@@ -23,7 +23,7 @@ import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
-import { AuthorizationClient, DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
+import { DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
 import { ipcMain } from "electron";
 import { electronIPCChannelName } from "../frontend/ElectronAuthorizationFrontend";
 import { ElectronHost } from "./ElectronHost";

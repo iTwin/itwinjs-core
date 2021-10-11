@@ -1,20 +1,25 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.78",
+  "version": "3.0.0-dev.83",
   "description": "Extension that adds a Map Layers Widget",
-  "main": "lib/map-layers.js",
-  "typings": "lib/map-layers",
+  "main": "lib/cjs/map-layers.js",
+  "module": "lib/esm/map-layers.js",
+  "typings": "lib/cjs/map-layers",
   "license": "MIT",
   "scripts": {
     "compile": "npm run -s build",
-    "prebuild": "npm run -s copy:assets",
-    "build": "tsc 1>&2 && npm run -s prebuild",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:locale",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run -s copy:esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public",
+    "copy:locale": "cpx \"./src/public/locales/**/*\" ./lib/public",
+    "copy:cjs": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/cjs\"",
+    "copy:esm": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib/esm\"",
     "cover": "nyc npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "test": "mocha \"./lib/test/**/*.test.js\""
+    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\""
   },
   "repository": {
     "type": "git",
@@ -62,13 +67,13 @@
     "@types/react-select": "3.0.26",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
+    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
     "enzyme": "^3.4.0",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
     "jsdom": "^17.0.0",
@@ -79,6 +84,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
+    "typemoq": "^2.1.0",
     "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
@@ -126,10 +132,10 @@
     "checkLeaks": true,
     "timeout": 60000,
     "file": [
-      "lib/test/setup.js"
+      "lib/cjs/test/setup.js"
     ],
     "exclude": [
-      "lib/test/coverage/**/*"
+      "lib/cjs/test/coverage/**/*"
     ],
     "reporter": [
       "node_modules/@itwin/build-tools/mocha-reporter"

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx";
@@ -10,16 +10,14 @@ import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "@itwin/oidc-signin-tool/lib/TestUtility";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@itwin/presentation-backend";
 import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool/lib/TestBrowserAuthorizationClient";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -45,7 +43,7 @@ const copyITwinBackendAssets = (outputDir: string) => {
   const iTwinPackagesPath = "node_modules/@itwin";
   fs.readdirSync(iTwinPackagesPath).map((packageName) => {
     const packagePath = path.resolve(iTwinPackagesPath, packageName);
-    return path.join(packagePath, "lib", "assets");
+    return path.join(packagePath, "lib", "cjs", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
   }).forEach((src) => {
@@ -71,7 +69,8 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, localization: new I18N("iModelJs", { urlTemplate: this.supplyUrlTemplate() }) });
+    await NoRenderApp.startup({ ...opts, localization: new ITwinLocalization({ urlTemplate: this.supplyUrlTemplate() }) });
+    await IModelApp.localization.changeLanguage("en-PSEUDO");
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyITwinBackendAssets("lib/assets");
     copyITwinFrontendAssets("lib/public");
@@ -85,6 +84,10 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const libDir = path.resolve("lib");
+  const hierarchiesCacheDir = path.join(libDir, "cache");
+  if (!fs.existsSync(hierarchiesCacheDir))
+    fs.mkdirSync(hierarchiesCacheDir);
+
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
@@ -94,7 +97,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     caching: {
       hierarchies: {
         mode: HierarchyCacheMode.Disk,
-        directory: path.join(libDir, "cache"),
+        directory: hierarchiesCacheDir,
       },
     },
   };

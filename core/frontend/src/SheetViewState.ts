@@ -178,7 +178,7 @@ class ViewAttachmentsInfo {
         try {
           const view = await iModel.views.load(attachment.view.id);
           return view;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       };
@@ -422,7 +422,7 @@ export class SheetViewState extends ViewState2d {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
     for await (const row of this.iModel.query(ecsql))
-      ids.push(row.attachmentId);
+      ids.push(row[0]);
 
     return ids;
   }

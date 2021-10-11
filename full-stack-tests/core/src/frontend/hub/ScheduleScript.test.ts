@@ -9,7 +9,7 @@ import {
 import {
   CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 function countTileTrees(view: ViewState): number {
@@ -55,7 +55,7 @@ describe("Schedule script (#integration)", () => {
       let threw = false;
       try {
         treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
-      } catch (_) {
+      } catch {
         threw = true;
       }
 

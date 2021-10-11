@@ -6,12 +6,12 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
 import { IModelApp, IModelAppOptions, NativeApp  } from "@itwin/core-frontend";
+import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./ITwinPlatformEnv";
-import { AuthorizationClient } from "@bentley/itwin-client";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";

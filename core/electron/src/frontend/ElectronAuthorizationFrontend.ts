@@ -6,7 +6,7 @@
 // TODO: Before the 3.0 release this whole file needs to be removed from the repo.
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 // import { ipcRenderer } from "electron";
 
 export const electronIPCChannelName = "itwinjs.electron.auth"; // TODO: Come up with something better

@@ -9,7 +9,7 @@
 import { join } from "path";
 import { AccessToken, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
+  AuthorizationClient, BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";

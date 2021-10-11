@@ -8,7 +8,7 @@ import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin
 import {
   HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
-import { FeatureOverrides, Target } from "@itwin/core-frontend/lib/webgl";
+import { FeatureOverrides, Target } from "@itwin/core-frontend/lib/cjs/webgl";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();

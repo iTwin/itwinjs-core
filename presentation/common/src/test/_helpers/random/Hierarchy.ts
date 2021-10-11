@@ -15,6 +15,9 @@ import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
 import { createRandomLabelDefinition, createRandomLabelDefinitionJSON } from "./LabelDefinition";
 import { createRandomHexColor, createRandomRgbColor, nullable } from "./Misc";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomBaseNodeKey = (): BaseNodeKey => {
   return {
     type: faker.random.word(),
@@ -23,6 +26,9 @@ export const createRandomBaseNodeKey = (): BaseNodeKey => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): ECInstancesNodeKey => {
   instanceKeys = instanceKeys ?? [createRandomECInstanceKey(), createRandomECInstanceKey()];
   return {
@@ -33,6 +39,9 @@ export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): EC
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSON[]): ECInstancesNodeKeyJSON => {
   return {
     type: StandardNodeTypes.ECInstancesNode,
@@ -42,6 +51,9 @@ export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSO
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECClassGroupingNodeKey = (groupedInstancesCount?: number): ECClassGroupingNodeKey => ({
   type: StandardNodeTypes.ECClassGroupingNode,
   version: 2,
@@ -50,6 +62,9 @@ export const createRandomECClassGroupingNodeKey = (groupedInstancesCount?: numbe
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: number): ECPropertyGroupingNodeKey => ({
   type: StandardNodeTypes.ECPropertyGroupingNode,
   version: 2,
@@ -60,6 +75,9 @@ export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: nu
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomLabelGroupingNodeKey = (groupedInstancesCount?: number): LabelGroupingNodeKey => ({
   type: StandardNodeTypes.DisplayLabelGroupingNode,
   version: 2,
@@ -68,6 +86,9 @@ export const createRandomLabelGroupingNodeKey = (groupedInstancesCount?: number)
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): GroupingNodeKey => {
   const type = faker.random.arrayElement([
     StandardNodeTypes.DisplayLabelGroupingNode,
@@ -82,6 +103,9 @@ export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): Gro
   throw Error();
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstancesNode = (): Node => {
   return {
     key: createRandomECInstancesNodeKey(),
@@ -100,6 +124,9 @@ export const createRandomECInstancesNode = (): Node => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   return {
     key: createRandomECInstancesNodeKeyJSON(),
@@ -117,6 +144,9 @@ export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomNodePathElement = (depth: number = 1): NodePathElement => {
   const el: NodePathElement = {
     node: createRandomECInstancesNode(),
@@ -140,6 +170,9 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
   return el;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElementJSON => {
   const el: NodePathElementJSON = {
     node: createRandomECInstancesNodeJSON(),

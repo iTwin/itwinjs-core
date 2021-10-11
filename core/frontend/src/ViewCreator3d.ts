@@ -13,13 +13,16 @@ Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@itwin/core-common";
+import {
+  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat, RenderMode,
+  ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+} from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { StandardViewId } from "./StandardView";
-import { IModelConnection } from "./IModelConnection";
-import { ViewState } from "./ViewState";
-import { SpatialViewState } from "./SpatialViewState";
 import { Environment } from "./DisplayStyleState";
+import { IModelConnection } from "./IModelConnection";
+import { SpatialViewState } from "./SpatialViewState";
+import { StandardViewId } from "./StandardView";
+import { ViewState } from "./ViewState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
@@ -66,7 +69,7 @@ export class ViewCreator3d {
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
       await viewState.load();
-    } catch (_) {
+    } catch {
     }
 
     if (options?.standardViewId)
@@ -278,7 +281,7 @@ export class ViewCreator3d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query))
+    for await (const row of this._imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames))
       rows.push(row.id);
 
     return rows;
