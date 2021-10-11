@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
@@ -16,12 +16,12 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
-import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -153,6 +153,23 @@ export class TestRunner {
     await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
 
+    let needRestart = this.curConfig.requiresRestart(new TestConfig({})); // If current config differs from default, restart
+    const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+    if (!this.curConfig.useDisjointTimer) {
+      const ext = this.curConfig.renderOptions?.disabledExtensions;
+      renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+      needRestart = true;
+    }
+    if (IModelApp.initialized && needRestart)
+      await IModelApp.shutdown();
+    if (needRestart) {
+      await DisplayPerfTestApp.startup({
+        renderSys: renderOptions,
+        tileAdmin: this.curConfig.tileProps,
+        realityDataAccess: new RealityDataAccessClient(),
+      });
+    }
+
     // Run all the tests
     for (const set of this._testSets)
       await this.runTestSet(set);
@@ -181,8 +198,13 @@ export class TestRunner {
         await IModelApp.shutdown();
 
       if (!IModelApp.initialized) {
+        const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+        if (!this.curConfig.useDisjointTimer) {
+          const ext = this.curConfig.renderOptions?.disabledExtensions;
+          renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+        }
         await DisplayPerfTestApp.startup({
-          renderSys: this.curConfig.renderOptions,
+          renderSys: renderOptions,
           tileAdmin: this.curConfig.tileProps,
           realityDataAccess: new RealityDataAccessClient(),
         });
