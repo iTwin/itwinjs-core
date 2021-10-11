@@ -610,14 +610,11 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       eslint: ^7.11.0
-      jsdom: ^17.0.0
-      jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.4.0
-      xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
     devDependencies:
@@ -641,14 +638,11 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
       eslint: 7.32.0
-      jsdom: 17.0.0
-      jsdom-global: 3.0.2_jsdom@17.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.4.3
-      xmlhttprequest: 1.8.0
 
   ../../core/ecschema-locaters:
     specifiers:
@@ -718,7 +712,6 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.4.0
-      xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
     devDependencies:
@@ -744,7 +737,6 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.4.3
-      xmlhttprequest: 1.8.0
 
   ../../core/ecschema-rpc/common:
     specifiers:
@@ -1669,8 +1661,6 @@ importers:
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
       '@types/fs-extra': ^4.0.7
-      '@types/i18next': ^8.4.2
-      '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       body-parser: ^1.18.2
@@ -1681,14 +1671,11 @@ importers:
       express: ^4.16.3
       fs-extra: ^8.1.0
       fuse.js: ^3.3.0
-      i18next: ^10.2.2
-      i18next-browser-languagedetector: ^2.1.0
       mocha: ^8.3.2
       rimraf: ^3.0.2
       save: ^2.3.3
       typescript: ~4.4.0
       webpack: 4.42.0
-      xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
@@ -1704,8 +1691,6 @@ importers:
       express: 4.17.1
       fs-extra: 8.1.0
       fuse.js: 3.6.1
-      i18next: 10.6.0
-      i18next-browser-languagedetector: 2.2.4
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
@@ -1717,8 +1702,6 @@ importers:
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
       '@types/fs-extra': 4.0.12
-      '@types/i18next': 8.4.6
-      '@types/i18next-browser-languagedetector': 2.0.2
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       cpx: 1.5.0
@@ -1726,7 +1709,6 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.4.3
-      xmlhttprequest: 1.8.0
 
   ../../example-code/snippets:
     specifiers:
@@ -1748,8 +1730,6 @@ importers:
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
       '@types/fs-extra': ^4.0.7
-      '@types/i18next': ^8.4.2
-      '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       body-parser: ^1.18.2
@@ -1760,8 +1740,6 @@ importers:
       express: ^4.16.3
       fs-extra: ^8.1.0
       fuse.js: ^3.3.0
-      i18next: ^10.2.2
-      i18next-browser-languagedetector: ^2.1.0
       js-base64: ^3.6.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
@@ -1785,8 +1763,6 @@ importers:
       express: 4.17.1
       fs-extra: 8.1.0
       fuse.js: 3.6.1
-      i18next: 10.6.0
-      i18next-browser-languagedetector: 2.2.4
       js-base64: 3.7.2
       save: 2.4.0
       webpack: 4.42.0
@@ -1799,8 +1775,6 @@ importers:
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
       '@types/fs-extra': 4.0.12
-      '@types/i18next': 8.4.6
-      '@types/i18next-browser-languagedetector': 2.0.2
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       cpx: 1.5.0
@@ -1900,7 +1874,6 @@ importers:
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
-      xmlhttprequest: ^1.8.0
     dependencies:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
@@ -1957,7 +1930,6 @@ importers:
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
       typescript: 4.4.3
-      xmlhttprequest: 1.8.0
 
   ../../full-stack-tests/core:
     specifiers:
@@ -2350,7 +2322,6 @@ importers:
       sinon-chai: ^3.2.0
       typemoq: ^2.1.0
       typescript: ~4.4.0
-      xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
@@ -2399,7 +2370,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       typemoq: 2.1.0
-      xmlhttprequest: 1.8.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -2875,7 +2845,6 @@ importers:
       source-map-support: ^0.5.6
       typemoq: ^2.1.0
       typescript: ~4.4.0
-      xmlhttprequest: ^1.8.0
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
@@ -2914,7 +2883,6 @@ importers:
       source-map-support: 0.5.20
       typemoq: 2.1.0
       typescript: 4.4.3
-      xmlhttprequest: 1.8.0
 
   ../../presentation/testing:
     specifiers:
@@ -4139,6 +4107,7 @@ importers:
       cpx: ^1.5.0
       eslint: ^7.11.0
       ignore-styles: ^5.0.1
+      jsdom: ^17.0.0
       jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -4173,7 +4142,8 @@ importers:
       cpx: 1.5.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
-      jsdom-global: 3.0.2
+      jsdom: 17.0.0
+      jsdom-global: 3.0.2_jsdom@17.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -4394,6 +4364,7 @@ importers:
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       ignore-styles: ^5.0.1
+      jsdom: ^17.0.0
       jsdom-global: 3.0.2
       lodash: ^4.17.10
       mocha: ^8.3.2
@@ -4460,7 +4431,8 @@ importers:
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
-      jsdom-global: 3.0.2
+      jsdom: 17.0.0
+      jsdom-global: 3.0.2_jsdom@17.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -4689,6 +4661,7 @@ importers:
       ignore-styles: ^5.0.1
       immer: 9.0.2
       immutable: ^3.8.2
+      jsdom: ^17.0.0
       jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -4755,7 +4728,8 @@ importers:
       eslint: 7.32.0
       faker: 4.1.0
       ignore-styles: 5.0.1
-      jsdom-global: 3.0.2
+      jsdom: 17.0.0
+      jsdom-global: 3.0.2_jsdom@17.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -22358,6 +22332,7 @@ packages:
   /xmlhttprequest/1.8.0:
     resolution: {integrity: sha1-Z/4HXFwk/vOfnWX197f+dRcZaPw=}
     engines: {node: '>=0.4.0'}
+    dev: true
 
   /xpath.js/1.1.0:
     resolution: {integrity: sha512-jg+qkfS4K8E7965sqaUl8mRngXiKb3WZGfONgE18pr03FUQiuSV6G+Ej4tS55B+rIQSFEIw3phdVAQ4pPqNWfQ==}

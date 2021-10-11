@@ -96,3 +96,17 @@ export interface Localization {
   changeLanguage(language: string): Promise<void>;
 }
 
+/** An empty [[Localization]] used if one is not provided to [IModelApp]($frontend). Does not perform localizations (merely returns the key.)
+ * @public
+ */
+export class EmptyLocalization implements Localization {
+  public getLocalizedString(key: string | string[]): string { return typeof (key) == "string" ? key : key[0]; }
+  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
+  public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
+  public getLocalizedKeys(inputString: string): string { return inputString; }
+  public async registerNamespace(): Promise<void> { }
+  public unregisterNamespace(): void { }
+  public getNamespacePromise(): Promise<void> | undefined { return undefined; }
+  public getLanguageList(): string[] { return []; }
+  public async changeLanguage() { }
+}

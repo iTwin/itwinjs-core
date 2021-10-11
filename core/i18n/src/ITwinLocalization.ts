@@ -18,31 +18,37 @@ import { Localization } from "@itwin/core-common";
 export interface LocalizationOptions {
   urlTemplate?: string;
   backendPlugin?: object;
+  detectorPlugin?: object;
+  initOptions?: InitOptions;
+  backendHttpOptions?: HttpApi.BackendOptions;
+  detectorOptions?: i18nextBrowserLanguageDetector.DetectorOptions;
 }
 
 /** Supplies localizations for iTwin.js
- * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
+ * @note this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
 export class ITwinLocalization implements Localization {
-  private _i18next: i18n;
-  private readonly _namespaceRegistry = new Map<string, Promise<void>>();
+  public i18next: i18n;
+  private readonly _namespaces = new Map<string, Promise<void>>();
 
   /**
    * @param options object with I18NOptions (optional)
    */
   public constructor(options?: LocalizationOptions) {
-    this._i18next = createInstance();
+    this.i18next = createInstance();
 
     const backend: HttpApi.BackendOptions = {
       loadPath: options?.urlTemplate ?? "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
+      ...options?.backendHttpOptions,
     };
 
     const detection: i18nextBrowserLanguageDetector.DetectorOptions = {
       order: ["querystring", "navigator", "htmlTag"],
       lookupQuerystring: "lng",
       caches: [],
+      ...options?.detectorOptions,
     };
 
     const initOptions: InitOptions = {
@@ -52,15 +58,17 @@ export class ITwinLocalization implements Localization {
       fallbackLng: "en",
       backend,
       detection,
+      ...options?.initOptions,
     };
 
     // if in a development environment, set debugging
     if (process.env.NODE_ENV === "development")
       initOptions.debug = true;
 
-    this._i18next.use(i18nextBrowserLanguageDetector)
-      .use(TranslationLogger)
+    this.i18next
+      .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
       .use(options?.backendPlugin ?? HttpApi.default ?? HttpApi)
+      .use(TranslationLogger)
       .init(initOptions);
   }
 
@@ -98,7 +106,7 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
-    const value = this._i18next.t(key, options);
+    const value = this.i18next.t(key, options);
     if (typeof value !== "string")
       throw new Error("Translation key(s) not found");
 
@@ -134,7 +142,7 @@ export class ITwinLocalization implements Localization {
    * @internal
    */
   public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
-    const en = this._i18next.getFixedT("en", namespace);
+    const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
       throw new Error("Translation key(s) not found");
@@ -144,7 +152,7 @@ export class ITwinLocalization implements Localization {
 
   /** @internal */
   public loadNamespace(name: string, i18nCallback: any) {
-    this._i18next.loadNamespaces(name, i18nCallback);
+    this.i18next.loadNamespaces(name, i18nCallback);
   }
 
   /** Get the promise for an already registered Namespace.
@@ -152,18 +160,18 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getNamespacePromise(name: string): Promise<void> | undefined {
-    return this._namespaceRegistry.get(name);
+    return this._namespaces.get(name);
   }
 
   /** @internal */
   public getLanguageList(): string[] {
-    return this._i18next.languages;
+    return this.i18next.languages;
   }
 
   /** override the language detected in the browser
    * @internal */
   public async changeLanguage(language: string) {
-    this._i18next.changeLanguage(language);
+    this.i18next.changeLanguage(language);
   }
 
   /** Register a new Namespace and return it. If the namespace is already registered, it will be returned.
@@ -175,12 +183,12 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public async registerNamespace(name: string, setDefault?: true): Promise<void> {
-    const existing = this._namespaceRegistry.get(name);
+    const existing = this._namespaces.get(name);
     if (existing !== undefined)
       return existing;
 
     if (setDefault)
-      this._i18next.setDefaultNamespace(name);
+      this.i18next.setDefaultNamespace(name);
 
     const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
       this.loadNamespace(name, (err: any, _t: any) => {
@@ -193,12 +201,16 @@ export class ITwinLocalization implements Localization {
         // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
         // using i18next-http-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
         // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
-        const errorList = err as string[];
         let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
-        for (const thisError of errorList) {
-          if (!thisError.includes(name))
-            continue;
-          locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
+
+        try {
+          for (const thisError of err) {
+            if (typeof thisError === "string" && !thisError.includes(name))
+              continue;
+            locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
+          }
+        } catch (e) {
+          locales = [];
         }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length === 0)
@@ -207,13 +219,13 @@ export class ITwinLocalization implements Localization {
         resolve();
       });
     });
-    this._namespaceRegistry.set(name, theReadPromise);
+    this._namespaces.set(name, theReadPromise);
     return theReadPromise;
   }
 
   /** @internal */
   public unregisterNamespace(name: string): void {
-    this._namespaceRegistry.delete(name);
+    this._namespaces.delete(name);
   }
 
 }

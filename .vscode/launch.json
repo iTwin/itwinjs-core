@@ -749,7 +749,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js"
