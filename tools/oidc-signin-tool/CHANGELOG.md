@@ -1,6 +1,13 @@
 # Change Log - @bentley/oidc-signin-tool
 
-This log was last generated on Fri, 08 Oct 2021 16:44:23 GMT and should not be manually modified.
+This log was last generated on Mon, 11 Oct 2021 17:37:46 GMT and should not be manually modified.
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+### Updates
+
+- Handle the new consent page for requesting scopes.
 
 ## 2.19.15
 Fri, 08 Oct 2021 16:44:23 GMT
