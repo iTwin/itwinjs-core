@@ -1155,6 +1155,44 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.deep.eq(expectedRpcResponse);
       });
 
+      it("enforces maximum page size when requesting multiple element properties", async () => {
+        const testElementsProperties: ElementProperties[] = [{
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        }];
+        const managerOptions: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: testData.imodelMock.object,
+          elementClasses: ["TestSchema:TestClass"],
+          paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
+        };
+        const managerResponse = { total: 1, items: testElementsProperties };
+        const rpcOptions: PresentationRpcRequestOptions<MultiElementPropertiesRpcRequestOptions> = {
+          ...defaultRpcParams,
+          elementClasses: ["TestSchema:TestClass"],
+          paging: { start: 0, size: 0 },
+        };
+        const expectedRpcResponse = { total: 1, items: testElementsProperties };
+        presentationManagerMock
+          .setup(async (x) => x.getElementProperties(managerOptions))
+          .returns(async () => managerResponse)
+          .verifiable();
+        const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(expectedRpcResponse);
+      });
+
     });
 
     describe("getDisplayLabelDefinition", () => {

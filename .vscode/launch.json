@@ -1053,7 +1053,7 @@
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
       ],
       "autoAttachChildProcesses": false,
       "attachSimplePort": 0,
@@ -1072,7 +1072,7 @@
       "port": 9223,
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] ui-test-app (electron)"
@@ -1089,7 +1089,7 @@
       "program": "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js",
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] ui-test-app (chrome)"
@@ -1105,7 +1105,7 @@
       "url": "http://localhost:3000/",
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] ui-test-app (chrome)"
@@ -1125,7 +1125,7 @@
       "program": "${workspaceFolder}/test-apps/display-test-app/lib/backend/WebMain.js",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1142,7 +1142,7 @@
       "url": "http://localhost:3000",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1169,7 +1169,7 @@
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1186,7 +1186,7 @@
       "port": 9223,
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [

@@ -3568,6 +3568,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/appui-layout-react': link:../../ui/ninezone
@@ -3612,7 +3613,6 @@ importers:
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.3.1
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.3
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
@@ -6606,7 +6606,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.15_webpack@4.44.2
+      '@bentley/webpack-tools-core': 2.19.16_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6706,7 +6706,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.15_webpack@4.44.2
+      '@bentley/webpack-tools-core': 2.19.16_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6797,8 +6797,8 @@ packages:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
     dev: true
 
-  /@bentley/webpack-tools-core/2.19.15_webpack@4.44.2:
-    resolution: {integrity: sha512-eEnJJjjQbW0pyNYUhsaD34Amf/03/DPhaKemGIUzyvGVuIuveqPrE0hd1O4icTv4B1d/bwb+AYN5hnjVW4jGlw==}
+  /@bentley/webpack-tools-core/2.19.16_webpack@4.44.2:
+    resolution: {integrity: sha512-mG9g2V7orqOJey6jH6PjEg1brh/Y1o/uvtojil06FWXZx6eFSMDoySz8OnRHzsmAq8wRJyuIvCktSVA055ESzw==}
     peerDependencies:
       webpack: 4.42.0
     dependencies:
@@ -19144,7 +19144,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.12.1
+      '@babel/runtime': 7.15.4
     dev: true
 
   /regex-cache/0.4.4:
