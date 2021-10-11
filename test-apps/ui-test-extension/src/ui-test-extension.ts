@@ -24,35 +24,34 @@ import { IModelApp } from "@itwin/core-frontend";
  * For more information about Extensions, see Extension in the iModel.js documentation. *
  */
 export class UiTestExtension {
+  private static _initialized = false;
 
   /** We'll register the uiTestExtension.json as the Extension's namespace/ */
-  private static _localizationNamespace?: string;
+  public static readonly localizationNamespace = "uiTestExtension";
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
 
   private static registerUiComponents(): void {
-    SampleTool.register(this._localizationNamespace);
-    GenericTool.register(this._localizationNamespace);
-    OpenTraceDialogTool.register(this._localizationNamespace);
+    SampleTool.register(UiTestExtension.localizationNamespace);
+    GenericTool.register(UiTestExtension.localizationNamespace);
+    OpenTraceDialogTool.register(UiTestExtension.localizationNamespace);
 
     ConfigurableUiManager.addFrontstageProvider(new ExtensionFrontstage());
     ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
 
     // register to add items to "General" usage stages"
-    UiItemsManager.register(new ExtensionUiItemsProvider(IModelApp.localization));
-    UiItemsManager.register(new TraceUiItemsProvider(IModelApp.localization, "uiTestExtension"));
+    UiItemsManager.register(new ExtensionUiItemsProvider());
+    UiItemsManager.register(new TraceUiItemsProvider());
   }
 
   public static async initialize(): Promise<void> {
+    if (this._initialized)
+      return;
+
     /** Register the localized strings for this extension
      * We'll pass the localization member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
      */
-    this._localizationNamespace = "uiTestExtension";
-    await IModelApp.localization.registerNamespace("uiTestExtension");
+    await IModelApp.localization.registerNamespace(UiTestExtension.localizationNamespace);
     this.registerUiComponents();
-  }
-
-  /** Invoked each time this extension is loaded. */
-  public async onExecute(_args: string[]): Promise<void> {
-    // currently, everything is done in onLoad.
+    this._initialized = true;
   }
 }

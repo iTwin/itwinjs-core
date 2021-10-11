@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ui-test-extension",
+  "name": "@itwin/ui-test-extension",
   "version": "2.5.0-dev.2",
   "description": "Example extension to exercise adding UI components and stages",
   "main": "index.js",
