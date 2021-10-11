@@ -55,7 +55,6 @@ export interface TableWithUnifiedSelectionProps {
  *
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 // eslint-disable-next-line deprecation/deprecation
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
@@ -83,7 +82,6 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     // eslint-disable-next-line deprecation/deprecation
     private get baseProps(): TableProps { return this.props; }
 

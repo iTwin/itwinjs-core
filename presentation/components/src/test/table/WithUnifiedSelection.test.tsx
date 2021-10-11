@@ -21,7 +21,6 @@ import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } f
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 // eslint-disable-next-line deprecation/deprecation
 const PresentationTable = tableWithUnifiedSelection(Table);
 
