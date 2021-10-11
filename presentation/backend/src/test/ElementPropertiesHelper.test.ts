@@ -7,7 +7,10 @@ import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { Content, PropertyValueFormat } from "@itwin/presentation-common";
-import { createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey,
+  createTestNestedContentField, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
 
 describe("buildElementsProperties", () => {
@@ -125,7 +128,7 @@ describe("buildElementsProperties", () => {
     }]);
   });
 
-  it("does not include primitive property value when it's not set", () => {
+  it("sets primitive property value to empty string when it's not set", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
@@ -162,6 +165,10 @@ describe("buildElementsProperties", () => {
               type: "primitive",
               value: "",
             },
+            ["UndefinedProp"]: {
+              type: "primitive",
+              value: "",
+            },
             ["Prop"]: {
               type: "primitive",
               value: "valid value",
@@ -172,22 +179,22 @@ describe("buildElementsProperties", () => {
     }]);
   });
 
-  it("does not include category when primitive property value is not set", () => {
+  it("does not include category if it only has nested content field without values", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
     expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
-          createTestSimpleContentField({ name: "prop", label: "Prop", category }),
+          createTestNestedContentField({ name: "nestedField", category, nestedFields: [createTestSimpleContentField({ name: "primitiveField" })] }),
         ],
       }),
       [
         createTestContentItem({
           values: {
-            prop: "valid value",
+            nestedField: [],
           },
           displayValues: {
-            prop: undefined,
+            nestedField: [],
           },
         }),
       ],

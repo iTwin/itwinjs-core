@@ -20,6 +20,10 @@ Object {
             "type": "primitive",
             "value": "Ñót spêçìfíêd",
           },
+          "User Label": Object {
+            "type": "primitive",
+            "value": "",
+          },
         },
         "type": "category",
       },

@@ -267,12 +267,9 @@ class ElementPropertiesBuilder implements IContentVisitor {
     });
   }
   public processPrimitiveValue(props: ProcessPrimitiveValueProps): void {
-    if (props.displayValue === undefined)
-      return;
-
     this._currentAppender.append(props.field.label, {
       type: "primitive",
-      value: props.displayValue.toString(),
+      value: props.displayValue?.toString() ?? "",
     });
   }
 }
