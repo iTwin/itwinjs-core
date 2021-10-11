@@ -2702,7 +2702,11 @@ export interface EmphasizeElementsProps {
 // @public
 export class EmptyLocalization implements Localization {
     // (undocumented)
+    changeLanguage(): Promise<void>;
+    // (undocumented)
     getEnglishString(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getLanguageList(): string[];
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
@@ -2710,9 +2714,7 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
     // (undocumented)
-    getNamespace(): Promise<void> | undefined;
-    // (undocumented)
-    languageList(): string[];
+    getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
     registerNamespace(): Promise<void>;
     // (undocumented)
@@ -5029,19 +5031,17 @@ export type LocalFileName = string;
 
 // @public
 export interface Localization {
-    // (undocumented)
+    // @internal
+    changeLanguage(language: string): Promise<void>;
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
+    getLanguageList(): string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
-    getNamespace(name: string): Promise<void> | undefined;
-    // (undocumented)
-    languageList(): string[];
-    // (undocumented)
-    registerNamespace(namespace: string): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
+    getNamespacePromise(name: string): Promise<void> | undefined;
+    registerNamespace(namespace: string, setDefault?: true): Promise<void>;
+    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 

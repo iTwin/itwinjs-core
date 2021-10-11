@@ -559,12 +559,8 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "name": "i18next-http-backend",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ignore-styles",
@@ -596,11 +592,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions" ]
+      "allowedCategories": [ "backend", "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",
@@ -860,7 +856,7 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "edit", "tools" ]
+      "allowedCategories": [ "backend", "edit", "frontend", "tools" ]
     },
     {
       "name": "spdy",
@@ -960,7 +956,7 @@
     },
     {
       "name": "ws",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "xml-js",
