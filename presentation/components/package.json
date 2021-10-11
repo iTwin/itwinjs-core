@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-components",
-  "version": "3.0.0-dev.80",
+  "version": "3.0.0-dev.83",
   "description": "React components based on iModel.js Presentation library",
   "main": "lib/cjs/presentation-components.js",
   "module": "lib/esm/presentation-components.js",
@@ -52,16 +52,16 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
-    "@itwin/core-common": "workspace:^3.0.0-dev.80",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.80",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.80",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.80",
-    "@itwin/presentation-frontend": "workspace:^3.0.0-dev.80",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.80",
-    "@itwin/components-react": "workspace:^3.0.0-dev.80",
-    "@itwin/core-react": "workspace:^3.0.0-dev.80",
-    "@itwin/imodel-components-react": "workspace:^3.0.0-dev.80",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.83",
+    "@itwin/core-common": "workspace:^3.0.0-dev.83",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.83",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.83",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.83",
+    "@itwin/presentation-frontend": "workspace:^3.0.0-dev.83",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.83",
+    "@itwin/components-react": "workspace:^3.0.0-dev.83",
+    "@itwin/core-react": "workspace:^3.0.0-dev.83",
+    "@itwin/imodel-components-react": "workspace:^3.0.0-dev.83",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -118,23 +118,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "check-coverage": true,
-    "statements": 100,
-    "functions": 99,
-    "branches": 100,
-    "lines": 100,
-    "require": [
-      "source-map-support/register",
-      "ts-node/register",
-      "ignore-styles",
-      "jsdom-global/register"
-    ],
-    "exclude": [
-      "src/presentation-components.ts",
-      "src/test/**",
-      "lib/cjs/test/**"
-    ]
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

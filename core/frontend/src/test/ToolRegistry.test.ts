@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -36,7 +36,7 @@ class TestCommandApp extends MockRender.App {
   public static testNamespace?: string;
 
   public static override async startup(): Promise<void> {
-    await IModelApp.startup({ localization: new I18N("iModelJs", this.supplyI18NOptions()) });
+    await IModelApp.startup({ localization: new ITwinLocalization(this.supplyI18NOptions()) });
     this.testNamespace = "TestApp";
     await IModelApp.localization.registerNamespace(this.testNamespace);
     TestImmediate.register(this.testNamespace);

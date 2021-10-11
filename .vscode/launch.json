@@ -341,6 +341,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "Map Layers Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 7
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,extensions}/*/lib/**/*.js"
+      ]
+    },
     // CLIENTS TESTS
     {
       "name": "Backend iTwin Client Tests (Integration)",
@@ -566,12 +583,10 @@
       "cwd": "${workspaceFolder}/ui/components",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/test/**/*.test.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test"
       ],
       "skipFiles": [
         "<node_internals>/**/*.js",
@@ -755,7 +770,7 @@
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
