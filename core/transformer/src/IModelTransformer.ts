@@ -859,7 +859,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
  * Inserts, updates, and deletes are determined by inspecting the changeset(s).
- * @param accessToken The client access token string
+ * @param accessToken A valid access token string
  * @param startChangesetId Include changes from this changeset up through and including the current changeset.
  * If this parameter is not provided, then just the current changeset will be exported.
  * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.

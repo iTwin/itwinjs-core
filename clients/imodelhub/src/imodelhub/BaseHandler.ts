@@ -160,7 +160,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Send a delete request. Sends a request without body.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param relativeUrlPath Relative path to the REST resource.
    * @param httpRequestOptions Additional options for the HTTP request.
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
@@ -171,7 +171,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Delete a strongly typed instance. Sends a request body with a WSG instance.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Instance to be deleted.
    * @param requestOptions WSG options for the request.
@@ -189,7 +189,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Post a strongly typed instance. Sends a request body with a WSG instance.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
@@ -209,7 +209,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Post multiple strongly typed instances. Sends a request body with WSG instances.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instances Strongly typed instances to be posted.
@@ -223,7 +223,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Get multiple strongly typed instances.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
@@ -236,7 +236,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Get a chunk of strongly typed instances.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param url Full path to the REST resource.
    * @param chunkedQueryContext Chunked query context
    * @param typedConstructor Constructor function for the type
@@ -250,7 +250,7 @@ export class IModelBaseHandler extends WsgClient {
 
   /**
    * Get multiple strongly typed instances. Sends query in the request's body. This can be used for queries that are too long to fit in URL.
-   * @param accessToken The client access token string
+   * @param accessToken A valid access token string
    * @param typedConstructor Used to construct the resulting instances from the response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.

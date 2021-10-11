@@ -162,7 +162,7 @@ export class VersionHandler {
   }
 
   /** Get the named [[Version]]s of an iModel. Returned Versions are ordered from the latest [[ChangeSet]] to the oldest.
-   * @param accessToken The client access token string.
+   * @param accessToken A valid access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Versions or select different data from them.
    * @returns Versions that match the query.
@@ -179,7 +179,7 @@ export class VersionHandler {
   }
 
   /** Create a named [[Version]] of an iModel.
-   * @param accessToken The client access token string.
+   * @param accessToken A valid access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the [[ChangeSet]] to create a named Version for. Empty ChangeSet id can be provided to create iModel's baseline version.
    * @param name Name of the new named Version.
@@ -208,7 +208,7 @@ export class VersionHandler {
   }
 
   /** Update the named [[Version]] of an iModel. Only the description can be changed when updating the named Version.
-   * @param accessToken The client access token string.
+   * @param accessToken A valid access token string.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param version Named version to update.
    * @returns Updated Version instance from iModelHub.
