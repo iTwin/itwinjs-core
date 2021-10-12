@@ -16,7 +16,7 @@ function createViewDiv() {
   return div;
 }
 
-describe("Blank Connection", () => {
+describe.only("Blank Connection", () => {
   let blankConnection: BlankConnection;
   const viewDiv = createViewDiv();
   const iTwinId: GuidString = Guid.createValue();

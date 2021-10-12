@@ -6,9 +6,10 @@
  * @module Localization
  */
 
-import { createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
-import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import * as HttpApi from "i18next-http-backend";
+import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
+import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
+import HttpApi, { BackendOptions } from "i18next-http-backend";
+import XHR from "i18next-xhr-backend";
 import { Logger } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
 
@@ -17,11 +18,11 @@ import { Localization } from "@itwin/core-common";
  */
 export interface LocalizationOptions {
   urlTemplate?: string;
-  backendPlugin?: object;
-  detectorPlugin?: object;
+  backendPlugin?: Module;
+  detectorPlugin?: Module;
   initOptions?: InitOptions;
-  backendHttpOptions?: HttpApi.BackendOptions;
-  detectorOptions?: i18nextBrowserLanguageDetector.DetectorOptions;
+  backendHttpOptions?: BackendOptions;
+  detectorOptions?: DetectorOptions;
 }
 
 /** Supplies localizations for iTwin.js
@@ -30,46 +31,59 @@ export interface LocalizationOptions {
  */
 export class ITwinLocalization implements Localization {
   public i18next: i18n;
+  private readonly _initOptions: InitOptions;
+  private readonly _backendOptions: BackendOptions;
+  private readonly _detectionOptions: DetectorOptions;
   private readonly _namespaces = new Map<string, Promise<void>>();
 
-  /**
-   * @param options object with I18NOptions (optional)
-   */
   public constructor(options?: LocalizationOptions) {
-    this.i18next = createInstance();
+    this.i18next = i18next.createInstance();
 
-    const backend: HttpApi.BackendOptions = {
+    this._backendOptions = {
       loadPath: options?.urlTemplate ?? "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
       ...options?.backendHttpOptions,
     };
 
-    const detection: i18nextBrowserLanguageDetector.DetectorOptions = {
+    this._detectionOptions = {
       order: ["querystring", "navigator", "htmlTag"],
       lookupQuerystring: "lng",
       caches: [],
       ...options?.detectorOptions,
     };
-
-    const initOptions: InitOptions = {
+    this._initOptions = {
       interpolation: { escapeValue: true },
-      ns: [],
-      defaultNS: "",
       fallbackLng: "en",
-      backend,
-      detection,
+      backend: this._backendOptions,
+      detection: this._detectionOptions,
       ...options?.initOptions,
+    };
+
+    this.i18next
+      .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
+      .use(options?.backendPlugin ?? XHR)
+      .use(TranslationLogger);
+  }
+
+  public async initialize(namespaces: string[]): Promise<void> {
+    const initOptions: InitOptions = {
+      ... this._initOptions,
+      ns: namespaces,
+      defaultNS: namespaces[0],
     };
 
     // if in a development environment, set debugging
     if (process.env.NODE_ENV === "development")
       initOptions.debug = true;
 
-    this.i18next
-      .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
-      .use(options?.backendPlugin ?? HttpApi.default ?? HttpApi)
-      .use(TranslationLogger)
-      .init(initOptions);
+    const initPromise = new Promise<void>((resolve) => {
+      void this.i18next.init(initOptions, () => resolve());
+    });
+
+    for (const ns of namespaces)
+      this._namespaces.set(ns, initPromise);
+
+    return initPromise;
   }
 
   /** Replace all instances of `%{key}` within a string with the translations of those keys.
@@ -105,7 +119,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
     const value = this.i18next.t(key, options);
     if (typeof value !== "string")
       throw new Error("Translation key(s) not found");
@@ -120,7 +134,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -141,7 +155,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
@@ -150,9 +164,28 @@ export class ITwinLocalization implements Localization {
     return str;
   }
 
-  /** @internal */
-  public loadNamespace(name: string, i18nCallback: any) {
-    this.i18next.loadNamespaces(name, i18nCallback);
+  private async loadNamespace(name: string) {
+    try {
+      await this.i18next.loadNamespaces(name);
+    } catch (err: any) {
+      // This method is called when the system has attempted to load the resources for the namespace for each
+      // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
+      // using i18next-http-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
+      // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
+      let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
+
+      try {
+        for (const thisError of err) {
+          if (typeof thisError === "string")
+            locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
+        }
+      } catch (e) {
+        locales = [];
+      }
+      // if we removed every locale from the array, it wasn't loaded.
+      if (locales.length === 0)
+        Logger.logError("I18N", `The resource for namespace ${name} could not be loaded`);
+    }
   }
 
   /** Get the promise for an already registered Namespace.
@@ -164,14 +197,13 @@ export class ITwinLocalization implements Localization {
   }
 
   /** @internal */
-  public getLanguageList(): string[] {
+  public getLanguageList(): readonly string[] {
     return this.i18next.languages;
   }
 
-  /** override the language detected in the browser
-   * @internal */
+  /** override the language detected in the browser  */
   public async changeLanguage(language: string) {
-    this.i18next.changeLanguage(language);
+    await this.i18next.changeLanguage(language);
   }
 
   /** Register a new Namespace and return it. If the namespace is already registered, it will be returned.
@@ -182,43 +214,12 @@ export class ITwinLocalization implements Localization {
    * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
    * @public
    */
-  public async registerNamespace(name: string, setDefault?: true): Promise<void> {
+  public async registerNamespace(name: string): Promise<void> {
     const existing = this._namespaces.get(name);
     if (existing !== undefined)
       return existing;
 
-    if (setDefault)
-      this.i18next.setDefaultNamespace(name);
-
-    const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
-      this.loadNamespace(name, (err: any, _t: any) => {
-        if (!err) {
-          resolve();
-          return;
-        }
-        // Here we got a non-null err object.
-        // This method is called when the system has attempted to load the resources for the namespace for each
-        // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
-        // using i18next-http-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
-        // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
-        let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
-
-        try {
-          for (const thisError of err) {
-            if (typeof thisError === "string" && !thisError.includes(name))
-              continue;
-            locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
-          }
-        } catch (e) {
-          locales = [];
-        }
-        // if we removed every locale from the array, it wasn't loaded.
-        if (locales.length === 0)
-          Logger.logError("I18N", `The resource for namespace ${name} could not be loaded`);
-
-        resolve();
-      });
-    });
+    const theReadPromise = this.loadNamespace(name);
     this._namespaces.set(name, theReadPromise);
     return theReadPromise;
   }
@@ -227,7 +228,6 @@ export class ITwinLocalization implements Localization {
   public unregisterNamespace(name: string): void {
     this._namespaces.delete(name);
   }
-
 }
 
 class TranslationLogger {

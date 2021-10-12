@@ -323,7 +323,6 @@ export class IModelApp {
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
-    // Initialize basic application details before log messages are sent out
     this.sessionId = opts.sessionId ?? Guid.createValue();
     this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iModel.js
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
@@ -334,8 +333,7 @@ export class IModelApp {
 
     this._localization = opts.localization ?? new ITwinLocalization();
     const toolsNs = "CoreTools";
-    await this.localization.registerNamespace("iModelJs", true);
-    await this.localization.registerNamespace(toolsNs);
+    await this.localization.initialize(["iModelJs", toolsNs]);
     [
       selectTool,
       idleTool,
