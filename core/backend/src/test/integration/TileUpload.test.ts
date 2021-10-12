@@ -15,6 +15,8 @@ import { IModelDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { HubUtility } from "..";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -59,9 +61,9 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
   return undefined;
 }
 
-describe("TileUpload", () => {
-  const accessToken: AccessToken = "fake token";
-  const testITwinId: GuidString = Guid.createValue();
+describe("TileUpload (#integration)", () => {
+  let accessToken: AccessToken = "fake token";
+  let testITwinId: GuidString = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
   let testIModelId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
@@ -89,6 +91,10 @@ describe("TileUpload", () => {
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
     const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
