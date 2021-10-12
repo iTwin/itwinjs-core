@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Rework and correct child availability of tiled imagery formats.  Added EPSG:4326 support for WMTS.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
