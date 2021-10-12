@@ -8,7 +8,7 @@ Settings that are set up to be stored between "session" need to be stored and re
 
 If an application wants to store settings only for the current session [SessionSettingsStorage]($core-react) is available.
 
-An application can choose to create and register their own class that implements the [UiSettingsStorage]($Core-react) interface, if a custom storage location is desired for UI Settings.
+An application can choose to create and register their own class that implements the [UiSettingsStorage]($core-react) interface, if a custom storage location is desired for UI Settings.
 
 ### Defining which storage to use
 
