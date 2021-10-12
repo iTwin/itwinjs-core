@@ -3600,6 +3600,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/appui-layout-react': link:../../ui/ninezone
@@ -3644,7 +3645,6 @@ importers:
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.3.1
-      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.3
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
