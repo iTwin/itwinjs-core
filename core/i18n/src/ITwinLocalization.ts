@@ -76,10 +76,7 @@ export class ITwinLocalization implements Localization {
     if (process.env.NODE_ENV === "development")
       initOptions.debug = true;
 
-    const initPromise = new Promise<void>((resolve) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.i18next.init(initOptions, () => resolve());
-    });
+    const initPromise = this.i18next.init(initOptions) as unknown as Promise<void>;
 
     for (const ns of namespaces)
       this._namespaces.set(ns, initPromise);
@@ -180,7 +177,7 @@ export class ITwinLocalization implements Localization {
 
   /** override the language detected in the browser  */
   public async changeLanguage(language: string) {
-    await this.i18next.changeLanguage(language);
+    return this.i18next.changeLanguage(language) as unknown as Promise<void>;
   }
 
   /** Register a new Namespace and return it. If the namespace is already registered, it will be returned.
@@ -219,7 +216,7 @@ export class ITwinLocalization implements Localization {
         }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length === 0)
-          Logger.logError("i18n", `The resource for namespace ${name} could not be loaded`);
+          Logger.logError("i18n", `No resources for namespace ${name} could be loaded`);
 
         resolve();
       });
@@ -242,10 +239,8 @@ class TranslationLogger {
   private createLogMessage(args: string[]) {
     let message = args[0];
     for (let i = 1; i < args.length; ++i) {
-      message += "\n";
-      for (let j = 0; j < i; ++j)
-        message += "  ";
-      message += args[i];
+      if (typeof args[i] === "string")
+        message += `\n  ${args[i]}`;
     }
     return message;
   }
