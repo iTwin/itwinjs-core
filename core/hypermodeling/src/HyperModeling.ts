@@ -63,6 +63,13 @@ export class HyperModeling {
     this._graphicsConfig = {};
   }
 
+  /** Returns whether the hypermodeling package is initialized.
+   * @see [[HyperModeling.initialize]] to initialize the package.
+   */
+  public static get isInitialized(): boolean {
+    return undefined !== this.resources;
+  }
+
   /** Invoke this method to initialize the hypermodeling package for use. You *must* await the result before using any of this package's APIs.
    * Typically an application would invoke this after [IModelApp.startup]($frontend), e.g.,
    * ```ts
@@ -70,6 +77,7 @@ export class HyperModeling {
    *  await HyperModeling.initialize();
    * ```
    * Calling this method again after the first initialization behaves the same as calling [[HyperModeling.replaceConfiguration]].
+   * @note The hypermodeling package will be reset to uninitialized after [IModelApp.shutdown]($frontend) is invoked.
    * @see [[replaceConfiguration]] and [[updateConfiguration]] to modify the configuration after initialization.
    */
   public static async initialize(config?: HyperModelingConfig): Promise<void> {
