@@ -6,11 +6,11 @@
  * @module Editing
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, OffsetFacesProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
+import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
+import { BooleanMode, BooleanOperationProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, HollowFacesProps, LocateSubEntityProps, OffsetFacesProps, SewSheetProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
 import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 
@@ -163,7 +163,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected _startedCmd?: string;
   protected readonly _checkedIds = new Map<Id64String, boolean>();
   protected _graphicsProvider?: ElementGeometryGraphicsProvider;
-  protected _graphicsPending?: true | undefined;
+  protected _graphicsPending?: true;
   protected _firstResult = true;
 
   protected allowView(vp: Viewport) { return vp.view.is3d(); }
@@ -208,27 +208,54 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
 
   protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined { return undefined; }
 
-  protected override async isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean> {
-    if (!await super.isElementValidForOperation(hit, out))
+  protected async acceptElementForOperation(id: Id64String): Promise<boolean> {
+    if (Id64.isInvalid(id) || Id64.isTransient(id))
       return false;
 
-    if (!hit.isElementHit)
-      return false;
-
-    let accept = this._checkedIds.get(hit.sourceId);
+    let accept = this._checkedIds.get(id);
 
     if (undefined === accept) {
       try {
         this._startedCmd = await this.startCommand();
-        accept = await ElementGeometryCacheTool.callCommand("createElementGeometryCache", hit.sourceId, this.geometryCacheFilter);
+        accept = await ElementGeometryCacheTool.callCommand("createElementGeometryCache", id, this.geometryCacheFilter);
       } catch (err) {
         accept = false;
       }
 
-      this._checkedIds.set(hit.sourceId, accept);
+      this._checkedIds.set(id, accept);
     }
 
     return accept;
+  }
+
+  protected override async isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean> {
+    if (!await super.isElementValidForOperation(hit, out))
+      return false;
+
+    return this.acceptElementForOperation(hit.sourceId);
+  }
+
+  protected async postFilterIds(arg: Id64Arg): Promise<Id64Arg> {
+    const ids: Id64Array = [];
+
+    for (const id of Id64.iterable(arg)) {
+      if (await this.acceptElementForOperation(id))
+        ids.push(id);
+    }
+
+    return ids;
+  }
+
+  protected override async getGroupIds(id: Id64String): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getGroupIds(id));
+  }
+
+  protected override async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getSelectionSetCandidates(ss));
+  }
+
+  protected override async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getDragSelectCandidates(vp, origin, corner, method, overlap));
   }
 
   public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
@@ -306,6 +333,132 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     await this.clearElementGeometryCache();
     this.updateAgendaAppearanceProvider(true);
     this.clearGraphic();
+  }
+}
+
+/** @alpha Base class for tools that perform boolean operations on a set of elements. */
+export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
+  protected abstract get mode(): BooleanMode;
+  protected override get allowSelectionSet(): boolean { return BooleanMode.Subtract !== this.mode; }
+  protected override get allowDragSelect(): boolean { return BooleanMode.Subtract !== this.mode; }
+  protected override get controlKeyContinuesSelection(): boolean { return true; }
+  protected override get requiredElementCount(): number { return 2; }
+
+  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
+    return { parts: true, curves: false, surfaces: BooleanMode.Subtract === this.mode && !this.agenda.isEmpty, solids: true, other: false };
+  }
+
+  protected override async onAgendaModified(): Promise<void> {
+    // Filter changes to allow surfaces as tools, invalidate cached accept status...
+    if (BooleanMode.Subtract === this.mode && (this.agenda.isEmpty || 1 === this.agenda.length))
+      this._checkedIds.clear();
+  }
+
+  protected async applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined> {
+    if (this.agenda.length < this.requiredElementCount)
+      return undefined;
+
+    try {
+      this._startedCmd = await this.startCommand();
+      const target = this.agenda.elements[0];
+      const tools: Id64Array = this.agenda.elements.slice(1);
+      const params: BooleanOperationProps = { mode: this.mode, tools };
+      const opts: ElementGeometryResultOptions = { writeChanges: true };
+      return await ElementGeometryCacheTool.callCommand("booleanOperation", target, params, opts);
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  public override async processAgenda(_ev: BeButtonEvent): Promise<void> {
+    const result = await this.applyAgendaOperation();
+    if (result?.elementId)
+      await this.saveChanges();
+  }
+}
+
+/** @alpha Perform boolean union of solid geometry. */
+export class UniteSolidElementsTool extends BooleanOperationTool {
+  public static override toolId = "UniteSolids";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get mode(): BooleanMode { return BooleanMode.Unite; }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new UniteSolidElementsTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+}
+
+/** @alpha Perform boolean subtract of solid geometry. */
+export class SubtractSolidElementsTool extends BooleanOperationTool {
+  public static override toolId = "SubtractSolids";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get mode(): BooleanMode { return BooleanMode.Subtract; }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new SubtractSolidElementsTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+}
+
+/** @alpha Perform boolean intersection of solid geometry. */
+export class IntersectSolidElementsTool extends BooleanOperationTool {
+  public static override toolId = "IntersectSolids";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get mode(): BooleanMode { return BooleanMode.Intersect; }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new IntersectSolidElementsTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+}
+
+/** @alpha Perform sew operation on surface geometry. */
+export class SewSheetElementsTool extends ElementGeometryCacheTool {
+  public static override toolId = "SewSheets";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get allowSelectionSet(): boolean { return true; }
+  protected override get allowDragSelect(): boolean { return true; }
+  protected override get controlKeyContinuesSelection(): boolean { return true; }
+  protected override get requiredElementCount(): number { return 2; }
+
+  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
+    return { parts: true, curves: false, surfaces: true, solids: false, other: false };
+  }
+
+  protected async applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined> {
+    if (this.agenda.length < this.requiredElementCount)
+      return undefined;
+
+    try {
+      this._startedCmd = await this.startCommand();
+      const target = this.agenda.elements[0];
+      const tools: Id64Array = this.agenda.elements.slice(1);
+      const params: SewSheetProps = { tools };
+      const opts: ElementGeometryResultOptions = { writeChanges: true };
+      return await ElementGeometryCacheTool.callCommand("sewSheets", target, params, opts);
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  public override async processAgenda(_ev: BeButtonEvent): Promise<void> {
+    const result = await this.applyAgendaOperation();
+    if (result?.elementId)
+      await this.saveChanges();
+  }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new SewSheetElementsTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -620,6 +773,45 @@ export class OffsetFacesTool extends LocateSubEntityTool {
 
   public async onRestartTool(): Promise<void> {
     const tool = new OffsetFacesTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+}
+
+/** @alpha Identify faces to offset to hollow solids. */
+export class HollowFacesTool extends LocateSubEntityTool {
+  public static override toolId = "HollowFaces";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
+    return { minGeom: 1, maxGeom: 1, parts: true, curves: false, surfaces: false, solids: true, other: false };
+  }
+
+  protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
+    if (undefined === ev.viewport || this.agenda.isEmpty || undefined === this._acceptedSubEntity)
+      return undefined;
+
+    // TODO: Tool settings for shell thickness and face thickness...
+    const shellThickness = 0.1;
+    const faceThickness = 0.0;
+
+    try {
+      this._startedCmd = await this.startCommand();
+      const params: HollowFacesProps = { faces: this._acceptedSubEntity.subEntity, distances: faceThickness, defaultDistance: shellThickness };
+      const opts: ElementGeometryResultOptions = {
+        wantGraphic: isAccept ? undefined : true,
+        chordTolerance: computeChordToleranceFromPoint(ev.viewport, ev.point),
+        requestId: `${this.toolId}:${this.agenda.elements[0]}`,
+        writeChanges: isAccept ? true : undefined,
+      };
+      return await ElementGeometryCacheTool.callCommand("hollowFaces", this.agenda.elements[0], params, opts);
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  public async onRestartTool(): Promise<void> {
+    const tool = new HollowFacesTool();
     if (!await tool.run())
       return this.exitTool();
   }

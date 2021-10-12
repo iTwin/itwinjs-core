@@ -9,6 +9,7 @@ import { BasicManipulationCommandIpc } from '@itwin/editor-common';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { BeModifierKeys } from '@itwin/core-frontend';
+import { BooleanMode } from '@itwin/editor-common';
 import { BriefcaseConnection } from '@itwin/core-frontend';
 import { CanvasDecoration } from '@itwin/core-frontend';
 import { Cartographic } from '@itwin/core-common';
@@ -57,6 +58,8 @@ import { Ray3d } from '@itwin/core-geometry';
 import { RenderGraphic } from '@itwin/core-frontend';
 import { RenderGraphicOwner } from '@itwin/core-frontend';
 import { ScreenViewport } from '@itwin/core-frontend';
+import { SelectionMethod } from '@itwin/core-frontend';
+import { SelectionSet } from '@itwin/core-frontend';
 import { SnapDetail } from '@itwin/core-frontend';
 import { SolidModelingCommandIpc } from '@itwin/editor-common';
 import { SubEntityFilter } from '@itwin/editor-common';
@@ -90,6 +93,28 @@ export enum BCurveMethod {
     ControlPoints = 0,
     // (undocumented)
     ThroughPoints = 1
+}
+
+// @alpha
+export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected abstract get mode(): BooleanMode;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
 }
 
 // @alpha (undocumented)
@@ -599,6 +624,8 @@ export class EditTools {
 // @alpha
 export abstract class ElementGeometryCacheTool extends ElementSetTool implements FeatureOverrideProvider {
     // (undocumented)
+    protected acceptElementForOperation(id: Id64String): Promise<boolean>;
+    // (undocumented)
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
     // (undocumented)
     protected get agendaAppearance(): FeatureAppearance;
@@ -619,9 +646,15 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
+    protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
+    // (undocumented)
     protected getGraphicData(_ev: BeButtonEvent): Promise<Uint8Array | undefined>;
     // (undocumented)
-    protected _graphicsPending?: true | undefined;
+    protected getGroupIds(id: Id64String): Promise<Id64Arg>;
+    // (undocumented)
+    protected getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg>;
+    // (undocumented)
+    protected _graphicsPending?: true;
     // (undocumented)
     protected _graphicsProvider?: ElementGeometryGraphicsProvider;
     // (undocumented)
@@ -640,6 +673,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     onSuspend(): Promise<void>;
     // (undocumented)
     onUnsuspend(): Promise<void>;
+    // (undocumented)
+    protected postFilterIds(arg: Id64Arg): Promise<Id64Arg>;
     // (undocumented)
     protected startCommand(): Promise<string>;
     // (undocumented)
@@ -665,6 +700,32 @@ export class ElementGeometryGraphicsProvider {
     graphic?: RenderGraphicOwner;
     // (undocumented)
     readonly iModel: IModelConnection;
+}
+
+// @alpha
+export class HollowFacesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class IntersectSolidElementsTool extends BooleanOperationTool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get mode(): BooleanMode;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha
@@ -1177,6 +1238,30 @@ export enum RotateMethod {
     ByAngle = 1
 }
 
+// @alpha
+export class SewSheetElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected get allowDragSelect(): boolean;
+    // (undocumented)
+    protected get allowSelectionSet(): boolean;
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export class SubEntityData {
     // (undocumented)
@@ -1197,6 +1282,18 @@ export class SubEntityData {
     info?: SubEntityProps;
     // (undocumented)
     isSame(other: SubEntityProps): boolean;
+}
+
+// @alpha
+export class SubtractSolidElementsTool extends BooleanOperationTool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get mode(): BooleanMode;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha
@@ -1292,6 +1389,18 @@ export class UndoAllTool extends Tool {
 export class UndoTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class UniteSolidElementsTool extends BooleanOperationTool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get mode(): BooleanMode;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
