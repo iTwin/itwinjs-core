@@ -870,21 +870,22 @@ export class TestRunner {
     }
 
     rowData.delete("Total Time");
-    totalRenderTime /= timings.actualFps.length;
+    totalRenderTime /= timings.actualFps.length; // ie the CPU Total Time
     totalTime /= timings.actualFps.length;
-    const totalGpuTime = Number(rowData.get("GPU-Total"));
-    if (totalGpuTime) {
-      const gpuBound = totalGpuTime > totalRenderTime;
-      const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    const disjointTimerUsed = rowData.get("GPU-Total") !== undefined;
+    const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("Non-Interactive Total Time"));
+    const gpuBound = disjointTimerUsed ? (totalGpuTime > totalRenderTime) : (totalGpuTime > totalRenderTime + 5); // Add a 5ms tolerance for readPixel in this case
+    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    rowData.set("GPU Total Time", effectiveFps.toFixed(fixed));
+    rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
+    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+    rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
+    if (disjointTimerUsed) {
       rowData.delete("GPU-Total");
-      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed)); // Change the name of this column & change column order
-      rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
-      rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
-      rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
+    } else {
+      rowData.delete("Non-Interactive Total Time");
+      rowData.delete("Non-Interactive FPS");
     }
-
-    rowData.set("Actual Total Time", totalTime.toFixed(fixed));
-    rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
 
     return rowData;
   }
