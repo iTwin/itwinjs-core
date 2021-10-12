@@ -49,12 +49,12 @@ export class SampleTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return this.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   public static getOptionString(name: string): string {
     const key = `tools.${this.toolId}.Options.${name}`;
-    return this.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   // Tool Setting Properties

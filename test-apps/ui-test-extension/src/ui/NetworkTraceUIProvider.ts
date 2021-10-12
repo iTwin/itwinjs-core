@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Localization } from "@itwin/core-common";
 import {
   BadgeType,
   CommonToolbarItem,
@@ -24,20 +23,16 @@ import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 
 export class TraceUiItemsProvider implements UiItemsProvider {
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
-
   public readonly id = "TraceUiItemsProvider";
-  private static _localization: Localization;
-  private static _defaultNs: string;
+  public static readonly defaultNs = "uiTestExtension";
   private static _traceAvailableProperty = false;
 
-  public constructor(localization: Localization, defaultNs: string) {
-    TraceUiItemsProvider._localization = localization;
-    TraceUiItemsProvider._defaultNs = defaultNs;
+  public constructor() {
   }
 
   public static translate(key: string) {
-    return TraceUiItemsProvider._localization.getLocalizedString(
-      `${TraceUiItemsProvider._defaultNs}:${key}`
+    return IModelApp.localization.getLocalizedString(
+      `${TraceUiItemsProvider.defaultNs}:${key}`
     );
   }
 
