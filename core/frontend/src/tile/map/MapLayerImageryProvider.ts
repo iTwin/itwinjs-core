@@ -16,8 +16,7 @@ import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRec
 
 const tileImageSize = 256, untiledImageSize = 256;
 
-// eslint-disable-next-line prefer-const
-let doDebugToolTips = true;
+const doDebugToolTips = false;
 
 /** @internal */
 export enum MapLayerImageryProviderStatus {
