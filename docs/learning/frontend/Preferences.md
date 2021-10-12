@@ -6,7 +6,7 @@ In theory, settings that are iModel-specific could be stored in the iModel itsel
 
 ## The SettingsAdmin class
 
-iTwin.js provides the [SettingsAdmin]($product-settings-client) object, accessed through [IModelApp.settings]($frontend), for managing settings. The default implementation of the SettingsAdmin interface stores all settings to an iTwin cloud service, but other implementations are possible. The default implementation treats Settings like sensitive data, which can be accessed only by logged-in users with the appropriate permissions.
+iTwin.js provides the [SettingsAdmin]($product-settings-client) object, accessed through [IModelApp.userPrefences]($frontend), for managing the preferences.
 
 The methods on SettingsAdmin allow saving and retrieving settings that are either user-specific or for all users. Saving a setting that is not user-specific requires administrator privileges, and is stored as specific to the organization of the user. Any user that belongs to that organization can retrieve the setting.
 
