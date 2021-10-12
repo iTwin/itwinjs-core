@@ -8,7 +8,7 @@
 
 import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { assert, BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
   IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,
@@ -215,7 +215,9 @@ export class IModelHubBackend {
 
   public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
     const changeset = await this.tryQueryChangeset(arg);
-    assert(undefined !== changeset);
+    if (!changeset)
+      throw new IModelError(IModelStatus.NotFound, `Changeset not found`);
+
     return changeset;
   }
 
@@ -233,7 +235,7 @@ export class IModelHubBackend {
     const accessToken = await this.getAccessToken(arg);
     const changeSets = await this.iModelClient.changeSets.get(accessToken, arg.iModelId, query);
     if (undefined === changeSets)
-      throw new IModelError(IModelStatus.NotFound, `Changeset not found`);
+      return undefined;
 
     return changeSets.length > 0 ? this.toChangeSetProps(changeSets[0]) : undefined;
   }
