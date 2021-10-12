@@ -5041,7 +5041,6 @@ export interface Localization {
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
-    // (undocumented)
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
     // @internal (undocumented)
