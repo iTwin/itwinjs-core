@@ -8,7 +8,7 @@
 
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
-import HttpApi, { BackendOptions } from "i18next-http-backend";
+import { BackendOptions } from "i18next-http-backend";
 import XHR from "i18next-xhr-backend";
 import { Logger } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
@@ -77,7 +77,8 @@ export class ITwinLocalization implements Localization {
       initOptions.debug = true;
 
     const initPromise = new Promise<void>((resolve) => {
-      void this.i18next.init(initOptions, () => resolve());
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.i18next.init(initOptions, () => resolve());
     });
 
     for (const ns of namespaces)
@@ -164,30 +165,6 @@ export class ITwinLocalization implements Localization {
     return str;
   }
 
-  private async loadNamespace(name: string) {
-    try {
-      await this.i18next.loadNamespaces(name);
-    } catch (err: any) {
-      // This method is called when the system has attempted to load the resources for the namespace for each
-      // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
-      // using i18next-http-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
-      // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
-      let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
-
-      try {
-        for (const thisError of err) {
-          if (typeof thisError === "string")
-            locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
-        }
-      } catch (e) {
-        locales = [];
-      }
-      // if we removed every locale from the array, it wasn't loaded.
-      if (locales.length === 0)
-        Logger.logError("I18N", `The resource for namespace ${name} could not be loaded`);
-    }
-  }
-
   /** Get the promise for an already registered Namespace.
    * @param name - the name of the namespace
    * @public
@@ -219,7 +196,34 @@ export class ITwinLocalization implements Localization {
     if (existing !== undefined)
       return existing;
 
-    const theReadPromise = this.loadNamespace(name);
+    const theReadPromise = new Promise<void>((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.i18next.loadNamespaces(name, (err) => {
+        if (!err)
+          return resolve();
+
+        // Here we got a non-null err object.
+        // This method is called when the system has attempted to load the resources for the namespace for each
+        // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
+        // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
+        // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
+        let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
+
+        try {
+          for (const thisError of err) {
+            if (typeof thisError === "string")
+              locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
+          }
+        } catch (e) {
+          locales = [];
+        }
+        // if we removed every locale from the array, it wasn't loaded.
+        if (locales.length === 0)
+          Logger.logError("i18n", `The resource for namespace ${name} could not be loaded`);
+
+        resolve();
+      });
+    });
     this._namespaces.set(name, theReadPromise);
     return theReadPromise;
   }
