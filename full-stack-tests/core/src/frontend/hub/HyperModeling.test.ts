@@ -7,7 +7,6 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { I18N } from "@itwin/core-i18n";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
@@ -23,7 +22,6 @@ describe("HyperModeling (#integration)", () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       ...TestUtility.iModelAppOptions,
-      localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
     });
     await TestUtility.initialize(TestUsers.regular);
 

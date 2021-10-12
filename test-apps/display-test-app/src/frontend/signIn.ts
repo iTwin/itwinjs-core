@@ -26,6 +26,7 @@ export async function signIn(): Promise<boolean> {
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
     responseType: "code",
+    authority: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
   });
   try {
     await browserAuth.signInSilent();
