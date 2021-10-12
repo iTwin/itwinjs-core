@@ -6,16 +6,12 @@
  * @module HyperModeling
  */
 
-import { SectionType } from "@bentley/imodeljs-common";
-import {
-  I18N,
-  I18NNamespace,
-} from "@bentley/imodeljs-i18n";
+import { Localization, SectionType } from "@itwin/core-common";
 import {
   IModelApp,
   ScreenViewport,
   Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
 import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
@@ -198,8 +194,8 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 }
 
 /** @internal */
-export function registerTools(namespace: I18NNamespace | undefined, i18n: I18N): void {
-  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, i18n);
+export function registerTools(namespace: string, localization: Localization): void {
+  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, localization);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);
   register(SectionMarkerDecoratorConfigTool);

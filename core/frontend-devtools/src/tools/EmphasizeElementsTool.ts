@@ -6,9 +6,9 @@
  * @module Tools
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
+import { Id64 } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
+import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "./parseArgs";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.

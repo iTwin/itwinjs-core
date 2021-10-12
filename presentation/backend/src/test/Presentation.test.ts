@@ -6,10 +6,11 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { PresentationError } from "@bentley/presentation-common";
+import { IModelHost, IpcHost } from "@itwin/core-backend";
+import { RpcManager } from "@itwin/core-common";
+import { PresentationError } from "@itwin/presentation-common";
 import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
@@ -108,6 +109,23 @@ describe("Presentation", () => {
       expect(Presentation.getRequestTimeout()).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
+    });
+
+    it("unregisters PresentationRpcInterface impl", () => {
+      Presentation.initialize();
+      const unregisterSpy = sinon.stub(RpcManager, "unregisterImpl");
+      Presentation.terminate();
+      expect(unregisterSpy).to.be.calledOnce;
+    });
+
+    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
+      sinon.stub(IpcHost, "isValid").get(() => true);
+      const unregisterSpy = sinon.spy();
+      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
+      Presentation.initialize();
+      expect(unregisterSpy).to.not.be.called;
+      Presentation.terminate();
+      expect(unregisterSpy).to.be.calledOnce;
     });
 
   });

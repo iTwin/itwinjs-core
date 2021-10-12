@@ -6,15 +6,14 @@
  * @module iModels
  */
 
-import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
+import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
+import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -51,7 +50,7 @@ export interface InstanceChange {
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
  * @beta
- * @deprecated Use [CreateChangeSummaryArgs]($imodeljs-backend) instead
+ * @deprecated Use [CreateChangeSummaryArgs]($core-backend) instead
  */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
@@ -67,8 +66,8 @@ export interface ChangeSummaryExtractOptions {
 /** Options for [ChangeSummaryManager.createChangeSummaries]($backend).
  * @beta
  */
-export interface CreateChangeSummaryArgs extends UserArg {
-  /** Id of the context that contains the iModel */
+export interface CreateChangeSummaryArgs extends TokenArg {
+  /** Id of the iTwin that contains the iModel */
   iTwinId: GuidString;
 
   /** Id of the iModel */
@@ -152,9 +151,9 @@ export class ChangeSummaryManager {
    * @param options Extraction options
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
-   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) instead
+   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
    */
-  public static async extractChangeSummaries(user: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
+  public static async extractChangeSummaries(accessToken: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
     if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
@@ -165,7 +164,7 @@ export class ChangeSummaryManager {
     let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = (await IModelHost.hubAccess.getChangesetFromVersion({ version: options.startVersion, user, iModelId })).id;
+        startChangeSetId = (await IModelHost.hubAccess.getChangesetFromVersion({ version: options.startVersion, accessToken, iModelId })).id;
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
       }
@@ -177,9 +176,9 @@ export class ChangeSummaryManager {
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
     let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download Changesets from Hub");
 
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: startChangeSetId }, user })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endChangeSetId }, user })).index;
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: startChangeSetId }, accessToken })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endChangeSetId }, accessToken })).index;
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
 
@@ -215,7 +214,7 @@ export class ChangeSummaryManager {
         if (i !== endChangeSetIx) {
           perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Roll iModel to previous changeset");
 
-          await iModel.pullChanges({ user, toIndex: currentChangeSetInfo.index });
+          await iModel.pullChanges({ accessToken, toIndex: currentChangeSetInfo.index });
           perfLogger.dispose();
           Logger.logTrace(loggerCategory, `Moved iModel to changeset #${i + 1} to extract summary from.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
         }
@@ -249,7 +248,7 @@ export class ChangeSummaryManager {
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
       if (iModel.changeset.id !== endChangeSetId)
-        await iModel.pullChanges({ user });
+        await iModel.pullChanges({ accessToken });
       perfLogger.dispose();
       Logger.logTrace(loggerCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModelId, startChangeSetId, endChangeSetId }));
 
@@ -455,7 +454,7 @@ export class ChangeSummaryManager {
    *        changedInstance.className must be fully qualified and schema and class name must be escaped with square brackets if they collide with reserved ECSQL words: `[schema name].[class name]`
    * @param changedValueState The Changed State to query the values for. This must correspond to the [InstanceChange.OpCode]($backend) of the InstanceChange.
    * @param changedPropertyNames List of the property names for which values have changed for the specified instance change.
-   *        The list can be obtained by calling [ChangeSummaryManager.getChangedPropertyValueNames]($imodeljs-backend).
+   *        The list can be obtained by calling [ChangeSummaryManager.getChangedPropertyValueNames]($core-backend).
    *        If omitted, the method will call the above method by itself. The parameter allows for checking first whether
    *        an instance change has any property value changes at all. If there are no property value changes, this method
    *        should not be called, as it will throw an error.
@@ -495,7 +494,7 @@ export class ChangeSummaryManager {
    * @returns The id of the extracted change summary.
    * @beta
    */
-  public static async createChangeSummary(user: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String> {
+  public static async createChangeSummary(accessToken: AccessToken, iModel: BriefcaseDb): Promise<Id64String> {
     if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
     const changesetId = iModel.changeset.id;
@@ -506,7 +505,7 @@ export class ChangeSummaryManager {
 
     const iModelId = iModel.iModelId;
     const changesetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    const changeset = await IModelHost.hubAccess.downloadChangeset({ user, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
+    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
 
     if (!IModelJsFs.existsSync(changeset.pathname))
       throw new IModelError(IModelStatus.FileNotFound, `Failed to download change set: ${changeset.pathname}`);
@@ -544,13 +543,13 @@ export class ChangeSummaryManager {
    * @param args Arguments including the range of versions for which Change Summaries are to be created, and other necessary input for creation
    */
   public static async createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]> {
-    const user = args.user ?? await IModelHost.getAuthorizedContext();
+    const accessToken = args.accessToken ?? await IModelHost.getAccessToken() ?? "";
     const { iModelId, iTwinId, range } = args;
-    range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.latest() })).index;
+    range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
       throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets");
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId, range });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId, range });
 
     // Setup a temporary briefcase to help with extracting change summaries
     const briefcasePath = BriefcaseManager.getBriefcaseBasePath(iModelId);
@@ -561,17 +560,17 @@ export class ChangeSummaryManager {
     let iModel: BriefcaseDb | undefined;
     try {
       // Download a version that has the first change set applied
-      const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
-      iModel = await BriefcaseDb.open({ user, fileName: props.fileName });
+      const props = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
+      iModel = await BriefcaseDb.open({ fileName: props.fileName });
 
       const summaryIds = new Array<Id64String>();
       for (let index = 0; index < changesets.length; index++) {
         // Apply a change set if necessary
         if (index > 0)
-          await iModel.pullChanges({ user, toIndex: changesets[index].index });
+          await iModel.pullChanges({ accessToken, toIndex: changesets[index].index });
 
         // Create a change summary for the last change set that was applied
-        const summaryId = await this.createChangeSummary(user, iModel);
+        const summaryId = await this.createChangeSummary(accessToken, iModel);
         summaryIds.push(summaryId);
       }
       return summaryIds;

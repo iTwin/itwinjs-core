@@ -6,10 +6,9 @@
  * @module ChangedElementsDb
  */
 
-import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
@@ -99,11 +98,11 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param options Options for processing
    */
-  public async processChangesets(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+  public async processChangesets(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, user })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, user })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -128,11 +127,11 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param options options for processing
    */
-  public async processChangesetsAndRoll(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+  public async processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, user })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, user })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();

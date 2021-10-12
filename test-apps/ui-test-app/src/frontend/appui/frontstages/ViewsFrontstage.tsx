@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
-import { NodeKey } from "@bentley/presentation-common";
+} from "@itwin/core-frontend";
+import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
+import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
-} from "@bentley/ui-abstract";
-import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
-import { Point, ScrollView } from "@bentley/ui-core";
+} from "@itwin/appui-abstract";
+import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@itwin/components-react";
+import { Point, ScrollView } from "@itwin/core-react";
 import {
   BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
@@ -24,11 +24,11 @@ import {
   HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
   ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@bentley/ui-core";
+// import { SvgPath } from "@itwin/core-react";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
@@ -173,7 +173,7 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
-        id: "default-group",
+        id: "views-frontstage-default-content-group",
         layout: contentLayoutProps,
         contents: contentProps,
       });
@@ -371,7 +371,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                   applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
-                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
+                   applicationData={{ iTwinName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
           />
         }
@@ -605,7 +605,7 @@ class AdditionalTools {
     this._viewportDialogCnt++;
     const id = `ViewportDialog_${this._viewportDialogCnt.toString()}`;
 
-    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
+    const dialog = <ViewportDialog opened={true} iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
     ModelessDialogManager.openDialog(dialog, id);
   }
@@ -711,7 +711,7 @@ class AdditionalTools {
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
             </div>
-            {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
+            {false && <ViewportWidget iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
@@ -782,7 +782,7 @@ class AdditionalTools {
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
-    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
+    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.localization.getLocalizedString("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
     return item;
   };
 

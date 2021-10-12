@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { InlineEdit } from "../../ui-imodel-components/timeline/InlineEdit";
+import { InlineEdit } from "../../imodel-components-react/timeline/InlineEdit";
 
 describe("<InlineEdit />", () => {
   afterEach(() => {

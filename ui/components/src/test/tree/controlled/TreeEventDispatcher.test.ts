@@ -6,18 +6,18 @@ import { expect } from "chai";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { CheckBoxState } from "@bentley/ui-core";
-import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
-import { RangeSelection, TreeSelectionManager } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
-import { from } from "../../../ui-components/tree/controlled/Observable";
-import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
+import { CheckBoxState } from "@itwin/core-react";
+import { SelectionMode } from "../../../components-react/common/selection/SelectionModes";
+import { RangeSelection, TreeSelectionManager } from "../../../components-react/tree/controlled/internal/TreeSelectionManager";
+import { from } from "../../../components-react/tree/controlled/Observable";
+import { TreeEventDispatcher } from "../../../components-react/tree/controlled/TreeEventDispatcher";
 import {
   TreeCheckboxStateChangeEventArgs, TreeEvents, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "../../../ui-components/tree/controlled/TreeEvents";
+} from "../../../components-react/tree/controlled/TreeEvents";
 import {
   isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
-} from "../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
+} from "../../../components-react/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
 import { extractSequence } from "../../common/ObservableTestHelpers";
 import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
 

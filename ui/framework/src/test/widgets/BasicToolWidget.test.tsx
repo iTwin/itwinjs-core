@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolbarHelper } from "../../ui-framework";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { BasicToolWidget } from "../../ui-framework/widgets/BasicToolWidget";
+import { ToolbarHelper } from "../../appui-react";
+import { CommandItemDef } from "../../appui-react/shared/CommandItemDef";
+import { BasicToolWidget } from "../../appui-react/widgets/BasicToolWidget";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("BasicToolWidget", () => {

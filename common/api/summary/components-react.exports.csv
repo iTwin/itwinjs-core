@@ -1,0 +1,481 @@
+sep=;
+Release Tag;API Item
+public;class AbstractTreeNodeLoader 
+public;class AbstractTreeNodeLoaderWithProvider
+public;ActionButtonList 
+public;ActionButtonListProps
+public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
+public;ActionButtonRendererProps
+internal;ActionItem({ item, addGroupSeparator }:
+public;ActiveMatchInfo
+public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
+public;ArrayPropertyValueRenderer 
+public;AsyncErrorMessage
+public;AsyncValueProcessingResult
+public;class BasePointTypeConverter 
+public;BasicPropertyEditor 
+beta;BeDragDropContext(props:
+deprecated;BeDragDropContext(props:
+public;BooleanEditor 
+public;BooleanPropertyEditor 
+public;BooleanTypeConverter 
+beta;Breadcrumb 
+deprecated;Breadcrumb 
+beta;BreadcrumbDetails 
+deprecated;BreadcrumbDetails 
+beta;BreadcrumbDetailsProps 
+deprecated;BreadcrumbDetailsProps 
+internal;BreadcrumbInput 
+internal;BreadcrumbInputProps
+internal;BreadcrumbInputState
+beta;BreadcrumbMode
+deprecated;BreadcrumbMode
+beta;BreadcrumbNode 
+deprecated;BreadcrumbNode 
+beta;BreadcrumbNodeProps
+deprecated;BreadcrumbNodeProps
+internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode
+beta;BreadcrumbPath
+deprecated;BreadcrumbPath
+beta;BreadcrumbProps 
+deprecated;BreadcrumbProps 
+beta;BreadcrumbTreeUtils
+deprecated;BreadcrumbTreeUtils
+beta;BreadcrumbUpdateEvent 
+deprecated;BreadcrumbUpdateEvent 
+beta;BreadcrumbUpdateEventArgs
+deprecated;BreadcrumbUpdateEventArgs
+beta;CategorizedPropertyItem 
+beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
+beta;CategoryRecordsDict
+public;CellItem
+public;CellProps
+deprecated;CellProps
+public;CheckBoxInfo
+public;CheckboxStateChange
+public;ColumnDescription
+public;ColumnFilterDescriptor 
+public;CommonPropertyGridProps 
+public;CompletionObserver
+public;CompositeFilterDescriptor 
+public;CompositeFilterDescriptorCollection
+public;CompositeFilterType
+public;CompositePropertyDataFilterer 
+public;CompositeTypeConverter 
+public;computeVisibleNodes(model: TreeModel): VisibleTreeNodes
+public;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
+public;ControlledSelectableContentProps
+public;ControlledTree(props: ControlledTreeProps): JSX.Element
+public;ControlledTreeProps 
+public;ConvertedPrimitives
+internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
+internal;CustomItem({ item, addGroupSeparator }:
+alpha;CustomNumberEditor 
+alpha;CustomNumberPropertyEditor 
+public;CustomToolbarItem 
+public;DataController
+public;class DataControllerBase 
+internal;DataRowItem 
+internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
+internal;DateFieldProps 
+alpha;DatePicker(props: DatePickerProps): JSX.Element
+alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
+alpha;DatePickerPopupButtonProps 
+alpha;DatePickerProps
+internal;DateTimeEditor 
+internal;DateTimePropertyEditor 
+public;DateTimeTypeConverter 
+public;class DateTimeTypeConverterBase 
+public;DEFAULT_LINKS_HANDLER: LinkElementsInfo
+public;DelayLoadedTreeNodeItem 
+public;Direction
+internal;DirectionHelpers
+public;DisplayValuePropertyDataFilterer 
+public;DistinctValueCollection
+public;DistinctValuesFilterDescriptor 
+public;DoublePropertyValueRenderer 
+internal;DragAction
+public;EditableTreeDataProvider 
+public;EditorContainer 
+public;EditorContainerProps 
+public;EnumButtonGroupEditor 
+public;EnumEditor 
+public;EnumPropertyButtonGroupEditor 
+public;EnumPropertyEditor 
+public;EnumTypeConverter 
+public;ErrorObserver
+public;FavoritePropertiesRenderer
+alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
+alpha;FavoritePropertyListProps
+public;FieldFilterDescriptor 
+public;FilterableColumn
+public;FilterableTable
+public;FilterCompositionLogicalOperator
+public;FilterDescriptor
+public;FilterDescriptorCollection 
+public;class FilterDescriptorCollectionBase
+public;FilteredPropertyData 
+public;FilteredType
+public;FilteringInput 
+public;FilteringInputProps 
+public;FilteringInputStatus
+public;FilteringPropertyDataProvider 
+public;FilterOperator
+public;FilterRenderer
+beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
+beta;FlatGridItemBase
+beta;FlatGridItemType
+public;FloatTypeConverter 
+internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
+public;from
+internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
+internal;getPropertyRecordAsString(label: PropertyRecord): string
+internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
+internal;getVisibleDescendants(model: TreeModel, parentNode: TreeModelNode | TreeModelRootNode, result?: Array
+beta;GridCategoryItem 
+internal;GroupPopupItem({ item, addGroupSeparator }:
+internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
+public;hasChildren: (node: TreeNodeItem) => boolean
+public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+public;HexadecimalTypeConverter 
+public;HighlightableTreeNodeProps
+public;HighlightableTreeProps
+public;HighlightedText(props: HighlightedTextProps): JSX.Element
+public;HighlightedTextProps
+public;HighlightInfo
+public;HighlightingComponentProps
+public;HighlightingEngine
+alpha;IconEditor 
+alpha;IconPickerButton 
+alpha;IconPickerProps 
+alpha;IconPropertyEditor 
+public;IImageLoader
+public;Image = LoadedImage | LoadedBinaryImage
+public;ImageCheckBoxEditor 
+public;ImageCheckBoxPropertyEditor 
+public;ImageFileFormat = "png" | "jpg" | "jpge"
+public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
+public;ImmediatelyLoadedTreeNodeItem 
+beta;IMutableCategorizedPropertyItem 
+beta;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
+beta;IMutableFlatPropertyGridItem
+beta;IMutableGridCategoryItem 
+beta;IMutableGridItemFactory
+beta;IMutablePropertyGridModel
+internal;InputSwitchComponent 
+internal;InputSwitchProps
+alpha;IntlFormatter 
+public;IntTypeConverter 
+public;IPropertyDataFilterer
+public;IPropertyDataProvider
+beta;IPropertyGridEventHandler
+beta;IPropertyGridModel
+beta;IPropertyGridModelSource
+public;IPropertyValueRenderer
+internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
+public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
+public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
+public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
+public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDataProviderRaw
+public;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
+public;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
+public;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
+public;ItemColorOverrides
+public;ItemStyle
+public;ItemStyleProvider:
+public;ITreeDataProvider
+public;ITreeImageLoader 
+public;ITreeNodeLoader
+public;ITreeNodeLoaderWithProvider
+public;LabelPropertyDataFilterer 
+public;LessGreaterOperatorProcessor
+alpha;LinksRenderer(props: LinksRendererProps): JSX.Element
+alpha;LinksRendererProps
+public;LoadedBinaryImage 
+public;LoadedImage
+public;LoadedNodeHierarchy
+public;LoadedNodeHierarchyItem
+public;MergedPropertyValueRenderer 
+internal;MultilineTextPropertyValueRenderer 
+internal;MultilineTextRenderer: React.FC
+internal;MultiSelectionHandler
+beta;MutableCategorizedArrayProperty 
+beta;MutableCategorizedPrimitiveProperty 
+beta;class MutableCategorizedProperty 
+beta;MutableCategorizedStructProperty 
+public;MutableCheckBoxInfo 
+beta;class MutableFlatPropertyGridItem 
+beta;MutableGridCategory 
+beta;MutableGridItemFactory 
+beta;MutablePropertyGridModel 
+public;MutableTableDataProvider 
+beta;MutableTreeDataProvider 
+deprecated;MutableTreeDataProvider 
+public;MutableTreeModel 
+public;MutableTreeModelNode 
+public;NavigationPropertyTypeConverter 
+public;NavigationPropertyValueRenderer 
+public;NextObserver
+internal;Node
+public;NonPrimitivePropertyLabelRenderer 
+public;NonPrimitivePropertyLabelRendererProps 
+public;NonPrimitivePropertyRenderer 
+public;NonPrimitivePropertyRendererProps 
+public;NullableOperatorProcessor
+public;NumericInputEditor 
+public;NumericInputPropertyEditor 
+public;class NumericTypeConverterBase 
+public;Observable
+public;Observer
+public;OnItemsDeselectedCallback
+public;OnItemsSelectedCallback
+public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
+public;OperatorProcessor
+public;OperatorValueFilterDescriptor 
+public;OperatorValueFilterDescriptorCollection 
+alpha;OrthogonalDirection
+internal;OrthogonalDirectionHelpers
+public;PagedTreeNodeLoader
+public;PageOptions
+public;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
+public;ParsedInputProps 
+public;Point2dTypeConverter 
+public;Point3dTypeConverter 
+public;PopupItem(props: PopupItemProps): JSX.Element
+internal;PopupItemPopup(props: PopupItemPopupProps): JSX.Element
+public;PopupItemProps 
+public;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
+public;PopupItemWithDragProps 
+public;PrimitivePropertyLabelRenderer 
+public;PrimitivePropertyLabelRendererProps 
+public;PrimitivePropertyRenderer 
+public;PrimitivePropertyValueRenderer 
+internal;PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element
+public;PrimitiveRendererProps 
+public;PropertyCategory
+public;PropertyCategoryBlock 
+public;PropertyCategoryBlockProps 
+public;class PropertyCategoryDataFiltererBase 
+public;PropertyCategoryLabelFilterer 
+beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
+beta;PropertyCategoryRendererManager
+beta;PropertyCategoryRendererProps
+public;PropertyContainerType
+public;PropertyData
+public;PropertyDataChangeEvent 
+public;PropertyDataChangesListener = () => void
+public;class PropertyDataFiltererBase 
+public;PropertyDataFilterResult
+public;PropertyDialogState
+public;PropertyEditingArgs
+public;class PropertyEditorBase 
+public;PropertyEditorManager
+public;PropertyEditorProps 
+public;PropertyFilterChangeEvent 
+public;PropertyFilterChangesListener = () => void
+public;PropertyGrid 
+public;PropertyGridCategory
+deprecated;PropertyGridCategory
+internal;PropertyGridCommons
+public;PropertyGridContextMenuArgs
+beta;PropertyGridEventHandler
+internal;PropertyGridEventsRelatedProps = Pick
+internal;PropertyGridEventsRelatedPropsSupplier 
+internal;PropertyGridEventsRelatedPropsSupplierProps = Pick
+internal;PropertyGridInternalContext
+beta;PropertyGridModelChangeEvent 
+beta;PropertyGridModelChangeListener = () => void
+beta;PropertyGridModelSource 
+public;PropertyGridProps 
+internal;PropertyLabelRenderer 
+public;PropertyLabelRendererProps
+public;PropertyList 
+public;PropertyListProps 
+public;PropertyPopupState
+public;class PropertyRecordDataFiltererBase 
+public;PropertyRenderer 
+public;PropertyRendererProps 
+public;PropertyUpdatedArgs
+public;PropertyValueRendererContext
+public;PropertyValueRendererManager
+public;PropertyView 
+public;PropertyViewProps 
+public;ReactDataGridColumn 
+deprecated;ReactDataGridColumn 
+beta;RenderedItemsRange
+public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
+public;ResultSelector 
+public;ResultSelectorProps 
+public;RowItem
+public;RowProps
+deprecated;RowProps
+public;SelectableContent(props: SelectableContentProps): JSX.Element
+public;SelectableContentDefinition
+public;SelectableContentProps
+internal;SelectionHandler
+public;SelectionMode
+public;SelectionModeFlags
+public;SharedRendererProps
+public;SharedTableNonPrimitiveValueRendererProps
+internal;ShortDateTimePropertyEditor 
+public;ShortDateTypeConverter 
+public;ShowHideDialog
+public;ShowHideDialogProps
+public;ShowHideID = string | number | symbol
+public;ShowHideItem
+public;ShowHideMenu
+public;ShowHideMenuProps
+public;SimplePropertyDataProvider 
+public;SimpleTableDataProvider 
+public;SimpleTreeDataProvider 
+public;SimpleTreeDataProviderHierarchy = Map
+internal;SingleSelectionHandler
+public;SliderEditor 
+public;SliderPropertyEditor 
+public;SortComparer
+public;SparseArray
+internal;SparseTree
+public;StringOperatorProcessor
+public;StringTypeConverter 
+public;StructPropertyValueRenderer 
+public;Subscribable
+public;Subscription 
+public;Table 
+deprecated;Table 
+public;TableArrayValueRenderer 
+public;TableCell 
+deprecated;TableCell 
+public;TableCellContent 
+deprecated;TableCellContent 
+public;TableCellContentProps 
+deprecated;TableCellContentProps 
+public;TableCellContextMenuArgs
+deprecated;TableCellContextMenuArgs
+public;TableCellEditorState
+deprecated;TableCellEditorState
+public;TableCellProps 
+deprecated;TableCellProps 
+public;TableCellUpdatedArgs
+deprecated;TableCellUpdatedArgs
+internal;TableColumn 
+public;TableDataChangeEvent 
+public;TableDataChangesListener = () => void
+public;TableDataProvider
+public;TableDistinctValue
+internal;TableFilterDescriptorCollection 
+public;TableIconCellContent 
+public;TableIconCellContentProps
+public;TableNonPrimitiveValueRenderer 
+public;TableNonPrimitiveValueRendererProps 
+public;TableProps 
+deprecated;TableProps 
+internal;TableRow 
+internal;TableRowProps 
+public;TableRowStyleProvider:
+public;TableSelectionTarget
+deprecated;TableSelectionTarget
+public;TableSpecificValueRendererProps 
+public;TableStructValueRenderer 
+public;TextareaEditor 
+public;TextareaPropertyEditor 
+public;TextEditor 
+beta;ThemedEnumEditor 
+deprecated;ThemedEnumEditor 
+beta;ThemedEnumEditorProps 
+deprecated;ThemedEnumEditorProps 
+beta;ThemedEnumPropertyEditor 
+deprecated;ThemedEnumPropertyEditor 
+internal;TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFieldProps): JSX.Element
+internal;TimeFieldProps
+internal;TimeSpec
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
+public;ToggleEditor 
+public;TogglePropertyEditor 
+public;Toolbar(props: ToolbarProps): JSX.Element
+public;ToolbarButtonItem: React.MemoExoticComponent
+public;ToolbarButtonItemProps 
+public;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
+internal;ToolbarItemComponent({ item, addGroupSeparator }:
+internal;ToolbarItemContext: React.Context
+internal;ToolbarItemContextArgs
+public;ToolbarOpacitySetting
+internal;ToolbarOverflowContextProps
+public;ToolbarPanelAlignment
+internal;ToolbarPanelAlignmentHelpers
+public;ToolbarPopupContext: React.Context
+public;ToolbarPopupContextProps
+public;ToolbarProps 
+public;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
+internal;ToolbarWithOverflowDirectionContext: React.Context
+public;ToolbarWithOverflowProps 
+internal;toRxjsObservable
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
+internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
+public;TreeActions
+public;TreeCheckboxStateChangeEventArgs
+public;TreeDataChangesListener = (nodes: Array
+public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider
+public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
+public;TreeDataProviderPromise = Promise
+public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
+internal;TreeDataSource 
+public;TreeEditingParams
+internal;TreeEventDispatcher 
+public;TreeEventHandler 
+public;TreeEventHandlerParams
+public;TreeEvents
+public;TreeImageLoader 
+public;TreeModel
+public;TreeModelChanges
+public;TreeModelNode
+public;TreeModelNodeEditingInfo
+public;TreeModelNodeInput
+public;TreeModelNodePlaceholder
+public;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode
+public;TreeModelRootNode
+public;TreeModelSource
+public;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
+public;TreeNodeEditorProps
+public;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode
+public;TreeNodeEventArgs
+public;TreeNodeItem
+public;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
+public;TreeNodeLoader
+public;TreeNodeLoadResult
+public;TreeNodeRenderer: React.MemoExoticComponent
+public;TreeNodeRendererProps 
+public;TreeRenderer 
+public;TreeRendererAttributes
+public;TreeRendererProps
+public;TreeSelectionChange
+public;TreeSelectionModificationEventArgs
+public;TreeSelectionReplacementEventArgs
+public;class TypeConverter 
+public;TypeConverterManager
+public;TypeEditor
+public;UiComponents
+public;Unsubscribable
+public;UrlPropertyValueRenderer 
+public;useAsyncValue: 
+alpha;useDebouncedAsyncValue
+public;usePagedTreeNodeLoader
+public;usePropertyData(props:
+beta;usePropertyGridEventHandler(props:
+beta;usePropertyGridModel(props:
+beta;usePropertyGridModelSource(props:
+internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
+public;useToolbarPopupContext(): ToolbarPopupContextProps
+internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
+internal;useToolItemEntryContext(): ToolbarItemContextArgs
+public;useTreeEventsHandler
+public;useTreeModel(modelSource: TreeModelSource): TreeModel
+public;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
+public;useTreeNodeLoader
+beta;VirtualizedPropertyGrid 
+beta;VirtualizedPropertyGridContext
+beta;VirtualizedPropertyGridProps 
+beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
+beta;VirtualizedPropertyGridWithDataProviderProps 
+public;VisibleTreeNodes 
+public;withContextStyle: (node: React.ReactNode, context?: PropertyValueRendererContext | undefined) => React.ReactNode
+public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode

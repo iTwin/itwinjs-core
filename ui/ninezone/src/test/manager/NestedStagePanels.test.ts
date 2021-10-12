@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import {
   getDefaultNineZoneStagePanelsManagerProps, NineZoneNestedStagePanelsManager, NineZoneStagePanelsManager, StagePanelType,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 
 /** @internal */
 export const getDefaultProps = () => ({

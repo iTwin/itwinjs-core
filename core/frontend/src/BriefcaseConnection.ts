@@ -6,11 +6,11 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex,
   ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";
@@ -159,7 +159,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
-  /** The Guid that identifies the *context* that owns this iModel. */
+  /** The Guid that identifies the iTwin that owns this iModel. */
   public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
@@ -216,7 +216,7 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.txns.hasPendingTxns();
   }
 

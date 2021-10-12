@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/select/select";
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/footer/variables";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+.uifw-statusFields-selectionScope {
+  $font-size-medium: $iui-font-size-small;
+  $font-size-small: $iui-font-size-small - 1px;
+  overflow: hidden;
+  padding-right: 0px;
+
+  >.uifw-statusFields-selectionScope-label {
+    display: inline;
+    padding-right: 4px;
+
+    @include for-tablet-portrait-down {
+      display: none;
+      padding-right: 0px;
+    }
+  }
+
+  >.uifw-statusFields-selectionScope-selector {
+    min-width: 130px;
+
+    @include for-tablet-portrait-down {
+      font-size: $font-size-medium;
+    }
+
+    @include for-phone-only {
+      font-size: $font-size-small;
+    }
+
+  }
+
+}

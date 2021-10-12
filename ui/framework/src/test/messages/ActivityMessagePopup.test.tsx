@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
-import { MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
+import { ActivityMessageDetails, ActivityMessageEndReason } from "@itwin/core-frontend";
+import { MessageHyperlink, MessageProgress } from "@itwin/appui-layout-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
-import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../ui-framework";
+import { ActivityMessage, ActivityMessagePopup, AppNotificationManager, MessageManager } from "../../appui-react";
 import { mount, TestUtils } from "../TestUtils";
 
 describe("ActivityMessagePopup", () => {

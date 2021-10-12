@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import {
   DockedToolSettingsHandle, DragManager, DragManagerContext, NineZoneDispatch, NineZoneDispatchContext,
-} from "../../ui-ninezone";
+} from "../../appui-layout-react";
 
 describe("DockedToolSettingsHandle", () => {
   it("should dispatch TOOL_SETTINGS_DRAG_START", () => {

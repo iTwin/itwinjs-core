@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Id64, Id64Set } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AccessToken, Id64, Id64Set } from "@itwin/core-bentley";
+import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,
-} from "@bentley/imodeljs-common";
-import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/core-common";
+import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */
@@ -59,7 +58,7 @@ describe("IModel Connection", () => {
   });
 });
 
-describe("IModel Connection with client credentials", () => {
+describe.skip("IModel Connection with client credentials", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -69,7 +68,6 @@ describe("IModel Connection with client credentials", () => {
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
     if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
       this.skip();
-
     accessToken = testContext.clientAccessToken!;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });

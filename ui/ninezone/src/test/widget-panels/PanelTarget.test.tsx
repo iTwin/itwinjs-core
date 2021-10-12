@@ -2,30 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { act, fireEvent, render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, fireEvent, render } from "@testing-library/react";
-import { renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
-} from "../../ui-ninezone";
-import { createDragItemInfo, createDragStartArgs, NineZoneProvider } from "../Providers";
+} from "../../appui-layout-react";
+import { createDragItemInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {
     const dragManager = React.createRef<DragManager>();
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dragManagerRef={dragManager}
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PanelTarget />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     sinon.stub(document, "elementFromPoint").returns(target);
@@ -40,7 +40,7 @@ describe("PanelTarget", () => {
     const dragManager = React.createRef<DragManager>();
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dragManagerRef={dragManager}
         state={nineZone}
       >
@@ -49,7 +49,7 @@ describe("PanelTarget", () => {
             <PanelTarget />
           </CursorTypeContext.Provider>
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     sinon.stub(document, "elementFromPoint").returns(target);
@@ -70,14 +70,14 @@ describe("PanelTarget", () => {
       draft.draggedTab = createDraggedTabState("t1");
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dragManagerRef={dragManager}
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PanelTarget />
         </PanelStateContext.Provider>
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     sinon.stub(document, "elementFromPoint").returns(target);
@@ -99,11 +99,11 @@ describe("useAllowedPanelTarget", () => {
         draft.draggedTab = createDraggedTabState("t1");
       });
       const { result } = renderHook(() => useAllowedPanelTarget(), {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           state={nineZone}
         >
           <PanelStateContext.Provider value={nineZone.panels.left} {...props} />
-        </NineZoneProvider>,
+        </TestNineZoneProvider>,
       });
       result.current.should.true;
     });
@@ -116,12 +116,12 @@ describe("useAllowedPanelTarget", () => {
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1");
       const { result } = renderHook(() => useAllowedPanelTarget(), {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           dragManagerRef={dragManager}
           state={nineZone}
         >
           <PanelStateContext.Provider value={nineZone.panels.left} {...props} />
-        </NineZoneProvider>,
+        </TestNineZoneProvider>,
       });
 
       dragManager.current!.handleDragStart({
@@ -140,12 +140,12 @@ describe("useAllowedPanelTarget", () => {
       nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
       nineZone = addTab(nineZone, "t1", { allowedPanelTargets: ["top", "right", "bottom"] });
       const { result } = renderHook(() => useAllowedPanelTarget(), {
-        wrapper: (props) => <NineZoneProvider // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           dragManagerRef={dragManager}
           state={nineZone}
         >
           <PanelStateContext.Provider value={nineZone.panels.left} {...props} />
-        </NineZoneProvider>,
+        </TestNineZoneProvider>,
       });
 
       dragManager.current!.handleDragStart({

@@ -9,7 +9,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
-import { Point3dArray, PolyfaceQuery, PolylineOps} from "../../geometry-core";
+import { Point3dArray, PolyfaceQuery, PolylineOps} from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

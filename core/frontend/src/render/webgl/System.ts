@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
-} from "@bentley/imodeljs-common";
-import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+} from "@itwin/core-common";
+import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
@@ -29,6 +29,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
@@ -145,21 +146,11 @@ class WebGL2Extensions extends WebGLExtensions {
   }
 }
 
-function createTextureFromGradient(grad: Gradient.Symb): RenderTexture | undefined {
-  const image: ImageBuffer = grad.getImage(0x100, 0x100);
-
-  const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
-  if (!textureHandle)
-    return undefined;
-
-  const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
-  return new Texture(params, textureHandle);
-}
-
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
 export class IdMap implements WebGLDisposable {
+  private readonly _iModel: IModelConnection;
   /** Mapping of materials by their key values. */
   public readonly materials = new Map<string, RenderMaterial>();
   /** Mapping of textures by their key values. */
@@ -168,6 +159,10 @@ export class IdMap implements WebGLDisposable {
   public readonly gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
   /** Pending promises to create a texture from an ImageSource. This prevents us from decoding the same ImageSource multiple times */
   public readonly texturesFromImageSources = new Map<string, Promise<RenderTexture | undefined>>();
+
+  public constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+  }
 
   public get isDisposed(): boolean {
     return 0 === this.textures.size && 0 === this.gradients.size;
@@ -196,6 +191,7 @@ export class IdMap implements WebGLDisposable {
 
   /** Add a texture to this IdMap, given that it has a valid key. */
   public addTexture(texture: RenderTexture) {
+    assert(texture instanceof Texture);
     if (texture.key)
       this.textures.set(texture.key, texture);
   }
@@ -228,101 +224,82 @@ export class IdMap implements WebGLDisposable {
     return material;
   }
 
-  private createTexture(params: RenderTexture.Params, handle?: TextureHandle): Texture | undefined {
-    if (undefined === handle)
+  public findTexture(key?: string | Gradient.Symb): RenderTexture | undefined {
+    if (undefined === key)
+      return undefined;
+    else if (typeof key === "string")
+      return this.textures.get(key);
+    else
+      return this.findGradient(key);
+  }
+
+  // eslint-disable-next-line deprecation/deprecation
+  public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+    let tex = this.findTexture(params.key);
+    if (tex)
+      return tex;
+
+    const handle = TextureHandle.createForElement(key, iModel, params.type, format);
+    if (!handle)
       return undefined;
 
-    const texture = new Texture(params, handle);
-    this.addTexture(texture);
-    return texture;
+    tex = new Texture({ handle, type: params.type, ownership: { key, iModel } });
+    this.addTexture(tex);
+    return tex;
   }
 
-  /** Attempt to create and return a new texture from an ImageBuffer. This will cache the texture if its key is valid */
-  private createTextureFromImageBuffer(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForImageBuffer(img, params.type));
-  }
-
-  private createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForImage(image, hasAlpha, params.type));
-  }
-
-  private createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params) {
-    return this.createTexture(params, TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ));
-  }
-
-  private createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
-    return this.createTexture(params, TextureHandle.createForElement(id, imodel, params.type, format));
-  }
-
-  public findTexture(key?: string): RenderTexture | undefined { return undefined !== key ? this.textures.get(key) : undefined; }
-
-  /** Find or attempt to create a new texture using an ImageBuffer. If a new texture was created, it will be cached provided its key is valid. */
-  public getTexture(img: ImageBuffer, params: RenderTexture.Params): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromImageBuffer(img, params);
-  }
-
-  public getTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromElement(id, imodel, params, format);
-  }
-
-  public getTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, params: RenderTexture.Params): RenderTexture | undefined {
-    const tex = this.findTexture(params.key);
-    return undefined !== tex ? tex : this.createTextureFromImage(image, hasAlpha, params);
-  }
-
-  public async getTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    // Do we already have this texture?
-    const texture = this.findTexture(params.key);
+  public async getTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
+    const texture = this.findTexture(key);
     if (texture)
-      return Promise.resolve(texture);
+      return texture;
 
-    // Are we already in the process of creating this texture?
-    let promise = params.key ? this.texturesFromImageSources.get(params.key) : undefined;
+    // Are we already in the process of decoding this image?
+    let promise = this.texturesFromImageSources.get(key);
     if (promise)
       return promise;
 
-    promise = this.createTextureFromImageSource(source, params);
-    if (params.key) {
-      // Ensure subsequent requests for this texture that arrive before we finish creating it receive the same promise,
-      // instead of redundantly decoding the same image.
-      this.texturesFromImageSources.set(params.key, promise);
-    }
-
+    promise = this.createTextureFromImageSource(args, key);
+    this.texturesFromImageSources.set(key, promise);
     return promise;
   }
 
-  public async createTextureFromImageSource(source: ImageSource, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
+  public async createTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
+    // JPEGs don't support transparency.
+    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
     try {
-      const image = await imageElementFromImageSource(source);
-      return IModelApp.hasRenderSystem ? this.getTextureFromImage(image, ImageSourceFormat.Png === source.format, params) : undefined;
-    } catch (_) {
-      // Caller is uninterested in the details of the exception.
+      const image = await imageElementFromImageSource(args.source);
+      if (!IModelApp.hasRenderSystem)
+        return undefined;
+
+      return IModelApp.renderSystem.createTexture({
+        type: args.type,
+        ownership: args.ownership,
+        image: {
+          source: image,
+          transparency,
+        },
+      });
+    } catch {
       return undefined;
     } finally {
-      if (params.key) {
-        // The promise has resolved or rejected - remove from pending set.
-        this.texturesFromImageSources.delete(params.key);
-      }
+      this.texturesFromImageSources.delete(key);
     }
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.createTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
-  }
+    let tex = this.findTexture(params.key);
+    if (tex)
+      return tex;
 
-  /** Find or attempt to create a new texture using gradient symbology. If a new texture was created, it will be cached using the gradient. */
-  public getGradient(grad: Gradient.Symb): RenderTexture | undefined {
-    const existingGrad = this.gradients.get(grad);
-    if (existingGrad)
-      return existingGrad;
+    const handle = TextureHandle.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
+    if (!handle)
+      return undefined;
 
-    const texture = createTextureFromGradient(grad);
-    if (texture)
-      this.addGradient(grad, texture);
-
-    return texture;
+    const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
+    tex = new Texture({ handle, ownership, type: params.type });
+    this.addTexture(tex);
+    return tex;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -343,6 +320,11 @@ const enum VertexAttribState {
   Enabled = 1 << 0,
   Instanced = 1 << 2,
   InstancedEnabled = Instanced | Enabled,
+}
+
+interface TextureCacheInfo {
+  idMap: IdMap;
+  key: TextureCacheKey;
 }
 
 /** @internal */
@@ -643,7 +625,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createIModelMap(imodel: IModelConnection): IdMap {
     let idMap = this.resourceCache.get(imodel);
     if (!idMap) {
-      idMap = new IdMap();
+      idMap = new IdMap(imodel);
       this.resourceCache.set(imodel, idMap);
     }
     return idMap;
@@ -673,53 +655,73 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return idMap.findMaterial(key);
   }
 
-  /** Attempt to create a texture for the given iModel using an ImageBuffer. */
-  public override createTextureFromImageBuffer(image: ImageBuffer, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    return this.getIdMap(imodel).getTexture(image, params);
+  private getTextureCacheInfo(args: CreateTextureArgs): TextureCacheInfo | undefined {
+    const owner = undefined !== args.ownership && args.ownership !== "external" ? args.ownership : undefined;
+    return owner ? { idMap: this.getIdMap(owner.iModel), key: owner.key } : undefined;
   }
 
-  public override async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    if (!imodel)
-      return super.createTextureFromImageSource(source, imodel, params);
+  public override createTexture(args: CreateTextureArgs): RenderTexture | undefined {
+    const info = this.getTextureCacheInfo(args);
+    const existing = info?.idMap.findTexture(info?.key);
+    if (existing)
+      return existing;
 
-    return this.getIdMap(imodel).getTextureFromImageSource(source, params);
+    const type = args.type ?? RenderTexture.Type.Normal;
+    const source = args.image.source;
+
+    // ###TODO createForImageBuffer should take args.transparency.
+    let handle;
+    if (source instanceof ImageBuffer)
+      handle = TextureHandle.createForImageBuffer(source, type); // ###TODO use transparency from args
+    else
+      handle = TextureHandle.createForImage(source, TextureTransparency.Opaque !== args.image.transparency, type);
+
+    if (!handle)
+      return undefined;
+
+    const texture = new Texture({ handle, type, ownership: args.ownership });
+    if (texture && info)
+      info.idMap.addTexture(texture);
+
+    return texture;
   }
 
-  /** Attempt to create a texture for the given iModel using an HTML image element. */
-  public override createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, imodel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    // if imodel is undefined, caller is responsible for disposing texture. It will not be associated with an IModelConnection
-    if (undefined === imodel) {
-      const textureHandle = TextureHandle.createForImage(image, hasAlpha, params.type);
-      return undefined !== textureHandle ? new Texture(params, textureHandle) : undefined;
-    }
+  public override async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
+    if (typeof args.ownership !== "object")
+      return super.createTextureFromSource(args);
 
-    return this.getIdMap(imodel).getTextureFromImage(image, hasAlpha, params);
+    return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
-  /** Attempt to create a texture from a cube of HTML images. */
+  // eslint-disable-next-line deprecation/deprecation
   public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 
   /** Attempt to create a texture using gradient symbology. */
-  public override getGradientTexture(symb: Gradient.Symb, imodel?: IModelConnection): RenderTexture | undefined {
-    if (!imodel)
-      return createTextureFromGradient(symb);
-
-    const idMap = this.getIdMap(imodel);
-    const texture = idMap.getGradient(symb);
-    return texture;
+  public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
+    const source = symb.getImage(0x100, 0x100);
+    return this.createTexture({
+      image: {
+        source,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+      },
+      ownership: iModel ? { iModel, key: symb } : undefined,
+      type: RenderTexture.Type.Normal,
+    });
   }
 
   /** Using its key, search for an existing texture of an open iModel. */
-  public override findTexture(key: string, imodel: IModelConnection): RenderTexture | undefined {
+  public override findTexture(key: TextureCacheKey, imodel: IModelConnection): RenderTexture | undefined {
     const idMap = this.resourceCache.get(imodel);
     if (!idMap)
       return undefined;
+
     return idMap.findTexture(key);
   }
 

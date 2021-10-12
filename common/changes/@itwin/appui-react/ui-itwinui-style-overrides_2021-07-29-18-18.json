@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Moved iTwinUI style overrides to ui-core from ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

@@ -1,0 +1,85 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "../../variables";
+
+.nz-widget-rectangular-tab-group {
+  $border-radius: 2px;
+  $offset: $nz-tab-width - 2;
+  $width: 10px;
+
+  position: relative;
+  display: flex;
+
+  &:before {
+    content: "";
+    width: $width;
+    height: 100%;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  &.nz-bottom-panel-anchor,
+  &.nz-top-panel-anchor {
+    flex-direction: row;
+  }
+
+  &.nz-top-panel-anchor {
+    align-items: flex-start;
+  }
+
+  &.nz-bottom-panel-anchor {
+    align-items: flex-end;
+  }
+
+  &:not(.nz-bottom-panel-anchor):not(.nz-top-panel-anchor) {
+    flex-direction: column;
+
+    &.nz-left-anchor {
+      &:before {
+        border-top-right-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+        left: $offset;
+
+        background: linear-gradient(to right, $buic-background-5, $buic-background-4);
+      }
+    }
+
+    &.nz-right-anchor {
+      align-items: flex-end;
+
+      &:before {
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+        right: $offset;
+
+        background: linear-gradient(to left, $buic-background-5, $buic-background-4);
+      }
+    }
+  }
+
+  &.nz-handle-hovered {
+    &:hover {
+      &:before {
+        opacity: 1;
+      }
+    }
+  }
+
+  &.nz-handle-visible {
+    &:before {
+      transition: opacity 0;
+      opacity: 1;
+    }
+  }
+
+  &.nz-handle-timedout {
+    &:before {
+      transition-delay: 1s;
+      opacity: 0;
+    }
+  }
+}

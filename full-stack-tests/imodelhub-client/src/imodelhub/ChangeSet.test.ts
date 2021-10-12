@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import * as fs from "fs";
 import * as path from "path";
-import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, IModelHubStatus } from "@itwin/core-bentley";
 import { Briefcase, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, IModelHubClientError, Version } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
@@ -54,11 +53,11 @@ function mockCreateChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
 }
 
 describe("iModelHub ChangeSetHandler", () => {
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
   const maxChangeSetCount = 17;
   const newChangeSetsPerTestSuit = 2; // update this value when adding new tests which create changesets
 
@@ -69,34 +68,32 @@ describe("iModelHub ChangeSetHandler", () => {
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
-    (requestContext as any).activityId = "iModelHub ChangeSetHandler";
+    accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
-      const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
+      const changeSetCount = (await iModelClient.changeSets.get(accessToken, imodelId)).length;
       if (changeSetCount + newChangeSetsPerTestSuit >= maxChangeSetCount) {
         // Recreate iModel if can not create any new changesets
-        await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true);
-        imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+        await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId, true);
+        imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
       }
     }
-    briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
+    briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
 
     // Ensure that at least 3 exist
-    await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 3, true);
+    await utils.createChangeSets(accessToken, imodelId, briefcase, 0, 3, true);
 
     if (!TestConfig.enableMocks) {
-      const changesets = (await iModelClient.changeSets.get(requestContext, imodelId));
+      const changesets = (await iModelClient.changeSets.get(accessToken, imodelId));
       // Ensure that at least one lock exists
-      await utils.createLocks(requestContext, imodelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].index);
+      await utils.createLocks(accessToken, imodelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].index);
 
       // Create named versions
-      await utils.createVersions(requestContext, imodelId, [changesets[0].id!, changesets[1].id!, changesets[2].id!],
+      await utils.createVersions(accessToken, imodelId, [changesets[0].id!, changesets[1].id!, changesets[2].id!],
         ["Version 1", "Version 2", "Version 3"]);
     }
 
@@ -107,7 +104,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
@@ -119,14 +116,14 @@ describe("iModelHub ChangeSetHandler", () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
 
     utils.mockGetChangeSet(imodelId, false, `?$top=${ChangeSetQuery.defaultPageSize}`, mockChangeSets[0], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId);
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId);
 
     const index = changeSets.length;
     const filePath = utils.getMockChangeSetPath(index, mockChangeSets[index].id!);
 
     mockCreateChangeSet(imodelId, mockChangeSets[2]);
     const progressTracker = new utils.ProgressTracker();
-    const newChangeSet = await iModelClient.changeSets.create(requestContext, imodelId, mockChangeSets[index], filePath, progressTracker.track());
+    const newChangeSet = await iModelClient.changeSets.create(accessToken, imodelId, mockChangeSets[index], filePath, progressTracker.track());
 
     chai.assert(newChangeSet);
     progressTracker.check();
@@ -136,7 +133,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
     utils.mockGetChangeSet(imodelId, true, `&$top=${ChangeSetQuery.defaultPageSize}`, ...mockedChangeSets);
 
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(1);
 
     let i = 0;
@@ -148,7 +145,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       utils.expectMatchesExpectedUrlScheme(changeSet.downloadUrl);
 
-      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
+      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
       chai.expect(changeSet.id!).to.be.equal(changeSet2.id!);
       chai.expect(changeSet.index).to.be.equal(changeSet2.index);
@@ -161,7 +158,7 @@ describe("iModelHub ChangeSetHandler", () => {
         `?$filter=${followingChangesetBackwardChangesetId}+eq+%27${lastButOneId}%27&$top=${ChangeSetQuery.defaultPageSize}`);
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateGetResponse(mockedChangeSets[changeSets.length - 2]));
     }
-    const followingChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().fromId(lastButOneId));
+    const followingChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().fromId(lastButOneId));
     chai.expect(followingChangeSets.length).to.be.equal(1);
   });
 
@@ -172,7 +169,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
     utils.mockFileResponse(2);
     const progressTracker = new utils.ProgressTracker();
-    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery(), downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery(), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
     for (const changeSet of changeSets) {
@@ -183,6 +180,29 @@ describe("iModelHub ChangeSetHandler", () => {
     }
   });
 
+  it("should download ChangeSet by id (#iModelBank)", async () => {
+    const mockedChangesets: ChangeSet[] = utils.getMockChangeSets(briefcase).slice(0, 1);
+    utils.mockGetChangeSet(imodelId, false, `?$top=1`, ...mockedChangesets);
+
+    let changesets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().top(1));
+    chai.expect(changesets.length).to.be.equal(1);
+
+    utils.mockGetChangeSetById(imodelId, changesets[0], false, `?$select=FileSize`);
+    utils.mockGetChangeSetById(imodelId, changesets[0], true);
+    const downloadChangeSetsToPath: string = path.join(workDir, imodelId.toString());
+
+    utils.mockFileResponse(1);
+    const progressTracker: utils.ProgressTracker = new utils.ProgressTracker();
+    changesets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery().byId(changesets[0].id!),
+      downloadChangeSetsToPath, progressTracker.track());
+    fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
+    progressTracker.check();
+    chai.expect(changesets.length).to.be.equal(1);
+    const fileName: string = changesets[0].fileName!;
+    const downloadedPathname: string = path.join(downloadChangeSetsToPath, fileName);
+    fs.existsSync(downloadedPathname).should.be.equal(true);
+  });
+
   it("should download ChangeSets with Buffering (#iModelBank)", async () => {
     iModelClient.setFileHandler(createFileHandler(true));
     utils.mockGetChangeSet(imodelId, false, `?$select=FileSize&$top=${ChangeSetQuery.defaultPageSize}`, utils.generateChangeSet(), utils.generateChangeSet());
@@ -191,7 +211,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
     utils.mockFileResponse(2);
     const progressTracker = new utils.ProgressTracker();
-    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery(), downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery(), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
     for (const changeSet of changeSets) {
@@ -213,7 +233,7 @@ describe("iModelHub ChangeSetHandler", () => {
     utils.mockFileResponse(1);
 
     const progressTracker = new utils.ProgressTracker();
-    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().top(1).pageSize(2), downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl().top(1).pageSize(2), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
 
@@ -229,16 +249,16 @@ describe("iModelHub ChangeSetHandler", () => {
     iModelClient.setFileHandler(createFileHandler(true));
 
     const token = "1";
-    utils.mockGetChangeSetChunk(imodelId, false, `?$select=FileSize&$top=1`, { skiptoken: token }, mockChangeSets[0]);
-    utils.mockGetChangeSetChunk(imodelId, false, `?$select=FileSize&$top=1`, undefined, mockChangeSets[1]);
-    utils.mockGetChangeSetChunk(imodelId, true, `&$top=1`, { skiptoken: token }, mockChangeSets[0]);
-    utils.mockGetChangeSetChunk(imodelId, true, `&$top=1`, undefined, mockChangeSets[1]);
+    utils.mockGetChangeSetChunk(imodelId, false, false, `?$select=FileSize&$top=1`, { skiptoken: token }, mockChangeSets[0]);
+    utils.mockGetChangeSetChunk(imodelId, false, false, `?$select=FileSize&$top=1`, undefined, mockChangeSets[1]);
+    utils.mockGetChangeSetChunk(imodelId, true, false, `&$top=1`, { skiptoken: token }, mockChangeSets[0]);
+    utils.mockGetChangeSetChunk(imodelId, true, false, `&$top=1`, undefined, mockChangeSets[1]);
 
     const downloadChangeSetsToPath: string = path.join(workDir, imodelId.toString());
     utils.mockFileResponse(2);
 
     const progressTracker = new utils.ProgressTracker();
-    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().top(2).pageSize(1), downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl().top(2).pageSize(1), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
 
@@ -249,7 +269,7 @@ describe("iModelHub ChangeSetHandler", () => {
       fs.existsSync(downloadedPathname).should.be.equal(true);
 
       utils.mockGetChangeSet(imodelId, false, changeSet.id, mockChangeSets[i]);
-      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
+      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
       chai.expect(changeSet.id!).to.be.equal(changeSet2.id!);
       chai.expect(changeSet.index).to.be.equal(changeSet2.index);
@@ -270,7 +290,7 @@ describe("iModelHub ChangeSetHandler", () => {
     utils.mockFileResponse(2);
 
     const progressTracker = new utils.ProgressTracker();
-    const changeSets = await iModelClient.changeSets.download(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().top(2).pageSize(2), downloadChangeSetsToPath, progressTracker.track());
+    const changeSets = await iModelClient.changeSets.download(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl().top(2).pageSize(2), downloadChangeSetsToPath, progressTracker.track());
     fs.existsSync(downloadChangeSetsToPath).should.be.equal(true);
     progressTracker.check();
 
@@ -281,7 +301,7 @@ describe("iModelHub ChangeSetHandler", () => {
       fs.existsSync(downloadedPathname).should.be.equal(true);
 
       utils.mockGetChangeSet(imodelId, false, changeSet.id, mockChangeSets[i]);
-      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
+      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
       chai.expect(changeSet.id!).to.be.equal(changeSet2.id!);
       chai.expect(changeSet.index).to.be.equal(changeSet2.index);
@@ -294,7 +314,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get ChangeSets skipping the first one (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, `?$skip=1&$top=${ChangeSetQuery.defaultPageSize}`, mockChangeSets[2]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().skip(1));
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().skip(1));
     chai.assert(changeSets);
     chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(1);
   });
@@ -302,13 +322,13 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get latest ChangeSets (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().latest().top(2)));
+    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().latest().top(2)));
     chai.assert(changeSets);
     chai.expect(changeSets.length).to.be.equal(2);
     chai.expect(parseInt(changeSets[0].index!, 10)).to.be.greaterThan(parseInt(changeSets[1].index!, 10));
     utils.mockGetChangeSet(imodelId, false, "?$orderby=Index+desc&$top=2", mockChangeSets[2], mockChangeSets[1]);
 
-    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().orderBy("Index+desc").top(2)));
+    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().orderBy("Index+desc").top(2)));
     chai.assert(changeSets);
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
   });
@@ -316,19 +336,19 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get all ChangeSets in chunks (#iModelBank)", async () => {
     const mockedChangeSets = utils.getMockChangeSets(briefcase).slice(0, 3);
     utils.mockGetChangeSet(imodelId, false, "?$top=1", ...mockedChangeSets);
-    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(1)));
+    const changeSets: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().pageSize(1)));
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
     utils.mockGetChangeSet(imodelId, false, "?$top=3", ...mockedChangeSets);
-    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(3)));
+    const changeSets2: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().pageSize(3)));
     chai.expect(changeSets).to.be.deep.equal(changeSets2);
 
     utils.mockGetChangeSet(imodelId, false, "?$top=7", ...mockedChangeSets);
-    const changeSets3: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().pageSize(7)));
+    const changeSets3: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().pageSize(7)));
     chai.expect(changeSets).to.be.deep.equal(changeSets3);
 
     utils.mockGetChangeSet(imodelId, true, "&$top=2", ...mockedChangeSets);
-    const changeSets4: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl().pageSize(2)));
+    const changeSets4: ChangeSet[] = utils.removeFileUrlExpirationTimes(await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl().pageSize(2)));
     chai.expect(changeSets.length).to.be.equal(changeSets4.length);
 
     let i = 0;
@@ -340,7 +360,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
       utils.expectMatchesExpectedUrlScheme(changeSet.downloadUrl);
 
-      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
+      const changeSet2: ChangeSet = (await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().byId(changeSet.id!)))[0];
 
       chai.expect(changeSet.id!).to.be.equal(changeSet2.id!);
       chai.expect(changeSet.index).to.be.equal(changeSet2.index);
@@ -350,7 +370,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get correct number of ChangeSets when top is less than pageSize (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$top=1", mockChangeSets[0]);
-    const changeSets2: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().top(1).pageSize(2));
+    const changeSets2: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().top(1).pageSize(2));
     chai.assert(changeSets2);
     chai.expect(changeSets2.length).to.be.equal(1);
   });
@@ -358,7 +378,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get correct number of ChangeSets when top is greater than pageSize (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$top=1", mockChangeSets[0], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().top(2).pageSize(1));
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().top(2).pageSize(1));
     chai.assert(changeSets);
     chai.expect(changeSets.length).to.be.equal(2);
     chai.expect(parseInt(changeSets[1].index!, 10)).to.be.greaterThan(parseInt(changeSets[0].index!, 10));
@@ -367,7 +387,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should get correct number of ChangeSets when top is equal to pageSize (#iModelBank)", async () => {
     const mockChangeSets = utils.getMockChangeSets(briefcase);
     utils.mockGetChangeSet(imodelId, false, "?$top=2", mockChangeSets[0], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().top(2).pageSize(2));
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().top(2).pageSize(2));
     chai.assert(changeSets);
     chai.expect(changeSets.length).to.be.equal(2);
     chai.expect(parseInt(changeSets[1].index!, 10)).to.be.greaterThan(parseInt(changeSets[0].index!, 10));
@@ -376,7 +396,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should fail getting a ChangeSet by invalid id", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().byId("InvalidId"));
+      await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().byId("InvalidId"));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -394,7 +414,7 @@ describe("iModelHub ChangeSetHandler", () => {
     const invalidClient = new IModelHubClient();
     try {
       const query = new ChangeSetQuery().selectDownloadUrl().latest().top(1);
-      await invalidClient.changeSets.download(requestContext, imodelId, query, workDir);
+      await invalidClient.changeSets.download(accessToken, imodelId, query, workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -407,7 +427,7 @@ describe("iModelHub ChangeSetHandler", () => {
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.changeSets.create(requestContext, imodelId, new ChangeSet(), workDir);
+      await invalidClient.changeSets.create(accessToken, imodelId, new ChangeSet(), workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -419,7 +439,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should fail creating a ChangeSet with no file", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.changeSets.create(requestContext, imodelId, new ChangeSet(), `${workDir}InvalidChangeSet.cs`);
+      await iModelClient.changeSets.create(accessToken, imodelId, new ChangeSet(), `${workDir}InvalidChangeSet.cs`);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -431,7 +451,7 @@ describe("iModelHub ChangeSetHandler", () => {
   it("should fail creating a ChangeSet with directory path", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.changeSets.create(requestContext, imodelId, new ChangeSet(), workDir);
+      await iModelClient.changeSets.create(accessToken, imodelId, new ChangeSet(), workDir);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -455,10 +475,10 @@ describe("iModelHub ChangeSetHandler", () => {
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
     }
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
+    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId,
       new ChangeSetQuery().betweenChangeSets(changeSets[0].id!, changeSets[2].id));
     chai.expect(selectedChangeSets.length).to.be.equal(2);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
@@ -477,10 +497,10 @@ describe("iModelHub ChangeSetHandler", () => {
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath,
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[0], mockedChangeSets[1], mockedChangeSets[2]]));
     }
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
+    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId,
       new ChangeSetQuery().betweenChangeSets(changeSets[2].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(3);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
@@ -503,13 +523,13 @@ describe("iModelHub ChangeSetHandler", () => {
         ResponseBuilder.generateGetResponse(mockedChangeSets[0]));
     }
 
-    const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId);
+    const versions: Version[] = await iModelClient.versions.get(accessToken, imodelId);
     chai.assert(versions);
     chai.expect(versions.length).to.be.greaterThan(0);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
+    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId,
       new ChangeSetQuery().getVersionChangeSets(versions[versions.length - 1].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[0].id);
@@ -530,13 +550,13 @@ describe("iModelHub ChangeSetHandler", () => {
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[2], mockedChangeSets[1]]));
     }
 
-    const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId);
+    const versions: Version[] = await iModelClient.versions.get(accessToken, imodelId);
     chai.assert(versions);
     chai.expect(versions.length).to.be.greaterThan(1);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
+    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId,
       new ChangeSetQuery().afterVersion(versions[versions.length - 2].id!));
     chai.expect(selectedChangeSets.length).to.be.greaterThan(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[2].id);
@@ -561,13 +581,13 @@ describe("iModelHub ChangeSetHandler", () => {
         ResponseBuilder.generateGetArrayResponse([mockedChangeSets[1], mockedChangeSets[2]]));
     }
 
-    const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId);
+    const versions: Version[] = await iModelClient.versions.get(accessToken, imodelId);
     chai.assert(versions);
     chai.expect(versions.length).to.be.greaterThan(1);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
+    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId,
       new ChangeSetQuery().betweenVersions(versions[0].id!, versions[2].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(2);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
@@ -594,13 +614,13 @@ describe("iModelHub ChangeSetHandler", () => {
         ResponseBuilder.generateGetResponse(mockedChangeSets[1]));
     }
 
-    const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId);
+    const versions: Version[] = await iModelClient.versions.get(accessToken, imodelId);
     chai.assert(versions);
     chai.expect(versions.length).to.be.greaterThan(0);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectDownloadUrl());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectDownloadUrl());
     chai.expect(changeSets.length).to.be.greaterThan(2);
 
-    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId,
+    const selectedChangeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId,
       new ChangeSetQuery().betweenVersionAndChangeSet(versions[versions.length - 1].id!, changeSets[1].id!));
     chai.expect(selectedChangeSets.length).to.be.equal(1);
     chai.expect(selectedChangeSets[0].id).to.be.equal(changeSets[1].id);
@@ -616,7 +636,7 @@ describe("iModelHub ChangeSetHandler", () => {
       const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>([mockedChangeSet]);
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
     }
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectApplicationData());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectApplicationData());
     chai.expect(changeSets.length).to.be.greaterThan(0);
 
     if (TestConfig.enableMocks) {
@@ -640,7 +660,7 @@ describe("iModelHub ChangeSetHandler", () => {
     }
 
     // ChangeSets with bridge properties have been prepared in before function.
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectBridgeProperties());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectBridgeProperties());
     chai.expect(changeSets.length).to.be.greaterThan(0);
     let actualChangeSetIndexWithBridgeProperties: number = -1;
     changeSets.forEach((value: ChangeSet, index: number) => {
@@ -666,7 +686,7 @@ describe("iModelHub ChangeSetHandler", () => {
     });
 
     utils.mockGetChangeSet(imodelId, false, `?$select=*,HasBridgeProperties-forward-BridgeProperties.*&$top=1000`, mockChangeSets[0], mockChangeSets[1]);
-    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectBridgeProperties());
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(accessToken, imodelId, new ChangeSetQuery().selectBridgeProperties());
 
     const index = changeSets.length;
     chai.expect(index, `Reached maximum number of predefined ChangeSets on test iModel: '${maxChangeSetCount}'. Add additional ChangeSets to assets to fix it.`)
@@ -675,7 +695,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
     mockCreateChangeSet(imodelId, mockChangeSets[index]);
     const progressTracker = new utils.ProgressTracker();
-    const newChangeSet = await iModelClient.changeSets.create(requestContext, imodelId, mockChangeSets[index], filePath, progressTracker.track());
+    const newChangeSet = await iModelClient.changeSets.create(accessToken, imodelId, mockChangeSets[index], filePath, progressTracker.track());
 
     chai.assert(newChangeSet);
     chai.expect(newChangeSet.bridgeJobId).to.be.equal(mockChangeSets[index].bridgeJobId);

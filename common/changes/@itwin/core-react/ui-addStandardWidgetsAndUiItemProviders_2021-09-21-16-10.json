@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

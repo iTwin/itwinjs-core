@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, LocalFileName } from "./ChangesetProps";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
@@ -97,7 +97,7 @@ export interface LocalBriefcaseProps {
   /** Full path of local file. */
   readonly fileName: LocalFileName;
 
-  /** iTwin of the iModel. */
+  /** The iTwin containing the iModel. */
   readonly iTwinId: GuidString;
 
   /** The iModelId. */

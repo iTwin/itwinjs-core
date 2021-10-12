@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Code, EntityMetaData } from "@bentley/imodeljs-common";
+import { Code, EntityMetaData } from "@itwin/core-common";
 import {
   DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

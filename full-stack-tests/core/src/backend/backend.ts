@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-import { IModelJsExpressServer } from "@bentley/express-server";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { IModelJsExpressServer } from "@itwin/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+} from "@itwin/core-common";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -80,11 +80,16 @@ async function init() {
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  iModelHost.concurrentQuery.concurrent = 2;
-  iModelHost.concurrentQuery.pollInterval = 5;
 
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
+
+    IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    });
+
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
@@ -104,19 +109,19 @@ async function init() {
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
-  Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-  Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
 class BackendTestAssetResolver extends FileNameResolver {
-  /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
+  /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
+    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {

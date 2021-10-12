@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
 
 describe("Plan projections", () => {

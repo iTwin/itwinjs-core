@@ -25,15 +25,13 @@ steps:
   - script: |
       node ./common/scripts/install-run-rush build -v --to backend-itwin-client
 
-      node ./common/scripts/install-run-rush build -v --to context-registry-client
-
-      node ./common/scripts/install-run-rush build -v --to product-settings-client
+      node ./common/scripts/install-run-rush build -v --to itwin-registry-client
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to imodeljs-backend
+      node ./common/scripts/install-run-rush build -v --to core-backend
 
-      node ./common/scripts/install-run-rush build -v --to imodel-transformer
+      node ./common/scripts/install-run-rush build -v --to core-transformer
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
@@ -47,8 +45,8 @@ steps:
     displayName: "Rush build"
 
   - script: "npm run test:integration"
-    workingDirectory: "clients/context-registry"
-    displayName: "Run Context Registry Client Tests"
+    workingDirectory: "clients/itwin-registry"
+    displayName: "Run iTwin Registry Client Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -97,18 +95,10 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Context Registry Client Test Results"
+    displayName: "Publish iTwin Registry Client Test Results"
     inputs:
-      testResultsFiles: "clients/context-registry/lib/test/junit_results.xml"
-      testRunTitle: "Client - Context Registry Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Product Settings Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
-      testRunTitle: "Client - Product Settings Tests - ${{ parameters.Node_Version }}"
+      testResultsFiles: "clients/itwin-registry/lib/test/junit_results.xml"
+      testRunTitle: "Client - iTwin Registry Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 

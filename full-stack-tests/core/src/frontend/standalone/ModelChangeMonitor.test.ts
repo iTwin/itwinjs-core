@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { BriefcaseConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 if (ProcessDetector.isElectronAppFrontend) {
@@ -24,7 +24,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DateTimeTypeConverter, DateTimeTypeConverterBase, ShortDateTypeConverter } from "../../ui-components";
+import { DateTimeTypeConverter, DateTimeTypeConverterBase, ShortDateTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
-import { TimeFormat } from "@bentley/ui-core";
-import { AlternateDateFormats, TimeDisplay } from "@bentley/ui-abstract";
+import { TimeFormat } from "@itwin/core-react";
+import { AlternateDateFormats, TimeDisplay } from "@itwin/appui-abstract";
 
 describe("ShortDateTypeConverter", () => {
   before(async () => {

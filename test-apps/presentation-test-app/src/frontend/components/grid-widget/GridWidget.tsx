@@ -5,13 +5,13 @@
 
 import "./GridWidget.css";
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { DiagnosticsProps, PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
-import { Table } from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { DiagnosticsProps, PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
+import { Table } from "@itwin/components-react";
+import { useDisposable } from "@itwin/core-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface GridWidgetProps {
@@ -22,7 +22,7 @@ export function GridWidget(props: GridWidgetProps) {
   const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
   return (
     <div className="gridwidget">
-      <h3>{IModelApp.i18n.translate("Sample:controls.grid")}</h3>
+      <h3>{IModelApp.localization.getLocalizedString("Sample:controls.grid")}</h3>
       <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
       <div className="gridwidget-content">
         {props.rulesetId

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { LockConflict, LockMap, LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
@@ -21,7 +21,7 @@ import { SQLiteDb } from "../SQLiteDb";
 /** @internal */
 interface MockBriefcaseIdProps {
   id: BriefcaseId;
-  user: string;
+  user: string; // Just an AccessToken that simulates a user
   alias: string;
   assigned: boolean;
 }

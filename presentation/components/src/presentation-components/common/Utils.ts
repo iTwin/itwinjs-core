@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
+import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
+import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { IPropertyValueRenderer, PropertyValueRendererManager } from "@itwin/components-react";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
 
 const localizationNamespaceName = "PresentationComponents";
@@ -21,8 +21,8 @@ const localizationNamespaceName = "PresentationComponents";
  * @internal
  */
 export const initializeLocalization = async () => {
-  await Presentation.i18n.registerNamespace(localizationNamespaceName).readFinished;
-  return () => Presentation.i18n.unregisterNamespace(localizationNamespaceName);
+  await Presentation.localization.registerNamespace(localizationNamespaceName);
+  return () => Presentation.localization.unregisterNamespace(localizationNamespaceName);
 };
 
 /**
@@ -54,7 +54,7 @@ export const initializePropertyValueRenderers = async () => {
  */
 export const translate = (stringId: string): string => {
   stringId = `${localizationNamespaceName}:${stringId}`;
-  return Presentation.i18n.translate(stringId);
+  return Presentation.localization.getLocalizedString(stringId);
 };
 
 /**

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { toDateString, toTimeString } from "../../ui-components/common/DateUtils";
+import { toDateString, toTimeString } from "../../components-react/common/DateUtils";
 
 describe("DateUtils", () => {
   // Cannot test string values because of different locales

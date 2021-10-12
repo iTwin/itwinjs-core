@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@bentley/geometry-core";
+import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { Element, G, Matrix, Svg, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "../Markup";
 import { initSvgExt } from "../SvgJsExt";

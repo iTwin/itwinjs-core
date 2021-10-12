@@ -1,8 +1,8 @@
 {
-  "name": "@bentley/ecschema2ts",
+  "name": "@itwin/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "3.0.0-dev.70",
+  "version": "3.0.0-dev.84",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -12,16 +12,17 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2ts"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema2ts",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "docs": "",
     "test": "mocha",
-    "cli:dev": "npm run clean & npm run build & npm link",
-    "cover": "nyc npm test"
+    "cli:dev": "npm run -s clean & npm run -s build & npm link",
+    "cover": "nyc npm -s test"
   },
   "keywords": [
     "Bentley",
@@ -35,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
@@ -54,15 +55,12 @@
   },
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/ecschema-locaters": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/ecschema-locaters": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@xmldom/xmldom": "^0.7.0",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
@@ -70,12 +68,12 @@
     "fs-extra": "^8.1.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

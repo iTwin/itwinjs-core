@@ -716,7 +716,7 @@ export class HalfEdge {
   /**
    * @return whether the sector of the face is convex.
    */
-  // eslint-disable-next-line @bentley/prefer-get
+  // eslint-disable-next-line @itwin/prefer-get
   public isSectorConvex(): boolean {
     return HalfEdge.isSectorConvex(this.facePredecessor, this, this.faceSuccessor);
   }
@@ -724,7 +724,7 @@ export class HalfEdge {
   /**
    * @return whether the face is convex.
    */
-  // eslint-disable-next-line @bentley/prefer-get
+   // eslint-disable-next-line @itwin/prefer-get
   public isFaceConvex(): boolean {
     let node: HalfEdge = this;
     do {

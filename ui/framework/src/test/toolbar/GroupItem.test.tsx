@@ -6,14 +6,14 @@ import { expect } from "chai";
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BadgeType } from "@bentley/ui-abstract";
-import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@bentley/ui-ninezone";
+import { BadgeType } from "@itwin/appui-abstract";
+import { WithOnOutsideClickProps } from "@itwin/core-react";
+import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
 import {
   BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,
   ToolbarDragInteractionContext, ToolGroupPanelContext,
-} from "../../ui-framework";
-import * as GroupItemModule from "../../ui-framework/toolbar/GroupItem";
+} from "../../appui-react";
+import * as GroupItemModule from "../../appui-react/toolbar/GroupItem";
 import TestUtils, { mount } from "../TestUtils";
 
 const tool1 = new CommandItemDef({

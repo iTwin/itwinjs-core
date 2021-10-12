@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
 @import "~@itwin/itwinui-css/scss/style/space";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
@@ -86,7 +86,7 @@ $border-color: #eeeeee;
       .dc-table-content {
         flex: 1;
         border-width: 0px 1px 1px 1px;
-        border-color: #dce0e3 ;
+        border-color: #dce0e3;
         border-style: solid;
         overflow-y: auto;
       }
@@ -129,19 +129,19 @@ $border-color: #eeeeee;
       flex-direction: column;
       padding: 0 $iui-m;
 
-      > span:first-child {
+      >span:first-child {
         font-size: 14px;
-        color: rgba($uicore-text-color,.85);
+        color: rgba($uicore-text-color, .85);
       }
 
-      > span:last-child {
+      >span:last-child {
         margin-top: 3px;
         font-size: 12px;
         color: $uicore-gray;
       }
     }
 
-    > a {
+    >a {
       margin-left: auto;
       margin-right: $iui-xs;
       font-size: 12px;
@@ -154,11 +154,11 @@ $border-color: #eeeeee;
       font-size: 2em;
       margin-left: $iui-m;
       margin-right: $iui-sm;
-      color: rgba(0,0,0,.85);
+      color: rgba(0, 0, 0, .85);
       cursor: pointer;
 
       &:hover {
-        color: rgba(0,0,0,1);
+        color: rgba(0, 0, 0, 1);
       }
     }
   }
@@ -185,9 +185,13 @@ $border-color: #eeeeee;
 }
 
 @-webkit-keyframes slide {
-  100% { bottom: 15px }
+  100% {
+    bottom: 15px
+  }
 }
 
 @keyframes slide {
-  100% { bottom: 15px }
+  100% {
+    bottom: 15px
+  }
 }

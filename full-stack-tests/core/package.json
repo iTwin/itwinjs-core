@@ -1,21 +1,21 @@
 {
   "name": "core-full-stack-tests",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "copy:config": "internal-tools copy-config",
-    "build": "npm run build:tests",
-    "build:tests": "tsc 1>&2 && npm run webpack:frontend",
+    "build": "tsc 1>&2 && npm run -s webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
-    "cover": "npm run test",
+    "cover": "npm run -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run test:chrome && npm run test:electron",
+    "test": "npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "certa -r chrome --grep \"#integration\" --invert",
     "test:electron": "certa -r electron --grep \"#integration\" --invert",
-    "test:integration": "npm run test:integration:chrome && npm run test:integration:electron",
+    "test:integration": "npm run -s test:integration:chrome && npm run -s test:integration:electron",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
@@ -23,33 +23,33 @@
   "repository": {},
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/express-server": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/hypermodeling-frontend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/express-server": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/hypermodeling-frontend": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-editor-backend": "workspace:*",
-    "@bentley/imodeljs-editor-frontend": "workspace:*",
-    "@bentley/imodeljs-editor-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-markup": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/editor-backend": "workspace:*",
+    "@itwin/editor-frontend": "workspace:*",
+    "@itwin/editor-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-markup": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
+    "@itwin/browser-authorization": "^0.2.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "fs-extra": "^8.1.0",
-    "electron": "^11.1.0"
+    "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/certa": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -70,16 +70,17 @@
     "typescript": "~4.4.0",
     "nyc": "^15.1.0",
     "webpack": "4.42.0",
+    "webpack-cli": "^3.1.0",
     "webpack-core": "0.6.9",
     "serve-handler": "^6.1.2"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { assert } from "@bentley/bentleyjs-core";
-import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
-import { CreateElementTool, EditTools } from "@bentley/imodeljs-editor-frontend";
+import { assert } from "@itwin/core-bentley";
+import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@itwin/core-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, ContextRotationId, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 export class PlaceBlockTool extends CreateElementTool {
   public static override toolId = "PlaceBlock";
@@ -44,7 +44,7 @@ export class PlaceBlockTool extends CreateElementTool {
   }
   public override async onUnsuspend() { this.showPrompt(); }
 
-  protected translate(prompt: string) { return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlock.${prompt}`); }
+  protected translate(prompt: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.PlaceBlock.${prompt}`); }
   protected showPrompt(): void {
     const mainMsg = (0 === this._points.length) ? "prompts.firstPoint" : (1 === this._points.length) ? "prompts.nextPoint" : "prompts.additionalPoint";
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, this.translate(mainMsg));

@@ -61,7 +61,6 @@ export enum IModelStatus {
   MissingId = IMODEL_ERROR_BASE + 33,
   NoGeometry = IMODEL_ERROR_BASE + 34,
   NoMultiTxnOperation = IMODEL_ERROR_BASE + 35,
-  NotDgnMarkupProject = IMODEL_ERROR_BASE + 36,
   NotEnabled = IMODEL_ERROR_BASE + 37,
   NotFound = IMODEL_ERROR_BASE + 38,
   NotOpen = IMODEL_ERROR_BASE + 39,
@@ -277,21 +276,21 @@ export enum IModelHubStatus {
   EventTypeDoesNotExist = IMODELHUBERROR_BASE + 32,
   EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 33,
   EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
-  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
-  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
-  FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
+  ITwinIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
+  FailedToGetITwinPermissions = IMODELHUBERROR_BASE + 36,
+  FailedToGetITwinMembers = IMODELHUBERROR_BASE + 37,
   ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 38,
   VersionAlreadyExists = IMODELHUBERROR_BASE + 39,
   JobSchedulingFailed = IMODELHUBERROR_BASE + 40,
   ConflictsAggregate = IMODELHUBERROR_BASE + 41,
-  FailedToGetProjectById = IMODELHUBERROR_BASE + 42,
+  FailedToGetITwinById = IMODELHUBERROR_BASE + 42,
 
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
-  ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
+  ITwinDoesNotExist = IMODELHUBERROR_BASE + 47,
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
@@ -343,36 +342,57 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
   message: string;
 }
 
-/** Defines the *signature* for a function that returns meta-data related to an error.
- * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
+/** A function that returns a metadata object for a [[BentleyError]].
+ * This is generally used for logging. However not every exception is logged, so use this if the metadata for an exception is expensive to create.
  * @public
  */
 export type GetMetaDataFunction = () => object | undefined;
+
+/** Optional metadata attached to a [[BentleyError]]. May either be an object or a function that returns an object.
+ * If this exception is logged and metadata is present, the metaData object is attached to the log entry via `JSON.stringify`
+ * @public
+ */
+export type LoggingMetaData = GetMetaDataFunction | object | undefined;
+
+function isObject(obj: unknown): obj is { [key: string]: unknown } {
+  return typeof obj === "object" && obj !== null;
+}
+
+interface ErrorProps {
+  message: string;
+  stack?: string;
+  metadata?: object;
+}
 
 /** Base exception class for iTwin.js exceptions.
  * @public
  */
 export class BentleyError extends Error {
-  private readonly _getMetaData: GetMetaDataFunction | undefined;
+  private readonly _metaData: LoggingMetaData;
 
   /**
    * @param errorNumber The a number that identifies of the problem.
    * @param message  message that describes the problem (should not be localized).
-   * @param getMetaData a function to be stored on the exception object that provides metaData about the problem.
+   * @param metaData metaData about the exception.
    */
-  public constructor(public errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(public errorNumber: number, message?: string, metaData?: LoggingMetaData) {
     super(message);
     this.errorNumber = errorNumber;
-    this._getMetaData = getMetaData;
+    this._metaData = metaData;
     this.name = this._initName();
   }
 
-  /** Returns true if this BentleyError includes (optional) meta data. */
-  public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
+  /** Returns true if this BentleyError includes (optional) metadata. */
+  public get hasMetaData(): boolean { return undefined !== this._metaData; }
 
-  /** Return the meta data associated with this BentleyError. */
+  /** get the meta data associated with this BentleyError, if any. */
   public getMetaData(): object | undefined {
-    return this.hasMetaData ? this._getMetaData!() : undefined;
+    return BentleyError.getMetaData(this._metaData);
+  }
+
+  /** get the metadata object associated with an ExceptionMetaData, if any. */
+  public static getMetaData(metaData: LoggingMetaData): object | undefined {
+    return (typeof metaData === "function") ? metaData() : metaData;
   }
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
@@ -413,7 +433,6 @@ export class BentleyError extends Error {
       case IModelStatus.MissingId: return "Missing Id";
       case IModelStatus.NoGeometry: return "No Geometry";
       case IModelStatus.NoMultiTxnOperation: return "NoMultiTxnOperation";
-      case IModelStatus.NotDgnMarkupProject: return "NotDgnMarkupProject";
       case IModelStatus.NotEnabled: return "Not Enabled";
       case IModelStatus.NotFound: return "Not Found";
       case IModelStatus.NotOpen: return "Not Open";
@@ -619,19 +638,19 @@ export class BentleyError extends Error {
       case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
       case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
-      case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
-      case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
-      case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
+      case IModelHubStatus.ITwinIdIsNotSpecified: return "ITwin Id is not specified";
+      case IModelHubStatus.FailedToGetITwinPermissions: return "Failed to get iTwin permissions";
+      case IModelHubStatus.FailedToGetITwinMembers: return "Failed to get iTwin members";
       case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
       case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
-      case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
+      case IModelHubStatus.FailedToGetITwinById: return "Failed to query iTwin by its id";
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
-      case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
+      case IModelHubStatus.ITwinDoesNotExist: return "ITwin does not exist";
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
@@ -657,86 +676,76 @@ export class BentleyError extends Error {
         return `Error (${this.errorNumber})`;
     }
   }
-}
 
-function isObject(obj: unknown): obj is { [key: string]: unknown } {
-  return typeof obj === "object" && obj !== null;
-}
+  /** Use run-time type checking to safely get a useful string summary of an unknown error value, or `""` if none exists.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+   * @public
+   */
+  public static getErrorMessage(error: unknown): string {
+    if (typeof error === "string")
+      return error;
 
-/** Use run-time type checking to safely get a useful string summary of an unknown error value, or `""` if none exists.
- * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
- * @public
- */
-export function getErrorMessage(error: unknown): string {
-  if (typeof error === "string")
-    return error;
-
-  if (error instanceof Error)
-    return error.toString();
-
-  if (isObject(error)) {
-    if (typeof error.message === "string")
-      return error.message;
-
-    if (typeof error.msg === "string")
-      return error.msg;
-
-    if (error.toString() !== "[object Object]")
+    if (error instanceof Error)
       return error.toString();
+
+    if (isObject(error)) {
+      if (typeof error.message === "string")
+        return error.message;
+
+      if (typeof error.msg === "string")
+        return error.msg;
+
+      if (error.toString() !== "[object Object]")
+        return error.toString();
+    }
+
+    return "";
   }
 
-  return "";
-}
+  /** Use run-time type checking to safely get the call stack of an unknown error value, if possible.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+   * @public
+   */
+  public static getErrorStack(error: unknown): string | undefined {
+    if (isObject(error) && typeof error.stack === "string")
+      return error.stack;
 
-/** Use run-time type checking to safely get the call stack of an unknown error value, if possible.
- * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
- * @public
- */
-export function getErrorStack(error: unknown): string | undefined {
-  if (isObject(error) && typeof error.stack === "string")
-    return error.stack;
-
-  return undefined;
-}
-
-/** Use run-time type checking to safely get the metadata with an unknown error value, if possible.
- * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof BentleyError`
- * @see [[BentleyError.getMetaData]]
- * @public
- */
-export function getErrorMetadata(error: unknown): object | undefined {
-  if (isObject(error) && typeof error.getMetaData === "function") {
-    const metadata = error.getMetaData();
-    if (typeof metadata === "object" && metadata !== null)
-      return metadata;
+    return undefined;
   }
 
-  return undefined;
-}
+  /** Use run-time type checking to safely get the metadata with an unknown error value, if possible.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof BentleyError`
+   * @see [[BentleyError.getMetaData]]
+   * @public
+   */
+  public static getErrorMetadata(error: unknown): object | undefined {
+    if (isObject(error) && typeof error.getMetaData === "function") {
+      const metadata = error.getMetaData();
+      if (typeof metadata === "object" && metadata !== null)
+        return metadata;
+    }
 
-interface ErrorProps {
-  message: string;
-  stack?: string;
-  metadata?: object;
-}
+    return undefined;
+  }
 
-/** Returns a new `ErrorProps` object representing an unknown error value.  Useful for logging or wrapping/re-throwing caught errors.
- * @note Unlike `Error` objects (which lose messages and call stacks when serialized to JSON), objects
- *       returned by this are plain old JavaScript objects, and can be easily logged/serialized to JSON.
- * @public
- */
-export function getErrorProps(error: unknown): ErrorProps {
-  const serialized: ErrorProps = {
-    message: getErrorMessage(error),
-  };
+  /** Returns a new `ErrorProps` object representing an unknown error value.  Useful for logging or wrapping/re-throwing caught errors.
+   * @note Unlike `Error` objects (which lose messages and call stacks when serialized to JSON), objects
+   *       returned by this are plain old JavaScript objects, and can be easily logged/serialized to JSON.
+   * @public
+   */
+  public static getErrorProps(error: unknown): ErrorProps {
+    const serialized: ErrorProps = {
+      message: BentleyError.getErrorMessage(error),
+    };
 
-  const stack = getErrorStack(error);
-  if (stack)
-    serialized.stack = stack;
+    const stack = BentleyError.getErrorStack(error);
+    if (stack)
+      serialized.stack = stack;
 
-  const metadata = getErrorMetadata(error);
-  if (metadata)
-    serialized.metadata = metadata;
+    const metadata = BentleyError.getErrorMetadata(error);
+    if (metadata)
+      serialized.metadata = metadata;
 
-  return serialized;
+    return serialized;
+  }
 }

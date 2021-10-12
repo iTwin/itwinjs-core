@@ -11,10 +11,10 @@ import * as https from "https";
 import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
-import { Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, Logger } from "@itwin/core-bentley";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
+  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
   UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
@@ -260,7 +260,7 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be downloaded.
    */
-  public async downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
@@ -302,7 +302,7 @@ export class AzureFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
+  private async uploadChunk(uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -325,7 +325,7 @@ export class AzureFileHandler implements FileHandler {
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
-    await request(requestContext, uploadUrl, options);
+    await request(uploadUrl, options);
   }
 
   /**
@@ -337,7 +337,7 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be uploaded.
    */
-  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async uploadFile(_accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
@@ -347,11 +347,11 @@ export class AzureFileHandler implements FileHandler {
     if (this.useAzCopyForFileTransfer(fileSize)) {
       await this.transferFileUsingAzCopy(uploadFromPathname, uploadUrlString, progressCallback);
     } else {
-      await this.uploadFileUsingHttps(requestContext, uploadUrlString, uploadFromPathname, fileSize, progressCallback);
+      await this.uploadFileUsingHttps(uploadUrlString, uploadFromPathname, fileSize, progressCallback);
     }
   }
 
-  private async uploadFileUsingHttps(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, fileSize: number, progressCallback?: ProgressCallback): Promise<void> {
+  private async uploadFileUsingHttps(uploadUrlString: string, uploadFromPathname: string, fileSize: number, progressCallback?: ProgressCallback): Promise<void> {
     const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
     try {
@@ -362,7 +362,7 @@ export class AzureFileHandler implements FileHandler {
         progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };
       for (; i * chunkSize < fileSize; ++i) {
-        await this.uploadChunk(requestContext, uploadUrlString, file, i, progressCallback ? callback : undefined);
+        await this.uploadChunk(uploadUrlString, file, i, progressCallback ? callback : undefined);
         blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
       }
       blockList += "</BlockList>";
@@ -382,7 +382,7 @@ export class AzureFileHandler implements FileHandler {
       };
 
       const uploadUrl = `${uploadUrlString}&comp=blocklist`;
-      await request(requestContext, uploadUrl, options);
+      await request(uploadUrl, options);
     } finally {
       fs.closeSync(file);
     }

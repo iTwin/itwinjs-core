@@ -6,8 +6,8 @@
  * @module Tile
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { TransformProps } from "@bentley/geometry-core";
+import { Id64String } from "@itwin/core-bentley";
+import { TransformProps } from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
@@ -37,9 +37,9 @@ export interface GraphicsRequestProps {
   readonly omitEdges?: boolean;
   /** If true, the element's graphics will be clipped against the iModel's project extents. */
   readonly clipToProjectExtents?: boolean;
-  /** If defined, the compact string representation of a [ClipVector]($geometry-core) to be applied to the geometry to produce section-cut
+  /** If defined, the compact string representation of a [ClipVector]($core-geometry) to be applied to the geometry to produce section-cut
    * geometry at the intersections with the clip planes. Any geometry *not* intersecting the clip planes is omitted from the tiles.
-   * @see [ClipVector.toCompactString]($geometry-core) to produce the string representation.
+   * @see [ClipVector.toCompactString]($core-geometry) to produce the string representation.
    */
   readonly sectionCut?: string;
 }

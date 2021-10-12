@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as path from "path";
-import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
 import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { DisabledText } from "../../ui-core";
+import { DisabledText } from "../../core-react";
 
 describe("<DisabledText />", () => {
   it("should render", () => {

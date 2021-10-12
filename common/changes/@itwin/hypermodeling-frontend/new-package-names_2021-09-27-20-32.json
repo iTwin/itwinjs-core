@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/hypermodeling-frontend",
+      "comment": "rename to @itwin/hypermodeling-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/hypermodeling-frontend"
+}

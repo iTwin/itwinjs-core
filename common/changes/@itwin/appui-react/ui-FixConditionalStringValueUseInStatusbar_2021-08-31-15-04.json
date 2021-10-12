@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix bug where ConditionalStringValue used in some status bar components would cause a crash.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

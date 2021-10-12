@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "remove ClientRequestContext and its subclasses",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

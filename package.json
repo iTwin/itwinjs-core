@@ -29,7 +29,9 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
-  "dependencies": {},
+  "dependencies": {
+    "rush": "0.0.2"
+  },
   "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
   "devDependencies": {}
 }

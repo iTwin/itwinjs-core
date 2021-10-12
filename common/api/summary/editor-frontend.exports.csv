@@ -1,0 +1,44 @@
+sep=;
+Release Tag;API Item
+alpha;ArcMethod
+alpha;BCurveMethod
+alpha;CircleMethod
+alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
+alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+alpha;CreateArcTool 
+alpha;CreateBCurveTool 
+alpha;CreateCircleTool 
+alpha;CreateCurvePhase
+alpha;class CreateElementTool 
+alpha;CreateEllipseTool 
+alpha;CreateLineStringTool 
+alpha;class CreateOrContinuePathTool 
+alpha;CreateRectangleTool 
+alpha;DeleteElementsTool 
+alpha;DynamicGraphicsProvider
+alpha;EditorOptions
+alpha;EditTools
+alpha;class ElementGeometryCacheTool 
+alpha;ElementGeometryGraphicsProvider
+alpha;class LocateSubEntityTool 
+alpha;MoveElementsTool 
+alpha;OffsetFacesTool 
+beta;ProjectExtentsClipDecoration 
+beta;ProjectGeolocationMoveTool 
+beta;ProjectGeolocationNorthTool 
+beta;ProjectGeolocationPointTool 
+beta;ProjectLocationCancelTool 
+beta;ProjectLocationChanged
+beta;ProjectLocationHideTool 
+beta;ProjectLocationSaveTool 
+beta;ProjectLocationShowTool 
+alpha;RedoTool 
+alpha;RotateAbout
+alpha;RotateElementsTool 
+alpha;RotateMethod
+alpha;SubEntityData
+alpha;class TransformElementsTool 
+alpha;TransformGraphicsData
+alpha;TransformGraphicsProvider
+alpha;UndoAllTool 
+alpha;UndoTool 

@@ -9,7 +9,7 @@
 import {
   ECObjectsError, ECObjectsStatus, RelationshipClass, RelationshipClassProps, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";

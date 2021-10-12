@@ -130,8 +130,8 @@ export class ToolAssistance {
     bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
 
-  private static translateKey(key: string) { return IModelApp.i18n.translate(`${CoreTools.namespace}:toolAssistance.${key}`); }
-  private static translateTouch(cursor: string) { return IModelApp.i18n.translate(`${CoreTools.namespace}:touchCursor.${cursor}`); }
+  private static translateKey(key: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`); }
+  private static translateTouch(cursor: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`); }
 
   /** Alt key text. */
   public static get altKey(): string {

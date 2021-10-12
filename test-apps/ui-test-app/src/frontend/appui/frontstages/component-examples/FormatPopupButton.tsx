@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { FormatProps } from "@bentley/imodeljs-quantity";
-import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { Popup, WebFontIcon } from "@bentley/ui-core";
-import { FormatPanel, FormatPanelProps, UiIModelComponents } from "@bentley/ui-imodel-components";
+import { FormatProps } from "@itwin/core-quantity";
+import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
+import { Popup, WebFontIcon } from "@itwin/core-react";
+import { FormatPanel, FormatPanelProps, UiIModelComponents } from "@itwin/imodel-components-react";
 import "./FormatPopupButton.scss";
 import { Button } from "@itwin/itwinui-react";
 

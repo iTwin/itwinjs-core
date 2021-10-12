@@ -1,0 +1,734 @@
+sep=;
+Release Tag;API Item
+public;AdditionalTransform 
+public;AdditionalTransformProps
+public;AffineTransform 
+public;AffineTransformProps
+public;AmbientLight
+public;AmbientLightProps
+public;AmbientOcclusion
+public;AnalysisStyle
+public;AnalysisStyleDisplacement
+public;AnalysisStyleDisplacementProps
+public;AnalysisStyleProps
+public;AnalysisStyleThematic
+public;AnalysisStyleThematicProps
+public;AppearanceOverrideProps
+public;AreaFillProps
+public;AreaPattern
+beta;AuthorizationClient
+public;AuxCoordSystem2dProps 
+public;AuxCoordSystem3dProps 
+public;AuxCoordSystemProps 
+public;AxisAlignedBox3d = Range3d
+public;AxisAlignedBox3dProps = Range3dProps
+internal;B3dmHeader 
+public;BackendError 
+public;BackgroundFill
+public;BackgroundMapProps
+beta;BackgroundMapProvider
+public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+beta;BackgroundMapProviderProps
+public;BackgroundMapSettings
+public;BackgroundMapType
+public;Base64EncodedString = string
+public;Base64EncodedString
+beta;BaseLayerProps = BaseMapLayerProps | ColorDefProps
+beta;BaseLayerSettings = BaseMapLayerSettings | ColorDef
+beta;BaseLayerSettings
+beta;BaseMapLayerProps 
+beta;BaseMapLayerSettings 
+public;BaseReaderOptions
+public;BatchType
+internal;class BentleyCloudRpcConfiguration 
+internal;BentleyCloudRpcManager 
+internal;BentleyCloudRpcParams
+internal;class BentleyCloudRpcProtocol 
+public;BisCodeSpec
+internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
+internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
+beta;BlobOptions 
+beta;BlobOptionsBuilder
+beta;BlobRange = QueryLimit
+public;BoundingSphere
+alpha;BRepCutProps
+public;BRepEntity
+alpha;BRepGeometryCreate
+alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
+alpha;BRepGeometryInfo
+alpha;BRepGeometryOperation
+alpha;BRepHollowProps
+alpha;BRepOffsetProps
+public;BRepPrimitive
+alpha;BRepRoundProps
+alpha;BRepThickenProps
+public;BriefcaseDownloader
+public;BriefcaseId = number
+public;BriefcaseIdValue
+public;BriefcaseProps
+public;calculateSolarAngles(date: Date, location: Cartographic):
+public;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+public;calculateSolarDirectionFromAngles(azimuthElevation:
+public;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
+public;CalloutProps 
+public;Camera 
+public;CameraProps
+public;Carto2DDegrees 
+public;Carto2DDegreesProps
+public;Cartographic 
+public;CartographicProps
+public;CartographicRange
+public;CategoryProps 
+public;CategorySelectorProps 
+internal;ChangeData
+public;ChangedElements
+public;ChangedEntities
+internal;ChangedModels
+public;ChangedValueState
+public;ChangeOpCode
+beta;ChangesetFileProps 
+public;ChangesetId = string
+public;ChangesetIdWithIndex
+public;ChangesetIndex = number
+public;ChangesetIndexAndId
+public;ChangesetIndexOrId = ChangesetIndexAndId |
+beta;ChangesetProps
+public;ChangesetRange
+public;ChangesetType
+alpha;ChannelConstraintError 
+public;ChannelRootAspectProps 
+internal;ClassifierTileTreeId
+public;ClipStyle
+public;ClipStyleProps
+beta;class CloudStorageCache
+beta;CloudStorageContainerDescriptor
+beta;CloudStorageContainerUrl
+beta;CloudStorageContainerUrl
+beta;CloudStorageProvider
+beta;CloudStorageTileCache 
+public;Code 
+public;CodeProps
+public;CodeScopeProps = Id64String | GuidString
+public;CodeScopeSpec
+public;CodeSpec
+public;ColorByName
+public;ColorDef
+public;ColorDefProps = number
+internal;ColorIndex
+public;CommonLoggerCategory
+internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
+internal;CompositeTileHeader 
+internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
+alpha;ContentFlags
+internal;class ContentIdProvider
+public;ContextRealityModel
+public;ContextRealityModelProps
+public;ContextRealityModelProps
+public;ContextRealityModels
+public;ContextRealityModelsContainer
+public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
+internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
+public;CreateIModelProps 
+public;CreateSnapshotIModelProps 
+internal;CreateStandaloneIModelProps 
+internal;CURRENT_INVOCATION: unique symbol
+internal;CURRENT_REQUEST: unique symbol
+internal;CurrentImdlVersion
+beta;CustomAttribute
+public;CutStyle
+public;CutStyleProps
+public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
+internal;DbBlobRequest 
+internal;DbBlobResponse 
+public;DbQueryError 
+internal;DbQueryRequest 
+internal;DbQueryResponse 
+internal;DbRequest 
+internal;DbRequestExecutor
+internal;DbRequestKind
+internal;DbResponse
+internal;DbResponseKind
+internal;DbResponseStatus
+beta;DbRuntimeStats
+internal;DecorationGeometryProps
+internal;defaultTileOptions: TileOptions
+public;DefinitionElementProps 
+public;DeletedElementGeometryChange
+public;DeprecatedBackgroundMapProps
+internal;class DevToolsRpcInterface 
+internal;DevToolsStatsOptions
+public;DisplayStyle3dProps 
+public;DisplayStyle3dSettings 
+public;DisplayStyle3dSettingsProps 
+public;DisplayStyleLoadProps
+public;DisplayStyleModelAppearanceProps 
+public;DisplayStyleOverridesOptions
+public;DisplayStylePlanarClipMaskProps 
+public;DisplayStyleProps 
+public;DisplayStyleSettings
+public;DisplayStyleSettingsOptions
+public;DisplayStyleSettingsProps
+public;DisplayStyleSubCategoryProps 
+beta;DomainOptions
+public;DynamicGraphicsRequest2dProps 
+public;DynamicGraphicsRequest3dProps 
+public;DynamicGraphicsRequestProps 
+public;Easing:
+public;EasingFunction = (k: number) => number
+public;EcefLocation 
+public;EcefLocationProps
+public;ECJsNames
+beta;ECSqlReader
+public;ECSqlSystemProperty
+public;ECSqlValueType
+internal;EdgeArgs
+internal;EditingScopeNotifications
+public;ElementAlignedBox2d = Range2d
+public;ElementAlignedBox3d = Range3d
+public;ElementAspectProps 
+alpha;ElementGeometry
+public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
+public;ElementGeometryChange
+public;ElementGeometryDataEntry
+alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
+alpha;ElementGeometryInfo
+public;ElementGeometryOpcode
+alpha;ElementGeometryRequest
+alpha;ElementGeometryUpdate
+public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
+public;ElementIdsAndRangesProps
+public;ElementLoadOptions
+public;ElementLoadProps 
+public;ElementProps 
+public;EmphasizeElementsProps
+public;EmptyLocalization 
+public;EntityIdAndClassId
+public;EntityIdAndClassIdIterable = Iterable
+beta;EntityMetaData 
+beta;EntityMetaDataProps
+public;EntityProps
+public;EntityQueryParams
+public;EnvironmentProps
+public;ExtantElementGeometryChange
+public;ExternalSourceAspectProps 
+beta;ExternalSourceAttachmentProps 
+beta;ExternalSourceAttachmentRole
+beta;ExternalSourceProps 
+public;Feature
+public;FeatureAppearance 
+public;FeatureAppearanceProps
+public;FeatureAppearanceProvider
+public;FeatureAppearanceProvider
+public;FeatureAppearanceSource
+internal;FeatureGates
+internal;FeatureIndex
+internal;FeatureIndexType
+public;FeatureOverrides 
+public;FeatureOverrideType
+public;FeatureTable 
+internal;FeatureTableHeader
+public;FilePropertyProps
+public;FillDisplay
+public;FillFlags
+public;FlatBufferGeometryStream
+public;FontMap
+public;FontMapProps
+public;FontProps
+public;FontType
+internal;FormDataCommon
+public;Frustum
+internal;FrustumPlanes
+internal;FrustumPlanes
+public;FunctionalElementProps 
+internal;GateValue = number | boolean | string | undefined
+public;GeocentricTransform 
+public;GeocentricTransformProps
+beta;GeoCoordinatesRequestProps
+beta;GeoCoordinatesResponseProps
+public;GeoCoordStatus
+public;GeodeticDatum 
+public;GeodeticDatumProps
+public;GeodeticEllipsoid 
+public;GeodeticEllipsoidProps
+public;GeodeticTransform 
+public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
+public;GeodeticTransformProps
+public;GeographicCRS 
+public;GeographicCRSProps
+public;GeometricElement2dProps 
+public;GeometricElement3dProps 
+public;GeometricElementProps 
+public;GeometricModel2dProps 
+public;GeometricModel3dProps 
+public;GeometricModelProps 
+public;GeometryAppearanceProps
+public;GeometryClass
+public;GeometryContainmentRequestProps
+public;GeometryContainmentResponseProps
+public;GeometryParams
+public;GeometryPartInstanceProps
+public;GeometryPartProps 
+public;GeometryPrimitive
+public;GeometryStreamBuilder
+public;GeometryStreamEntryProps 
+public;GeometryStreamFlags
+public;GeometryStreamHeaderProps
+public;GeometryStreamIterator 
+public;GeometryStreamIteratorEntry
+public;GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive
+public;GeometryStreamProps = GeometryStreamEntryProps[]
+public;GeometrySummaryOptions
+public;GeometrySummaryRequestProps
+public;GeometrySummaryVerbosity
+internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+public;GlobeMode
+internal;GltfBufferData
+internal;GltfBufferView
+internal;GltfConstants
+internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
+internal;GltfDataType
+internal;GltfHeader 
+internal;GltfMeshMode
+internal;GltfV2ChunkTypes
+internal;GltfVersions
+public;Gradient
+public;GraphicParams
+public;GraphicsRequestProps
+public;GridFileDefinition 
+public;GridFileDefinitionProps
+public;GridFileDirection = "Direct" | "Inverse"
+public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN"
+public;GridFileTransform 
+public;GridFileTransformProps
+public;GridOrientationType
+public;GroundPlane
+public;GroundPlaneProps
+public;Helmert2DWithZOffset 
+public;Helmert2DWithZOffsetProps
+public;HemisphereEnum = "South" | "North"
+public;HemisphereLights
+public;HemisphereLightsProps
+public;HiddenLine
+public;Hilite
+public;HorizontalCRS 
+public;HorizontalCRSExtent 
+public;HorizontalCRSExtentProps
+public;HorizontalCRSProps
+public;HSLColor
+public;HSVColor
+public;HSVConstants
+internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
+public;HttpServerRequest 
+public;HttpServerResponse 
+internal;I3dmHeader 
+public;ImageBuffer
+public;ImageBufferFormat
+public;ImageGraphic
+public;ImageGraphicCorners
+public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
+public;ImageGraphicProps
+public;ImagePrimitive
+public;ImageSource
+public;ImageSourceFormat
+internal;ImdlFlags
+internal;ImdlHeader 
+public;class IModel 
+public;IModelConnectionProps = IModelProps & IModelRpcProps
+beta;IModelCoordinatesRequestProps
+beta;IModelCoordinatesResponseProps
+public;IModelEncryptionProps
+public;IModelError 
+public;IModelNotFoundResponse 
+public;IModelProps
+internal;class IModelReadRpcInterface 
+public;IModelRpcOpenProps
+public;IModelRpcProps 
+public;class IModelTileRpcInterface 
+internal;IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId
+internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string
+internal;IModelTileTreeProps 
+public;IModelVersion
+public;IModelVersionProps =
+public;InformationPartitionElementProps 
+internal;initializeRpcRequest: () => void
+internal;INSTANCE: unique symbol
+beta;InternetConnectivityStatus
+public;Interpolation:
+public;InterpolationFunction = (v: any, k: number) => number
+internal;IpcAppChannel
+internal;IpcAppFunctions
+internal;IpcAppNotifications
+internal;IpcInvokeReturn =
+public;IpcListener = (evt: Event, ...args: any[]) => void
+public;IpcSocket
+public;IpcSocketBackend 
+public;IpcSocketFrontend 
+internal;class IpcWebSocket 
+internal;IpcWebSocketBackend 
+internal;IpcWebSocketFrontend 
+internal;IpcWebSocketMessage
+internal;IpcWebSocketMessageType
+internal;class IpcWebSocketTransport
+internal;isKnownTileFormat(format: number): boolean
+public;isPlacement2dProps(props: PlacementProps): props is Placement2dProps
+public;isPlacement3dProps(props: PlacementProps): props is Placement3dProps
+public;isPowerOfTwo(num: number): boolean
+internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
+internal;iTwinChannel: (channel: string) => string
+public;JsonGeometryStream
+internal;LegacyAnalysisStyleProps
+internal;LightLocationProps 
+public;LightSettings
+public;LightSettingsProps
+public;LinePixels
+public;LineStyle
+public;LineStyleProps 
+public;LocalAlignedBox3d = Range3d
+public;LocalBriefcaseProps
+public;LocalDirName = string
+public;LocalFileName = string
+public;Localization
+beta;MapImageryProps
+beta;MapImagerySettings
+beta;MapLayerKey
+beta;MapLayerProps
+beta;MapLayerSettings
+beta;MapSubLayerProps
+beta;MapSubLayerSettings
+public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
+internal;MarshalingBinaryMarker
+internal;MarshalingBinaryMarker
+public;MassPropertiesOperation
+public;MassPropertiesRequestProps
+public;MassPropertiesResponseProps
+public;MaterialProps
+internal;MeshEdge
+internal;MeshEdges
+internal;MeshPolyline
+internal;MeshPolylineList 
+public;ModelClipGroup
+public;ModelClipGroupProps
+public;ModelClipGroups
+public;ModelGeometryChanges
+public;ModelGeometryChanges
+public;ModelGeometryChangesProps
+public;ModelIdAndGeometryGuid
+public;ModelLoadProps
+public;ModelProps 
+public;ModelQueryParams 
+public;ModelSelectorProps 
+public;MonochromeMode
+beta;NativeAppAuthorizationConfiguration
+internal;nativeAppChannel = "nativeApp"
+internal;NativeAppFunctions
+internal;NativeAppNotifications
+internal;nativeAppNotify = "nativeApp-notify"
+public;NavigationBindingValue
+public;NavigationValue
+public;nextHighestPowerOfTwo(num: number): number
+internal;nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d
+public;NoContentError 
+internal;NonUniformColor
+public;Npc
+public;NpcCenter: Point3d
+public;NpcCorners: Point3d[]
+public;OctEncodedNormal
+internal;OctEncodedNormalPair
+internal;OpenAPIContentMap
+internal;OpenAPIDocument
+internal;OpenAPIEncoding
+public;OpenAPIInfo
+internal;OpenAPIMediaType
+internal;OpenAPIOperation
+internal;OpenAPIParameter
+internal;OpenAPIPathItem
+internal;OpenAPIPaths
+internal;OpenAPIRequestBody
+internal;OpenAPIResponse
+internal;OpenAPIResponses
+internal;OpenAPISchema
+public;OpenBriefcaseOptions
+public;OpenBriefcaseProps 
+public;OpenDbKey
+internal;OPERATION: unique symbol
+alpha;OrbitGtBlobProps
+beta;OverriddenBy
+internal;PackedFeature
+internal;PackedFeatureTable
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
+public;PartReference
+public;PersistentBackgroundMapProps = Omit
+public;PersistentGraphicsRequestProps 
+public;PhysicalElementProps 
+public;PhysicalTypeProps 
+public;Placement = Placement2d | Placement3d
+public;Placement2d 
+public;Placement2dProps
+public;Placement3d 
+public;Placement3dProps
+public;PlacementProps = Placement2dProps | Placement3dProps
+public;PlanarClipMaskMode
+public;PlanarClipMaskPriority
+public;PlanarClipMaskProps
+public;PlanarClipMaskSettings
+public;PlanProjectionSettings
+public;PlanProjectionSettingsProps
+internal;PntsHeader 
+public;Point2dProps = number[]
+beta;PointWithStatus
+internal;POLICY: unique symbol
+internal;PolylineData
+internal;PolylineEdgeArgs
+internal;PolylineFlags
+internal;PolylineTypeFlags
+public;PositionalVectorTransform 
+public;PositionalVectorTransformProps
+internal;PrimaryTileTreeId
+beta;PrimitiveTypeCode
+beta;ProfileOptions
+public;Projection 
+public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
+public;ProjectionProps
+beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
+beta;PropertyMetaData 
+beta;PropertyMetaDataMap 
+beta;PropertyMetaDataProps
+public;QParams2d
+public;QParams3d
+public;QPoint2d
+public;QPoint2dList
+public;QPoint3d
+public;QPoint3dList
+public;Quantization
+internal;isInRange(qpos: number, rangeScale?: number): boolean
+internal;isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean
+internal;isQuantized(qpos: number): boolean
+public;QueryBinder
+public;QueryLimit
+public;QueryOptions 
+public;QueryOptionsBuilder
+beta;QueryPropertyMetaData
+public;QueryQuota
+public;QueryRowFormat
+beta;QueryRowProxy
+beta;QueryValueType = any
+public;Rank
+internal;ReadableFormData 
+internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+alpha;RealityDataFormat
+alpha;RealityDataProvider
+alpha;RealityDataSourceKey
+alpha;RealityDataSourceProps
+internal;REGISTRY: unique symbol
+public;RelatedElement 
+public;RelatedElementProps
+public;RelationshipProps 
+public;RemoveFunction = () => void
+public;class RenderMaterial
+public;RenderMaterial
+public;RenderMaterialAssetProps
+public;RenderMaterialProps 
+public;RenderMode
+public;RenderSchedule
+internal;Interval
+public;class RenderTexture 
+public;RenderTexture
+public;RenderTimelineLoadProps
+public;RenderTimelineProps 
+public;RepositoryLinkProps 
+public;RequestNewBriefcaseProps
+internal;ResponseLike 
+public;RgbColor
+public;RgbColorProps
+public;RgbFactorProps = number[]
+public;RootSubjectProps
+public;RpcActivity 
+internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
+internal;class RpcConfiguration
+internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
+public;RpcContentType
+internal;RpcControlChannel
+public;class RpcControlResponse
+internal;RpcDefaultConfiguration 
+internal;RpcDirectProtocol 
+internal;RpcDirectRequest 
+public;RpcEndpoint
+public;class RpcInterface
+internal;RpcInterfaceDefinition
+internal;RpcInterfaceEndpoints
+internal;RpcInterfaceImplementation
+internal;RpcInvocation
+internal;RpcManager
+internal;RpcMarshaling
+internal;RpcMultipart
+public;RpcNotFoundResponse 
+internal;RpcOpenAPIDescription
+internal;RpcOperation
+internal;RpcOperation
+internal;RpcOperationPolicy
+internal;RpcOperationPolicyProps = Partial
+internal;RpcOperationsProfile
+internal;RpcPendingQueue
+public;RpcPendingResponse 
+internal;class RpcProtocol
+public;RpcProtocolEvent
+internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcPushChannel
+internal;class RpcPushConnection
+internal;RpcPushMessageListener
+internal;RpcPushService
+internal;RpcPushSubscription
+internal;class RpcPushTransport
+internal;RpcRegistry
+internal;class RpcRequest
+internal;RpcRequestCallback_T = (request: RpcRequest) => void
+internal;RpcRequestContext
+public;RpcRequestEvent
+internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
+internal;RpcRequestFulfillment
+internal;RpcRequestFulfillment
+internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
+internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+public;RpcRequestStatus
+public;RpcRequestStatus
+internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
+public;RpcResponseCacheControl
+internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+internal;RpcRoutingMap 
+internal;RpcRoutingMap
+internal;RpcRoutingToken
+internal;RpcSerializedValue
+internal;RpcSerializedValue
+beta;SchemaState
+public;SectionDrawingLocationProps 
+public;SectionDrawingProps 
+public;SectionDrawingViewProps
+public;SectionType
+public;SerializedRpcActivity
+internal;SerializedRpcOperation
+internal;SerializedRpcRequest 
+public;ServerError 
+public;ServerTimeoutError 
+public;SessionProps
+beta;SheetBorderTemplateProps 
+public;SheetProps 
+beta;SheetTemplateProps 
+internal;SilhouetteEdgeArgs 
+public;SkyBoxImageProps
+public;SkyBoxImageType
+public;SkyBoxProps
+public;SkyCubeProps
+internal;SnapRequestProps
+internal;SnapResponseProps
+internal;class SnapshotIModelRpcInterface 
+public;SnapshotOpenOptions 
+public;SolarLight
+public;SolarLightProps
+public;SolarShadowSettings
+public;SolarShadowSettingsProps
+public;SourceAndTarget
+public;SpatialClassifier
+public;SpatialClassifierFlags
+public;SpatialClassifierFlagsProps
+public;SpatialClassifierInsideDisplay
+public;SpatialClassifierOutsideDisplay
+public;SpatialClassifierProps
+public;SpatialClassifiers 
+public;SpatialClassifiersContainer
+public;SpatialViewDefinitionProps 
+public;StandaloneOpenOptions = OpenDbKey
+beta;StorageValue = string | number | boolean | undefined | Uint8Array
+public;SubCategoryAppearance
+public;SubCategoryAppearance
+public;SubCategoryOverride
+public;SubCategoryProps 
+public;SubjectProps 
+beta;SubLayerId = string | number
+beta;SynchronizationConfigLinkProps 
+public;SyncMode
+public;TerrainHeightOriginMode
+public;TerrainProps
+public;TerrainProviderName = "CesiumWorldTerrain"
+public;TerrainSettings
+internal;TestRpcManager
+public;TextString
+public;TextStringPrimitive
+public;TextStringProps
+public;TextureData
+public;TextureLoadProps
+public;TextureMapping
+public;TextureMapping
+public;TextureMapProps
+public;TextureMapUnits
+public;TextureProps 
+public;ThematicDisplay
+public;ThematicDisplayMode
+public;ThematicDisplayProps
+public;ThematicDisplaySensor
+public;ThematicDisplaySensorProps
+public;ThematicDisplaySensorSettings
+public;ThematicDisplaySensorSettingsProps
+public;ThematicGradientColorScheme
+public;ThematicGradientMode
+public;ThematicGradientSettings
+public;ThematicGradientSettingsProps
+public;ThumbnailFormatProps
+public;ThumbnailProps 
+internal;TileContentDescription 
+beta;TileContentIdentifier
+internal;TileContentMetadata
+internal;TileContentSource
+internal;TileFormat
+internal;tileFormatFromNumber(formatNumber: number): TileFormat
+internal;class TileHeader
+internal;TileMetadata 
+internal;TileMetadataReader
+internal;TileOptions
+internal;TileOptions
+internal;TileProps
+internal;TileReadError 
+internal;TileReadStatus
+internal;TileTreeContentIds
+internal;TileTreeMetadata
+internal;TileTreeProps
+public;TileVersionInfo
+alpha;TreeFlags
+public;Tween
+public;TweenCallback = (obj: any) => void
+public;Tweens
+public;TxnAction
+internal;TxnNotifications
+public;TypeDefinition 
+public;TypeDefinitionElementProps 
+public;TypeOfChange
+public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
+public;UpdateCallback = (obj: any, t: number) => void
+beta;UpgradeOptions
+public;UrlLinkProps 
+public;VerticalCRS 
+public;VerticalCRSProps
+public;ViewAttachmentLabelProps 
+public;ViewAttachmentProps 
+public;ViewDefinition2dProps 
+public;ViewDefinition3dProps 
+public;ViewDefinitionProps 
+public;ViewDetails
+public;ViewDetails3d 
+public;ViewDetails3dProps 
+public;ViewDetailsProps
+public;ViewFlagOverrides = Partial
+public;ViewFlagProps
+public;ViewFlags
+public;ViewFlagsProperties = Mutable
+public;ViewQueryParams 
+public;ViewStateLoadProps
+public;ViewStateProps
+internal;WEB_RPC_CONSTANTS:
+internal;class WebAppRpcProtocol 
+internal;WebAppRpcRequest 
+public;WhiteOnWhiteReversalProps
+public;WhiteOnWhiteReversalSettings
+internal;class WipRpcInterface 
+public;XyzRotation 
+public;XyzRotationProps

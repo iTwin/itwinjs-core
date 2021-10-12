@@ -6,9 +6,9 @@
  * @module NativeApp
  */
 
-import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
-import { AccessTokenProps } from "@bentley/itwin-client";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
+import { SessionProps } from "./SessionProps";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";
@@ -43,7 +43,7 @@ export enum OverriddenBy {
  */
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
-  notifyUserStateChanged(accessToken?: AccessTokenProps): void;
+  notifyAccessTokenChanged(accessToken: AccessToken): void;
 }
 
 /**
@@ -82,18 +82,18 @@ export interface NativeAppAuthorizationConfiguration {
  * @internal
  */
 export interface NativeAppFunctions {
-  setAccessTokenProps(token: AccessTokenProps): Promise<void>;
+  setAccessToken(token: AccessToken): Promise<void>;
 
   /** returns expirySafety, in seconds */
-  initializeAuth(props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
+  initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
 
-  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
+  /** Called to start the sign-in process. Subscribe to onAccessTokenChanged to be notified when sign-in completes */
   signIn(): Promise<void>;
 
-  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
+  /** Called to start the sign-out process. Subscribe to onAccessTokenChanged to be notified when sign-out completes */
   signOut(): Promise<void>;
 
-  getAccessTokenProps(): Promise<AccessTokenProps>;
+  getAccessToken: () => Promise<AccessToken>;
 
   /** Check if the internet is reachable. */
   checkInternetConnectivity(): Promise<InternetConnectivityStatus>;

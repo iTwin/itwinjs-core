@@ -7,11 +7,11 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
+import { dispose } from "@itwin/core-bentley";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -40,7 +40,14 @@ import { Texture, TextureHandle } from "./Texture";
 
 export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 }
 
-function createTexture(handle: TextureHandle) { return new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), handle); }
+function createTexture(handle: TextureHandle): Texture {
+  return new Texture({
+    handle,
+    ownership: "external",
+    type: RenderTexture.Type.TileSection,
+  });
+}
+
 function createTextureHandle(width: number, height: number, heightMult = 1.0) { return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte); }
 
 class ClassifierTextures implements WebGLDisposable {
@@ -233,7 +240,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     if (!hTexture)
       return undefined;
 
-    const texture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), hTexture);
+    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture });
     if (!texture)
       return undefined;
 

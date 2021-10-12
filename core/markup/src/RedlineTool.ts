@@ -8,11 +8,11 @@
 
 // cspell:ignore rtmp stmp
 
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { G, Marker, Element as MarkupElement, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -81,7 +81,7 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected provideToolAssistance(mainInstrKey: string, singlePoint: boolean = false): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainInstrKey));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 

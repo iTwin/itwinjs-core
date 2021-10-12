@@ -5,7 +5,7 @@
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { useTargeted } from "../../../ui-core/utils/hooks/useTargeted";
+import { useTargeted } from "../../../core-react/utils/hooks/useTargeted";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const Targeted = (props: { children?: (targeted: boolean) => React.ReactNode }) => {

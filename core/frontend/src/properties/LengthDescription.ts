@@ -19,7 +19,7 @@ export class LengthDescription extends FormattedQuantityDescription {
     const defaultName = "length";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.i18n.translate("iModelJs:Properties.Length"),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
       iconSpec,
     );
   }
@@ -27,7 +27,7 @@ export class LengthDescription extends FormattedQuantityDescription {
   public get formatterQuantityType(): QuantityType { return QuantityType.Length; }
   public get quantityType(): string { return "Length"; }
 
-  public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseLength"); }
+  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"); }
 }
 
 /**
@@ -39,7 +39,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
     const defaultName = "surveyLength";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.i18n.translate("iModelJs:Properties.Length"),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
       iconSpec,
     );
   }
@@ -47,7 +47,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
   public get formatterQuantityType(): QuantityType { return QuantityType.LengthSurvey; }
   public get quantityType(): string { return "LengthSurvey"; }
 
-  public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseLength"); }
+  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"); }
 }
 
 /**
@@ -60,7 +60,7 @@ export class EngineeringLengthDescription extends FormattedQuantityDescription {
     const defaultName = "engineeringLength";
     super(
       name ? name : defaultName,
-      displayLabel ? displayLabel : IModelApp.i18n.translate("iModelJs:Properties.Length"),
+      displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
       iconSpec,
     );
   }
@@ -68,5 +68,5 @@ export class EngineeringLengthDescription extends FormattedQuantityDescription {
   public get formatterQuantityType(): QuantityType { return QuantityType.LengthEngineering; }
   public get quantityType(): string { return "LengthEngineering"; }
 
-  public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseLength"); }
+  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseLength"); }
 }

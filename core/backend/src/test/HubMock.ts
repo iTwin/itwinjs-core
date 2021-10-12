@@ -5,19 +5,18 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
   ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
-import { AcquireNewBriefcaseIdArg } from "../imodeljs-backend";
+import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -161,16 +160,20 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
+  private static async getAccessToken(arg: TokenArg) {
+    return arg.accessToken ?? await IModelHost.getAccessToken();
+  }
+
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user.accessToken.getUserInfo()!.id);
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(accessToken);
   }
 
   public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
-    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken.getUserInfo()!.id, arg.briefcaseAlias);
-
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(accessToken, arg.briefcaseAlias);
   }
+
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);

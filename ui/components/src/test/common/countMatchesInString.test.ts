@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { countMatchesInString } from "../../ui-components/common/countMatchesInString";
+import { countMatchesInString } from "../../components-react/common/countMatchesInString";
 
 describe("countMatchesInString", () => {
 

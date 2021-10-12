@@ -6,8 +6,7 @@
  * @module iTwinServiceClients
  */
 import * as https from "https";
-import { BentleyError, GetMetaDataFunction } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
+import { AccessToken, BentleyError, GetMetaDataFunction } from "@itwin/core-bentley";
 import { ProgressCallback } from "./Request";
 
 /** Interface to cancel a request
@@ -61,7 +60,7 @@ export interface FileHandler {
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    */
-  downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+  downloadFile(accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
 
   /**
    * Upload a file.
@@ -70,7 +69,7 @@ export interface FileHandler {
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+  uploadFile(accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 
   /**
    * Get size of a file.

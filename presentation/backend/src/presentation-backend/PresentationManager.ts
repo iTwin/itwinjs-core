@@ -8,24 +8,24 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
-  SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
-} from "@bentley/presentation-common";
+  isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions,
+} from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementProperties } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
-  NativePresentationUnitSystem,
+  NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
@@ -100,7 +100,11 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
 
-  /** A directory for Presentation hierarchy cache. Defaults to location of the iModel. */
+  /**
+   * A directory for Presentation hierarchy cache. If set, the directory must exist.
+   *
+   * The default directory depends on the iModel and the way it's opened.
+   */
   directory?: string;
 }
 
@@ -298,10 +302,8 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
-  private _isOneFrontendPerBackend: boolean;
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
-  private _disposeIpcHandler?: () => void;
   private _updatesTracker?: UpdatesTracker;
 
   /** Get / set active locale used for localizing presentation data */
@@ -349,16 +351,11 @@ export class PresentationManager {
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
-    this._isOneFrontendPerBackend = IpcHost.isValid;
-
-    if (IpcHost.isValid) {
-      if (isChangeTrackingEnabled) {
-        this._updatesTracker = UpdatesTracker.create({
-          nativePlatformGetter: this.getNativePlatform,
-          pollInterval: props.updatesPollInterval!,
-        });
-      }
-      this._disposeIpcHandler = PresentationIpcHandler.register();
+    if (IpcHost.isValid && isChangeTrackingEnabled) {
+      this._updatesTracker = UpdatesTracker.create({
+        nativePlatformGetter: this.getNativePlatform,
+        pollInterval: props.updatesPollInterval!,
+      });
     }
   }
 
@@ -378,9 +375,6 @@ export class PresentationManager {
       this._updatesTracker.dispose();
       this._updatesTracker = undefined;
     }
-
-    if (this._disposeIpcHandler)
-      this._disposeIpcHandler();
 
     this._isDisposed = true;
   }
@@ -553,7 +547,7 @@ export class PresentationManager {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, requestOptions.keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     const reviver = (key: string, value: any) => {
       return key === "" ? Descriptor.fromJSON(value) : value;
@@ -571,7 +565,7 @@ export class PresentationManager {
       requestId: NativePlatformRequestTypes.GetContentSetSize,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, requestOptions.keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     return this.request(params);
@@ -587,7 +581,7 @@ export class PresentationManager {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, requestOptions.keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     return this.request(params, Content.reviver);
@@ -607,7 +601,7 @@ export class PresentationManager {
       requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
       rulesetId,
       ...strippedOptionsNoDescriptorAndKeys,
-      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+      keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     const reviver = (key: string, value: any) => {
@@ -623,18 +617,55 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined> {
-    const { elementId, ...optionsNoElementId } = requestOptions;
-    const content = await this.getContent({
-      ...optionsNoElementId,
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-        contentFlags: ContentFlags.ShowLabels,
-      },
-      rulesetOrId: "ElementProperties",
-      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-    });
-    return buildElementProperties(content);
+  public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+  /**
+   * Retrieves property data in simplified format for multiple elements specified by class
+   * or all element.
+   * @alpha
+   */
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      const { elementId, ...optionsNoElementId } = requestOptions;
+      const content = await this.getContent({
+        ...optionsNoElementId,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+      });
+      const properties = buildElementsProperties(content);
+      return properties[0];
+    }
+
+    return this.getMultipleElementProperties(requestOptions);
+  }
+
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
+    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
+
+    const elementProperties: ElementProperties[] = [];
+    for (const entry of elementIds) {
+      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+        const content = await this.getContent({
+          ...optionsNoElementClasses,
+          descriptor: {
+            displayType: DefaultContentDisplayTypes.PropertyPane,
+            contentFlags: ContentFlags.ShowLabels,
+          },
+          rulesetOrId: "ElementProperties",
+          keys,
+        });
+        return buildElementsProperties(content);
+      });
+      elementProperties.push(...properties);
+    }
+
+    return { total: elementsCount, items: elementProperties };
   }
 
   /**
@@ -750,24 +781,55 @@ export class PresentationManager {
   }
 }
 
-const getKeysForContentRequest = (imodel: IModelDb, keys: KeySet): KeySet => {
+function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: InstanceKey) {
+  let set = classInstancesMap.get(key.className);
+  // istanbul ignore else
+  if (!set) {
+    set = new Set();
+    classInstancesMap.set(key.className, set);
+  }
+  set.add(key.id);
+}
+function bisElementInstanceKeysProcessor(imodel: IModelDb, classInstancesMap: Map<string, Set<string>>) {
   const elementClassName = "BisCore:Element";
-  const instanceKeys = keys.instanceKeys;
-  if (!instanceKeys.has(elementClassName))
-    return keys;
-
-  const elementIds = instanceKeys.get(elementClassName)!;
-  const keyset = new KeySet();
-  keyset.add(keys);
-  elementIds.forEach((elementId) => {
-    const concreteKey = getElementKey(imodel, elementId);
-    if (concreteKey) {
-      keyset.delete({ className: elementClassName, id: elementId });
-      keyset.add(concreteKey);
-    }
+  const elementIds = classInstancesMap.get(elementClassName);
+  if (elementIds) {
+    const deleteElementIds = new Array<string>();
+    elementIds.forEach((elementId) => {
+      const concreteKey = getElementKey(imodel, elementId);
+      if (concreteKey && concreteKey.className !== elementClassName) {
+        deleteElementIds.push(elementId);
+        addInstanceKey(classInstancesMap, { className: concreteKey.className, id: elementId });
+      }
+    });
+    for (const id of deleteElementIds)
+      elementIds.delete(id);
+  }
+}
+/** @internal */
+export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON {
+  const result: NativePresentationKeySetJSON = {
+    instanceKeys: [],
+    nodeKeys: [],
+  };
+  const classInstancesMap = new Map<string, Set<string>>();
+  keys.forEach((key) => {
+    if (Key.isNodeKey(key))
+      result.nodeKeys.push(key);
+    if (Key.isInstanceKey(key))
+      addInstanceKey(classInstancesMap, key);
   });
-  return keyset;
-};
+
+  if (classInstanceKeysProcessor)
+    classInstanceKeysProcessor(classInstancesMap);
+
+  for (const entry of classInstancesMap) {
+    if (entry[1].size > 0)
+      result.instanceKeys.push([entry["0"], [...entry[1]]]);
+  }
+
+  return result;
+}
 
 const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
@@ -856,3 +918,15 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
+
+const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
+  const elementProperties: ElementProperties[] = [];
+  const elementIds = [...ids];
+  while (elementIds.length > 0) {
+    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
+    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
+    elementProperties.push(...(await getter(keys)));
+  }
+  return elementProperties;
+}

@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import {
   ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver,
-} from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@itwin/appui-react";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -81,16 +81,16 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
           key: "remove-favorite",
           icon: "icon-remove-2",
           onSelect: async () => this._onRemoveFavorite(field),
-          title: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.description"),
-          label: IModelApp.i18n.translate("SampleApp:properties.context-menu.remove-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.remove-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.remove-favorite.label"),
         });
       } else {
         items.push({
           key: "add-favorite",
           icon: "icon-add",
           onSelect: async () => this._onAddFavorite(field),
-          title: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.description"),
-          label: IModelApp.i18n.translate("SampleApp:properties.context-menu.add-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.add-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("SampleApp:properties.context-menu.add-favorite.label"),
         });
       }
     }
@@ -187,7 +187,7 @@ function UnifiedSelectionPropertyGrid(props: VirtualizedPropertyGridWithDataProv
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
 
   if (isOverLimit) {
-    return (<FillCentered>{IModelApp.i18n.translate("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
+    return (<FillCentered>{IModelApp.localization.getLocalizedString("SampleApp:property-grid.too-many-elements-selected")}</FillCentered>);
   }
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }

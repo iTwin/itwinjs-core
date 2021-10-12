@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import { PRESENTATION_COMMON_ROOT } from "@bentley/presentation-common";
+import { PRESENTATION_COMMON_ROOT } from "@itwin/presentation-common";
 
 /**
  * Path to presentation-backend assets root directory.

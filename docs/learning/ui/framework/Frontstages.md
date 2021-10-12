@@ -16,8 +16,8 @@ Below is an example frontstage that shows the different areas/zones.
 
 ![FrontstageUi2](./images/FrontstageUi2.png "UI 2.0/App UI Frontstage design")
 
-A frontstage is configured in a class subclassing the [FrontstageProvider]($ui-framework) abstract class.
-The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($ui-framework) field containing a [Frontstage]($ui-framework) React component.  The Frontstage React component has props for populating the different areas of the stage as well as values for the default tool, application data, and usage.
+A frontstage is configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class.
+The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($appui-react) field containing a [Frontstage]($appui-react) React component.  The Frontstage React component has props for populating the different areas of the stage as well as values for the default tool, application data, and usage.
 
 ### Example Frontstage definition
 
@@ -163,11 +163,11 @@ Note `contentGroup` can reference a ContentGroup or a ContentGroupProvider See [
 ### Usage
 
 The Stage usage prop is a way to designate the type of tasks that will be performed in the stage and can be used by UiItemsProviders to
-determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($ui-abstract) for a default set of usages.
+determine if it should supply items such as tool button, widgets, or status bar items, to populate the stage. See [StageUsage]($appui-abstract) for a default set of usages.
 
 ## Defining an 'empty' frontstage
 
-It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($ui-abstract) instances. The
+It may be desirable for an application to set up an "empty" stage that is populated only by multiple [UiItemsProvider]($appui-abstract) instances. The
 
 ```tsx
     const ui2StageProps: StandardFrontstageProps = {
@@ -191,8 +191,8 @@ It may be desirable for an application to set up an "empty" stage that is popula
 
 ## Configuring a Ninezone Frontstage (deprecated)
 
-A frontstage is configured in a class subclassing the [FrontstageProvider]($ui-framework) abstract class.
-The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($ui-framework) field containing a [Frontstage]($ui-framework) React component.
+A frontstage is configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class.
+The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($appui-react) field containing a [Frontstage]($appui-react) React component.
 The Frontstage React component has props for the default tool, Content Layout, Content Group, a Footer mode flag and application data.
 It also has props for the Zones that are specified by their position in the 9-zone grid.
 
@@ -314,5 +314,5 @@ FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id).th
 
 ## API Reference
 
-- [Frontstage]($ui-framework:Frontstage)
-- [Zone]($ui-framework:Zone)
+- [Frontstage]($appui-react:Frontstage)
+- [Zone]($appui-react:Zone)

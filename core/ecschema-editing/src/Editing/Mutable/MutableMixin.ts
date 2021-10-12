@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LazyLoadedEntityClass, Mixin, NavigationProperty, RelationshipClass, StrengthDirection } from "@bentley/ecschema-metadata";
+import { LazyLoadedEntityClass, Mixin, NavigationProperty, RelationshipClass, StrengthDirection } from "@itwin/ecschema-metadata";
 
 /**
  * @internal

@@ -6,15 +6,15 @@
  * @module Tools
  */
 
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
 import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BingLocationProvider } from "../BingLocation";
@@ -3214,7 +3214,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
         if (elevation !== undefined)
           elevationOffset = elevation;
         return await this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
-      } catch (_) {
+      } catch {
       }
     }
     return true;
@@ -3268,7 +3268,7 @@ export class ViewGlobeBirdTool extends ViewTool {
         if (elevation !== undefined)
           elevationOffset = elevation;
         return await this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
-      } catch (_) {
+      } catch {
       }
     }
     return true;
@@ -3314,7 +3314,7 @@ export class ViewGlobeLocationTool extends ViewTool {
       const latitude = parseFloat(args[0]);
       const longitude = parseFloat(args[1]);
       if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
-        const center = Cartographic.fromDegrees({longitude, latitude});
+        const center = Cartographic.fromDegrees({ longitude, latitude });
         this._globalLocation = { center };
       }
     }
@@ -3332,7 +3332,7 @@ export class ViewGlobeLocationTool extends ViewTool {
               this._globalLocation.center.height = elevationOffset;
           }
         }
-      } catch (_) {
+      } catch {
       }
     }
 

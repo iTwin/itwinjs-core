@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/reality-data-client",
+      "comment": "Altered to match new abstracted Reality Data interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/reality-data-client"
+}

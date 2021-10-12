@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { GuidString } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { IModelVersion, SyncMode } from "@itwin/core-common";
+import { BriefcaseConnection, NativeApp } from "@itwin/core-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp Download (#integration)", () => {
-  let testProjectId: GuidString;
+  let testITwinId: GuidString;
 
   before(async () => {
     await ElectronApp.startup({
@@ -23,7 +23,7 @@ describe("NativeApp Download (#integration)", () => {
       },
     });
 
-    testProjectId = await NativeAppTest.initializeTestProject();
+    testITwinId = await NativeAppTest.initializeTestITwin();
   });
 
   after(async () => ElectronApp.shutdown());
@@ -32,8 +32,8 @@ describe("NativeApp Download (#integration)", () => {
     let events = 0;
     let loaded = 0;
     let total = 0;
-    const iModelId = await NativeAppTest.getTestIModelId(testProjectId, "CodesPushTest");
-    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+    const iModelId = await NativeAppTest.getTestIModelId(testITwinId, "CodesPushTest");
+    const downloader = await NativeApp.requestDownloadBriefcase(testITwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
         assert.isNumber(progress.total);
@@ -60,12 +60,12 @@ describe("NativeApp Download (#integration)", () => {
   });
 
   it("Should be able to cancel download (#integration)", async () => {
-    const iModelId = await NativeAppTest.getTestIModelId(testProjectId, "Stadium Dataset 1");
+    const iModelId = await NativeAppTest.getTestIModelId(testITwinId, "Stadium Dataset 1");
     let downloadAborted = false;
     const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
     await NativeApp.deleteBriefcase(fileName);
 
-    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, iModelId, { fileName, syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+    const downloader = await NativeApp.requestDownloadBriefcase(testITwinId, iModelId, { fileName, syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
         assert.isNumber(progress.total);

@@ -6,12 +6,12 @@
  * @module MarkupTools
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { BeEvent } from "@itwin/core-bentley";
+import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ArrayXY, Box, Container, G, Line, Element as MarkupElement, Text as MarkupText, Matrix, Point, Polygon } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -509,11 +509,11 @@ export class SelectTool extends MarkupTool {
   public override async onRestartTool() { this.initSelect(); }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.i18n.translate(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
+    const acceptMsg = IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 

@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { MockRender } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
-import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
-import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
-import { SectionsStatusField } from "../../ui-framework/statusfields/SectionsField";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { MockRender } from "@itwin/core-frontend";
+import { WidgetState } from "@itwin/appui-abstract";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../appui-react/configurableui/ConfigurableUiControl";
+import { StatusBar } from "../../appui-react/statusbar/StatusBar";
+import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../appui-react/statusbar/StatusBarWidgetControl";
+import { SectionsStatusField } from "../../appui-react/statusfields/SectionsField";
+import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("SectionsField", () => {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

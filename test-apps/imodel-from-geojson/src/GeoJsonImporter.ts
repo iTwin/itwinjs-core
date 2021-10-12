@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
+import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
   SpatialModel, StandaloneDb, ViewDefinition,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
-  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, PersistentBackgroundMapProps, RenderMode, ViewFlags,
+} from "@itwin/core-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";
 
@@ -30,7 +30,7 @@ export class GeoJsonImporter {
   private readonly _pointRadius: number;
   private _colorIndex?: number;
   private readonly _viewFlags: ViewFlags;
-  private readonly _backgroundMap: BackgroundMapProps | undefined;
+  private readonly _backgroundMap: PersistentBackgroundMapProps | undefined;
 
   /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
@@ -84,7 +84,7 @@ export class GeoJsonImporter {
       const featureMin = Cartographic.createZero(), featureMax = Cartographic.createZero();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = Cartographic.fromRadians({longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2});
+      const featureCenter = Cartographic.fromRadians({ longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2 });
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
@@ -240,7 +240,7 @@ export class GeoJsonImporter {
 
   }
 
-  /** Convert a GeoJSON LineString into an @bentley/geometry-core lineString */
+  /** Convert a GeoJSON LineString into an @itwin/core-geometry lineString */
   private convertLinestring(inLinestring: GeoJson.LineString): LineString3d | undefined {
     if (!Array.isArray(inLinestring))
       return undefined;
@@ -275,7 +275,7 @@ export class GeoJsonImporter {
   }
   private static _scratchCartographic = Cartographic.createZero();
 
-  /** Convert a GeoJSON LineString into an @bentley/geometry-core Loop */
+  /** Convert a GeoJSON LineString into an @itwin/core-geometry Loop */
   private convertLoop(inLoop: GeoJson.LineString): Loop | undefined {
     const lineString = this.convertLinestring(inLoop);
     return lineString ? Loop.create(lineString) : undefined;

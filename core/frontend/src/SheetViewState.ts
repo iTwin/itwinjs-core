@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@bentley/geometry-core";
+import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, RenderTexture, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+} from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
@@ -33,6 +33,7 @@ import { ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
+import { TextureTransparency } from "./render/RenderTexture";
 
 // cSpell:ignore ovrs
 
@@ -177,7 +178,7 @@ class ViewAttachmentsInfo {
         try {
           const view = await iModel.views.load(attachment.view.id);
           return view;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       };
@@ -421,7 +422,7 @@ export class SheetViewState extends ViewState2d {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
     for await (const row of this.iModel.query(ecsql))
-      ids.push(row.attachmentId);
+      ids.push(row[0]);
 
     return ids;
   }
@@ -934,9 +935,10 @@ class RasterAttachment {
         openImageDataUrlInNewWindow(url, "Attachment");
     }
 
-    const textureParams = new RenderTexture.Params();
-    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(image, vp.iModel, textureParams);
-    if (undefined === texture)
+    const texture = IModelApp.renderSystem.createTexture({
+      image: { source: image, transparency: TextureTransparency.Opaque },
+    });
+    if (!texture)
       return undefined;
 
     // Create a material for the texture

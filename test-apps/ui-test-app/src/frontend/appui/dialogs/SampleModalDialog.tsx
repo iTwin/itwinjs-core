@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Dialog } from "@bentley/ui-core";
-import { DialogButtonType } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { Dialog } from "@itwin/core-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 export interface SampleModalDialogProps {
   opened: boolean;
@@ -18,7 +18,7 @@ export interface SampleModalDialogState {
 
 export class SampleModalDialog extends React.Component<SampleModalDialogProps, SampleModalDialogState> {
   public override readonly state: Readonly<SampleModalDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModalDialog");
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.sampleModalDialog");
 
   constructor(props: SampleModalDialogProps) {
     super(props);

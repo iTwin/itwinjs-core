@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ProgressBar } from "../../ui-core";
+import { ProgressBar } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

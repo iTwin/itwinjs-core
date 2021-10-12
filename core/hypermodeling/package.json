@@ -1,22 +1,25 @@
 {
-  "name": "@bentley/hypermodeling-frontend",
-  "version": "3.0.0-dev.70",
+  "name": "@itwin/hypermodeling-frontend",
+  "version": "3.0.0-dev.84",
   "description": "iModel.js hypermodeling package",
-  "main": "lib/hypermodeling-frontend.js",
-  "typings": "lib/hypermodeling-frontend",
+  "main": "lib/cjs/hypermodeling-frontend.js",
+  "module": "lib/esm/hypermodeling-frontend.js",
+  "typings": "lib/cjs/hypermodeling-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:public",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
-    "cover": "npm test -- --cover",
+    "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
+    "cover": "npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/hypermodeling-frontend/file.json --tsIndexFile=./hypermodeling-frontend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=hypermodeling-frontend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "test": "npm run webpackTests && certa -r chrome",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
+    "test": "npm run -s webpackTests && certa -r chrome",
     "test:debug": "certa -r chrome --debug",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
@@ -35,23 +38,23 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.70",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.70",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.70",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.70"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.84",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.84",
+    "@itwin/core-common": "workspace:^3.0.0-dev.84",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.84",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.84",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.84"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
@@ -67,12 +70,12 @@
     "webpack": "4.42.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

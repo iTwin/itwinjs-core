@@ -5,7 +5,7 @@
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 

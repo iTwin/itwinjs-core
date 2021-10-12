@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { EntityProps } from "@bentley/imodeljs-common";
+import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { EntityProps } from "@itwin/core-common";
 import { InstanceId, InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
@@ -47,8 +47,8 @@ export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
  * @public
  */
 export interface KeySetJSON {
-  /** An array of tuples [class_name, instance_ids[]] */
-  instanceKeys: Array<[string, string[]]>;
+  /** An array of tuples [class_name, compressed_instance_ids] */
+  instanceKeys: Array<[string, string]>;
   /** An array of serialized node keys */
   nodeKeys: NodeKeyJSON[];
 }
@@ -183,10 +183,10 @@ export class KeySet {
       this._nodeKeys.add(JSON.stringify(key));
     for (const entry of keyset.instanceKeys) {
       const lcClassName = entry["0"].toLowerCase();
-      this._instanceKeys.set(lcClassName, new Set(entry["1"]));
+      const ids = entry["1"] === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(entry["1"]);
+      this._instanceKeys.set(lcClassName, ids);
       this._lowerCaseMap.set(lcClassName, entry["0"]);
     }
-
   }
 
   /**
@@ -392,7 +392,7 @@ export class KeySet {
   }
 
   /** Iterate over all keys in this keyset. */
-  public forEach(callback: (key: Key, index: number) => void) {
+  public forEach(callback: (key: InstanceKey | NodeKey, index: number) => void) {
     let index = 0;
     this._instanceKeys.forEach((ids: Set<Id64String>, className: string) => {
       const recentClassName = this._lowerCaseMap.get(className.toLowerCase())!;
@@ -430,11 +430,12 @@ export class KeySet {
    * @public
    */
   public toJSON(): KeySetJSON {
-    const instanceKeys: [string, string[]][] = [];
+    const instanceKeys: [string, string][] = [];
     for (const entry of this._instanceKeys.entries()) {
       if (entry["1"].size > 0) {
         const className = this._lowerCaseMap.get(entry["0"].toLowerCase());
-        instanceKeys.push([className!, [...entry["1"]]]);
+        const compressedIds = CompressedId64Set.sortAndCompress(entry["1"]);
+        instanceKeys.push([className!, compressedIds.length > 0 ? compressedIds : Id64.invalid]);
       }
     }
     const nodeKeys: NodeKeyJSON[] = [];

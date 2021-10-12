@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../variables";
+@import "~@itwin/core-react/lib/cjs/core-react/typography";
+
+.nz-footer-snapMode-panel {
+  min-width: $nz-footer-popup-min-width;
+  background-color: $buic-background-panel;
+  border-radius: 3px;
+  overflow: hidden;
+  font-size: $text-font-size;
+
+  >.nz-snaps {
+    display: grid;
+    grid-gap: 8px;
+    padding: 8px;
+
+    @include body1;
+  }
+}

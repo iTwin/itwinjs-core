@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-frontend",
+      "comment": "\"Replaced usage of I18N with Localization.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-frontend"
+}

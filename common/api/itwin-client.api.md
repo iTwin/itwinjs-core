@@ -4,90 +4,11 @@
 
 ```ts
 
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { GuidString } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
+import { BentleyError } from '@itwin/core-bentley';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
-import { HttpStatus } from '@bentley/bentleyjs-core';
-import { SessionProps } from '@bentley/bentleyjs-core';
-
-// @beta
-export class AccessToken {
-    constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
-    static fromJson(jsonObj: AccessTokenProps): AccessToken;
-    // @internal
-    static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
-    static fromTokenString(tokenStr: string): AccessToken;
-    // @internal (undocumented)
-    getExpiresAt(): Date | undefined;
-    // @internal (undocumented)
-    getStartsAt(): Date | undefined;
-    // @internal (undocumented)
-    getUserInfo(): UserInfo | undefined;
-    initFromTokenString(tokenStr: string): void;
-    isExpired(buffer: number): boolean;
-    // (undocumented)
-    protected _prefix: string;
-    // (undocumented)
-    protected setPrefix(prefix: string): void;
-    // @internal (undocumented)
-    setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    toJSON(): AccessTokenProps;
-    // (undocumented)
-    protected _tokenString: string;
-    toTokenString(includePrefix?: IncludePrefix): string;
-    }
-
-// @beta
-export interface AccessTokenProps {
-    // (undocumented)
-    expiresAt?: string;
-    // (undocumented)
-    startsAt?: string;
-    // (undocumented)
-    tokenString: string;
-    // (undocumented)
-    userInfo?: UserInfoProps;
-}
-
-// @beta
-export interface AuthorizationClient {
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    readonly isAuthorized: boolean;
-}
-
-// @public
-export class AuthorizedClientRequestContext extends ClientRequestContext {
-    // @beta
-    constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
-    // @beta
-    accessToken: AccessToken;
-    // @internal (undocumented)
-    static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext;
-    // @internal (undocumented)
-    toJSON(): AuthorizedClientRequestContextProps;
-}
-
-// @beta
-export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
-    // (undocumented)
-    accessToken: AccessTokenProps;
-}
-
-// @beta (undocumented)
-export interface AuthorizedSession extends SessionProps {
-    // (undocumented)
-    accessToken?: AccessToken;
-}
-
-// @beta
-export interface AuthorizedSessionProps extends SessionProps {
-    // (undocumented)
-    accessTokenProps: AccessTokenProps;
-}
+import { HttpStatus } from '@itwin/core-bentley';
 
 // @beta
 export interface CancelRequest {
@@ -98,7 +19,7 @@ export interface CancelRequest {
 export abstract class Client {
     protected constructor();
     protected baseUrl?: string;
-    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+    protected delete(accessToken: AccessToken, relativeUrlPath: string): Promise<void>;
     getUrl(): Promise<string>;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
@@ -123,36 +44,25 @@ export interface FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+    uploadFile(accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @internal
-export function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any>;
+export function getArrayBuffer(url: string): Promise<any>;
 
 // @internal
-export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
+export function getJson(url: string): Promise<any>;
 
 // @beta (undocumented)
 export class ImsAuthorizationClient extends Client {
     constructor();
 }
-
-// @beta
-export enum IncludePrefix {
-    // (undocumented)
-    No = 1,
-    // (undocumented)
-    Yes = 0
-}
-
-// @beta
-export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
 export enum ITwinClientLoggerCategory {
@@ -177,7 +87,10 @@ export interface ProgressInfo {
 }
 
 // @internal
-export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
+export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined;
+
+// @internal
+export function request(url: string, options: RequestOptions): Promise<Response>;
 
 // @beta (undocumented)
 export interface RequestBasicCredentials {
@@ -309,85 +222,8 @@ export class SasUrlExpired extends BentleyError {
 }
 
 // @internal
-export function TokenPrefix(prefix: string): (constructor: any) => void;
-
-// @internal
 export class UserCancelledError extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export class UserInfo {
-    constructor(
-    id: string,
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined,
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined,
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined,
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined);
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined;
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined;
-    static fromJson(jsonObj: UserInfoProps): UserInfo;
-    // @internal
-    static fromTokenResponseJson(jsonObj: any): UserInfo;
-    id: string;
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined;
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined;
-}
-
-// @beta (undocumented)
-export interface UserInfoProps {
-    // (undocumented)
-    email?: {
-        id: string;
-        isVerified?: boolean;
-    };
-    // (undocumented)
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    };
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    organization?: {
-        id: string;
-        name: string;
-    };
-    // (undocumented)
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string;
-        preferredUserName?: string;
-    };
 }
 
 

@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../appui-layout-react";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanels", () => {
   it("should render", () => {
     const { container } = render(
-      <NineZoneProvider>
+      <TestNineZoneProvider>
         <WidgetPanels />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -22,12 +22,12 @@ describe("WidgetPanels", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         widgetContent={<div>Hello World!</div>}
       >
         <WidgetPanels />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });

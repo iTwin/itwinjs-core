@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { fireEvent, render } from "@testing-library/react"; // , waitForElement
-import { ColorSwatch } from "../../ui-imodel-components/color/Swatch";
+import { ColorSwatch } from "../../imodel-components-react/color/Swatch";
 import { TestUtils } from "../TestUtils";
 
 describe("<ColorSwatch />", () => {

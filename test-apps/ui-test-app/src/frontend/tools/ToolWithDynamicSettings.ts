@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool,
   ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem,
   EnumerationChoice,
   PropertyDescription,
-} from "@bentley/ui-abstract";
-import { ToolItemDef } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { ToolItemDef } from "@itwin/appui-react";
 
 interface MajorCities {
   state: number;
@@ -43,11 +43,11 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
   // ------------- State List ---------------
   private static _statePropertyName = "state";
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithDynamicSettings.State.${str}`); }
+  private static enumAsPicklistMessage(str: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.ToolWithDynamicSettings.State.${str}`); }
   private static getStateDescription(): PropertyDescription {
     return {
       name: this._statePropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.State"),
+      displayLabel: IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.State"),
       typename: "enum",
       enum: {
         choices: [
@@ -77,7 +77,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
     return {
       name: this._cityPropertyName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.City"),
+      displayLabel: IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.City"),
       typename: "enum",
       enum: {
         choices: availableCitiesChoices,
@@ -125,7 +125,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
    * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
    */
   protected provideToolAssistance(): void {
-    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.ToolWithDynamicSettings.Prompts.GetPoint"));
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithDynamicSettings.Prompts.GetPoint"));
     const instructions = ToolAssistance.createInstructions(mainInstruction);
 
     IModelApp.notifications.setToolAssistance(instructions);
