@@ -127,7 +127,7 @@ export class MobileFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(_requestContext: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
+  private async uploadChunk(_accessToken: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
