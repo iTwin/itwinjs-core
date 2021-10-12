@@ -7,10 +7,10 @@
  */
 
 import { Guid, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
+import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
@@ -154,11 +154,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       // Create rdSourceKey if not provided
       let rdSourceKeyOGT: RealityDataSourceKey;
       if (orbitGtBlob.rdsUrl) {
-        rdSourceKeyOGT = RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
+        rdSourceKeyOGT = RealityDataSource.createKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
       } else if (orbitGtBlob.containerName && Guid.isGuid(orbitGtBlob.containerName)) {
         rdSourceKeyOGT = {provider: RealityDataProvider.ContextShare, format: RealityDataFormat.OPC, id: orbitGtBlob.containerName };
       } else {
-        rdSourceKeyOGT = RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
+        rdSourceKeyOGT = RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
       }
 
       return createOrbitGtTileTreeReference({
@@ -176,7 +176,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const tilesetUrl = this.jsonProperties.tilesetUrl;
 
     if(tilesetUrl) {
-      const rdSourceKeyCS = RealityDataSource.createRealityDataSourceKeyFromUrl(tilesetUrl);
+      const rdSourceKeyCS = RealityDataSource.createKeyFromUrl(tilesetUrl);
       return createRealityTileTreeReference({
         rdSourceKey: rdSourceKeyCS,
         url : tilesetUrl,

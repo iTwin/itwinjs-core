@@ -233,7 +233,6 @@ import { ReadonlySortedArray } from '@itwin/core-bentley';
 import { RealityDataFormat } from '@itwin/core-common';
 import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
-import { RealityDataSourceProps } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -6823,7 +6822,6 @@ export class OrbitGtTileTree extends TileTree {
 export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
-    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
@@ -7395,56 +7393,42 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @internal
-export interface RealityDataConnection {
+// @alpha
+export interface RealityDataSource {
+    getDataUrl(accessToken: string): Promise<string>;
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // (undocumented)
+    readonly isContextShare: boolean;
+    // (undocumented)
+    readonly key: RealityDataSourceKey;
     readonly realityData: RealityData | undefined;
+    // (undocumented)
+    readonly realityDataId: string | undefined;
     readonly realityDataType: string | undefined;
-    readonly source: RealityDataSource;
 }
 
-// @internal (undocumented)
-export namespace RealityDataConnection {
-    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+// @alpha (undocumented)
+export namespace RealityDataSource {
+    // (undocumented)
+    export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // @internal
+    export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    export function keyToString(rdSourceKey: RealityDataSourceKey): string;
 }
-
-// @alpha
-export class RealityDataSource {
-    protected constructor(props: RealityDataSourceProps);
-    // (undocumented)
-    static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
-    static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    static fromProps(props: RealityDataSourceProps): RealityDataSource;
-    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
-    // (undocumented)
-    get isContextShare(): boolean;
-    // (undocumented)
-    get iTwinId(): string | undefined;
-    // (undocumented)
-    readonly rdSourceKey: RealityDataSourceKey;
-    // (undocumented)
-    get realityDataId(): string | undefined;
-    }
-
-// @alpha
-export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(rdConnection: RealityDataConnection, iTwinId?: string);
+    constructor(rdSource: RealityDataSource);
+    getRealityDataType(): string | undefined;
     // (undocumented)
-    getBlobAccessData(): Promise<URL | undefined>;
-    getRealityDataType(): Promise<string | undefined>;
-    // (undocumented)
-    getRootDocument(url: string): Promise<any>;
+    getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
     getTileContent(url: string): Promise<any>;
     getTileJson(url: string): Promise<any>;
-    // (undocumented)
-    readonly rdsProps?: RDSClientProps;
     }
 
 // @internal (undocumented)
