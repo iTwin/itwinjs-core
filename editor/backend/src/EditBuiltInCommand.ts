@@ -7,20 +7,10 @@
  */
 
 import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import {
-  Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
-} from "@itwin/core-geometry";
+import { Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
-import {
-  BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry,
-  ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps,
-  GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps,
-} from "@itwin/core-common";
-import {
-  BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps,
-  FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, LocateSubEntityProps, OffsetFacesProps, SolidModelingCommandIpc,
-  SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps,
-} from "@itwin/editor-common";
+import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps } from "@itwin/core-common";
+import { BasicManipulationCommandIpc, BlendEdgesProps, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ConnectedSubEntityProps, DeleteSubEntityProps, EdgeParameterRangeProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EvaluatedEdgeProps, EvaluatedFaceProps, EvaluatedVertexProps, FaceParameterRangeProps, FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, HollowFacesProps, LocateSubEntityProps, OffsetEdgesProps, OffsetFacesProps, PointInsideResultProps, SewSheetProps, SolidModelingCommandIpc, SpinFacesProps, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, ThickenSheetProps, TransformSubEntityProps } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
@@ -289,9 +279,20 @@ interface SubEntityGeometryResponseProps {
   weight?: number;
 }
 
+type GeometrySummaryFunction = (info: BRepEntityType[]) => void;
 type SubEntityGeometryFunction = (info: SubEntityGeometryResponseProps) => void;
-type ClosestFaceFunction = (info: SubEntityLocationProps) => void;
-type LocateSubEntityFunction = (info: SubEntityLocationProps[]) => void;
+type SubEntityParameterRangeFunction = (info: FaceParameterRangeProps | EdgeParameterRangeProps) => void;
+type SubEntityEvaluateFunction = (info: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps) => void;
+type SubEntityArrayFunction = (info: SubEntityProps[]) => void;
+type SubEntityLocationArrayFunction = (info: SubEntityLocationProps[]) => void;
+type SubEntityLocationFunction = (info: SubEntityLocationProps) => void;
+type PointInsideFunction = (info: PointInsideResultProps[]) => void;
+type YesNoFunction = (info: boolean) => void;
+
+interface GeometrySummaryRequestProps {
+  /** Callback for result */
+  onResult: GeometrySummaryFunction;
+}
 
 interface SubEntityGeometryRequestProps {
   /** Sub-entity to return geometry for */
@@ -300,13 +301,84 @@ interface SubEntityGeometryRequestProps {
   onResult: SubEntityGeometryFunction;
 }
 
-interface ClosestFaceRequestProps {
-  /** Space point */
-  point: XYZProps;
-  /** Optional direction for choosing face from edge or vertex hit... */
-  direction?: XYZProps;
+interface SubEntityParameterRangeRequestProps {
+  /** Sub-entity to query */
+  subEntity: SubEntityProps;
   /** Callback for result */
-  onResult: ClosestFaceFunction;
+  onResult: SubEntityParameterRangeFunction;
+}
+
+interface SubEntityEvaluateRequestProps {
+  /** Sub-entity to query */
+  subEntity: SubEntityProps;
+  /** Face or edge u parameter to evaluate */
+  uParam?: number;
+  /** Face v parameter to evaluate */
+  vParam?: number;
+  /** Callback for result */
+  onResult: SubEntityEvaluateFunction;
+}
+
+enum QuerySubEntity {
+  /** Return whether the supplied face has a planar surface */
+  PlanarFace = 0,
+  /** Return whether the angle between the normals of the supplied edge's faces never exceeds the internal smooth angle tolerance along the length of the edge */
+  SmoothEdge = 1,
+  /** Return whether the supplied sub-entity is a laminar edge of a sheet body, i.e. boundary of a single face */
+  LaminarEdge = 2,
+  /** Return whether the supplied sub-entity is a linear edge */
+  LinearEdge = 3,
+  /** Return whether the angle between the normals of the supplied vertices's edges never exceeds the internal smooth angle tolerance along the length of the edge */
+  SmoothVertex = 4,
+}
+
+interface QuerySubEntityRequestProps  {
+  /** Sub-entity to test */
+  subEntity: SubEntityProps;
+  /** What to check */
+  query: QuerySubEntity;
+  /** Callback for result */
+  onResult: YesNoFunction;
+}
+
+enum QueryBody {
+  /** Return whether the geometric primitive index is a disjoint body */
+  DisjointBody = 0,
+  /** Return whether the geometric primitive index is a sheet body with a single planar face */
+  SingleFacePlanarSheet = 1,
+  /** Return whether the geometric primitive index is a sheet or solid entity that has all planar faces */
+  OnlyPlanarFaces = 2,
+  /** Return whether the geometric primitive index is a body with any edge that is non-linear or any face that is non-planar */
+  CurvedFaceOrEdge = 3,
+}
+
+interface QueryBodyRequestProps  {
+  /** Geometric primitive index to test */
+  index: number;
+  /** What to check */
+  query: QueryBody;
+  /** Callback for result */
+  onResult: YesNoFunction;
+}
+
+interface BodySubEntitiesRequestProps {
+  /** What type of sub-entities to return, ex. faces of edge. */
+  type: SubEntityType;
+  /** Option to return only first sub-entity of each body instead of all sub-entities. */
+  firstOnly?: true;
+  /** Callback for result */
+  onResult: SubEntityArrayFunction;
+}
+
+interface ConnectedSubEntityRequestProps {
+  /** Sub-entity to return connected sub-entities for */
+  subEntity: SubEntityProps;
+  /** What type of connected sub-entities to return, ex. faces of edge. */
+  type: SubEntityType;
+  /** Options for returning connected edges and adjacent faces. */
+  options?: ConnectedSubEntityProps;
+  /** Callback for result */
+  onResult: SubEntityArrayFunction;
 }
 
 interface LocateSubEntityRequestProps  {
@@ -317,18 +389,90 @@ interface LocateSubEntityRequestProps  {
   /** The maximum number of faces, edges, and vertices to return */
   options: LocateSubEntityProps;
   /** Callback for result */
-  onResult: LocateSubEntityFunction;
+  onResult: SubEntityLocationArrayFunction;
+}
+
+interface LocateFaceRequestProps {
+  /** The face to return the ray intersection for */
+  subEntity: SubEntityProps;
+  /** Space point for boresite origin */
+  point: XYZProps;
+  /** Vector for bosite direction */
+  direction: XYZProps;
+  /** Callback for result */
+  onResult: SubEntityLocationArrayFunction;
+}
+
+interface ClosestSubEntityRequestProps {
+  /** Space point */
+  point: XYZProps;
+  /** Optional direction for choosing face from edge or vertex hit... */
+  direction?: XYZProps;
+  /** Callback for result */
+  onResult: SubEntityLocationFunction;
+}
+
+interface ClosestPointRequestProps {
+  /** Space point */
+  point: XYZProps;
+  /** The face or edge sub-entity to return closest point for */
+  subEntity: SubEntityProps;
+  /** Callback for result */
+  onResult: SubEntityLocationFunction;
+}
+
+interface PointInsideRequestProps {
+  /** Space point */
+  point: XYZProps;
+  /** Callback for result */
+  onResult: PointInsideFunction;
+}
+
+enum OperationType {
+  GeometrySummary = 0,
+  SubEntityGeometry = 1,
+  SubEntityParameterRange = 2,
+  SubEntityEvaluate = 3,
+  SubEntityQuery = 4,
+  BodyQuery = 5,
+  BodySubEntities = 6,
+  ConnectedSubEntity = 7,
+  LocateSubEntity = 8,
+  LocateFace = 9,
+  ClosestSubEntity = 10,
+  ClosestFace = 11,
+  ClosestPoint = 12,
+  PointInside = 13,
+  BooleanOp = 14,
+  SewSheets = 15,
+  ThickenSheets = 16,
+  OffsetFaces = 17,
+  OffsetEdges = 18,
+  HollowFaces = 19,
+  SweepFaces = 20,
+  SpinFaces = 21,
+  DeleteSubEntity = 22,
+  TransformSubEntity = 23,
+  Blend = 24,
+  Chamfer = 25,
+  Cut = 26, // TODO
+  Emboss = 27, // TODO
+  Imprint = 28, // TODO
+  SweepBody = 29, // TODO
+  SpinBody = 30, // TODO
+  SweepPath = 31, // TODO
+  Loft = 32, // TODO
 }
 
 interface ElementGeometryCacheOperationRequestProps {
-  /** Target element id, tool element ids supplied by operations between elements... */
+  /** Target element id, tool element ids can be supplied by parameters... */
   id: Id64String;
+  /** Requested operation */
+  op: OperationType;
+  /** Parameters for operation */
+  params?: GeometrySummaryRequestProps | SubEntityGeometryRequestProps | SubEntityParameterRangeRequestProps | SubEntityEvaluateRequestProps | QuerySubEntityRequestProps | QueryBodyRequestProps | BodySubEntitiesRequestProps | ConnectedSubEntityRequestProps | LocateSubEntityRequestProps | LocateFaceRequestProps | ClosestSubEntityRequestProps | ClosestPointRequestProps | PointInsideRequestProps| BooleanOperationProps | SewSheetProps | ThickenSheetProps | OffsetFacesProps | OffsetEdgesProps | HollowFacesProps | SweepFacesProps | SpinFacesProps | DeleteSubEntityProps | TransformSubEntityProps | BlendEdgesProps | ChamferEdgesProps;
   /** Callback for result when element's geometry stream is requested in flatbuffer or graphic formats */
   onGeometry?: ElementGeometryFunction;
-  onSubEntityGeometry?: SubEntityGeometryRequestProps;
-  onLocateSubEntity?: LocateSubEntityRequestProps;
-  onClosestFace?: ClosestFaceRequestProps;
-  onOffsetFaces?: OffsetFacesProps;
 }
 
 /** @alpha */
@@ -375,13 +519,24 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     await this.updateElementGeometryCache({});
   }
 
+  public async summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined> {
+    let accepted: BRepEntityType[] | undefined;
+    const onResult: GeometrySummaryFunction = (info: BRepEntityType[]): void => {
+      accepted = info;
+    };
+    const params: GeometrySummaryRequestProps = { onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.GeometrySummary, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
   private requestSubEntityGeometry(id: Id64String, subEntity: SubEntityProps): SubEntityGeometryResponseProps | undefined {
     let accepted: SubEntityGeometryResponseProps | undefined;
     const onResult: SubEntityGeometryFunction = (info: SubEntityGeometryResponseProps): void => {
       accepted = info;
     };
-    const opProps: SubEntityGeometryRequestProps = { subEntity, onResult };
-    const props: ElementGeometryCacheOperationRequestProps = { id, onSubEntityGeometry: opProps };
+    const params: SubEntityGeometryRequestProps = { subEntity, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SubEntityGeometry, params };
     this.iModel.nativeDb.elementGeometryCacheOperation(props);
     return accepted;
   }
@@ -432,24 +587,176 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     return resultProps;
   }
 
-  public async locateSubEntities(id: Id64String, point: XYZProps, direction: XYZProps, options: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined> {
-    let accepted: SubEntityLocationProps[] | undefined;
-    const onResult: LocateSubEntityFunction = (info: SubEntityLocationProps[]): void => {
+  public async getSubEntityParameterRange(id: Id64String, subEntity: SubEntityProps): Promise<FaceParameterRangeProps | EdgeParameterRangeProps | undefined> {
+    let accepted: FaceParameterRangeProps | EdgeParameterRangeProps | undefined;
+    const onResult: SubEntityParameterRangeFunction = (info: FaceParameterRangeProps | EdgeParameterRangeProps): void => {
       accepted = info;
     };
-    const opProps: LocateSubEntityRequestProps = { point, direction, options, onResult };
-    const props: ElementGeometryCacheOperationRequestProps = { id, onLocateSubEntity: opProps };
+
+    const params: SubEntityParameterRangeRequestProps = { subEntity, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SubEntityParameterRange, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async evaluateSubEntity(id: Id64String, subEntity: SubEntityProps, uParam?: number, vParam?: number): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined> {
+    let accepted: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined;
+    const onResult: SubEntityEvaluateFunction = (info: EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps): void => {
+      accepted = info;
+    };
+
+    const params: SubEntityEvaluateRequestProps = { subEntity, uParam, vParam, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SubEntityEvaluate, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  private async subEntityQuery(id: Id64String, subEntity: SubEntityProps, query: QuerySubEntity): Promise<boolean> {
+    let accepted = false;
+    const onResult: YesNoFunction = (info: boolean): void => {
+      accepted = info;
+    };
+
+    const params: QuerySubEntityRequestProps = { subEntity, query, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SubEntityQuery, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.PlanarFace);
+  }
+
+  public async isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.SmoothEdge);
+  }
+
+  public async isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.LaminarEdge);
+  }
+
+  public async isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.LinearEdge);
+  }
+
+  public async isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.SmoothVertex);
+  }
+
+  private async bodyQuery(id: Id64String, index: number, query: QueryBody): Promise<boolean> {
+    let accepted = false;
+    const onResult: YesNoFunction = (info: boolean): void => {
+      accepted = info;
+    };
+
+    const params: QueryBodyRequestProps = { index, query, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.BodyQuery, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async isDisjointBody(id: Id64String, index: number): Promise<boolean> {
+    return this.bodyQuery(id, index, QueryBody.DisjointBody);
+  }
+
+  public async isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean> {
+    return this.bodyQuery(id, index, QueryBody.SingleFacePlanarSheet);
+  }
+
+  public async hasOnlyPlanarFaces(id: Id64String, index: number): Promise<boolean> {
+    return this.bodyQuery(id, index, QueryBody.OnlyPlanarFaces);
+  }
+
+  public async hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean> {
+    return this.bodyQuery(id, index, QueryBody.CurvedFaceOrEdge);
+  }
+
+  public async getBodySubEntities(id: Id64String, type: SubEntityType, firstOnly?: true): Promise<SubEntityProps[] | undefined> {
+    let accepted: SubEntityProps[] | undefined;
+    const onResult: SubEntityArrayFunction = (info: SubEntityProps[]): void => {
+      accepted = info;
+    };
+
+    const params: BodySubEntitiesRequestProps = { type, firstOnly, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.BodySubEntities, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async getConnectedSubEntities(id: Id64String, subEntity: SubEntityProps, type: SubEntityType, options?: ConnectedSubEntityProps): Promise<SubEntityProps[] | undefined> {
+    let accepted: SubEntityProps[] | undefined;
+    const onResult: SubEntityArrayFunction = (info: SubEntityProps[]): void => {
+      accepted = info;
+    };
+
+    const params: ConnectedSubEntityRequestProps = { subEntity, type, options, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.ConnectedSubEntity, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async locateSubEntities(id: Id64String, point: XYZProps, direction: XYZProps, options: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined> {
+    let accepted: SubEntityLocationProps[] | undefined;
+    const onResult: SubEntityLocationArrayFunction = (info: SubEntityLocationProps[]): void => {
+      accepted = info;
+    };
+    const params: LocateSubEntityRequestProps = { point, direction, options, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.LocateSubEntity, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async locateFace(id: Id64String, subEntity: SubEntityProps, point: XYZProps, direction: XYZProps): Promise<SubEntityLocationProps[] | undefined> {
+    let accepted: SubEntityLocationProps[] | undefined;
+    const onResult: SubEntityLocationArrayFunction = (info: SubEntityLocationProps[]): void => {
+      accepted = info;
+    };
+    const params: LocateFaceRequestProps = { subEntity, point, direction, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.LocateFace, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async getClosestSubEntity(id: Id64String, point: XYZProps): Promise<SubEntityLocationProps | undefined> {
+    let accepted: SubEntityLocationProps | undefined;
+    const onResult: SubEntityLocationFunction = (info: SubEntityLocationProps): void => {
+      accepted = info;
+    };
+    const params: ClosestSubEntityRequestProps = { point, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.ClosestSubEntity, params };
     this.iModel.nativeDb.elementGeometryCacheOperation(props);
     return accepted;
   }
 
   public async getClosestFace(id: Id64String, point: XYZProps, direction?: XYZProps): Promise<SubEntityLocationProps | undefined> {
     let accepted: SubEntityLocationProps | undefined;
-    const onResult: ClosestFaceFunction = (info: SubEntityLocationProps): void => {
+    const onResult: SubEntityLocationFunction = (info: SubEntityLocationProps): void => {
       accepted = info;
     };
-    const opProps: ClosestFaceRequestProps = { point, direction, onResult };
-    const props: ElementGeometryCacheOperationRequestProps = { id, onClosestFace: opProps };
+    const params: ClosestSubEntityRequestProps = { point, direction, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.ClosestFace, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async getClosestPoint(id: Id64String, subEntity: SubEntityProps, point: XYZProps): Promise<SubEntityLocationProps | undefined> {
+    let accepted: SubEntityLocationProps | undefined;
+    const onResult: SubEntityLocationFunction = (info: SubEntityLocationProps): void => {
+      accepted = info;
+    };
+    const params: ClosestPointRequestProps = { subEntity, point, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.ClosestPoint, params };
+    this.iModel.nativeDb.elementGeometryCacheOperation(props);
+    return accepted;
+  }
+
+  public async isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined> {
+    let accepted: PointInsideResultProps[] | undefined;
+    const onResult: PointInsideFunction = (info: PointInsideResultProps[]): void => {
+      accepted = info;
+    };
+    const params: PointInsideRequestProps = { point, onResult };
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.PointInside, params };
     this.iModel.nativeDb.elementGeometryCacheOperation(props);
     return accepted;
   }
@@ -489,7 +796,10 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
         delete opts.insertProps.geom; // Ignore geometry if present...
         resultProps.elementId = await this.insertGeometricElement(opts.insertProps, { entryArray: info.entryArray });
       } else {
-        await this.updateGeometricElement(id, { entryArray: info.entryArray });
+        const updateProps = this.iModel.elements.getElementProps<GeometricElementProps>({ id });
+        updateProps.category = info.categoryId; // allow category change...
+        updateProps.placement = placement; // entryArray is local to this placement...
+        await this.updateGeometricElement(updateProps, { entryArray: info.entryArray });
         resultProps.elementId = id;
       }
     }
@@ -515,18 +825,94 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     return resultProps;
   }
 
-  public async offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+  private async doElementGeometryOperation(props: ElementGeometryCacheOperationRequestProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
     let accepted: ElementGeometryInfo | undefined;
-    const onResult: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
       accepted = info;
     };
 
-    const props: ElementGeometryCacheOperationRequestProps = { id, onOffsetFaces: params, onGeometry: onResult };
+    props.onGeometry = onGeometry;
     this.iModel.nativeDb.elementGeometryCacheOperation(props);
 
     if (undefined === accepted)
       return undefined;
 
-    return this.getElementGeometryResults(id, accepted, opts);
+    return this.getElementGeometryResults(props.id, accepted, opts);
+  }
+
+  public async booleanOperation(id: Id64String, params: BooleanOperationProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.BooleanOp, params };
+    const resultProps = await this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep tools, target update = delete tools...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps) {
+      for (const toolId of params.tools)
+        this.iModel.elements.deleteElement(toolId);
+    }
+
+    return resultProps;
+  }
+
+  public async sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SewSheets, params };
+    const resultProps = await this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep tools, target update = delete tools...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps) {
+      for (const toolId of params.tools)
+        this.iModel.elements.deleteElement(toolId);
+    }
+
+    return resultProps;
+  }
+
+  public async thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.ThickenSheets, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.OffsetFaces, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.OffsetEdges, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.HollowFaces, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SweepFaces, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SpinFaces, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.DeleteSubEntity, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.TransformSubEntity, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async blendEdges(id: Id64String, params: BlendEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Blend, params };
+    return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async chamferEdges(id: Id64String, params: ChamferEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Chamfer, params };
+    return this.doElementGeometryOperation(props, opts);
   }
 }
