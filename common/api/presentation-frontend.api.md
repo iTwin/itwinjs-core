@@ -93,7 +93,7 @@ export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInf
 export enum DefaultFavoritePropertiesStorageTypes {
     BrowserLocalStorage = 1,
     Noop = 0,
-    UserSettingsServiceStorage = 2
+    UserPreferencesStorage = 2
 }
 
 // @public

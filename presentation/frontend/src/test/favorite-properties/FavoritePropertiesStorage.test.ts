@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { configureForPromiseResult, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
@@ -24,8 +23,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   let authorizationClientMock: moq.IMock<AuthorizationClient>;
 
   beforeEach(async () => {
-    const requestConextMock = moq.Mock.ofType<AccessToken>();
-    configureForPromiseResult(requestConextMock);
+    settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
     sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
@@ -43,8 +41,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   describe("loadProperties", () => {
 
     it("returns favorite properties", async () => {
-      settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isAny())).returns(async () => ([]));
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoriteProperties" }))).returns(async () => []);
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
@@ -52,14 +49,11 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("is backwards compatible", async () => {
-      settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
-      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation.Properties" })).returns(async () => {
-        return {
-          nestedContentInfos: new Set<string>(["nestedContentInfo"]),
-          propertyInfos: new Set<string>(["propertyInfo"]),
-          baseFieldInfos: new Set<string>(["baseFieldInfo"]),
-        }
-      });
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "Properties.FavoriteProperties" }))).returns(async () => ({
+        nestedContentInfos: new Set<string>(["nestedContentInfo"]),
+        propertyInfos: new Set<string>(["propertyInfo"]),
+        baseFieldInfos: new Set<string>(["baseFieldInfo"]),
+      }));
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
@@ -67,8 +61,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation.Properties" })).returns(async () => undefined);
-
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoriteProperties" }))).returns(async () => undefined);
       const properties = await storage.loadProperties();
       expect(properties).to.be.undefined;
     });
@@ -108,8 +101,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         priority: 5,
         orderedTimestamp: new Date(),
       };
-      settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
-      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo" })).returns(async () => ([orderInfo]));
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo" }))).returns(async () => [orderInfo]);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
@@ -118,7 +110,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo" })).returns(async () => (undefined));
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo" }))).returns(async () => undefined);
       sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
@@ -136,8 +128,6 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   describe("savePropertiesOrder", () => {
 
     it("saves properties order", async () => {
-      settingsAdminMock.setup(async (x) => x.save({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo", content: moq.It.isAny() })).returns(async () => { });
-
       const orderInfo: FavoritePropertiesOrderInfo = {
         parentClassName: undefined,
         name: "orderInfoName",
@@ -145,8 +135,18 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         orderedTimestamp: new Date(),
       };
 
+      settingsAdminMock
+        .setup(async (x) => x.save(moq.It.isObjectWith({
+          iTwinId: "iTwinId",
+          iModelId: "imodelId",
+          key: "imodeljs.presentation.FavoritePropertiesOrderInfo",
+          content: [orderInfo],
+        })))
+        .returns(async () => { })
+        .verifiable();
+
       await storage.savePropertiesOrder([orderInfo], "iTwinId", "imodelId");
-      settingsAdminMock.verify(async (x) => x.save({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo", content: moq.It.isAny() }), moq.Times.once());
+      settingsAdminMock.verifyAll();
     });
 
     it("throws when not signed in", async () => {
@@ -682,7 +682,7 @@ describe("createFavoritePropertiesStorage", () => {
   });
 
   it("creates user settings service storage", () => {
-    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage);
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage);
     expect(result).to.be.instanceOf(OfflineCachingFavoritePropertiesStorage);
     expect((result as OfflineCachingFavoritePropertiesStorage).impl).to.be.instanceOf(IModelAppFavoritePropertiesStorage);
   });

@@ -58,8 +58,8 @@ export enum DefaultFavoritePropertiesStorageTypes {
   Noop,
   /** A storage that stores favorite properties information in a browser local storage. */
   BrowserLocalStorage,
-  /** A storage that stores favorite properties in a user settings service (see [[IModelApp.settings]]). */
-  UserSettingsServiceStorage,
+  /** A storage that stores favorite properties in a user preferences storage (see [[IModelApp.userPreferences]]). */
+  UserPreferencesStorage,
 }
 
 /**
@@ -70,7 +70,7 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
   switch (type) {
     case DefaultFavoritePropertiesStorageTypes.Noop: return new NoopFavoritePropertiesStorage();
     case DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage: return new BrowserLocalFavoritePropertiesStorage();
-    case DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
+    case DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
   }
 }
 
@@ -79,14 +79,13 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
  */
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private async isSignedIn(): Promise<boolean> {
     // If the authorization client is provided, it should give a valid response to getAccessToken
     return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
   }
 
   public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    if (!(await this.isSignedIn()) || undefined === IModelApp.userPreferences) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
 
@@ -116,7 +115,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void> {
-    if (!(await this.isSignedIn()) || undefined === IModelApp.userPreferences) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const accessToken = await IModelApp.getAccessToken();
@@ -130,7 +129,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    if (!(await this.isSignedIn()) || undefined === IModelApp.userPreferences) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const accessToken = await IModelApp.getAccessToken();

@@ -645,7 +645,7 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
     favorites: {
       // by default the no-op storage is used, but we can choose another option (or provide our own implementation)
       storage: createFavoritePropertiesStorage(
-        DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage
+        DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage,
       ),
     },
   });
