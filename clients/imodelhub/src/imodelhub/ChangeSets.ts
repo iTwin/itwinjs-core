@@ -170,6 +170,7 @@ export class ChangeSetQuery extends StringIdQuery {
   public clone(): ChangeSetQuery {
     const changeSetQuery = new ChangeSetQuery();
     changeSetQuery._query = { ...this.getQueryOptions() };
+    changeSetQuery._byId = this.getId();
     return changeSetQuery;
   }
 
