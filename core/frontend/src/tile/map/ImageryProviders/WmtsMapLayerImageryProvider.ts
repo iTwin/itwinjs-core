@@ -16,7 +16,6 @@ import {
 } from "../../internal";
 
 // eslint-disable-next-line prefer-const
-let force4326 = false;
 interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
 /** @internal */
 export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -80,7 +79,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 
         // Search all compatible tile set matrix if previous attempt didn't work.
         // If more than one candidate is found, pick the tile set with the most LODs.
-        let tileMatrixSets = force4326 ? undefined : googleMapsTms?.filter((tms) => {
+        let tileMatrixSets = googleMapsTms?.filter((tms) => {
           return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
         });
 
