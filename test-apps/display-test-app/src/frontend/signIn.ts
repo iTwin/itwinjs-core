@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
-import { IModelApp,  } from "@itwin/core-frontend";
+import { ElectronAppAuthorization } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken } from "@itwin/core-bentley";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp, ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp, ElectronAppAuthorization } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";

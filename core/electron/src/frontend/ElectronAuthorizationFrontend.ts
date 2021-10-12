@@ -2,14 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-// TODO: Before the 3.0 release this whole file needs to be removed from the repo.
-
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient } from "@itwin/core-common";
-// import { ipcRenderer } from "electron";
+import { ITwinElectronApi } from "../backend/ElectronPreload";
 
-export const electronIPCChannelName = "itwinjs.electron.auth"; // TODO: Come up with something better
+export const electronIPCChannelName = "itwin.electron.auth";
+
+/**
+ * Frontend Ipc support for Electron apps.
+ */
+class ElectronAuthIPC  {
+  private _api: ITwinElectronApi;
+  public async signIn(): Promise<void> {
+    await this._api.invoke(`${electronIPCChannelName}.signIn`);
+  }
+  public async signOut(): Promise<void> {
+    await this._api.invoke(`${electronIPCChannelName}.signOut`);
+  }
+  public async getAccessToken(): Promise<AccessToken> {
+    const token = await this._api.invoke(`${electronIPCChannelName}.getAccessToken`);
+    return token;
+  }
+  public addAccessTokenChangeListener(callback: (event: any, token: string) => void) {
+    this._api.addListener(`${electronIPCChannelName}.onAccessTokenChanged`, callback);
+  }
+  constructor() {
+    // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
+    // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
+    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer; // eslint-disable-line @typescript-eslint/no-var-requires
+  }
+}
 
 /**
  * Object to be set as `IModelApp.authorizationClient` for the frontend of ElectronApps.
@@ -26,9 +48,9 @@ export class ElectronAppAuthorization implements AuthorizationClient {
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
   }
-  private _ipcAuthAPI: any = (window as any).frontendElectronAuthApi;
+  private _ipcAuthAPI: ElectronAuthIPC = new ElectronAuthIPC();
 
-  // TODO: Need some way of keeping the expiration time
+  // TODO: Need some way of keeping the expiration time - or is this done with the listener? - but means backend would need a timer
 
   /** ctor for NativeAppAuthorization
    * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
@@ -45,13 +67,11 @@ export class ElectronAppAuthorization implements AuthorizationClient {
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   public async signIn(): Promise<void> {
-    // await ipcRenderer.invoke(`${electronIPCChannelName}.signIn`);
     await this._ipcAuthAPI.signIn();
   }
 
   /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
   public async signOut(): Promise<void> {
-    // await ipcRenderer.invoke(`${electronIPCChannelName}.signOut`);
     await this._ipcAuthAPI.signOut();
   }
 
@@ -69,13 +89,7 @@ export class ElectronAppAuthorization implements AuthorizationClient {
       }
 
       this._refreshingToken = true;
-      // this._cachedToken = await ipcRenderer.invoke(`${electronIPCChannelName}.getAccessToken`);
-      try{
-        this._cachedToken =  await this._ipcAuthAPI.getAccessToken() ?? "";
-      } catch (err){
-        // eslint-disable-next-line no-console
-        console.log("Had an error: ", err);
-      }
+      this._cachedToken = (await this._ipcAuthAPI.getAccessToken()) ?? "";
       this._refreshingToken = false;
     }
 

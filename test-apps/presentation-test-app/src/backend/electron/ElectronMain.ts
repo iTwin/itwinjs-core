@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { ElectronAuthorizationBackend, ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { RpcInterfaceDefinition } from "@itwin/core-common";
 import { SampleIpcHandler } from "../SampleIpcHandler";
 import { IModelHost } from "@itwin/core-backend";

@@ -24,7 +24,7 @@ import {
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
-import { ElectronApp, ElectronAppAuthorization } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp, ElectronAppAuthorization } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
