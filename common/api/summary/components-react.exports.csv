@@ -50,6 +50,7 @@ beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primit
 beta;CategoryRecordsDict
 public;CellItem
 public;CellProps
+deprecated;CellProps
 public;CheckBoxInfo
 public;CheckboxStateChange
 public;ColumnDescription
@@ -300,12 +301,14 @@ public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
 public;ReactDataGridColumn 
+deprecated;ReactDataGridColumn 
 beta;RenderedItemsRange
 public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
 public;RowProps
+deprecated;RowProps
 public;SelectableContent(props: SelectableContentProps): JSX.Element
 public;SelectableContentDefinition
 public;SelectableContentProps
@@ -338,14 +341,22 @@ public;StructPropertyValueRenderer
 public;Subscribable
 public;Subscription 
 public;Table 
+deprecated;Table 
 public;TableArrayValueRenderer 
 public;TableCell 
+deprecated;TableCell 
 public;TableCellContent 
+deprecated;TableCellContent 
 public;TableCellContentProps 
+deprecated;TableCellContentProps 
 public;TableCellContextMenuArgs
+deprecated;TableCellContextMenuArgs
 public;TableCellEditorState
+deprecated;TableCellEditorState
 public;TableCellProps 
+deprecated;TableCellProps 
 public;TableCellUpdatedArgs
+deprecated;TableCellUpdatedArgs
 internal;TableColumn 
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
@@ -357,10 +368,12 @@ public;TableIconCellContentProps
 public;TableNonPrimitiveValueRenderer 
 public;TableNonPrimitiveValueRendererProps 
 public;TableProps 
+deprecated;TableProps 
 internal;TableRow 
 internal;TableRowProps 
 public;TableRowStyleProvider:
 public;TableSelectionTarget
+deprecated;TableSelectionTarget
 public;TableSpecificValueRendererProps 
 public;TableStructValueRenderer 
 public;TextareaEditor 

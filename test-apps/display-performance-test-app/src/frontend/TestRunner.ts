@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
@@ -16,12 +16,12 @@ import {
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
-import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -153,6 +153,23 @@ export class TestRunner {
     await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
 
+    let needRestart = this.curConfig.requiresRestart(new TestConfig({})); // If current config differs from default, restart
+    const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+    if (!this.curConfig.useDisjointTimer) {
+      const ext = this.curConfig.renderOptions?.disabledExtensions;
+      renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+      needRestart = true;
+    }
+    if (IModelApp.initialized && needRestart)
+      await IModelApp.shutdown();
+    if (needRestart) {
+      await DisplayPerfTestApp.startup({
+        renderSys: renderOptions,
+        tileAdmin: this.curConfig.tileProps,
+        realityDataAccess: new RealityDataAccessClient(),
+      });
+    }
+
     // Run all the tests
     for (const set of this._testSets)
       await this.runTestSet(set);
@@ -181,8 +198,13 @@ export class TestRunner {
         await IModelApp.shutdown();
 
       if (!IModelApp.initialized) {
+        const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+        if (!this.curConfig.useDisjointTimer) {
+          const ext = this.curConfig.renderOptions?.disabledExtensions;
+          renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+        }
         await DisplayPerfTestApp.startup({
-          renderSys: this.curConfig.renderOptions,
+          renderSys: renderOptions,
           tileAdmin: this.curConfig.tileProps,
           realityDataAccess: new RealityDataAccessClient(),
         });
@@ -833,8 +855,7 @@ export class TestRunner {
     let totalTime: number;
     if (rowData.get("Finish GPU Queue")) { // If we can't collect GPU data, get non-interactive total time with 'Finish GPU Queue' time
       totalTime = Number(rowData.get("CPU Total Time")) + Number(rowData.get("Finish GPU Queue"));
-      rowData.set("Non-Interactive Total Time", totalTime);
-      rowData.set("Non-Interactive FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+      rowData.set("GPU Total Time", totalTime);
     }
 
     // Get these values from the timings.actualFps -- timings.actualFps === timings.cpu, unless in readPixels mode
@@ -848,21 +869,19 @@ export class TestRunner {
     }
 
     rowData.delete("Total Time");
-    totalRenderTime /= timings.actualFps.length;
+    totalRenderTime /= timings.actualFps.length; // ie the CPU Total Time
     totalTime /= timings.actualFps.length;
-    const totalGpuTime = Number(rowData.get("GPU-Total"));
-    if (totalGpuTime) {
-      const gpuBound = totalGpuTime > totalRenderTime;
-      const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    const disjointTimerUsed = rowData.get("GPU-Total") !== undefined;
+    const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("GPU Total Time"));
+    const gpuBound = disjointTimerUsed ? (totalGpuTime > totalRenderTime) : (totalGpuTime > totalRenderTime + 5); // Add a 5ms tolerance for readPixel in this case
+    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    if (disjointTimerUsed) {
+      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
       rowData.delete("GPU-Total");
-      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed)); // Change the name of this column & change column order
-      rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
-      rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
-      rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
     }
-
-    rowData.set("Actual Total Time", totalTime.toFixed(fixed));
-    rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+    rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
+    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+    rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
 
     return rowData;
   }
