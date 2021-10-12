@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { BentleyError, compareStrings } from "@itwin/core-bentley";
+import { BentleyError, compareStrings, Guid } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
   BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
@@ -225,7 +225,7 @@ export class MapLayerSources {
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     }
 
-    if (iModel && iModel.iTwinId && iModel.iModelId) {
+    if (iModel && iModel.iTwinId && iModel.iTwinId !== Guid.empty && iModel.iModelId) {
       try {
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {

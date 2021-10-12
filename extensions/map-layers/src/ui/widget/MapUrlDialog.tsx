@@ -17,6 +17,7 @@ import {
 import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
+import { Guid } from "@itwin/core-bentley";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -118,7 +119,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return types;
   });
 
-  const [isSettingsStorageAvailable] = React.useState(props?.activeViewport?.iModel?.iTwinId && props?.activeViewport?.iModel?.iModelId);
+  const [isSettingsStorageAvailable] = React.useState(props?.activeViewport?.iModel?.iTwinId
+    && props?.activeViewport?.iModel?.iTwinId !== Guid.empty
+    && props?.activeViewport?.iModel?.iModelId);
 
   // Even though the settings storage is available,
   // we don't always want to enable it in the UI.

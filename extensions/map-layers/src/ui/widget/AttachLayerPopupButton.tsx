@@ -12,6 +12,7 @@ import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
 import { Button, Input } from "@itwin/itwinui-react";
+import { Guid } from "@itwin/core-bentley";
 
 // cSpell:ignore droppable Sublayer
 
@@ -197,7 +198,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   const handleYesConfirmation = React.useCallback(async (source: MapLayerSource) => {
 
     const layerName = source.name;
-    if (!!iTwinId && !!iModelId) {
+    if (!!iTwinId && iTwinId !== Guid.empty && !!iModelId) {
       if (await MapLayerSettingsService.deleteSharedSettings(source, iTwinId, iModelId)) {
         const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
