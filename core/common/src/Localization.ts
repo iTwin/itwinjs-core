@@ -38,6 +38,12 @@ interface LocalizationOptions {
  * @public
  */
 export interface Localization {
+  /** This method must be called and awaited before using an instance of Localization.
+   * @param namespaces an array of namespaces to load. There must be at least one namespace, and it
+   * becomes the default namespace.
+   * @note IModelApp.startup calls this internally, so you should not call this method directly
+   * except for Localization instances outside of IModelApp (e.g., for tests.)
+   */
   initialize(namespaces: string[]): Promise<void>;
 
   /** Return the translated value of a key.
