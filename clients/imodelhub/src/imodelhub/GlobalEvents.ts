@@ -254,7 +254,7 @@ export class GlobalEventSubscriptionHandler {
     return subscription;
   }
 
-  /** Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]]..
+  /** Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]].
    * @param subscription Updated GlobalEventSubscription.
    * @return GlobalEventSubscription instance from iModelHub after update.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[GlobalEventSubscription]] does not exist with the specified subscription.wsgId.
@@ -270,7 +270,7 @@ export class GlobalEventSubscriptionHandler {
     return updatedSubscription;
   }
 
-  /** Delete a [[GlobalEventSubscription]]..
+  /** Delete a [[GlobalEventSubscription]].
    * @param subscriptionId WSG Id of the GlobalEventSubscription.
    * @returns Resolves if the GlobalEventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if GlobalEventSubscription does not exist with the specified subscription.wsgId.
