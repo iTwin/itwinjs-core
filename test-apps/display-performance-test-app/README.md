@@ -321,17 +321,15 @@ The performance data file should always contain the following column headers:
 * View Overlays - the time it takes to call the drawPass(RenderPass.ViewOverlay) function (in ms)
 * Overlay Draws - the time it takes to render all overlay draws (includes the world and view overlays)
 * End Paint - the time it takes to call the _endPaint() function
-* Finish GPU Queue - the time it takes to call the gl.readPixels() function (in ms); i.e. the time it takes the GPU to finish all of the tasks currently in its queue; this column is ONLY calculated when the GPU data is not available
+* Finish GPU Queue - the time it takes to call the gl.readPixels() function (in ms); i.e. the time it takes the GPU to finish all of the tasks currently in its queue; this column is ONLY calculated when the disjointTimer webgl extension is not in use
 
 The performance data file may also contain any or all of the below column headers. These columns WILL still appear if the 'minimize' flag has been set to true:
 
 * Total CPU Time - The total time it takes for the CPU to run the renderFrame function
-* Total GPU Time - The total time it takes to run all the GPU commands from one renderFrame function; this starts when the first command is given to the GPU and ends when the last command given to the GPU finished (i.e. it does not eliminate any down time in-between individual GPU commands); this column is ONLY available when GPU data IS gathered
+* Total GPU Time - The total time it takes to run all the GPU commands from one renderFrame function; if the disjointTimer webgl extension is in use, the total GPU time starts when the first command is given to the GPU and ends when the last command given to the GPU finished (i.e. it does not eliminate any down time in-between individual GPU commands); if the disjointTimer webgl extension is NOT in use, this is the sum of the 'CPU Total Time' and the 'Finish GPU Queue' (ie the time from when the CPU starts to when the GPU finishes a flush)
 * Bound By - should output “gpu” if the gpu is the limiting time factor or “cpu *” if the cpu is the limiting time factor; it will output “gpu ?” if the effective fps value is >= 60 fps, as we cannot be totally sure that it is gpu bound in this scenario, because the fps is being throttled to 60; this column is ONLY available when GPU data IS gathered
 * Effective Total Time - this is the greater of the cpu and gpu total times; that is, the cpu total time if it’s determined to be cpu bound or the gpu total time if it’s determined to be gpu bound; this column is ONLY available when GPU data IS gathered
 * Effective FPS - the effective total time converted to fps (frames per second); this is an estimate of what the actual fps would be if it wasn’t throttled down to a maximum of 60 fps; this column is ONLY available when GPU data IS gathered
-* Non-Interactive Total Time - this is the sum of the 'CPU Total Time' and the 'Finish GPU Queue'; this column is ONLY available when GPU data is NOT gathered
-* Non-Interactive FPS - this is the 'Non-Interactive Total Time' converted into fps (frames per second); this column is ONLY available when GPU data is NOT gathered
 * Actual Total Time - the total time it takes to get from starting to render a frame to starting to render the next frame (i.e. the time it takes to get from point A until you hit point A again); this column is available regardless of whether or not GPU data is gathered
 * Actual FPS - the actual total time converted into fps (frames per second); this should be a fairly accurate reflection of the fps value gathered when running in display-test-app; this column is available regardless of whether or not GPU data is gathered
 

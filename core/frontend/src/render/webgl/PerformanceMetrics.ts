@@ -27,17 +27,15 @@ export class PerformanceMetrics {
   public frameTimings = new Map<string, number>();
   public gatherGlFinish = false; // Set to true if gathering data for display-performance-test-app
   public gatherCurPerformanceMetrics = false; // Set to true if gathering data for Profile GPU
-  public useDisjointTimer = true; // Set to false to exclude gpu performance data gathered from EXT_disjoint_timer_query
   public curSpfTimeIndex = 0;
   public spfTimes: number[] = [];
   public spfSum: number = 0;
   public fpsTimer: StopWatch = new StopWatch(undefined, true);
   public fpsTimerStart: number = 0;
 
-  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, useDisjointTimer = true, gpuResults?: GLTimerResultCallback) {
+  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, gpuResults?: GLTimerResultCallback) {
     this.gatherGlFinish = gatherGlFinish;
     this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
-    this.useDisjointTimer = useDisjointTimer;
     if (gpuResults)
       System.instance.debugControl.resultsCallback = gpuResults;
   }
@@ -104,7 +102,7 @@ export class PerformanceMetrics {
     }
 
     const system = System.instance;
-    if (this.gatherGlFinish && (!this.useDisjointTimer || !system.isGLTimerSupported)) {
+    if (this.gatherGlFinish && !system.isGLTimerSupported) {
       this.beginOperation("Finish GPU Queue");
 
       // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work

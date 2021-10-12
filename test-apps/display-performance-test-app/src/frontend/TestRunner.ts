@@ -291,7 +291,7 @@ export class TestRunner {
 
     const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
       // Collect CPU timings.
-      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, this.curConfig.useDisjointTimer, undefined));
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, undefined));
       for (let i = 0; i < this.curConfig.numRendersToTime; ++i) {
         vp.readPixels(viewRect, pixSelect, () => { });
         timings.cpu[i] = (vp.target as Target).performanceMetrics!.frameTimings;
@@ -301,7 +301,7 @@ export class TestRunner {
       // Collect GPU timings.
       timings.gpuFramesCollected = 0;
       timings.callbackEnabled = true;
-      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, this.curConfig.useDisjointTimer, timings.callback));
+      setPerformanceMetrics(vp, new PerformanceMetrics(true, false, timings.callback));
       await this.renderAsync(vp, this.curConfig.numRendersToTime, timings);
       timings.callbackEnabled = false;
 
@@ -321,7 +321,7 @@ export class TestRunner {
 
   private async recordRender(test: TestCase): Promise<void> {
     const timings = new Timings(this.curConfig.numRendersToTime);
-    setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, this.curConfig.useDisjointTimer, timings.callback));
+    setPerformanceMetrics(test.viewport, new PerformanceMetrics(true, false, timings.callback));
     await this.renderAsync(test.viewport, this.curConfig.numRendersToTime, timings);
 
     const row = this.getRowData(timings, test);
@@ -855,8 +855,7 @@ export class TestRunner {
     let totalTime: number;
     if (rowData.get("Finish GPU Queue")) { // If we can't collect GPU data, get non-interactive total time with 'Finish GPU Queue' time
       totalTime = Number(rowData.get("CPU Total Time")) + Number(rowData.get("Finish GPU Queue"));
-      rowData.set("Non-Interactive Total Time", totalTime);
-      rowData.set("Non-Interactive FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+      rowData.set("GPU Total Time", totalTime);
     }
 
     // Get these values from the timings.actualFps -- timings.actualFps === timings.cpu, unless in readPixels mode
@@ -873,19 +872,16 @@ export class TestRunner {
     totalRenderTime /= timings.actualFps.length; // ie the CPU Total Time
     totalTime /= timings.actualFps.length;
     const disjointTimerUsed = rowData.get("GPU-Total") !== undefined;
-    const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("Non-Interactive Total Time"));
+    const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("GPU Total Time"));
     const gpuBound = disjointTimerUsed ? (totalGpuTime > totalRenderTime) : (totalGpuTime > totalRenderTime + 5); // Add a 5ms tolerance for readPixel in this case
     const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
-    rowData.set("GPU Total Time", effectiveFps.toFixed(fixed));
+    if (disjointTimerUsed) {
+      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
+      rowData.delete("GPU-Total");
+    }
     rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
     rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
     rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
-    if (disjointTimerUsed) {
-      rowData.delete("GPU-Total");
-    } else {
-      rowData.delete("Non-Interactive Total Time");
-      rowData.delete("Non-Interactive FPS");
-    }
 
     return rowData;
   }

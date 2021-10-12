@@ -845,7 +845,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-      if (this.performanceMetrics.gatherGlFinish && (!this.performanceMetrics.useDisjointTimer || !this.renderSystem.isGLTimerSupported)) {
+      if (this.performanceMetrics.gatherGlFinish && !this.renderSystem.isGLTimerSupported) {
         // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
         this.performanceMetrics.beginOperation("Finish GPU Queue");
         const gl = this.renderSystem.context;
