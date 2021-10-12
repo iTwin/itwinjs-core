@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Table
  */
@@ -14,7 +15,7 @@ import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
 // cSpell:ignore columnfiltering
 
 /** ReactDataGrid.Column with additional properties
- * @public
+ * @public @deprecated
  */
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
   /** Indicates whether the display value for the cell is treated as an icon spec. */

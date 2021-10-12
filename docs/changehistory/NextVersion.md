@@ -1064,6 +1064,7 @@ User Interface Changes - section to comment below
 Several changes were made in the @itwin ui packages.
 Some components in @itwin/core-react were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @itwin/core-react package with alternatives elsewhere.
+The [Table]($components-react) component has been deprecated in favor of the Table in @itwinui-react.
 A new @itwin/imodel-components-react package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
