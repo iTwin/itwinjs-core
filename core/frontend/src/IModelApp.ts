@@ -76,7 +76,7 @@ export interface IModelAppOptions {
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
   applicationVersion?: string;
-  /** If present, supplies the [[SettingsAdmin]] for this session.
+  /** If present, supplies the [[UserPreferencesAccess]] for this session.
    * @beta
    */
   userPreferences?: UserPreferencesAccess;

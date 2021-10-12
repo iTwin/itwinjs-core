@@ -53,12 +53,13 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("is backwards compatible", async () => {
       settingsAdminMock = moq.Mock.ofType<UserPreferencesAccess>();
-      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation" })).returns(async () => undefined);
-      // settingsAdminMock.setup(async (x) => x.get({ key: "Properties" }).returns(async () => ({
-      //   nestedContentInfos: new Set<string>(["nestedContentInfo"]),
-      //   propertyInfos: new Set<string>(["propertyInfo"]),
-      //   baseFieldInfos: new Set<string>(["baseFieldInfo"]),
-      // })));
+      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation.Properties" })).returns(async () => {
+        return {
+          nestedContentInfos: new Set<string>(["nestedContentInfo"]),
+          propertyInfos: new Set<string>(["propertyInfo"]),
+          baseFieldInfos: new Set<string>(["baseFieldInfo"]),
+        }
+      });
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
@@ -66,8 +67,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation" })).returns(async () => undefined);
-      settingsAdminMock.setup(async (x) => x.get({ key: "Properties" })).returns(async () => (undefined));
+      settingsAdminMock.setup(async (x) => x.get({ key: "imodeljs.presentation.Properties" })).returns(async () => undefined);
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.undefined;

@@ -9,7 +9,7 @@ import { Guid, GuidString } from "@itwin/core-bentley";
 import { MapLayerPreferences } from "../../../tile/map/MapLayerSettings";
 import { MapLayerSource } from "../../../tile/map/MapLayerSources";
 import { IModelApp } from "../../../IModelApp";
-import { UserPreferencesAccess } from "../../../UserPreferences";
+import { setup, restore } from "../../mocks/UserPreferencesMock";
 
 chai.should();
 describe.only("MapLayerPreferences", () => {
@@ -19,24 +19,10 @@ describe.only("MapLayerPreferences", () => {
   const storage = new Map<string, any>();
 
   before(async () => {
-    const mockPreferences: UserPreferencesAccess = {
-      get: async (arg: any) => {
-        return storage.get(arg.key);
-      },
-      save: async (arg: any) => {
-        storage.set(arg.key, arg.content);
-      },
-      delete: async (arg: any) => {
-        storage.delete(arg.key);
-      }
-    }
-
-    sinon.stub(IModelApp, "userPreferences").returns(mockPreferences);
-    // sinon.stub(IModelApp.userPreferences, "get").callsFake(mockPreferences.get);
-    // sinon.stub(IModelApp.userPreferences, "save").callsFake(mockPreferences.save);
-    // sinon.stub(IModelApp.userPreferences, "delete").callsFake(mockPreferences.delete);
+    setup();
   });
   after(async () => {
+    restore();
     sinon.restore();
   });
 
