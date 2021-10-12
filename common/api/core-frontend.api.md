@@ -249,7 +249,6 @@ import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SessionProps } from '@itwin/core-common';
-import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
 import { SkyBoxProps } from '@itwin/core-common';
@@ -4333,7 +4332,6 @@ export class IModelApp {
     static requestNextAnimation(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
-    static get settings(): SettingsAdmin;
     static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
@@ -4350,6 +4348,8 @@ export class IModelApp {
     // @beta
     static translateStatus(status: number): string;
     static get uiAdmin(): UiAdmin;
+    // @beta
+    static get userPreferences(): UserPreferencesAccess;
     static get viewManager(): ViewManager;
     }
 
@@ -4379,12 +4379,13 @@ export interface IModelAppOptions {
     security?: FrontendSecurityOptions;
     // @internal (undocumented)
     sessionId?: GuidString;
-    settings?: SettingsAdmin;
     // @internal (undocumented)
     tentativePoint?: TentativePoint;
     tileAdmin?: TileAdmin.Props;
     toolAdmin?: ToolAdmin;
     uiAdmin?: UiAdmin;
+    // @beta
+    userPreferences?: UserPreferencesAccess;
     viewManager?: ViewManager;
 }
 
@@ -4853,6 +4854,14 @@ export enum ItemField {
     Z_Item = 4
 }
 
+// @beta
+export interface ITwinIdArg {
+    // (undocumented)
+    readonly iModelId?: GuidString;
+    // (undocumented)
+    readonly iTwinId?: GuidString;
+}
+
 // @public
 export enum KeyinParseError {
     MismatchedQuotes = 4,
@@ -5286,6 +5295,16 @@ export interface MapLayerOptions {
     MapBoxImagery?: MapLayerKey;
 }
 
+// @internal
+export class MapLayerPreferences {
+    static deleteByName(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<void>;
+    static getByUrl(url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
+    static getSources(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
+    static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
+    static replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<void>;
+    static storeSource(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
+}
+
 // @internal (undocumented)
 export interface MapLayerSetting {
     // (undocumented)
@@ -5296,22 +5315,6 @@ export interface MapLayerSetting {
     transparentBackground: boolean | undefined;
     // (undocumented)
     url: string;
-}
-
-// @internal (undocumented)
-export class MapLayerSettingsService {
-    // (undocumented)
-    static deleteSharedSettings(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
-    // (undocumented)
-    static getSettingFromUrl(accessToken: AccessToken, url: string, iTwinId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
-    static getSourcesFromSettingsService(iTwinId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
-    // (undocumented)
-    static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
-    // (undocumented)
-    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
-    // (undocumented)
-    static get SourceNamespace(): string;
-    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
 }
 
 // @internal
@@ -5345,6 +5348,16 @@ export class MapLayerSource {
     userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+}
+
+// @internal (undocumented)
+export interface MapLayerSourceArg {
+    // (undocumented)
+    readonly iModelId: GuidString;
+    // (undocumented)
+    readonly iTwinId: GuidString;
+    // (undocumented)
+    readonly source: MapLayerSource;
 }
 
 // @internal (undocumented)
@@ -7166,6 +7179,18 @@ export class PlanarTilePatch {
     getRangeCorners(heightRange: Range1d, result: Point3d[]): Point3d[];
     // (undocumented)
     normal: Vector3d;
+}
+
+// @beta
+export interface PreferenceArg extends PreferenceKeyArg {
+    // (undocumented)
+    readonly content?: any;
+}
+
+// @beta
+export interface PreferenceKeyArg {
+    // (undocumented)
+    readonly key: string;
 }
 
 // @public
@@ -10672,6 +10697,12 @@ export enum TileVisibility {
     Visible = 2
 }
 
+// @beta
+export interface TokenArg {
+    // (undocumented)
+    accessToken?: AccessToken;
+}
+
 // @public
 export class Tool {
     constructor(..._args: any[]);
@@ -11208,6 +11239,13 @@ export class UpsampledMapTile extends MapTile {
     get loadableTile(): RealityTile;
     // (undocumented)
     markUsed(args: TileDrawArgs): void;
+}
+
+// @beta
+export interface UserPreferencesAccess {
+    delete: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<void>;
+    get: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<any>;
+    save: (arg: PreferenceArg & ITwinIdArg & TokenArg) => Promise<void>;
 }
 
 // @public

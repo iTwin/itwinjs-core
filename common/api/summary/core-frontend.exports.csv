@@ -284,6 +284,7 @@ beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is Custo
 beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
 beta;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
+beta;ITwinIdArg
 public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
@@ -313,9 +314,10 @@ internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
+internal;MapLayerPreferences
 internal;MapLayerSetting
-internal;MapLayerSettingsService
 internal;MapLayerSource
+internal;MapLayerSourceArg
 internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
@@ -405,6 +407,8 @@ beta;PlanarClipMaskState
 alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
+beta;PreferenceArg 
+beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 internal;QuadId
@@ -572,6 +576,7 @@ public;TileTreeSupplier
 internal;TileUrlImageryProvider 
 public;TileUsageMarker
 public;TileVisibility
+beta;TokenArg
 public;Tool
 public;ToolAdmin
 public;ToolAdmin
@@ -604,6 +609,7 @@ public;UniformParams
 public;UniformType
 beta;UnitFormattingSettingsProvider
 internal;UpsampledMapTile 
+beta;UserPreferencesAccess
 public;VaryingType
 public;ViewAnimationOptions
 public;ViewChangeOptions 

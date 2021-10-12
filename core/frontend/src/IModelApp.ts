@@ -76,7 +76,9 @@ export interface IModelAppOptions {
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
   applicationVersion?: string;
-  /** If present, supplies the [[SettingsAdmin]] for this session. */
+  /** If present, supplies the [[SettingsAdmin]] for this session.
+   * @beta
+   */
   userPreferences?: UserPreferencesAccess;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
@@ -225,7 +227,9 @@ export class IModelApp {
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
   /** The [[Localization]] for this session. Defaults to [[EmptyLocalization]] if not provided via IModelAppOptions. */
   public static get localization(): Localization { return this._localization; }
-  /** The [[SettingsAdmin]] for this session. */
+  /** The [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
   public static get userPreferences(): UserPreferencesAccess { return this._userPreferences; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }

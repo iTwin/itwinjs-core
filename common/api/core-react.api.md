@@ -2424,7 +2424,7 @@ export class UiSetting<T> {
 // @public
 export type UiSettings = UiSettingsStorage;
 
-// @public
+// @public @deprecated
 export interface UiSettingsResult {
     // (undocumented)
     setting?: any;
@@ -2446,7 +2446,7 @@ export enum UiSettingsStatus {
     UnknownError = 2
 }
 
-// @public
+// @public @deprecated
 export interface UiSettingsStorage {
     // (undocumented)
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;

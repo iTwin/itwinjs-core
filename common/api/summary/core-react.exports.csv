@@ -358,8 +358,10 @@ internal;UiGeometry
 public;UiSetting
 public;UiSettings = UiSettingsStorage
 public;UiSettingsResult
+deprecated;UiSettingsResult
 public;UiSettingsStatus
 public;UiSettingsStorage
+deprecated;UiSettingsStorage
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
