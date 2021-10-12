@@ -214,6 +214,14 @@ export class IModelHubBackend {
   }
 
   public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
+    const changeset = await this.tryQueryChangeset(arg);
+    if (!changeset)
+      throw new IModelError(IModelStatus.NotFound, `Changeset not found`);
+
+    return changeset;
+  }
+
+  private static async tryQueryChangeset(arg: ChangesetArg): Promise<ChangesetProps | undefined> {
     const hasIndex = (undefined !== arg.changeset.index);
     if ((hasIndex && arg.changeset.index <= 0) || arg.changeset.id === "")
       return this.changeSet0;
@@ -227,9 +235,17 @@ export class IModelHubBackend {
     const accessToken = await this.getAccessToken(arg);
     const changeSets = await this.iModelClient.changeSets.get(accessToken, arg.iModelId, query);
     if (undefined === changeSets)
-      throw new IModelError(IModelStatus.NotFound, `Changeset not found`);
+      return undefined;
 
-    return this.toChangeSetProps(changeSets[0]);
+    return changeSets.length > 0 ? this.toChangeSetProps(changeSets[0]) : undefined;
+  }
+
+  private static async getParentChangesetId(arg: IModelIdArg, index: ChangesetIndex): Promise<ChangesetId | undefined> {
+    if (index === 0)
+      return "";
+
+    const changeset = await this.tryQueryChangeset({ ...arg, changeset: { index } });
+    return changeset?.parentId;
   }
 
   private static async getQueryFromRange(arg: ChangesetRangeArg): Promise<ChangeSetQuery | undefined> {
@@ -238,9 +254,11 @@ export class IModelHubBackend {
       return query; // returns all changesets
 
     const range = arg.range;
-    const after = range.first === 0 ? "" : (await this.queryChangeset({ ...arg, changeset: { index: range.first } })).parentId;
+    const after = await this.getParentChangesetId(arg, range.first);
+    if (undefined === after)
+      return undefined;
 
-    if (!range.end)
+    if (range.end === undefined)
       query.fromId(after); //
     else {
       const last = (await this.queryChangeset({ ...arg, changeset: { index: range.end } })).id;
