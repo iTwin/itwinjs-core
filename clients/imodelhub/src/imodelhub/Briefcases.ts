@@ -216,7 +216,7 @@ export class BriefcaseHandler {
   }
 
   /** Update the [[Briefcase]] of an iModel. Only [[Briefcase.deviceName]] and [[Briefcase.changeSetIdOnDevice]] can be changed when updating the briefcase.
-   * Briefcase expiration date is also extended with each update request for a configured period of time (default is 30 days)..
+   * Briefcase expiration date is also extended with each update request for a configured period of time (default is 30 days).
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcase Briefcase to update.
    * @returns Updated Briefcase instance from iModelHub.

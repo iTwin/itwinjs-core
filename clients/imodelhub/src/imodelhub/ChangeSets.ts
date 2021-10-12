@@ -428,7 +428,7 @@ export class ChangeSetHandler {
     return changeSets;
   }
 
-  /** Get the chunk of [[ChangeSet]]s for the iModel..
+  /** Get the chunk of [[ChangeSet]]s for the iModel.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param url [[ChangeSet]]s query url.
    * @param chunkedQueryContext [[ChangeSet]]s chunked query context.
@@ -498,7 +498,7 @@ export class ChangeSetHandler {
     return changeSets;
   }
 
-  /** Download the chunk of [[ChangeSet]]s for the iModel..
+  /** Download the chunk of [[ChangeSet]]s for the iModel.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSets [[ChangeSet]]s chunk to download.
    * @param path Path of directory where the ChangeSets should be downloaded.
@@ -545,7 +545,7 @@ export class ChangeSetHandler {
     Logger.logTrace(loggerCategory, `Finished downloading changesets chunk`);
   }
 
-  /** Download single [[ChangeSet]] with retry if SAS url expired or download failed..
+  /** Download single [[ChangeSet]] with retry if SAS url expired or download failed.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSet [[ChangeSet]] to download.
    * @param downloadPath Path where the ChangeSet should be downloaded.
@@ -575,7 +575,7 @@ export class ChangeSetHandler {
     }
   }
 
-  /** Download single [[ChangeSet]]..
+  /** Download single [[ChangeSet]].
    * @param changeSet [[ChangeSet]] to download.
    * @param downloadPath Path where the ChangeSet should be downloaded.
    * @param changeSetProgress Callback for tracking progress.
