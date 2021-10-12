@@ -1,6 +1,6 @@
 # Utilities
 
-The [Utilities]($core-react:Inputs) category in the `@itwin/core-react` package includes
+The [Utilities]($core-react:Utilities) category in the `@itwin/core-react` package includes
 various utility classes, functions and React hooks for working with a UI.
 
 - [ClassNameProps]($core-react) - Props used by components that expect a CSS class name to be passed in
