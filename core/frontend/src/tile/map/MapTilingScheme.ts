@@ -31,10 +31,8 @@ export abstract class MapTilingScheme {
 
   public abstract yFractionToLatitude(yFraction: number): number;
   public abstract latitudeToYFraction(latitude: number): number;
-  private _baseLevel: number;
 
   protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean) {
-    this._baseLevel = (this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1) ? 1 : 0;
   }
   /**
    * Gets the total number of tiles in the X direction at a specified level-of-detail.
