@@ -82,7 +82,6 @@ export class MobileFileHandler implements FileHandler {
 
   /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
-   * @param _accessToken A valid access token string
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
@@ -156,7 +155,6 @@ export class MobileFileHandler implements FileHandler {
 
   /**
    * Upload a file to AzureBlobStorage for iModelHub.
-   * @param accessToken A valid access token string
    * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.

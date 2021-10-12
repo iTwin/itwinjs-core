@@ -235,7 +235,6 @@ export class GlobalEventSubscriptionHandler {
   }
 
   /** Create a [[GlobalEventSubscription]]. You can use this to get or update the existing subscription instance, if you only have the original subscriptionId.
-   * @param accessToken A valid access token string
    * @param subscriptionId Guid to be used by global event subscription. It will be a part of the resulting subscription id.
    * @param globalEvents Array of GlobalEventTypes to subscribe to.
    * @return Created GlobalEventSubscription instance.
@@ -255,8 +254,7 @@ export class GlobalEventSubscriptionHandler {
     return subscription;
   }
 
-  /** Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]].
-   * @param accessToken A valid access token string.
+  /** Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]]..
    * @param subscription Updated GlobalEventSubscription.
    * @return GlobalEventSubscription instance from iModelHub after update.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[GlobalEventSubscription]] does not exist with the specified subscription.wsgId.
@@ -272,8 +270,7 @@ export class GlobalEventSubscriptionHandler {
     return updatedSubscription;
   }
 
-  /** Delete a [[GlobalEventSubscription]].
-   * @param accessToken A valid access token string.
+  /** Delete a [[GlobalEventSubscription]]..
    * @param subscriptionId WSG Id of the GlobalEventSubscription.
    * @returns Resolves if the GlobalEventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if GlobalEventSubscription does not exist with the specified subscription.wsgId.
@@ -329,7 +326,6 @@ export class GlobalEventHandler extends EventBaseHandler {
   }
 
   /** Get global event SAS Token. Used to authenticate for [[GlobalEventHandler.getEvent]].
-   * @param accessToken A valid access token string
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async getSASToken(accessToken: AccessToken): Promise<GlobalEventSAS> {

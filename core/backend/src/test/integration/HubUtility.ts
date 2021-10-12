@@ -63,7 +63,6 @@ export class HubUtility {
 
   /**
    * Queries the iTwin id by its name
-   * @param accessToken A valid access token string
    * @param name Name of iTwin
    * @throws If the iTwin is not found, or there is more than one iTwin with the supplied name
    */
@@ -79,7 +78,6 @@ export class HubUtility {
   }
 
   /** Queries the iModel id by its name
-   * @param accessToken A valid access token string
    * @param iTwinId Id of the parent iTwin
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name

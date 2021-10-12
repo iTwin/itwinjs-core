@@ -148,7 +148,6 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
   }
 
   /** Gets all iTwins using the given query options
-   * @param accessToken A valid access token string
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of iTwins meeting the query's requirements
    */

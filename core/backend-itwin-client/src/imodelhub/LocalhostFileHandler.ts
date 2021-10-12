@@ -25,7 +25,6 @@ export class LocalhostHandler implements FileHandler {
 
   /**
    * Download a file.
-   * @param accessToken A valid access token string
    * @param downloadUrl URL to download file from.
    * @param path Path to download the file to, including file name.
    * @param fileSize Size of the file that's being downloaded.
@@ -47,7 +46,6 @@ export class LocalhostHandler implements FileHandler {
 
   /**
    * Upload a file.
-   * @param accessToken A valid access token string
    * @param uploadUrl URL to upload the file to.
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.

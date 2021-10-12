@@ -442,7 +442,6 @@ export class IModelsHandler {
   }
 
   /** Create an iModel instance
-    * @param accessToken A valid access token string.
     * @param iTwinId Id of the iModel's parent iTwin.
     * @param iModelName Name of the iModel on the Hub.
     * @param description Description of the iModel on the Hub.
@@ -526,7 +525,6 @@ export class IModelsHandler {
   }
 
   /** Wait until the iModel is initialized.
-    * @param accessToken A valid access token string.
     * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
     * @param imodel iModel instance that will be returned if initialization is successful.
     * @param timeOutInMilliseconds Maximum time to wait for the initialization.
