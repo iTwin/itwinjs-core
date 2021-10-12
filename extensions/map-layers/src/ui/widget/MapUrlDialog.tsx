@@ -11,12 +11,13 @@ import { ModalDialogManager } from "@itwin/appui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
-  IModelApp, MapLayerImageryProviderStatus, MapLayerPreferences, MapLayerSource,
+  IModelApp, MapLayerImageryProviderStatus, MapLayerSource,
   MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
+import { MapLayerPreferences } from "../../MapLayerSettings";
 
 export const MAP_TYPES = {
   wms: "WMS",

@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSource } from "../internal";
-import { IModelApp } from "../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
+import { IModelApp, MapLayerSource, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { BeEvent, GuidString } from "@itwin/core-bentley";
+import { MapLayersUI } from "./mapLayers";
 
 /** @internal */
 export interface MapLayerSetting {
@@ -66,7 +65,7 @@ export class MapLayerPreferences {
 
     const result: boolean = await MapLayerPreferences.delete(sourceJSON.url, sourceJSON.name, iTwinId, iModelId, storeOnIModel);
     if (result) {
-      await IModelApp.userPreferences.save({
+      await MapLayersUI.iTwinAccess.save({
         accessToken,
         content: mapLayerSetting,
         key: `${MapLayerPreferences._preferenceKey}.${sourceJSON.name}`,
@@ -94,14 +93,14 @@ export class MapLayerPreferences {
 
     let storeOnIModel = false;
     try {
-      await IModelApp.userPreferences.delete({
+      await MapLayersUI.iTwinAccess.delete({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${oldSource.name}`,
         iTwinId: projectId,
         iModelId
       });
     } catch (_err) {
-      await IModelApp.userPreferences.delete({
+      await MapLayersUI.iTwinAccess.delete({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${oldSource.name}`,
         iTwinId: projectId
@@ -116,7 +115,7 @@ export class MapLayerPreferences {
       transparentBackground: newSource.transparentBackground,
     };
 
-    await IModelApp.userPreferences.save({
+    await MapLayersUI.iTwinAccess.save({
       accessToken,
       key: `${MapLayerPreferences._preferenceKey}.${newSource.name}`,
       iTwinId: projectId,
@@ -137,7 +136,7 @@ export class MapLayerPreferences {
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
     try {
-      await IModelApp.userPreferences.delete({
+      await MapLayersUI.iTwinAccess.delete({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${source.name}`,
         iTwinId,
@@ -145,7 +144,7 @@ export class MapLayerPreferences {
       });
     } catch (_err) {
       // failed to store based on iModelId, attempt using iTwinId
-      await IModelApp.userPreferences.delete({
+      await MapLayersUI.iTwinAccess.delete({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${source.name}`,
         iTwinId,
@@ -170,7 +169,7 @@ export class MapLayerPreferences {
   private static async delete(url: string, name: string, projectId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
-    const itwinPrefernceByName = await IModelApp.userPreferences.get({
+    const itwinPrefernceByName = await MapLayersUI.iTwinAccess.get({
       accessToken,
       key: `${MapLayerPreferences._preferenceKey}.${name}`,
       iTwinId: projectId,
@@ -183,7 +182,7 @@ export class MapLayerPreferences {
     } else if (itwinPrefernceByName) {
       const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: itwinPrefernceByName.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
-      await IModelApp.userPreferences.delete({
+      await MapLayersUI.iTwinAccess.delete({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${itwinPrefernceByName.name}`,
         iTwinId: projectId,
@@ -199,7 +198,7 @@ export class MapLayerPreferences {
     } else if (settingFromUrl) {
       const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
-      await IModelApp.userPreferences.delete({
+      await MapLayersUI.iTwinAccess.delete({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${settingFromUrl.name}`,
         iTwinId: projectId,
@@ -207,7 +206,7 @@ export class MapLayerPreferences {
     }
 
     if (iModelId) { // delete any settings on model so user can update them if theres collisions
-      const settingOnIModelFromName = await IModelApp.userPreferences.get({
+      const settingOnIModelFromName = await MapLayersUI.iTwinAccess.get({
         accessToken,
         key: `${MapLayerPreferences._preferenceKey}.${name}`,
         iTwinId: projectId,
@@ -217,7 +216,7 @@ export class MapLayerPreferences {
       if (settingOnIModelFromName) {
         const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
-        await IModelApp.userPreferences.delete({
+        await MapLayersUI.iTwinAccess.delete({
           accessToken,
           key: `${MapLayerPreferences._preferenceKey}.${settingOnIModelFromName.name}`,
           iTwinId: projectId,
@@ -227,7 +226,7 @@ export class MapLayerPreferences {
       if (settingFromUrlOnIModel) {
         const infoMessage = IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
-        await IModelApp.userPreferences.delete({
+        await MapLayersUI.iTwinAccess.delete({
           accessToken,
           key: `${MapLayerPreferences._preferenceKey}.${settingFromUrlOnIModel.name}`,
           iTwinId: projectId,
@@ -246,7 +245,7 @@ export class MapLayerPreferences {
   public static async getByUrl(url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined> {
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
 
-    const settingResponse = await IModelApp.userPreferences.get({
+    const settingResponse = await MapLayersUI.iTwinAccess.get({
       accessToken,
       key: MapLayerPreferences._preferenceKey,
       iTwinId: projectId,
@@ -276,7 +275,7 @@ export class MapLayerPreferences {
     const mapLayerList = [];
 
     try {
-      const userResultByProject = await IModelApp.userPreferences.get({
+      const userResultByProject = await MapLayersUI.iTwinAccess.get({
         accessToken,
         key: MapLayerPreferences._preferenceKey,
         iTwinId: projectId,
@@ -288,7 +287,7 @@ export class MapLayerPreferences {
     }
 
     try {
-      const userResultByImodel = await IModelApp.userPreferences.get({
+      const userResultByImodel = await MapLayersUI.iTwinAccess.get({
         accessToken,
         key: MapLayerPreferences._preferenceKey,
         iTwinId: projectId,

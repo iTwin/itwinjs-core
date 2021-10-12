@@ -314,11 +314,7 @@ internal;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
-internal;MapLayerPreferences
-internal;MapLayerSetting
 internal;MapLayerSource
-internal;MapLayerSourceArg
-internal;MapLayerSourceChangeType
 internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation

@@ -9,7 +9,7 @@
 
 import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerPreferences, MapLayerSource, MapLayerSourceChangeType,
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource,
   MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
@@ -23,6 +23,7 @@ import { BasemapPanel } from "./BasemapPanel";
 import { MapLayerDroppable } from "./MapLayerDroppable";
 import "./MapLayerManager.scss";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
+import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerSettings";
 
 /** @internal */
 export interface SourceMapContextProps {

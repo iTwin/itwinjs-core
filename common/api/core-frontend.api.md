@@ -5296,28 +5296,6 @@ export interface MapLayerOptions {
 }
 
 // @internal
-export class MapLayerPreferences {
-    static deleteByName(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<void>;
-    static getByUrl(url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
-    static getSources(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
-    static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
-    static replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<void>;
-    static storeSource(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
-}
-
-// @internal (undocumented)
-export interface MapLayerSetting {
-    // (undocumented)
-    formatId: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    transparentBackground: boolean | undefined;
-    // (undocumented)
-    url: string;
-}
-
-// @internal
 export class MapLayerSource {
     // (undocumented)
     baseMap: boolean;
@@ -5348,26 +5326,6 @@ export class MapLayerSource {
     userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
-}
-
-// @internal (undocumented)
-export interface MapLayerSourceArg {
-    // (undocumented)
-    readonly iModelId: GuidString;
-    // (undocumented)
-    readonly iTwinId: GuidString;
-    // (undocumented)
-    readonly source: MapLayerSource;
-}
-
-// @internal (undocumented)
-export enum MapLayerSourceChangeType {
-    // (undocumented)
-    Added = 0,
-    // (undocumented)
-    Removed = 1,
-    // (undocumented)
-    Replaced = 2
 }
 
 // @internal

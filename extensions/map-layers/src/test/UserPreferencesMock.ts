@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { IModelApp } from "../../IModelApp";
-import { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "../../UserPreferences";
+import { MapLayersUI } from "../mapLayers";
+import { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "../ui/Interfaces";
 
 let iModelPrefs: Map<string, any> | undefined = undefined;
 let iTwinPrefs: Map<string, any> | undefined = undefined;
@@ -52,7 +52,7 @@ export function setup() {
       iTwinPrefs.set(arg.key, arg.content);
   };
 
-  sinon.replaceGetter(IModelApp, "userPreferences", () => {
+  sinon.replaceGetter(MapLayersUI, "iTwinAccess", () => {
     return {
       get: getStub,
       save: saveStub,

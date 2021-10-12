@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@itwin/core-frontend";
+import { IModelApp, MapLayerSources, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
-// import { ITwinPreferencesAccess } from "./map-layers";
+import { BentleyError } from "@itwin/core-bentley";
+import { MapLayerPreferences } from "./MapLayerSettings";
+import { ITwinPreferencesAccess } from "./ui/Interfaces";
 
 /**
  * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
@@ -21,7 +23,7 @@ export class MapLayersUI {
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
-  // public static iTwinAccess: ITwinPreferencesAccess;
+  public static iTwinAccess: ITwinPreferencesAccess;
 
   /** Used to initialize the MapLayersAPI when used as a package. If `registerItemsProvider` is true then the
    * UiItemsProvider will automatically insert the UI items into the host applications UI. If it is false then
@@ -31,8 +33,16 @@ export class MapLayersUI {
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
    * ```
    */
-  public static async initialize(registerItemsProvider = true): Promise<void> {
-    // MapLayersUI.iTwinAccess = itwinConfig;
+  public static async initialize(registerItemsProvider = true, iTwinConfig?: ITwinPreferencesAccess): Promise<void> {
+    MapLayersUI.iTwinAccess = iTwinConfig!;
+
+    // if (iModel && iModel.iTwinId && iModel.iModelId) {
+    //   try {
+    //     (await MapLayerPreferences.getSources(iModel.iTwinId, iModel.iModelId)).forEach((source) => MapLayerSources.addSourceToMapLayerSources(source));
+    //   } catch (err) {
+    //     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
+    //   }
+    // }
 
     // register namespace containing localized strings for this package
     await IModelApp.localization.registerNamespace(this.localizationNamespace);

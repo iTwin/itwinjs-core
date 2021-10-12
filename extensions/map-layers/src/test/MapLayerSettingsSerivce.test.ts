@@ -6,17 +6,15 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 
-import { MapLayerPreferences } from "../../../tile/map/MapLayerSettings";
-import { MapLayerSource } from "../../../tile/map/MapLayerSources";
-import { IModelApp } from "../../../IModelApp";
-import { setup, restore } from "../../mocks/UserPreferencesMock";
+import { MapLayerPreferences } from "../../src/MapLayerSettings";
+import { IModelApp, MapLayerSource } from "@itwin/core-frontend";
+import { setup, restore } from "./UserPreferencesMock";
 
 chai.should();
 describe.only("MapLayerPreferences", () => {
   const iTwinId: GuidString = Guid.createValue();
   const iModelId: GuidString = Guid.createValue();
   const testName: string = `test${Guid.createValue()}`;
-  const storage = new Map<string, any>();
 
   before(async () => {
     setup();
