@@ -6,10 +6,10 @@
  * @module ModelState
  */
 
-import { Guid, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
