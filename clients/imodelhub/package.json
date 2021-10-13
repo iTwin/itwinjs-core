@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.83",
+  "version": "3.0.0-dev.85",
   "description": "iModel.js iModelHub Client",
   "main": "lib/cjs/imodelhub-client.js",
   "modules": "lib/esm/imodelhub-client.js",
@@ -41,8 +41,8 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.83",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.83"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.85",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.85"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

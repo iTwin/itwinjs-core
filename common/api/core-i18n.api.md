@@ -4,26 +4,32 @@
 
 ```ts
 
+import { BackendOptions } from 'i18next-http-backend';
+import { DetectorOptions } from 'i18next-browser-languagedetector';
+import { i18n } from 'i18next';
+import { InitOptions } from 'i18next';
 import { Localization } from '@itwin/core-common';
-import { TranslationOptions } from 'i18next';
+import { Module } from 'i18next';
+import { TOptionsBase } from 'i18next';
 
 // @public
 export class ITwinLocalization implements Localization {
     constructor(options?: LocalizationOptions);
-    // @internal
     changeLanguage(language: string): Promise<void>;
     // @internal
-    getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string;
     // @internal (undocumented)
-    getLanguageList(): string[];
+    getLanguageList(): readonly string[];
     getLocalizedKeys(line: string): string;
-    getLocalizedString(key: string | string[], options?: TranslationOptions): string;
+    getLocalizedString(key: string | string[], options?: TOptionsBase): string;
     // @internal
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string;
     getNamespacePromise(name: string): Promise<void> | undefined;
-    // @internal (undocumented)
-    loadNamespace(name: string, i18nCallback: any): void;
-    registerNamespace(name: string, setDefault?: true): Promise<void>;
+    // (undocumented)
+    i18next: i18n;
+    // (undocumented)
+    initialize(namespaces: string[]): Promise<void>;
+    registerNamespace(name: string): Promise<void>;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
 }
@@ -31,7 +37,17 @@ export class ITwinLocalization implements Localization {
 // @public
 export interface LocalizationOptions {
     // (undocumented)
-    urlTemplate: string;
+    backendHttpOptions?: BackendOptions;
+    // (undocumented)
+    backendPlugin?: Module;
+    // (undocumented)
+    detectorOptions?: DetectorOptions;
+    // (undocumented)
+    detectorPlugin?: Module;
+    // (undocumented)
+    initOptions?: InitOptions;
+    // (undocumented)
+    urlTemplate?: string;
 }
 
 
