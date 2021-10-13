@@ -2253,7 +2253,6 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._timePointValid) {
       isRedrawNeeded = true;
-      this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleState;
       if (scheduleScript) {
         target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
@@ -2263,6 +2262,8 @@ export abstract class Viewport implements IDisposable {
         if (scheduleScript.script.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
+
+      this._timePointValid = true;
     }
 
     if (overridesNeeded) {
