@@ -575,7 +575,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.19.18
+      '@bentley/imodeljs-native': 2.19.19
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -626,7 +626,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.19.18
+      '@bentley/imodeljs-native': 2.19.19
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -5752,7 +5752,7 @@ packages:
       '@babel/compat-data': 7.15.0
       '@babel/core': 7.12.3
       '@babel/helper-validator-option': 7.14.5
-      browserslist: 4.17.3
+      browserslist: 4.17.4
       semver: 6.3.0
     dev: true
 
@@ -5765,7 +5765,7 @@ packages:
       '@babel/compat-data': 7.15.0
       '@babel/core': 7.15.8
       '@babel/helper-validator-option': 7.14.5
-      browserslist: 4.17.3
+      browserslist: 4.17.4
       semver: 6.3.0
 
   /@babel/helper-compilation-targets/7.15.4_@babel+core@7.7.4:
@@ -5777,7 +5777,7 @@ packages:
       '@babel/compat-data': 7.15.0
       '@babel/core': 7.7.4
       '@babel/helper-validator-option': 7.14.5
-      browserslist: 4.17.3
+      browserslist: 4.17.4
       semver: 6.3.0
     dev: false
 
@@ -5790,7 +5790,7 @@ packages:
       '@babel/compat-data': 7.15.0
       '@babel/core': 7.9.0
       '@babel/helper-validator-option': 7.14.5
-      browserslist: 4.17.3
+      browserslist: 4.17.4
       semver: 6.3.0
     dev: false
 
@@ -8485,7 +8485,7 @@ packages:
       '@babel/plugin-transform-unicode-regex': 7.14.5_@babel+core@7.12.3
       '@babel/preset-modules': 0.1.4_@babel+core@7.12.3
       '@babel/types': 7.15.6
-      core-js-compat: 3.18.2
+      core-js-compat: 3.18.3
       semver: 5.7.1
     transitivePeerDependencies:
       - supports-color
@@ -8569,7 +8569,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.2.2_@babel+core@7.12.3
       babel-plugin-polyfill-corejs3: 0.2.5_@babel+core@7.12.3
       babel-plugin-polyfill-regenerator: 0.2.2_@babel+core@7.12.3
-      core-js-compat: 3.18.2
+      core-js-compat: 3.18.3
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -8653,7 +8653,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.2.2_@babel+core@7.7.4
       babel-plugin-polyfill-corejs3: 0.2.5_@babel+core@7.7.4
       babel-plugin-polyfill-regenerator: 0.2.2_@babel+core@7.7.4
-      core-js-compat: 3.18.2
+      core-js-compat: 3.18.3
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -8721,7 +8721,7 @@ packages:
       '@babel/preset-modules': 0.1.4_@babel+core@7.9.0
       '@babel/types': 7.15.6
       browserslist: 4.11.1
-      core-js-compat: 3.18.2
+      core-js-compat: 3.18.3
       invariant: 2.2.4
       levenary: 1.1.1
       semver: 5.7.1
@@ -8855,7 +8855,7 @@ packages:
     resolution: {integrity: sha512-lWcAqKeB624/twtTc3w6w/2o9RqJPaNBhPGK6DKLSiwuVWC7WFkypWyNg+CpZoyJH0jVzv1uMtXZ/5/lQOLtCg==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      core-js-pure: 3.18.2
+      core-js-pure: 3.18.3
       regenerator-runtime: 0.13.9
 
   /@babel/runtime/7.12.1:
@@ -8918,8 +8918,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.19.18:
-    resolution: {integrity: sha512-0dAfghRsCMObVXgR2NmsPp4eYeCGXe986ah3mwDyaHNo/Yq1Y4aathvaWE/L6KF9miHjo1zTbII1cMcyfaIR1A==}
+  /@bentley/imodeljs-native/2.19.19:
+    resolution: {integrity: sha512-dpIDgCdc0ZSULLrbHBfMaQEG4Rj5RAUPsTW6uSB4XingaXVVZ+tNmcaI967UNwP8ZV3WfZL1IvxsQqMb8MOd+g==}
     requiresBuild: true
     dev: false
 
@@ -9511,7 +9511,7 @@ packages:
       istanbul-lib-instrument: 4.0.3
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.1
-      istanbul-reports: 3.0.4
+      istanbul-reports: 3.0.5
       jest-haste-map: 26.6.2
       jest-resolve: 26.6.2
       jest-util: 26.6.2
@@ -9805,7 +9805,7 @@ packages:
     resolution: {integrity: sha512-e54kpi219wES2ijPzeHe1kMnT8VKH8YeTd1GAn9BzVBmutz3tBgcG1y8a4pziNr4vNjFnuD4W446Ua7ELnNDiA==}
     dependencies:
       '@types/base64-js': 1.3.0
-      '@types/jquery': 3.5.6
+      '@types/jquery': 3.5.7
       base64-js: 1.5.1
       follow-redirects: 1.14.4
       form-data: 4.0.0
@@ -10201,8 +10201,8 @@ packages:
       wait-for-expect: 1.3.0
     dev: true
 
-  /@testing-library/dom/8.7.2:
-    resolution: {integrity: sha512-2zN0Zv9dMnaMAd4c/1E1ZChu4QrICyvWtkUvHFQBPhS1oG3VYGcM7SLGLYdda7187ILRXzIUOvOsbXQm4EASjA==}
+  /@testing-library/dom/8.9.0:
+    resolution: {integrity: sha512-fhmAYtGpFqzKdPq5aLNn/T396qfhYkttHT/5RytdDNSCzg9K/0F/WXF5iDsNBK1M3ZIQbPy7Y0qm4Kup5bqT/w==}
     engines: {node: '>=12'}
     dependencies:
       '@babel/code-frame': 7.15.8
@@ -10538,7 +10538,7 @@ packages:
   /@types/i18next-node-fs-backend/2.1.1:
     resolution: {integrity: sha512-ESvH90OICQkKU3yuuRzF6YfHt5KACE55FOiUM59mMGnC+h03lHGdEYo3z3THbwS5FdMskLyIs2O7f6Oaz8P9sw==}
     dependencies:
-      i18next: 21.2.6
+      i18next: 21.3.1
     dev: true
 
   /@types/i18next/8.4.6:
@@ -10568,8 +10568,8 @@ packages:
       '@types/istanbul-lib-report': 3.0.0
     dev: true
 
-  /@types/jquery/3.5.6:
-    resolution: {integrity: sha512-SmgCQRzGPId4MZQKDj9Hqc6kSXFNWZFHpELkyK8AQhf8Zr6HKfCzFv9ZC1Fv3FyQttJZOlap3qYb12h61iZAIg==}
+  /@types/jquery/3.5.7:
+    resolution: {integrity: sha512-Why+9t1KuqWtIqYKtbk6wgWbE1PjyXJOyGkpmTUh0RX5p4HL7nnRuBkjAO9P2r9tGQP6bLWxl77jRLew3V5xXg==}
     dependencies:
       '@types/sizzle': 2.3.3
     dev: false
@@ -10668,8 +10668,8 @@ packages:
   /@types/node/10.14.1:
     resolution: {integrity: sha512-Rymt08vh1GaW4vYB6QP61/5m/CFLGnFZP++bJpWbiNxceNa6RBipDmb413jvtSf/R1gg5a/jQVl2jY4XVRscEA==}
 
-  /@types/node/12.20.28:
-    resolution: {integrity: sha512-cBw8gzxUPYX+/5lugXIPksioBSbE42k0fZ39p+4yRzfYjN6++eq9kAPdlY9qm+MXyfbk9EmvCYAYRn380sF46w==}
+  /@types/node/12.20.33:
+    resolution: {integrity: sha512-5XmYX2GECSa+CxMYaFsr2mrql71Q4EvHjKS+ox/SiwSdaASMoBIWE6UmZqFO+VX1jIcsYLStI4FFoB6V7FeIYw==}
 
   /@types/node/8.10.54:
     resolution: {integrity: sha512-kaYyLYf6ICn6/isAyD4K1MyWWd5Q3JgH6bnMN089LUx88+s4W8GvK9Q6JMBVu5vsFFp7pMdSxdKmlBXwH/VFRg==}
@@ -12383,7 +12383,7 @@ packages:
     dependencies:
       '@babel/core': 7.12.3
       '@babel/helper-define-polyfill-provider': 0.2.3_@babel+core@7.12.3
-      core-js-compat: 3.18.2
+      core-js-compat: 3.18.3
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -12395,7 +12395,7 @@ packages:
     dependencies:
       '@babel/core': 7.7.4
       '@babel/helper-define-polyfill-provider': 0.2.3_@babel+core@7.7.4
-      core-js-compat: 3.18.2
+      core-js-compat: 3.18.3
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -12856,7 +12856,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001265
-      electron-to-chromium: 1.3.866
+      electron-to-chromium: 1.3.867
     dev: true
 
   /browserslist/4.11.1:
@@ -12864,7 +12864,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001265
-      electron-to-chromium: 1.3.866
+      electron-to-chromium: 1.3.867
       node-releases: 1.1.77
       pkg-up: 2.0.0
 
@@ -12874,20 +12874,20 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001265
-      electron-to-chromium: 1.3.866
+      electron-to-chromium: 1.3.867
       escalade: 3.1.1
       node-releases: 1.1.77
 
-  /browserslist/4.17.3:
-    resolution: {integrity: sha512-59IqHJV5VGdcJZ+GZ2hU5n4Kv3YiASzW6Xk5g9tf5a/MAzGeFwgGWU39fVzNIOVcgB3+Gp+kiQu0HEfTVU/3VQ==}
+  /browserslist/4.17.4:
+    resolution: {integrity: sha512-Zg7RpbZpIJRW3am9Lyckue7PLytvVxxhJj1CaJVlCWENsGEAOlnlt8X0ZxGRPp7Bt9o8tIRM5SEXy4BCPMJjLQ==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001265
-      electron-to-chromium: 1.3.866
+      electron-to-chromium: 1.3.867
       escalade: 3.1.1
-      node-releases: 1.1.77
-      picocolors: 0.2.1
+      node-releases: 2.0.0
+      picocolors: 1.0.0
 
   /bs-logger/0.2.6:
     resolution: {integrity: sha512-pd8DCoxmbgc7hyPKOvxtqNcjYoOsABPQdcCUjGp3d42VR2CX1ORhk2A87oqqu5R1kk+76nsxZupkmyd+MVtCog==}
@@ -13821,14 +13821,14 @@ packages:
       webpack-sources: 1.4.3
     dev: true
 
-  /core-js-compat/3.18.2:
-    resolution: {integrity: sha512-25VJYCJtGjZwLguj7d66oiHfmnVw3TMOZ0zV8DyMJp/aeQ3OjR519iOOeck08HMyVVRAqXxafc2Hl+5QstJrsQ==}
+  /core-js-compat/3.18.3:
+    resolution: {integrity: sha512-4zP6/y0a2RTHN5bRGT7PTq9lVt3WzvffTNjqnTKsXhkAYNDTkdCLOIfAdOLcQ/7TDdyRj3c+NeHe1NmF1eDScw==}
     dependencies:
-      browserslist: 4.17.3
+      browserslist: 4.17.4
       semver: 7.0.0
 
-  /core-js-pure/3.18.2:
-    resolution: {integrity: sha512-4hMMLUlZhKJKOWbbGD1/VDUxGPEhEoN/T01k7bx271WiBKCvCfkgPzy0IeRS4PB50p6/N1q/SZL4B/TRsTE5bA==}
+  /core-js-pure/3.18.3:
+    resolution: {integrity: sha512-qfskyO/KjtbYn09bn1IPkuhHl5PlJ6IzJ9s9sraJ1EqcuGyLGKzhSM1cY0zgyL9hx42eulQLZ6WaeK5ycJCkqw==}
     requiresBuild: true
 
   /core-js/2.6.12:
@@ -13836,8 +13836,8 @@ packages:
     deprecated: core-js@<3.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Please, upgrade your dependencies to the actual version of core-js.
     requiresBuild: true
 
-  /core-js/3.18.2:
-    resolution: {integrity: sha512-zNhPOUoSgoizoSQFdX1MeZO16ORRb9FFQLts8gSYbZU5FcgXhp24iMWMxnOQo5uIaIG7/6FA/IqJPwev1o9ZXQ==}
+  /core-js/3.18.3:
+    resolution: {integrity: sha512-tReEhtMReZaPFVw7dajMx0vlsz3oOb8ajgPoHVYGxr8ErnZ6PcYEvvmjGmXlfpnxpkYSdOQttjB+MvVbCGfvLw==}
     requiresBuild: true
 
   /core-util-is/1.0.2:
@@ -14788,8 +14788,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.866:
-    resolution: {integrity: sha512-iYze6TpDXWxk+sfcpUUdTs6Pv/3kG45Pnjer2DxEeFw0N08bZeNLuz97s2lMgy8yObon48o0WHY2Bkg3xuAPOA==}
+  /electron-to-chromium/1.3.867:
+    resolution: {integrity: sha512-WbTXOv7hsLhjJyl7jBfDkioaY++iVVZomZ4dU6TMe/SzucV6mUAs2VZn/AehBwuZMiNEQDaPuTGn22YK5o+aDw==}
 
   /electron/11.5.0:
     resolution: {integrity: sha512-WjNDd6lGpxyiNjE3LhnFCAk/D9GIj1rU3GSDealVShhkkkPR3Vh4q8ErXGDl1OAO/faomVa10KoFPUN/pLbNxg==}
@@ -14798,7 +14798,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@electron/get': 1.13.0
-      '@types/node': 12.20.28
+      '@types/node': 12.20.33
       extract-zip: 1.7.0
     transitivePeerDependencies:
       - supports-color
@@ -15177,8 +15177,8 @@ packages:
       - supports-color
     dev: false
 
-  /eslint-module-utils/2.7.0:
-    resolution: {integrity: sha512-hqSE88MmHl3ru9SYvDyGrlo0JwROlf9fiEMplEV7j/EAuq9iSlIlyCFbBT6pdULQBSnBYtYKiMLps+hKkyP7Gg==}
+  /eslint-module-utils/2.7.1:
+    resolution: {integrity: sha512-fjoetBXQZq2tSTWZ9yWVl2KuFrTZZH3V+9iD1V1RfpDgxzJR+mPd/KZmMiA8gbPqdBzpNiEHOuT7IYEWxrH0zQ==}
     engines: {node: '>=4'}
     dependencies:
       debug: 3.2.7
@@ -15223,7 +15223,7 @@ packages:
       doctrine: 2.1.0
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.4
-      eslint-module-utils: 2.7.0
+      eslint-module-utils: 2.7.1
       find-up: 2.1.0
       has: 1.0.3
       is-core-module: 2.7.0
@@ -16390,7 +16390,7 @@ packages:
     engines: {node: '>=10.0'}
     dependencies:
       boolean: 3.1.4
-      core-js: 3.18.2
+      core-js: 3.18.3
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
@@ -17074,8 +17074,8 @@ packages:
     resolution: {integrity: sha1-kP/Z+bxhfzS5oS4DcmD1JERfdoQ=}
     dev: false
 
-  /i18next/21.2.6:
-    resolution: {integrity: sha512-xnCodgPo1ASLfdPs2/GS8jQFqQsaWrQKdsqfYgf5juANavIos4kjahgBkrMU8SUCn2kv7TSssfnyVu5LZjBWXw==}
+  /i18next/21.3.1:
+    resolution: {integrity: sha512-VElMm+LoeEuhViVwnDw1gR3snTItK9NJqgok8PZ5WU870MVO1x+5KEbzLO/6GC1zu42Uc3EuGj3nsGMGMNwT0A==}
     dependencies:
       '@babel/runtime': 7.15.4
     dev: true
@@ -17799,8 +17799,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /istanbul-reports/3.0.4:
-    resolution: {integrity: sha512-bFjUnc95rHjdCR63WMHUS7yfJJh8T9IPSWavvR02hhjVwezWALZ5axF9EqjmwZHpXqkzbgAMP8DmAtiyNxrdrQ==}
+  /istanbul-reports/3.0.5:
+    resolution: {integrity: sha512-5+19PlhnGabNWB7kOFnuxT8H3T/iIyQzIbQMxXsURmmvKg86P2sbkrGOT77VnHw0Qr0gc2XzRaRfMZYYbSQCJQ==}
     engines: {node: '>=8'}
     dependencies:
       html-escaper: 2.0.2
@@ -20112,6 +20112,9 @@ packages:
   /node-releases/1.1.77:
     resolution: {integrity: sha512-rB1DUFUNAN4Gn9keO2K1efO35IDK7yKHCdCaIMvFO7yUYmmZYeDjnGKle26G4rwj+LKRQpjyUUvMkPglwGCYNQ==}
 
+  /node-releases/2.0.0:
+    resolution: {integrity: sha512-aA87l0flFYMzCHpTM3DERFSYxc6lv/BltdbRTOMZuxZ0cwZCD3mejE5n9vLhSJCN++/eOqr77G1IO5uXxlQYWA==}
+
   /nodemon/2.0.13:
     resolution: {integrity: sha512-UMXMpsZsv1UXUttCn6gv8eQPhn6DR4BW+txnL3IN5IHqrCwcrT/yWHfL35UsClGXknTH79r5xbu+6J1zNHuSyA==}
     engines: {node: '>=8.10.0'}
@@ -20276,7 +20279,7 @@ packages:
       istanbul-lib-processinfo: 2.0.2
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.1
-      istanbul-reports: 3.0.4
+      istanbul-reports: 3.0.5
       make-dir: 3.1.0
       node-preload: 0.2.1
       p-map: 3.0.0
@@ -20406,7 +20409,7 @@ packages:
     dependencies:
       acorn: 7.4.1
       base64-js: 1.5.1
-      core-js: 3.18.2
+      core-js: 3.18.3
       crypto-js: 4.1.1
       serialize-javascript: 4.0.0
     dev: false
@@ -20851,6 +20854,9 @@ packages:
 
   /picocolors/0.2.1:
     resolution: {integrity: sha512-cMlDqaLEqfSaW8Z7N5Jw+lyIW869EzT73/F5lhtY9cLGoVxSXznfgfXMO0Z5K0o0Q2TkTXq+0KFsdnSe3jDViA==}
+
+  /picocolors/1.0.0:
+    resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
 
   /picomatch/2.3.0:
     resolution: {integrity: sha512-lY1Q/PiJGC2zOv/z391WOTD+Z02bCgsFfvxoXXf6h7kv9o+WmsmzYqrAwY63sNgOxE4xEdq0WyUnXfKeBrSvYw==}
@@ -22023,7 +22029,7 @@ packages:
     resolution: {integrity: sha512-0sF4ny9v/B7s6aoehwze9vJNWcmCemAUYBVasscVr92+UYiEqDXOxfKjXN685mDaMRNF3WdhHQs76oTODMocFA==}
     engines: {node: '>=10'}
     dependencies:
-      core-js: 3.18.2
+      core-js: 3.18.3
       object-assign: 4.1.1
       promise: 8.1.0
       raf: 3.4.1
@@ -22316,7 +22322,7 @@ packages:
   /react-select-event/5.0.0:
     resolution: {integrity: sha512-bESECffhi//x1nlMoRJtwI0nGl5n6OKaVYeIEcPTV8flVPycvUoBGank/1RIoxVc6WtoQ4QbPbU8xMvX0xAiOA==}
     dependencies:
-      '@testing-library/dom': 8.7.2
+      '@testing-library/dom': 8.9.0
     dev: true
 
   /react-select/3.1.0_react-dom@16.14.0+react@16.14.0:
@@ -22586,7 +22592,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.15.4
+      '@babel/runtime': 7.9.0
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
