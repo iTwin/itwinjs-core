@@ -94,7 +94,6 @@ export class ChangedElementsDb implements IDisposable {
   }
 
   /** Processes a range of changesets and adds it to the changed elements cache
-   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param options Options for processing
    */
@@ -123,7 +122,6 @@ export class ChangedElementsDb implements IDisposable {
 
   /** Processes a range of changesets and adds it to the changed elements cache
    * This call will close the IModelDb object as it is required for processing and applying changesets
-   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param options options for processing
    */

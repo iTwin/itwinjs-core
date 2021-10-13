@@ -153,7 +153,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
-    processChanges(requestContext: AccessToken, startChangesetId?: string): Promise<void>;
+    processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
