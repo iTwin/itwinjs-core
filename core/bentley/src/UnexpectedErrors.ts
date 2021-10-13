@@ -30,33 +30,39 @@ export class UnexpectedErrors {
   /** handler for logging exception with [[Logger]] */
   public static readonly errorLog = (e: any) => Logger.logException("unhandled", e);
 
-  private static _listeners: OnUnexpectedError[] = [];
-  private static _handler: OnUnexpectedError = this.errorLog; // default to error logging
+  private static _telemetry: OnUnexpectedError[] = [];
+  private static _handler = this.errorLog; // default to error logging
   private constructor() { } // this is a singleton
 
-  /** Add a "listener" for unexpected errors. This is useful for telemetry, for example.
-   * @returns a method to remove the listener
+  /** Add a "telemetry tracker" for unexpected errors. Useful for tracking/reporting errors without changing handler.
+   * @returns a method to remove the tracker
    */
-  public static addListener(listener: OnUnexpectedError): () => void {
-    this._listeners.push(listener);
-    return () => this._listeners.splice(this._listeners.indexOf(listener), 1);
+  public static addTelemetry(tracker: OnUnexpectedError): () => void {
+    this._telemetry.push(tracker);
+    return () => this._telemetry.splice(this._telemetry.indexOf(tracker), 1);
   }
 
-  /** call this method when an unexpected error happens so the global handler can process it */
-  public static handle(e: any, noListeners?: true): void {
-    this._handler(e);
-    if (!noListeners)
-      this._listeners.forEach((listener) => {
-        try { listener(e); } catch (_) { } // ignore errors from listeners
+  /** call this method when an unexpected error happens so the global handler can process it.
+   * @param error the unexpected error
+   * @param notifyTelemetry if false, don't notify telemetry trackers. Use this for exceptions from third-party code, for example.
+   */
+  public static handle(error: any, notifyTelemetry = true): void {
+    this._handler(error);
+    if (notifyTelemetry)
+      this._telemetry.forEach((telemetry) => {
+        try { telemetry(error); } catch (_) { } // ignore errors from telemetry trackers
       });
   }
 
   /** establish a new global *unexpected error* handler.
    * @param handler the new global handler. You may provide your own function or use one of the static members of this class.
    * The default is [[errorLog]].
+   * @returns the previous handler. Useful to temporarily change the handler.
    */
-  public static setHandler(handler: OnUnexpectedError) {
+  public static setHandler(handler: OnUnexpectedError): OnUnexpectedError {
+    const oldHandler = this._handler;
     this._handler = handler;
+    return oldHandler;
   }
 
 }

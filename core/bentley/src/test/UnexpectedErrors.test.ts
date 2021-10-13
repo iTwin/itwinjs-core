@@ -11,8 +11,8 @@ describe("Unexpected error handling", () => {
 
   it("from BeEvent", () => {
     let unexpectedCalled = 0;
-    let unexpectedListener1 = 0;
-    let unexpectedListener2 = 0;
+    let telemetry1 = 0;
+    let telemetry2 = 0;
     let evListener1 = 0; // before bad listener
     let evListener2 = 0; // after bad listener
     const errMsg = "something bad happened";
@@ -21,13 +21,13 @@ describe("Unexpected error handling", () => {
       expect(e).has.property("message", errMsg);
       unexpectedCalled++;
     });
-    UnexpectedErrors.addListener((e) => {
+    UnexpectedErrors.addTelemetry((e) => {
       expect(e).has.property("message", errMsg);
-      unexpectedListener1++;
+      telemetry1++;
     });
-    const drop = UnexpectedErrors.addListener((e) => {
+    const drop = UnexpectedErrors.addTelemetry((e) => {
       expect(e).has.property("message", errMsg);
-      unexpectedListener2++;
+      telemetry2++;
     });
     const myEvent = new BeEvent<() => void>();
     myEvent.addListener(() => evListener1++);
@@ -36,16 +36,16 @@ describe("Unexpected error handling", () => {
 
     myEvent.raiseEvent();
     expect(unexpectedCalled).equals(1);
-    expect(unexpectedListener1).equals(1);
-    expect(unexpectedListener2).equals(1);
+    expect(telemetry1).equals(1);
+    expect(telemetry2).equals(1);
     expect(evListener1).equals(1);
     expect(evListener2).equals(1);
 
     drop(); // drop unexpected error listener2
     myEvent.raiseEvent();
     expect(unexpectedCalled).equals(2);
-    expect(unexpectedListener1).equals(2);
-    expect(unexpectedListener2).equals(1); // should not be called now
+    expect(telemetry1).equals(2);
+    expect(telemetry2).equals(1); // should not be called now
     expect(evListener1).equals(2);
     expect(evListener2).equals(2);
 
