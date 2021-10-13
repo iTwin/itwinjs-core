@@ -59,6 +59,7 @@
     "@itwin/oidc-signin-tool": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-mobile": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/jsonpath": "^0.2.0",

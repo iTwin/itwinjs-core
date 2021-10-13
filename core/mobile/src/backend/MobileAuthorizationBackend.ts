@@ -8,22 +8,22 @@
 
 import { AccessToken, assert, AuthStatus } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
    * @internal
    */
-export class MobileAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
+export class MobileAuthorizationBackend implements AuthorizationClient {
   protected _accessToken?: AccessToken;
   public config?: NativeAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public issuerUrl?: string;
   public static defaultRedirectUri = "imodeljs://app/signin-callback";
   public get redirectUri() { return this.config?.redirectUri ?? MobileAuthorizationBackend.defaultRedirectUri; }
+  protected _baseUrl = "https://ims.bentley.com";
+  protected _url?: string;
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
-    super();
     this.config = config;
   }
 
@@ -105,5 +105,30 @@ export class MobileAuthorizationBackend extends ImsAuthorizationClient implement
         }
       });
     });
+  }
+  /**
+   * Gets the URL of the service. Uses the default URL provided by client implementations.
+   * If defined, the value of `IMJS_URL_PREFIX` will be used as a prefix to all urls provided
+   * by the client implementations.
+   *
+   * Note that for consistency sake, the URL is stripped of any trailing "/".
+   * @returns URL for the service
+   */
+  public getUrl(): string {
+    if (this._url)
+      return this._url;
+
+    if (!this._baseUrl) {
+      throw new Error("The client is missing a default url.");
+    }
+
+    const prefix = process.env.IMJS_URL_PREFIX;
+    const authority = new URL(this.config?.issuerUrl ?? this._baseUrl);
+
+    if (prefix && !this.config?.issuerUrl)
+      authority.hostname = prefix + authority.hostname;
+    this._url = authority.href.replace(/\/$/, "");
+
+    return this._url;
   }
 }

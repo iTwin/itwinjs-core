@@ -7,7 +7,6 @@ export * from "./ITwinClientLoggerCategory";
 export * from "./FileHandler";
 export * from "./Request";
 export * from "./Token";
-export * from "./ImsAuthorizationClient";
 
 /** @docs-package-description
  * The itwin-client package allows sending requests to various iTwin services.

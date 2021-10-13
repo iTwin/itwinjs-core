@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as jsonpath from "jsonpath";
 import { AccessToken, Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
+import { MobileAuthorizationBackend } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { DefaultSupportedTypes, RealityData, RealityDataAccessClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
@@ -20,7 +20,7 @@ Logger.setLevel(LOG_CATEGORY, LogLevel.Info);
 
 describe("RealityServicesClient Normal (#integration)", () => {
   const realityDataServiceClient: RealityDataAccessClient = new RealityDataAccessClient();
-  const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
+  const imsClient: MobileAuthorizationBackend = new MobileAuthorizationBackend();
 
   let iTwinId: GuidString;
 
@@ -636,7 +636,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
 describe("RealityServicesClient Admin (#integration)", () => {
   const realityDataServiceClient: RealityDataAccessClient = new RealityDataAccessClient();
-  const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
+  const imsClient: MobileAuthorizationBackend = new MobileAuthorizationBackend();
   let accessToken: AccessToken;
 
   before(async () => {

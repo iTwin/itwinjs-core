@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, assert, BeEvent } from "@itwin/core-bentley";
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks } from "openid-client";
 import * as os from "os";
@@ -26,6 +25,8 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   private readonly _user: TestUserCredentials;
   private _accessToken: AccessToken = "";
   private _expiresAt?: Date | undefined = undefined;
+  private _url?: string;
+  private _baseUrl = "https://ims.bentley.com";
 
   /**
    * Constructor
@@ -38,8 +39,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   }
 
   private async initialize() {
-    const imsClient = new ImsAuthorizationClient();
-    this._imsUrl = await imsClient.getUrl();
+    this._imsUrl = this.getUrl();
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
@@ -410,6 +410,24 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
 
     if (undefined !== errMsgText && null !== errMsgText)
       throw new Error(errMsgText);
+  }
+
+  public getUrl(): string {
+    if (this._url)
+      return this._url;
+
+    if (!this._baseUrl) {
+      throw new Error("The client is missing a default url.");
+    }
+
+    const prefix = process.env.IMJS_URL_PREFIX;
+    const authority = new URL(this._baseUrl);
+
+    if (prefix)
+      authority.hostname = prefix + authority.hostname;
+    this._url = authority.href.replace(/\/$/, "");
+
+    return this._url;
   }
 }
 
