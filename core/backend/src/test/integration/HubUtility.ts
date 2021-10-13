@@ -111,7 +111,7 @@ export class HubUtility {
   /** Download an iModel's seed file and changesets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelById(_accessToken: AccessToken, _iTwinId: string, _iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelById(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
     // Recreate the download folder if necessary
     if (reDownload) {
       if (IModelJsFs.existsSync(downloadDir))
@@ -119,32 +119,42 @@ export class HubUtility {
       IModelJsFs.recursiveMkDirSync(downloadDir);
     }
 
-    // const test = await IModelHost.hubAccess.downloadV1Checkpoint({
-    //   localFile: "",
-    //   checkpoint: {
-    //     iTwinId,
-    //     iModelId,
-    //     changeset: {
-    //       id: "0",
-    //     },
-    //   },
-    // });
+    const test = await IModelHost.hubAccess.downloadV1Checkpoint({
+      localFile: "",
+      checkpoint: {
+        iTwinId,
+        iModelId,
+        changeset: {
+          id: "0",
+        },
+      },
+    });
 
-    // // Download the seed file
-    // const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
-    // if (!IModelJsFs.existsSync(seedPathname)) {
-    //   const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-    //   await IModelHubBackend.iModelClient.iModels.download(accessToken, iModelId, seedPathname);
-    //   perfLogger.dispose();
-    // }
+    // Download the seed file
+    const seedPathname = path.join(downloadDir, "seed", iModelId.concat(".bim"));
+    if (!IModelJsFs.existsSync(seedPathname)) {
+      const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
+      await IModelHost.hubAccess.downloadV1Checkpoint({
+        localFile: seedPathname,
+        checkpoint: {
+          iTwinId,
+          iModelId,
+          changeset: {
+            id: "0",
+            index: 0,
+          }
+        }
+      });
+      perfLogger.dispose();
+    }
 
-    // // Download the change sets
-    // const changeSetDir = path.join(downloadDir, "changeSets//");
-    // const changeSets = await HubUtility.downloadChangesets(accessToken, changeSetDir, iModelId);
+    // Download the change sets
+    const changesetDir = path.join(downloadDir, "changesets");
+    const changesets = await HubUtility.downloadChangesets(accessToken, changesetDir, iModelId);
 
-    // const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
-    // const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
-    // IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
+    const changesetsJsonStr = JSON.stringify(changesets, undefined, 4);
+    const changesetsJsonPathname = path.join(downloadDir, "changesets.json");
+    IModelJsFs.writeFileSync(changesetsJsonPathname, changesetsJsonStr);
   }
 
   /** Download an IModel's seed files and change sets from the Hub.

@@ -63,6 +63,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
+    "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/itwin-registry-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",

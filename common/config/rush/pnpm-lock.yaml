@@ -337,6 +337,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
+      '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-native': 3.0.14
       '@bentley/itwin-client': workspace:*
       '@bentley/itwin-registry-client': workspace:*
@@ -403,6 +404,7 @@ importers:
       semver: 5.7.1
       ws: 7.5.5
     devDependencies:
+      '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/telemetry-client': link:../../clients/telemetry

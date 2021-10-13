@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",

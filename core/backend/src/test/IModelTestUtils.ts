@@ -9,6 +9,7 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import {
   AccessToken, BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
@@ -475,6 +476,7 @@ export class IModelTestUtils {
     loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
     const cfg = config ? config : new IModelHostConfiguration();
     cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    cfg.hubAccess = IModelHubBackend;
     return IModelHost.startup(cfg);
   }
 

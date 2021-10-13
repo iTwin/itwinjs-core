@@ -8,6 +8,7 @@ import * as path from "path";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { IModelHost, IModelJsFs } from "../../core-backend";
+import { IModelHostConfiguration } from "../../IModelHost";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
