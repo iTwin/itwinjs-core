@@ -77,7 +77,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   describe("saveProperties", () => {
 
     it("saves favorite properties", async () => {
-      settingsAdminMock.setup(async (x) => x.save(moq.It.isAny())).returns(async () => { });
+      settingsAdminMock.setup(async (x) => x.save(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoriteProperties" }))).returns(async () => { });
 
       const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
       await storage.saveProperties(properties);

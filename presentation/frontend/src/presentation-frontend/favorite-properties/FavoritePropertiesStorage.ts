@@ -123,7 +123,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       accessToken,
       iTwinId,
       iModelId: imodelId,
-      key: `${DEPRECATED_PROPERTIES_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
       content: Array.from(properties),
     });
   }
