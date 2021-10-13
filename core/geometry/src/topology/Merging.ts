@@ -120,16 +120,35 @@ export class HalfEdgeGraphOps {
   }
 
   /**
-   * @return whether the face sector represented by the HalfEdge would become convex after the HalfEdge's removal.
-   * @param base the HalfEdge to query
+   * @description Compute convexity of a sector of a super-face.
+   * @param base node whose edge is to be tested for removal
+   * @param ignore edges with this mask (on either side) are ignored for the purposes of computing convexity
+   * @param barrier edges with this mask (on either side) will not be removed
+   * @return whether removing the edge at base would create a convex sector in the super-face
    */
-  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge): boolean {
-    return HalfEdge.isSectorConvex(base.facePredecessor, base, base.vertexPredecessor.faceSuccessor);
+  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge, ignore: HalfEdgeMask, barrier: HalfEdgeMask): boolean {
+    let vs = base;
+    do { // loop ccw around vertex looking for a super-face predecessor
+      if (vs.isMaskSet(barrier) || vs.edgeMate.isMaskSet(barrier))
+        break;
+      vs = vs.vertexSuccessor;
+    } while (vs !== base && vs.isMaskSet(ignore));
+    if (vs === base)
+      return false;
+    let vp = base;
+    do { // loop cw around vertex looking for a super-face successor
+      if (vp.isMaskSet(barrier) || vp.edgeMate.isMaskSet(barrier))
+        break;
+      vp = vp.vertexPredecessor;
+    } while (vp !== base && vp.isMaskSet(ignore));
+    if (vp === base)
+      return false;
+    return HalfEdge.isSectorConvex(vs.edgeMate, base, vp.faceSuccessor);
   }
 
   /**
    * Mask edges between faces if the union of the faces is convex.
-   * @remarks Best results when input faces are convex.
+   * @remarks Uses a greedy algorithm with no regard to quality of resulting convex faces. Best results when input faces are convex.
    * @param graph graph to examine and mark
    * @param mark the mask used to mark (both sides of) removable edges
    * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
@@ -142,21 +161,21 @@ export class HalfEdgeGraphOps {
     let numMarked = 0;
     for (const node of graph.allHalfEdges) {
       if (!node.isMaskSet(visit)) {
-        node.setMaskAroundEdge(visit);
         if (!node.isMaskSet(barrier) && !node.edgeMate.isMaskSet(barrier)) {
-          if (this.isSectorConvexAfterEdgeRemoval(node) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate)) {
+          if (this.isSectorConvexAfterEdgeRemoval(node, mark, barrier) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier)) {
             node.setMaskAroundEdge(mark);
             ++numMarked;
           }
         }
       }
+    node.setMaskAroundEdge(visit);
     }
     return numMarked;
   }
 
   /**
    * Collect edges between faces if the union of the faces is convex.
-   * @remarks Best results when input faces are convex.
+   * @remarks Uses a greedy algorithm with no regard to quality of resulting convex faces. Best results when input faces are convex.
    * @param graph graph to examine
    * @param barrier edges with this mask (on either side) will not be collected. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return one HalfEdge per removable edge
@@ -180,7 +199,7 @@ export class HalfEdgeGraphOps {
 
   /**
    * Remove edges between faces if the union of the faces is convex.
-   * @remarks Best results when input faces are convex.
+   * @remarks Uses a greedy algorithm with no regard to quality of resulting convex faces. Best results when input faces are convex.
    * @param graph graph to modify
    * @param barrier edges with this mask (on either side) will not be removed. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return number of edges deleted

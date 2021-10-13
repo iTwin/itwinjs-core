@@ -728,7 +728,7 @@ export class HalfEdge {
   public isFaceConvex(): boolean {
     let node: HalfEdge = this;
     do {
-      if (!node.isSectorConvex)
+      if (!node.isSectorConvex())
         return false;
       node = node.faceSuccessor;
     } while (node !== this);
