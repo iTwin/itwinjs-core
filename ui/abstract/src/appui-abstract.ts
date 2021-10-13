@@ -6,7 +6,6 @@
 export * from "./appui-abstract/UiAbstract";
 export * from "./appui-abstract/UiAdmin";
 export * from "./appui-abstract/UiItemsManager";
-export * from "./appui-abstract/UiItemsArbiter";
 
 export * from "./appui-abstract/backstage/BackstageItem";
 export * from "./appui-abstract/backstage/BackstageItemsManager";

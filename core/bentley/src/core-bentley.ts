@@ -29,6 +29,7 @@ export * from "./ProcessDetector";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";
+export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 
 /** @packageDocumentation

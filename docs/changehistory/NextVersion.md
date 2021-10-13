@@ -804,6 +804,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | *eliminated* |
+| `UiItemsArbiter`              | *eliminated* |
 
 ### @itwin/core-react
 
@@ -1372,6 +1373,7 @@ The `ninezone-test-app` was used to test and demonstrate the now deprecated "nin
 In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an optional object that implements [Localization]($common). The [ITwinLocalization]($i18n) class supplies the default implementation, and may be customized with [LocalizationOptions]($i18n) in the constructor and supplied via [IModelAppOptions.localization]($frontend).
 
 The previous way to provide localization options:
+
 ```ts
 const i18nOptions: I18NOptions = {
   urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
@@ -1379,7 +1381,9 @@ const i18nOptions: I18NOptions = {
 
 await IModelApp.startup({ i18n: i18nOptions });
 ```
+
 Now becomes:
+
 ```ts
 const localizationOptions: LocalizationOptions = {
   urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
