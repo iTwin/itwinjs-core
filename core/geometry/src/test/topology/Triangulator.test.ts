@@ -13,6 +13,7 @@ import { Point3dArray, PolyfaceQuery, PolylineOps} from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range3d } from "../../geometry3d/Range";
@@ -1001,18 +1002,18 @@ const _messyShape = [
   /**
    * @return number of removed edges
    */
-  function tryExpandConvex(ck: Checker, allGeometry: GeometryQuery[], graph: HalfEdgeGraph, method: number, x0: number, y0: number): number {
+  function tryExpandConvex(ck: Checker, allGeometry: GeometryQuery[], graph: HalfEdgeGraph, method: number, position: Point2d): number {
     ck.testTrue(HalfEdgeGraphOps.isEveryFaceConvex(graph), "graph has non-convex face on input");
     const polyface = PolyfaceBuilder.graphToPolyface(graph);
     const range = polyface.range();
-    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, position.x, position.y);
     let numRemovedEdges = 0;
     let succeeded = false;
     switch (method) {
       case 1: { // mask, yank and delete edges
         numRemovedEdges = HalfEdgeGraphOps.expandConvexFaces(graph);
         const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
-        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0, y0 + range.yLength());
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, position.x, position.y + range.yLength());
         succeeded = ck.testLT(0, numRemovedEdges, "expandConvexFaces did not remove any edges.");
         break;
       }
@@ -1022,7 +1023,7 @@ const _messyShape = [
           for (const node of removableEdges) node.isolateEdge();
           numRemovedEdges = graph.deleteIsolatedEdges() / 2;
           const polyface2 = PolyfaceBuilder.graphToPolyface(graph);
-          GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0, y0 + range.yLength());
+          GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, position.x, position.y + range.yLength());
           ck.testExactNumber(numRemovedEdges, removableEdges.length, "deleted unexpected number of removable edges.");
         }
         break;
@@ -1033,28 +1034,47 @@ const _messyShape = [
     return numRemovedEdges;
   }
 
+  /**
+   * @return whether tests succeeded
+   * @remarks Caller should precede with Triangulator.clearAndEnableDebugGraphCapture(true);
+   */
+  function tryExpandConvex2(ck: Checker, allGeometry: GeometryQuery[], graph1: HalfEdgeGraph | undefined, graph2: HalfEdgeGraph | undefined, position: Point2d): boolean {
+    if (ck.testDefined(graph1, "Triangulation failed") && graph1) {
+      const range = HalfEdgeGraphOps.graphRange(graph1);
+      const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, position);
+      position.x += range.xLength();
+      if (graph2) {
+        const numRemovedEdges2 = tryExpandConvex(ck, allGeometry, graph2, 2, position);
+        ck.testExactNumber(numRemovedEdges1, numRemovedEdges2, "expandConvexFaces methods removed different numbers of edges.");
+        position.x += range.xLength();
+      }
+      for (const node of graph1.allHalfEdges) {
+        if (!node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE)) {
+          node.isolateEdge();
+          break;
+        }
+      }
+      ck.testFalse(HalfEdgeGraphOps.isEveryFaceConvex(graph1), "isFaceConvex failed to detect non-convex face.");
+      return true;
+    }
+    const debugGraph = Triangulator.claimDebugGraph();
+    if (debugGraph) {
+      const debugPolyface = PolyfaceBuilder.graphToPolyface(debugGraph);
+      const range = debugPolyface.range();
+      GeometryCoreTestIO.captureGeometry(allGeometry, debugPolyface, position.x, position.y);
+      position.x += range.xLength();
+    }
+    return false;
+  }
+
   it("ExpandConvexFaces-DartInTriangle", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    let x0 = 0;
-    const y0 = 0;
+    const position = Point2d.createZero();
     Triangulator.clearAndEnableDebugGraphCapture(true);
     const graph1 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
-    if (ck.testDefined(graph1, "DartInTriangle triangulation failed") && graph1) {
-      const range = HalfEdgeGraphOps.graphRange(graph1);
-      const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
-      const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, x0, y0);
-      x0 += range.xLength();
-      const numRemovedEdges2 = tryExpandConvex(ck, allGeometry, graph2!, 2, x0, y0);
-      ck.testExactNumber(numRemovedEdges1, numRemovedEdges2, "expandConvexFaces methods removed different numbers of edges.");
-    } else {
-      const debugGraph = Triangulator.claimDebugGraph();
-      if (debugGraph) {
-        const debugPolyface = PolyfaceBuilder.graphToPolyface(debugGraph);
-        const range = debugPolyface.range();
-        GeometryCoreTestIO.captureGeometry(allGeometry, debugPolyface, x0 += range.xLength(), y0);
-      }
-    }
+    const graph2 = Triangulator.createTriangulatedGraphFromLoops([dartInTriangleOuter, dartInTriangleInner]);
+    ck.testTrue(tryExpandConvex2(ck, allGeometry, graph1, graph2, position), "tryExpandConvex2 failed on DartInTriangle.");
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-DartInTriangle");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1062,26 +1082,12 @@ const _messyShape = [
   it("ExpandConvexFaces-MessyPolygon", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    let x0 = 0;
-    const y0 = 0;
+    const position = Point2d.createZero();
     const points = PolylineOps.compressDanglers(Point3dArray.cloneDeepXYZPoint3dArrays(messyShapePointsJson()), true);
     Triangulator.clearAndEnableDebugGraphCapture(true);
     const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-    if (ck.testDefined(graph1, "MessyPolygon triangulation failed") && graph1) {
-      const range = HalfEdgeGraphOps.graphRange(graph1);
-      const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-      const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, x0, y0);
-      x0 += range.xLength();
-      const numRemovedEdges2 = tryExpandConvex(ck, allGeometry, graph2!, 2, x0, y0);
-      ck.testExactNumber(numRemovedEdges1, numRemovedEdges2, "expandConvexFaces methods removed different numbers of edges.");
-    } else {
-      const debugGraph = Triangulator.claimDebugGraph();
-      if (debugGraph) {
-        const debugPolyface = PolyfaceBuilder.graphToPolyface(debugGraph);
-        const range = debugPolyface.range();
-        GeometryCoreTestIO.captureGeometry(allGeometry, debugPolyface, x0 += range.xLength(), y0);
-      }
-    }
+    const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+    ck.testTrue(tryExpandConvex2(ck, allGeometry, graph1, graph2, position), "tryExpandConvex2 failed on MessyPolygon.");
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ExpandConvexFaces-MessyPolygon");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -1089,8 +1095,7 @@ const _messyShape = [
   it("ExpandConvexFaces-Fractals", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    let x0 = 0;
-    const y0 = 0;
+    const position = Point2d.createZero();
     for (const numRecursion of [1, 2, 3]) {
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
         for (const generatorFunction of [
@@ -1107,21 +1112,9 @@ const _messyShape = [
             range = Range3d.createArray(points);
             Triangulator.clearAndEnableDebugGraphCapture(true);
             const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-            if (ck.testDefined(graph1, "Fractals triangulation failed") && graph1) {
-              const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
-              x0 += range.xLength() / 2;
-              const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, x0, y0);
-              x0 += range.xLength();
-              const numRemovedEdges2 = tryExpandConvex(ck, allGeometry, graph2!, 2, x0, y0);
-              x0 += range.xLength();
-              ck.testExactNumber(numRemovedEdges1, numRemovedEdges2, "expandConvexFaces methods removed different numbers of edges.");
-            } else {
-              const debugGraph = Triangulator.claimDebugGraph();
-              if (debugGraph) {
-                const debugPolyface = PolyfaceBuilder.graphToPolyface(debugGraph);
-                GeometryCoreTestIO.captureGeometry(allGeometry, debugPolyface, x0 += range.xLength(), y0);
-              }
-            }
+            const graph2 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+            position.x += range.xLength() / 2;
+            ck.testTrue(tryExpandConvex2(ck, allGeometry, graph1, graph2, position), "tryExpandConvex2 failed on Fractals.");
           }
         }
       }

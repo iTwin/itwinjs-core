@@ -148,7 +148,8 @@ export class HalfEdgeGraphOps {
 
   /**
    * Mask edges between faces if the union of the faces is convex.
-   * @remarks Uses a greedy algorithm with no regard to quality of resulting convex faces. Best results when input faces are convex.
+   * Uses a greedy algorithm with no regard to quality of resulting convex faces.
+   * Best results when input faces are convex.
    * @param graph graph to examine and mark
    * @param mark the mask used to mark (both sides of) removable edges
    * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
@@ -175,7 +176,8 @@ export class HalfEdgeGraphOps {
 
   /**
    * Collect edges between faces if the union of the faces is convex.
-   * @remarks Uses a greedy algorithm with no regard to quality of resulting convex faces. Best results when input faces are convex.
+   * Uses a greedy algorithm with no regard to quality of resulting convex faces.
+   * Best results when input faces are convex.
    * @param graph graph to examine
    * @param barrier edges with this mask (on either side) will not be collected. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return one HalfEdge per removable edge
@@ -199,7 +201,8 @@ export class HalfEdgeGraphOps {
 
   /**
    * Remove edges between faces if the union of the faces is convex.
-   * @remarks Uses a greedy algorithm with no regard to quality of resulting convex faces. Best results when input faces are convex.
+   * Uses a greedy algorithm with no regard to quality of resulting convex faces.
+   * Best results when input faces are convex.
    * @param graph graph to modify
    * @param barrier edges with this mask (on either side) will not be removed. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return number of edges deleted
