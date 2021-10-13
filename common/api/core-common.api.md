@@ -28,7 +28,6 @@ import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
-import { GuidString as GuidString_2 } from '@itwin/core-bentley/src/Id';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
@@ -7844,7 +7843,7 @@ export class ServerTimeoutError extends ServerError {
 export interface SessionProps {
     readonly applicationId: string;
     readonly applicationVersion: string;
-    readonly sessionId: GuidString_2;
+    readonly sessionId: GuidString;
 }
 
 // @beta
