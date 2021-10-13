@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { UnexpectedErrors } from "@itwin/core-bentley";
 import { AnalysisStyle } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
@@ -57,8 +58,10 @@ describe("Viewport", () => {
     });
 
     it("prohibits assignment from within event callback", () => {
+      const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
       viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
       expect(() => viewport.flashedId = "0x12345").to.throw(Error, "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+      UnexpectedErrors.setHandler(oldHandler);
     });
   });
 

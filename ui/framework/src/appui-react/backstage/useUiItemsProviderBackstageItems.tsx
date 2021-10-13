@@ -8,7 +8,7 @@
  */
 
 import * as React from "react";
-import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager, UiItemsArbiter, UiItemsManager } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager, UiItemsManager } from "@itwin/appui-abstract";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
 
 // cspell:ignore setxxx
@@ -28,8 +28,7 @@ export const useUiItemsProviderBackstageItems = (manager: BackstageItemsManager)
     if (providersRef.current !== uiProviders) {
       providersRef.current = uiProviders;
       const backstageItems = UiItemsManager.getBackstageItems();
-      const updatedBackstageItems = UiItemsArbiter.updateBackstageItems(backstageItems);
-      manager.loadItems(updatedBackstageItems);
+      manager.loadItems(backstageItems);
       setItems(manager.items);
     }
   }, [manager, uiItemProviderIds]);
