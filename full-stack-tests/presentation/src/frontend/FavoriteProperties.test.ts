@@ -263,7 +263,7 @@ describe("Favorite properties", () => {
 
     function setupFavoritesStorageWithSettingsService() {
       Presentation.setFavoritePropertiesManager(new FavoritePropertiesManager({
-        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
       }));
     }
 
