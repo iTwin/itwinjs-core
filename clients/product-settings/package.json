@@ -18,7 +18,7 @@
     "extract-api": "betools extract-api --entry=product-settings-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/product-settings-client/file.json --tsIndexFile=product-settings-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "",
+    "test": "betools test --offline=\"mock\" --grep \"#integration\" --invert",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
     "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
     "test:integration:electron": "certa -r electron --grep \"#integration\"",
