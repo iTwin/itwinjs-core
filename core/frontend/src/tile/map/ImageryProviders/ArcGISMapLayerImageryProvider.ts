@@ -112,21 +112,17 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       return;
     }
 
-    void (async () => {
-      try {
-        if (this._tileMap) {
-          const availability = await this._tileMap.getChildrenAvailability(childIds);
-          const availableChildIds = new Array<QuadId>();
-          for (let i = 0; i < availability.length; i++)
-            if (availability[i])
-              availableChildIds.push(childIds[i]);
+    if (this._tileMap) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this._tileMap.getChildrenAvailability(childIds).then((availability) => {
+        const availableChildIds = new Array<QuadId>();
+        for (let i = 0; i < availability.length; i++)
+          if (availability[i])
+            availableChildIds.push(childIds[i]);
 
-          resolveChildren (availableChildIds);
-        }
-      } catch {
-      }
-    })();
-
+        resolveChildren (availableChildIds);
+      });
+    }
   }
 
   private isEpsg3857Compatible(tileInfo: any) {
