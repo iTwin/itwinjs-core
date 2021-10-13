@@ -17,6 +17,9 @@
     "**/generated-docs": true,
     "**/package-deps.json": true,
     "**/node_modules": true,
+    "**/test-apps/**/build": true,
+    "**/out": true,
+    "**/lib": true,
     "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
@@ -110,7 +113,6 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.markdownlint": true, // first run the markdown linter
     "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
-    //"source.fixAll.eslint": true // then run ESLint auto-fix
+    "source.fixAll.eslint": true // then run ESLint auto-fix
   },
-  "git.ignoreLimitWarning": true
 }
