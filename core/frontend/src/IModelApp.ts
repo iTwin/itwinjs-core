@@ -172,7 +172,7 @@ export class IModelApp {
   private static _notifications: NotificationManager;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
-  private static _userPreferences: UserPreferencesAccess;
+  private static _userPreferences?: UserPreferencesAccess;
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
@@ -230,7 +230,7 @@ export class IModelApp {
   /** The [[UserPreferencesAccess]] for this session.
    * @beta
    */
-  public static get userPreferences(): UserPreferencesAccess { return this._userPreferences; }
+  public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
