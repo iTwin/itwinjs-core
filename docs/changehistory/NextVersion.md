@@ -804,6 +804,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | *eliminated* |
+| `UiItemsArbiter`              | *eliminated* |
 
 ### @itwin/core-react
 
@@ -1367,9 +1368,9 @@ The `ninezone-test-app` was used to test and demonstrate the now deprecated "nin
 
 ## Localization Changes
 
-In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an object that implements [Localization]($common) via [IModelAppOptions.localization]($frontend). If none is supplied, an [EmptyLocalization]($common) will be used and strings will not be localized.
+### IModelApp.startup
 
-The [ITwinLocalization]($i18n) class supplies the default implementation of [Localization]($common), and may be customized via [LocalizationOptions]($i18n) in the constructor.
+In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an optional object that implements [Localization]($common). The [ITwinLocalization]($i18n) class supplies the default implementation, and may be customized with [LocalizationOptions]($i18n) in the constructor and supplied via [IModelAppOptions.localization]($frontend).
 
 The previous way to provide localization options:
 
@@ -1390,6 +1391,10 @@ const localizationOptions: LocalizationOptions = {
 
 await IModelApp.startup({ localization: new ITwinLocalization(localizationOptions) });
 ```
+
+### Registering Tools
+
+In previous versions, the [Tool.register]($frontend) method took an optional argument to supply the localization object. Since it always existed on `IModelApp`, that argument served no purpose and is now removed. If you previously passed it, simply remove it.
 
 ## Improve/Enhance particle systems
 

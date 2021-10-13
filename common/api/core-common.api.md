@@ -2706,7 +2706,7 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getEnglishString(_namespace: string, key: string | string[]): string;
     // (undocumented)
-    getLanguageList(): string[];
+    getLanguageList(): readonly string[];
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
@@ -2715,6 +2715,8 @@ export class EmptyLocalization implements Localization {
     getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
     // (undocumented)
     getNamespacePromise(): Promise<void> | undefined;
+    // (undocumented)
+    initialize(): Promise<void>;
     // (undocumented)
     registerNamespace(): Promise<void>;
     // (undocumented)
@@ -5031,16 +5033,16 @@ export type LocalFileName = string;
 
 // @public
 export interface Localization {
-    // @internal
     changeLanguage(language: string): Promise<void>;
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    getLanguageList(): string[];
+    getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
-    registerNamespace(namespace: string, setDefault?: true): Promise<void>;
+    initialize(namespaces: string[]): Promise<void>;
+    registerNamespace(namespace: string): Promise<void>;
     // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
