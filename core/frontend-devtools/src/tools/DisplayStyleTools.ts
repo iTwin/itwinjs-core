@@ -8,11 +8,12 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
+import {CompressedId64Set} from "../../../bentley/lib/CompressedId64Set";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -36,7 +37,7 @@ export abstract class DisplayStyleTool extends Tool {
   // Return true if the display style was modified - we will invalidate the viewport's render plan.
   protected abstract execute(vp: Viewport): boolean;
   // Return false if failed to parse.
-  protected abstract parse(args: string[]): boolean;
+  protected abstract parse(args: string[], vp: Viewport): boolean;
 
   public override run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
@@ -48,7 +49,7 @@ export abstract class DisplayStyleTool extends Tool {
 
   public override parseAndRun(...args: string[]): boolean {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args, vp))
       return this.run();
     else
       return false;
@@ -256,5 +257,87 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
       vp.displayStyle.overrideSubCategory(id, ovr);
 
     return true;
+  }
+}
+
+export class QueryScheduleScriptTool extends DisplayStyleTool {
+  private _sourceId?: string;
+  private _action: "copy" | "break" = "copy";
+  private _includeElementIds = false;
+  private _countElementIds = false;
+  private _expandElementIds = false;
+
+  public static override toolId = "QueryScheduleScript";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 3; }
+
+  public parse(input: string[], vp: Viewport): boolean {
+    const args = parseArgs(input);
+    this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
+    if (!this._sourceId)
+      return false;
+
+    const action = args.get("a") ?? "";
+    this._action = action.length > 0 && "b" === action[0].toLowerCase() ? "break" : "copy";
+
+    this._includeElementIds = this._countElementIds = this._expandElementIds = false;
+    const ids = args.get("e");
+    if (ids && ids.length > 0) {
+      switch (ids[0].toLowerCase()) {
+        case "i":
+          this._includeElementIds = true;
+          break;
+        case "c":
+          this._includeElementIds = this._countElementIds = true;
+          break;
+        case "e":
+          this._includeElementIds = this._expandElementIds = true;
+          break;
+        }
+    }
+
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    if (!this._sourceId || !this._action)
+      return false;
+
+    this._execute(vp);
+    return true;
+  }
+
+  private async _execute(vp: Viewport): Promise<void> {
+    const opts: ElementLoadOptions = {
+      displayStyle: { omitScheduleScriptElementIds: !this._includeElementIds },
+      renderTimeline: { omitScriptElementIds: !this._includeElementIds },
+    };
+
+    let script;
+    const props = await vp.iModel.elements.loadProps(this._sourceId!, opts) as any;
+    if (props.script)
+      script = JSON.parse((props.script as RenderTimelineProps).script) as RenderSchedule.ScriptProps;
+    else if (props.jsonProperties?.styles?.scheduleScript)
+      script = props.jsonProperties.styles.scheduleScript as RenderSchedule.ScriptProps;
+
+    if (!script)
+      return;
+
+    if (this._countElementIds || this._expandElementIds) {
+      for (const model of script) {
+        for (const elem of model.elementTimelines) {
+          const elemIds = typeof elem.elementIds === "string" ? CompressedId64Set.decompressArray(elem.elementIds) : elem.elementIds;
+          if (this._countElementIds)
+            elem.elementIds = elemIds.length as any;
+          else
+            elem.elementIds = elemIds;
+        }
+      }
+    }
+
+    if (this._action === "break")
+      debugger;
+    else
+      copyStringToClipboard(JSON.stringify(script, null, 2));
   }
 }

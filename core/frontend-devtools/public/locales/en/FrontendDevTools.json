@@ -441,6 +441,9 @@
       "Prompts": {
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }
+    },
+    "QueryScheduleScript": {
+      "keyin": "fdt query schedule script"
     }
   }
 }
