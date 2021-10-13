@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
@@ -864,4 +864,50 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     }
   });
 
+});
+class TestConnectSettingsClient extends ConnectSettingsClient {
+  public constructor() {
+    super("1001");
+    this.baseUrl = "https://api.bentley.com/test-connect-settings";
+  }
+}
+
+describe("Getting url from ConnectSettingsClient", () => {
+  let client: TestConnectSettingsClient;
+
+  beforeEach(() => {
+    client = new TestConnectSettingsClient();
+  });
+
+  it("should not apply prefix without config entry", async () => {
+    const requestContext = new ClientRequestContext();
+    const url = await client.getUrl(requestContext);
+    chai.expect(url).to.equal("https://api.bentley.com/test-connect-settings/v1.0");
+  });
+
+  it("should apply prefix with config entry", async () => {
+    Config.App.set("imjs_url_prefix", "test-"); // eslint-disable-line deprecation/deprecation
+    const requestContext = new ClientRequestContext();
+    const url = await client.getUrl(requestContext);
+    chai.expect(url).to.equal("https://test-api.bentley.com/test-connect-settings/v1.0");
+    Config.App.remove("imjs_url_prefix"); // eslint-disable-line deprecation/deprecation
+  });
+
+  it("should consider api version exclusion in subsequent calls to getUrl", async () => {
+    const requestContext = new ClientRequestContext();
+    const urlWithVersion = await client.getUrl(requestContext);
+    chai.expect(urlWithVersion).to.equal("https://api.bentley.com/test-connect-settings/v1.0");
+    const urlWithoutVersion = await client.getUrl(requestContext, true);
+    chai.expect(urlWithoutVersion).to.equal("https://api.bentley.com/test-connect-settings");
+  });
+
+  it("should consider api version exclusion in subsequent calls to getUrl (reverse direction)", async () => {
+    const requestContext = new ClientRequestContext();
+    const urlWithoutVersion = await client.getUrl(requestContext, true);
+    chai.expect(urlWithoutVersion).to.equal("https://api.bentley.com/test-connect-settings");
+    const urlWithVersion = await client.getUrl(requestContext);
+    chai.expect(urlWithVersion).to.equal("https://api.bentley.com/test-connect-settings/v1.0");
+    const anotherUrlWithoutVerson = await client.getUrl(requestContext, true);
+    chai.expect(anotherUrlWithoutVerson).to.equal("https://api.bentley.com/test-connect-settings");
+  });
 });

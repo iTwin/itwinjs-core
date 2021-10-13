@@ -49,9 +49,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     static readonly searchKey: string;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-    // (undocumented)
-    protected _url?: string;
-}
+    }
 
 // @beta
 export interface SettingsAdmin {
