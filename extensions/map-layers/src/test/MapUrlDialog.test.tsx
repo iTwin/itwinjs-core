@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { EmptyLocalization, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender,
+  NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
@@ -38,7 +39,7 @@ describe("MapUrlDialog", () => {
   before(async () => {
     await TestUtils.initialize();
 
-    await MockRender.App.startup({});
+    await MockRender.App.startup({localization: new EmptyLocalization()});
   });
 
   after(async () => {

@@ -32,7 +32,7 @@ export class GenericTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return this.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   public async process(_elementId: string, _point?: Point3d) {
