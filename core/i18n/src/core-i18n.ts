@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./Localization";
+export * from "./ITwinLocalization";
 
 /** @docs-package-description
  * The core-i18n package contains classes related to internationalization and localization.
