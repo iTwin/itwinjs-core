@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import {
-  CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsArbiter, UiItemsManager,
+  CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsManager,
 } from "@itwin/appui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
@@ -38,8 +38,7 @@ export const useUiItemsProviderStatusBarItems = (manager: StatusBarItemsManager)
       if (frontstageDef) {
         providersRef.current = uiProviders;
         const statusBarItems = UiItemsManager.getStatusBarItems(stageId, frontstageDef.usage, frontstageDef.applicationData);
-        const updatedStatusBarItems = UiItemsArbiter.updateStatusBarItems(statusBarItems);
-        manager.loadItems(updatedStatusBarItems);
+        manager.loadItems(statusBarItems);
         setItems(manager.items);
       }
     }
