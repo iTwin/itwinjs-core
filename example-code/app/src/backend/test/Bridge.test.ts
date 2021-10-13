@@ -7,7 +7,7 @@ import * as path from "path";
 
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
-import { Project, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
@@ -53,8 +53,8 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function getITwinByName(accessToken: AccessToken, name: string): Promise<Project> {
-  const iTwinList: Project[] = await (new ProjectsAccessClient()).getAll(accessToken, {
+async function getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+  const iTwinList: ITwin[] = await (new ProjectsAccessClient()).getAll(accessToken, {
     search: {
       searchString: name,
       propertyName: ProjectsSearchableProperty.Name,

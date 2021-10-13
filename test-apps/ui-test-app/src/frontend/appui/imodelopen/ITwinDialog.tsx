@@ -9,18 +9,18 @@ import * as React from "react";
 import { SearchBox } from "@itwin/core-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ITwinTab, ITwinTabs } from "./ITwinTabs";
-import { Project, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
 import { IModelApp } from "@itwin/core-frontend";
 
 /** Properties for the [[ITwinDialog]] component */
 export interface ITwinDialogProps {
   onClose: () => void;
-  onITwinSelected?: (iTwin: Project) => void;
+  onITwinSelected?: (iTwin: ITwin) => void;
 }
 
 interface ITwinDialogState {
   isLoading: boolean;
-  iTwins?: Project[];
+  iTwins?: ITwin[];
   filter: string;
 }
 
@@ -66,7 +66,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
     this.setState({ iTwins: undefined });
   };
 
-  private _onITwinSelected = (iTwinInfo: Project) => {
+  private _onITwinSelected = (iTwinInfo: ITwin) => {
     if (this.props.onITwinSelected) {
       this.props.onITwinSelected(iTwinInfo);
     }
@@ -89,7 +89,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
           exactMatch: false,
           propertyName: ProjectsSearchableProperty.Name,
         },
-      }).then((iTwins: Project[]) => {
+      }).then((iTwins: ITwin[]) => {
         this.setState({ isLoading: false, iTwins, filter: value });
       });
     }
@@ -106,7 +106,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
     return 3;
   }
 
-  private renderITwin(iTwin: Project) {
+  private renderITwin(iTwin: ITwin) {
     return (
       <tr key={iTwin.id} onClick={this._onITwinSelected.bind(this, iTwin)}>
         <td>{iTwin.code}</td>
@@ -145,7 +145,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
                   </tr>
                 </thead>
                 <tbody>
-                  {(this.state.iTwins && this.state.iTwins.length > 0) && this.state.iTwins.map((iTwin: Project) => (this.renderITwin(iTwin)))}
+                  {(this.state.iTwins && this.state.iTwins.length > 0) && this.state.iTwins.map((iTwin: ITwin) => (this.renderITwin(iTwin)))}
                 </tbody>
               </table>
               {this.state.isLoading &&

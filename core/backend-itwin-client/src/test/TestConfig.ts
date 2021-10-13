@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { Project, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import * as fs from "fs";
 
@@ -31,7 +31,7 @@ export class TestConfig {
   /** Query for the specified iTwin */
   public static async getITwinIdByName(accessToken: AccessToken, name: string): Promise<string> {
     const iTwinAccessClient = new ProjectsAccessClient();
-    const iTwinList: Project[] = await iTwinAccessClient.getAll(accessToken, {
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken, {
       search: {
         searchString: name,
         propertyName: ProjectsSearchableProperty.Name,

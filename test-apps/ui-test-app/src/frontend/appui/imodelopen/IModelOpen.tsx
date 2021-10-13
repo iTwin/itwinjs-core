@@ -7,7 +7,7 @@ import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { AccessToken, BeDuration } from "@itwin/core-bentley";
-import { Project, ProjectsAccessClient } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient } from "@itwin/projects-client/lib/cjs/projects-client";
 import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";
@@ -30,9 +30,9 @@ interface IModelOpenState {
   isLoadingITwins: boolean;
   isLoadingIModels: boolean;
   isLoadingIModel: boolean;
-  recentITwins?: Project[];
+  recentITwins?: ITwin[];
   iModels?: IModelInfo[];
-  currentITwin?: Project;
+  currentITwin?: ITwin;
   prompt: string;
   isNavigationExpanded: boolean;
 }
@@ -116,7 +116,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   // retrieves the IModels for a iTwin. Called when first mounted and when a new iTwin is selected.
-  private startRetrieveIModels = async (iTwin: Project) => {
+  private startRetrieveIModels = async (iTwin: ITwin) => {
     this.setState({
       prompt: "Fetching iModel information...",
       isLoadingIModels: true,
@@ -135,7 +135,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
-  private _selectITwin = async (iTwin: Project) => {
+  private _selectITwin = async (iTwin: ITwin) => {
     return this.startRetrieveIModels(iTwin);
   };
 

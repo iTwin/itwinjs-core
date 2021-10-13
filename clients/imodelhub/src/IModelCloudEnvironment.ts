@@ -7,7 +7,7 @@
  */
 
 import { AccessToken } from "@itwin/core-bentley";
-import { Project } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 
@@ -15,7 +15,7 @@ import { IModelClient } from "./IModelClient";
  * @internal
  */
 export interface ITwinManagerClient {
-  getITwinByName(accessToken: AccessToken, name: string): Promise<Project>;
+  getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
 }
 
 /** All of the services that a frontend or other client app needs to find and access iModels.

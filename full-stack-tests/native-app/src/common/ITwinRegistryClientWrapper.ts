@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Project, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
 import { ITwinManagerClient } from "@bentley/imodelhub-client";
 import { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin */
 export class ITwinRegistryClientWrapper implements ITwinManagerClient {
-  public async getITwinByName(accessToken: AccessToken, name: string): Promise<Project> {
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
     const client = new ProjectsAccessClient();
-    const iTwinList: Project[] = await client.getAll(accessToken, {
+    const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
         propertyName: ProjectsSearchableProperty.Name,

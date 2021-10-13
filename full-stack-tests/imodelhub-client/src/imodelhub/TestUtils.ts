@@ -8,7 +8,7 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { Project } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemITwinClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
@@ -204,7 +204,7 @@ export async function bootstrapBankITwin(accessToken: AccessToken, name: string)
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
-  let iTwin: Project | undefined;
+  let iTwin: ITwin | undefined;
   try {
     iTwin = await bankContext.getITwinByName(accessToken, name);
   } catch (err) {
@@ -228,7 +228,7 @@ export async function getITwinId(accessToken: AccessToken, iTwinName?: string): 
 
   await bootstrapBankITwin(accessToken, iTwinName);
 
-  const iTwin: Project = await getCloudEnv().iTwinMgr.getITwinByName(accessToken, iTwinName);
+  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(accessToken, iTwinName);
 
   if (!iTwin || !iTwin.id)
     throw new Error(`iTwin with name ${TestConfig.iTwinName} doesn't exist.`);
