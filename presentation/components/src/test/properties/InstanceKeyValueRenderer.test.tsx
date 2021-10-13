@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
@@ -12,7 +13,6 @@ import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import { act, cleanup, render } from "@testing-library/react";
 import { InstanceKeyValueRenderer } from "../../presentation-components/properties/InstanceKeyValueRenderer";
 import { UnifiedSelectionContextProvider } from "../../presentation-components/unified-selection/UnifiedSelectionContext";
-import { ITwinLocalization } from "@itwin/core-i18n";
 
 describe("InstanceKeyValueRenderer", () => {
   const renderer = new InstanceKeyValueRenderer();
@@ -26,7 +26,7 @@ describe("InstanceKeyValueRenderer", () => {
   }
 
   before(async () => {
-    await NoRenderApp.startup({ localization: new ITwinLocalization() });
+    await NoRenderApp.startup();
     await Presentation.initialize();
   });
 

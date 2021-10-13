@@ -8,16 +8,17 @@ import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
 import { HyperModeling } from "../HyperModeling";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
-import { ITwinLocalization } from "@itwin/core-i18n";
 
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.
 describe("Package initialization", () => {
   before(async () => {
-    await IModelApp.startup({ localization: new ITwinLocalization() });
+    await IModelApp.startup();
   });
 
   after(async () => {
+    expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
+    expect(HyperModeling.resources).to.be.undefined;
   });
 
   it("throws if not initialized", () => {
@@ -45,7 +46,9 @@ describe("Package configuration", () => {
   });
 
   after(async () => {
+    expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
+    expect(HyperModeling.resources).to.be.undefined;
   });
 
   function expectMarkerConfig(actual: SectionMarkerConfig, expected: SectionMarkerConfig): void {

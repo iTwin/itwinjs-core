@@ -6,10 +6,10 @@
  * @module Tools
  */
 
-import { assert } from "@itwin/core-bentley";
-import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
-import { GeometryStreamProps, IModelError, Localization } from "@itwin/core-common";
 import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { assert } from "@itwin/core-bentley";
+import { GeometryStreamProps, IModelError } from "@itwin/core-common";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
@@ -328,9 +328,6 @@ export class Tool {
   /** The namespace that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: string;
 
-  /** The internationalization services instance used to translate strings from the namespace. */
-  public static localization: Localization;
-
   /** @internal */
   public get ctor() { return this.constructor as ToolType; }
 
@@ -351,13 +348,14 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
-   * @param localization optional internationalization services object (required only for externally hosted extensions). If undefined, use IModelApp.i18n.
    */
-  public static register(namespace?: string, localization?: Localization) { IModelApp.tools.register(this, namespace, localization); }
+  public static register(namespace?: string) {
+    IModelApp.tools.register(this, namespace);
+  }
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = `tools.${this.toolId}.${name}`;
-    const val = this.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    const val = IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -376,7 +374,7 @@ export class Tool {
    */
   public static get englishKeyin(): string {
     const key = `tools.${this.toolId}.keyin`;
-    const val = this.localization.getEnglishString(this.namespace, key);
+    const val = IModelApp.localization.getEnglishString(this.namespace, key);
     return val !== key ? val : ""; // default to empty string
   }
 
@@ -797,22 +795,27 @@ export class ToolRegistry {
   public readonly tools = new Map<string, ToolType>();
   private _keyinList?: ToolList;
 
+  public shutdown() {
+    this.tools.clear();
+    this._keyinList = undefined;
+  }
   /**
    * Un-register a previously registered Tool class.
    * @param toolId the toolId of a previously registered tool to unRegister.
    */
-  public unRegister(toolId: string) { this.tools.delete(toolId); this._keyinList = undefined; }
+  public unRegister(toolId: string) {
+    this.tools.delete(toolId);
+    this._keyinList = undefined;
+  }
 
   /**
    * Register a Tool class. This establishes a connection between the toolId of the class and the class itself.
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: ToolType, namespace?: string, localization?: Localization) {
+  public register(toolClass: ToolType, namespace?: string) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
-
-    toolClass.localization = localization || IModelApp.localization;
 
     if (toolClass.toolId.length === 0)
       return; // must be an abstract class, ignore it
@@ -828,11 +831,11 @@ export class ToolRegistry {
    * Register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, namespace?: string, localization?: Localization) {
+  public registerModule(moduleObj: any, namespace?: string) {
     for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, namespace, localization);
+        this.register(thisTool, namespace);
       }
     }
   }
