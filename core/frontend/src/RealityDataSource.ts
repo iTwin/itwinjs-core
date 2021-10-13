@@ -127,7 +127,7 @@ export class RealityDataSource {
       return undefined;
     const splitIds = rdSourceKey.id.split(":");
     const sasTokenIndex = rdSourceKey.id.indexOf(":?");
-    const sasToken = rdSourceKey.id.substr(sasTokenIndex);
+    const sasToken = rdSourceKey.id.substr(sasTokenIndex+2);
     const orbitGtBlob: OrbitGtBlobProps = {
       accountName: splitIds[0],
       containerName: splitIds[1],
