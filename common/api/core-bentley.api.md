@@ -1123,6 +1123,9 @@ export class OneAtATimeAction<T> {
     }
 
 // @public
+export type OnUnexpectedError = (error: any) => void;
+
+// @public
 export enum OpenMode {
     // (undocumented)
     Readonly = 1,
@@ -1335,6 +1338,17 @@ export class StopWatch {
 // @public
 export class TransientIdSequence {
     get next(): Id64String;
+}
+
+// @public
+export class UnexpectedErrors {
+    static addListener(listener: OnUnexpectedError): () => void;
+    static readonly consoleLog: (e: any) => void;
+    static readonly errorLog: (e: any) => void;
+    static handle(e: any, noListeners?: true): void;
+    static readonly reThrowDeferred: (e: any) => NodeJS.Timeout;
+    static readonly reThrowImmediate: (e: any) => never;
+    static setHandler(handler: OnUnexpectedError): void;
 }
 
 // @public

@@ -8,8 +8,6 @@
 
 import { Logger } from "./Logger";
 
-/* eslint-disable no-console */
-
 /** A function to be notified when an unexpected error happens
  * @public
  */
@@ -17,18 +15,18 @@ export type OnUnexpectedError = (error: any) => void;
 
 /**
  * Utility for handling/reporting unexpected runtime errors. This class establishes a global handler for
- * unexpected errors, and programmers should use its `handle` method when they occur. Generally unexpected
- * errors should not cause program termination, but should instead be logged. However, for development/debugging,
- * it can be helpful to re-throwing exceptions so they are not missed.
+ * unexpected errors, and programmers should use its `handle` method when they occur. Generally, unexpected
+ * errors should not cause program termination, and should instead be logged and swallowed. However, for
+ * development/debugging, it can be helpful to re-throw exceptions so they are not missed.
  * @public
  */
 export class UnexpectedErrors {
   /** handler for re-throwing exceptions directly */
   public static readonly reThrowImmediate = (e: any) => { throw e; };
-  /** handler for re-throwing exceptions from an asynchronous interval (so the current call is not aborted) */
+  /** handler for re-throwing exceptions from an asynchronous interval (so the current call stack is not aborted) */
   public static readonly reThrowDeferred = (e: any) => setTimeout(() => { throw e; }, 0);
   /** handler for logging exception to console */
-  public static readonly consoleLog = (e: any) => console.error(e);
+  public static readonly consoleLog = (e: any) => console.error(e); // eslint-disable-line no-console
   /** handler for logging exception with [[Logger]] */
   public static readonly errorLog = (e: any) => Logger.logException("unhandled", e);
 
@@ -46,13 +44,11 @@ export class UnexpectedErrors {
 
   /** call this method when an unexpected error happens so the global handler can process it */
   public static handle(e: any, noListeners?: true): void {
-    try {
-      this._handler(e);
-      if (!noListeners)
-        this._listeners.forEach((listener) => listener(e));
-    } catch (_) {
-      // an error handler generated an exception... jeez.
-    }
+    this._handler(e);
+    if (!noListeners)
+      this._listeners.forEach((listener) => {
+        try { listener(e); } catch (_) { } // ignore errors from listeners
+      });
   }
 
   /** establish a new global *unexpected error* handler.
