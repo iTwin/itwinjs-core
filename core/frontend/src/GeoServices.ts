@@ -218,9 +218,9 @@ export class GeoConverter {
   private _iMCtoGCResultCache: IMCtoGCResultCache;
   constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
     if (typeof (datumOrGCRS) === "object")
-      this._datumOrGCRS = JSON.stringify(datumOrGCRS as GeographicCRSProps);
+      this._datumOrGCRS = JSON.stringify(datumOrGCRS);
     else
-      this._datumOrGCRS = datumOrGCRS as string;
+      this._datumOrGCRS = datumOrGCRS;
     this._gCtoIMCResultCache = new GCtoIMCResultCache(iModel, this._datumOrGCRS);
     this._iMCtoGCResultCache = new IMCtoGCResultCache(iModel, this._datumOrGCRS);
   }

@@ -162,164 +162,37 @@ describe("GeoCoord", () => {
     expect(mixedResponse.fromCache === 10).to.be.true;
   });
 
-  it("should get proper result from datum conversion", async () => {
+  it("should get proper result from Geographic CRS conversion", async () => {
 
-    const convertTest = async (fileName: string, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
+    const japanConverter = iModel.geoServices.getConverter({
+      horizontalCRS: {
+        id:"JGD2K.CS-I-MOCK",
+        description : "Mock GCS",
+        source : "Test",
+        deprecated : false,
+        datumId : "JGD2000",
+        unit: "Meter",
+        projection : {
+          method: "TransverseMercator",
+          centralMeridian: 129.5,
+          latitudeOfOrigin: 33.0,
+          scaleFactor: 0.9999,
+          falseEasting: 0.0,
+          falseNorthing: 0.0},
+      },
+      verticalCRS : {
+        id : "GEOID"}});
 
-      const iModelConnection = await SnapshotConnection.openFile(fileName);
+    const testPoint: XYZProps[] = [];
+    testPoint.push({x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0});
 
-      const datumConverter = iModelConnection.geoServices.getConverter(datum)!;
+    expect(japanConverter !== undefined).to.be.true;
+    const response = await japanConverter!.getGeoCoordinatesFromIModelCoordinates(testPoint);
 
-      const testPoint: XYZProps[] = [];
-      testPoint.push(inputCoord);
+    const expectedPt = Point3d.fromJSON({x: 282707.7064282134, y: -3640811.0118976748, z: -73.01288342685298});
+    const outPt = Point3d.fromJSON(response.geoCoords[0].p);
 
-      const response = await datumConverter.getGeoCoordinatesFromIModelCoordinates(testPoint);
-
-      const expectedPt = Point3d.fromJSON(outputCoord.p);
-      const outPt = Point3d.fromJSON(response.geoCoords[0].p);
-
-      expect(Geometry.isSamePoint3dXY(expectedPt, outPt)).to.be.true;
-      expect(response.geoCoords[0].s === outputCoord.s);
-    };
-
-    await convertTest("BritishNatGrid-Ellipsoid.bim", "", {x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0}, {p: {x: -5.2020119082059511, y: 49.959453295440234, z: 0.0}, s: 0});
-    await convertTest("BritishNatGrid-Ellipsoid.bim", "ETRF89", {x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0}, {p: {x: -5.2030365061523707, y: 49.960007477936202, z: 0.0}, s: 0});
-    await convertTest("BritishNatGrid-Ellipsoid.bim", "OSGB", {x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0}, {p: {x: -5.2020119082059511, y: 49.959453295440234, z: 0.0}, s: 0});
-    await convertTest("GermanyDHDN-3-Ellipsoid.bim", "", {x: 4360857.005, y: 5606083.067, z: 0.0}, {p: {x: 10.035413954488630, y: 50.575070810112159, z: 0.0}, s: 0});
-    await convertTest("GermanyDHDN-3-Ellipsoid.bim", "DHDN/3", {x: 4360857.005, y: 5606083.067, z: 0.0}, {p: {x: 10.035413954488630, y: 50.575070810112159, z: 0.0}, s: 0});
-    await convertTest("GermanyDHDN-3-Ellipsoid.bim", "WGS84", {x: 4360857.005, y: 5606083.067, z: 0.0}, {p: {x: 10.034215937440818, y: 50.573862480894853, z: 0.0}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", "", {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: 0.0}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", "NAD83", {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: -32.352342418737663}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", "WGS84", {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: -32.352342418737663}, s: 0});
-    await convertTest("UTM27-10-Ellipsoid.bim", "", {x: 623075.328, y: 4265650.532, z: 0.0}, {p: {x: -121.58798236995744, y: 38.532616292207997, z: 0.0}, s: 0});
-    await convertTest("UTM27-10-Ellipsoid.bim", "NAD83", {x: 623075.328, y: 4265650.532, z: 0.0}, {p: {x: -121.58905088839697, y: 38.532522753851708, z: 0.0}, s: 0});
-
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "LL84"}, verticalCRS: {id: "ELLIPSOID"} }, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: -32.352342418737663}, s: 0});
-
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "LL84"}, verticalCRS: {id: "GEOID"} }, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: -121.47738265889652, y: 38.513305313793019, z: 0.7621583779125531}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83-II"}, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83-II"}, verticalCRS: {id: "GEOID"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83-II"}, verticalCRS: {id: "NGVD29"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.0}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { epsg: 26942}, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { epsg: 6418}, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 6506524.158595133, y: 2353354.975796927, z: 0.745910484422781}, s: 0});
-    await convertTest("UTM83-10-NGVD29.bim", { horizontalCRS: { id: "CA83/2011-IIF" }, verticalCRS: {id: "NAVD88"} }, {x: 569024.940, y: 4386341.752, z: 0.0}, {p: {x: 6506524.158595133, y: 2353354.975796927, z: 0.745910484422781}, s: 0});
-
-    await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "HS2_Snake_2015" }, verticalCRS: {id: "GEOID"} }, {x: 473327.251, y: 257049.636, z: 0.0}, {p: {x: 237732.58101946692, y: 364048.01547843055, z: -47.874172425966336}, s: 0});
-
-    await convertTest("BritishNatGrid-Ellipsoid.bim",
-      {
-        horizontalCRS: {
-          id: "HS2-MOCK",
-          description : "USES CUSTOM DATUM",
-          source : "Test",
-          deprecated : false,
-          datumId : "TEST-GRID1",
-          datum : {
-            id: "TEST-GRID1",
-            source : "Emmo",
-            ellipsoidId : "WGS84",
-            transforms: [
-              {
-                method: "GridFiles",
-                sourceEllipsoid : {
-                  id: "WGS84"},
-                targetEllipsoid : {
-                  id: "GRS1980"},
-                gridFile: {
-                  files: [
-                    { fileName: "./UK//HS2/HS2TN15_NTv2.gsb", format: "NTv2", direction: "Direct" },
-                  ],
-                },
-              }]},
-          unit: "Meter",
-          projection : {
-            method: "TransverseMercator",
-            centralMeridian: -1.5,
-            latitudeOfOrigin: 52.30,
-            scaleFactor: 1.0,
-            falseEasting: 198873.0046,
-            falseNorthing: 375064.3871},
-        },
-        verticalCRS : {
-          id : "GEOID"}}
-      , {x: 473327.251, y: 257049.636, z: 0.0}, {p: {x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336}, s: 0});
-
-    await convertTest("BritishNatGrid-Ellipsoid.bim", { horizontalCRS: { id: "OSGB-GPS-2015" }, verticalCRS: {id: "GEOID"} }, {x: 473327.251, y: 257049.636, z: 0.0}, {p: {x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457}, s: 0});
-
-    await convertTest("UTM83-10-NGVD29.bim",
-      {
-        horizontalCRS: {
-          id: "California2",
-          description : "USES CUSTOM DATUM",
-          source : "Test",
-          deprecated : false,
-          datumId : "TEST-GRID",
-          datum : {
-            id: "TEST-GRID",
-            description : "TEST DATUM - Uses custom ell and custom transfo",
-            deprecated : false,
-            source : "Emmo",
-            ellipsoidId : "CustomEllipsoid1",
-            ellipsoid : {
-              id: "CustomEllipsoid1",
-              description : "Custom Ellipsoid1 Description",
-              source : "Custom Ellipsoid1 Source",
-              equatorialRadius : 6378171.1,
-              polarRadius : 6356795.719195306},
-            transforms: [
-              {
-                method: "Geocentric",
-                sourceEllipsoid : {
-                  id: "CustomEllipsoid2",
-                  equatorialRadius : 6378171.1,
-                  polarRadius : 6356795.719195306},
-                targetEllipsoid : {
-                  id: "CustomEllipsoid3",
-                  equatorialRadius : 6378174.1,
-                  polarRadius : 6356796.1},
-                geocentric : {
-                  delta: {
-                    x: -15,
-                    y : 18,
-                    z : 46}}},
-              {
-                method: "PositionalVector",
-                positionalVector : {
-                  scalePPM: 2.4985,
-                  delta : {
-                    x: -120.271,
-                    y : -64.543,
-                    z : 161.632},
-                  rotation : {
-                    x: 0.2175,
-                    y : -0.0672,
-                    z : -0.1291}},
-                sourceEllipsoid : {
-                  id: "CustomEllipsoid3",
-                  equatorialRadius : 6378174.1,
-                  polarRadius : 6356796.1},
-                targetEllipsoid : {
-                  id: "WGS84",
-                  equatorialRadius : 6378137.0,
-                  polarRadius : 6356752.3142}}]},
-          unit: "Meter",
-          projection : {
-            method: "LambertConformalConicTwoParallels",
-            longitudeOfOrigin : -122,
-            latitudeOfOrigin : 37.66666666667,
-            standardParallel1 : 39.833333333333336,
-            standardParallel2 : 38.333333333333334,
-            falseEasting : 2000000.0,
-            falseNorthing : 500000.0},
-          extent: {
-            southWest: {
-              latitude: 35,
-              longitude: -125},
-            northEast: {
-              latitude: 39.1,
-              longitude: -120.45}}},
-        verticalCRS : {
-          id : "GEOID"}}, {x: 632748.112, y: 4263868.307, z: 0.0}, {p: {x: 2045672.959210648, y: 594018.471211601, z: 0.7621583779125531}, s: 0});
+    expect(Geometry.isSamePoint3dXY(expectedPt, outPt)).to.be.true;
+    expect(response.geoCoords[0].s === 0);
   });
-
 });
