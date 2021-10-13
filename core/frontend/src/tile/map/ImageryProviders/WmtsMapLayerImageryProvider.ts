@@ -88,7 +88,6 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
             return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
           });
         }
-        */
 
         if (tileMatrixSets && tileMatrixSets.length === 1)
           preferredTms = tileMatrixSets[0];
