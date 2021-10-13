@@ -64,5 +64,4 @@ export class UnexpectedErrors {
     this._handler = handler;
     return oldHandler;
   }
-
 }

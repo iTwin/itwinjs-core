@@ -15,23 +15,23 @@ describe("Unexpected error handling", () => {
     let telemetry2 = 0;
     let evListener1 = 0; // before bad listener
     let evListener2 = 0; // after bad listener
-    const errMsg = "something bad happened";
+    const error = new Error("something bad happened");
 
     UnexpectedErrors.setHandler((e) => {
-      expect(e).has.property("message", errMsg);
+      expect(e).equals(error);
       unexpectedCalled++;
     });
-    UnexpectedErrors.addTelemetry((e) => {
-      expect(e).has.property("message", errMsg);
+    const drop1 = UnexpectedErrors.addTelemetry((e) => {
+      expect(e).equals(error);
       telemetry1++;
     });
-    const drop = UnexpectedErrors.addTelemetry((e) => {
-      expect(e).has.property("message", errMsg);
+    const drop2 = UnexpectedErrors.addTelemetry((e) => {
+      expect(e).equals(error);
       telemetry2++;
     });
     const myEvent = new BeEvent<() => void>();
     myEvent.addListener(() => evListener1++);
-    myEvent.addListener(() => { throw new Error(errMsg); });
+    myEvent.addListener(() => { throw error; });
     myEvent.addListener(() => evListener2++);
 
     myEvent.raiseEvent();
@@ -41,15 +41,25 @@ describe("Unexpected error handling", () => {
     expect(evListener1).equals(1);
     expect(evListener2).equals(1);
 
-    drop(); // drop unexpected error listener2
-    myEvent.raiseEvent();
+    UnexpectedErrors.handle(error, false);
     expect(unexpectedCalled).equals(2);
+    expect(telemetry1).equals(1); // should not be called
+    expect(telemetry2).equals(1); // should not be called
+
+    drop2(); // drop telemetry2
+    myEvent.raiseEvent();
+    expect(unexpectedCalled).equals(3);
     expect(telemetry1).equals(2);
     expect(telemetry2).equals(1); // should not be called now
     expect(evListener1).equals(2);
     expect(evListener2).equals(2);
 
+    drop1(); // drop telemetry1
+    myEvent.raiseEvent();
+    expect(unexpectedCalled).equals(4);
+    expect(telemetry1).equals(2); // now it should not be called either
+
     UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
-    expect(() => myEvent.raiseEvent()).to.throw(errMsg);
+    expect(() => myEvent.raiseEvent()).to.throw(error.message);
   });
 });

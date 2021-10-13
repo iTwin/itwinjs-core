@@ -1342,14 +1342,14 @@ export class TransientIdSequence {
 
 // @public
 export class UnexpectedErrors {
-    static addListener(listener: OnUnexpectedError): () => void;
+    static addTelemetry(tracker: OnUnexpectedError): () => void;
     static readonly consoleLog: (e: any) => void;
     static readonly errorLog: (e: any) => void;
-    static handle(e: any, noListeners?: true): void;
+    static handle(error: any, notifyTelemetry?: boolean): void;
     static readonly reThrowDeferred: (e: any) => NodeJS.Timeout;
     static readonly reThrowImmediate: (e: any) => never;
-    static setHandler(handler: OnUnexpectedError): void;
-}
+    static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
+    }
 
 // @public
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
