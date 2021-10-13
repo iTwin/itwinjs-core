@@ -1,8 +1,8 @@
-import { expect } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
 import { FeatureSymbology, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";

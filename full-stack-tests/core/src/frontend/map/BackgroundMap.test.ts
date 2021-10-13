@@ -89,22 +89,22 @@ describe("Background map (#integration)", () => {
       expectPixel(1, 1, expectedCornerFeature);
     }
 
-    type Test = [ BackgroundMapProps | undefined, PixelType, PixelType, PixelType, PixelType ];
+    type Test = [BackgroundMapProps | undefined, PixelType, PixelType, PixelType, PixelType];
     const tests: Test[] = [
-      [ undefined, "model", "bg", "model", "bg" ],
+      [undefined, "model", "bg", "model", "bg"],
 
-      [ { groundBias: 10, nonLocatable: true }, "model", "map", "model", "bg" ],
-      [ { groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg" ],
-      [ { useDepthBuffer: true, groundBias: 10, nonLocatable: true }, "map", "map", "model", "bg" ],
-      [ { useDepthBuffer: true, groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg" ],
+      [{ groundBias: 10, nonLocatable: true }, "model", "map", "model", "bg"],
+      [{ groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg"],
+      [{ useDepthBuffer: true, groundBias: 10, nonLocatable: true }, "map", "map", "model", "bg"],
+      [{ useDepthBuffer: true, groundBias: -10, nonLocatable: true }, "model", "map", "model", "bg"],
 
-      [ { nonLocatable: true }, "model", "map", "model", "bg" ],
-      [ { }, "model", "map", "model", "map" ],
+      [{ nonLocatable: true }, "model", "map", "model", "bg"],
+      [{}, "model", "map", "model", "map"],
 
-      [ { groundBias: 10 }, "model", "map", "model", "map" ],
-      [ { groundBias: -10 }, "model", "map", "model", "map" ],
-      [ { useDepthBuffer: true, groundBias: 10 }, "map", "map", "map", "map" ],
-      [ { useDepthBuffer: true, groundBias: -10 }, "model", "map", "model", "map" ],
+      [{ groundBias: 10 }, "model", "map", "model", "map"],
+      [{ groundBias: -10 }, "model", "map", "model", "map"],
+      [{ useDepthBuffer: true, groundBias: 10 }, "map", "map", "map", "map"],
+      [{ useDepthBuffer: true, groundBias: -10 }, "model", "map", "model", "map"],
 
       // ###TODO: Can't test with applyTerrain=true because ApproximateTerrainHeights.json not found...
     ];
