@@ -1238,7 +1238,7 @@ Some have replacements within the @itwin/core-react package.
 
 A new @itwin/imodel-components-react package has been added, and some items were moved from @itwin/core-react and @itwin/components-react into this new package.
 The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
-Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
+Dependencies on these other iTwin.js packages have been removed from core-react and components-react.
 The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
