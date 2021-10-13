@@ -73,8 +73,7 @@ describe("TileUpload (#integration)", () => {
     const config = new IModelHostConfiguration();
 
     // Default account and key for azurite
-    config.tileCacheCredentials = {
-      service: "azure",
+    config.tileCacheAzureCredentials = {
       account: "devstoreaccount1",
       accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
     };
@@ -92,7 +91,7 @@ describe("TileUpload (#integration)", () => {
     testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
-    const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
+    const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheAzureCredentials.account, config.tileCacheAzureCredentials.accessKey);
     const pipeline = Azure.newPipeline(credentials);
     blobService = new Azure.BlobServiceClient(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
 

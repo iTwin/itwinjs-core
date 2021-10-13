@@ -15,12 +15,11 @@ import { TelemetryManager } from "@bentley/telemetry-client";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
+import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -96,10 +95,17 @@ export class IModelHostConfiguration {
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
 
-  /** The credentials to use for the tile cache service. If omitted, a local cache will be used.
+  /** The Azure blob storage credentials to use for the tile cache service. If omitted and no external service implementation is provided, a local cache will be used.
    * @beta
    */
-  public tileCacheCredentials?: CloudStorageServiceCredentials;
+  public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+
+  /**
+   * @beta
+   * @note A reference implementation is set for [AzureBlobStorage] if [IModelHostConfiguration.tileCacheAzureCredentials] property is set. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom [CloudStorageService].
+   */
+  public tileCacheService?: CloudStorageService;
 
   /** Whether to restrict tile cache URLs by client IP address (if available).
    * @beta
@@ -248,12 +254,7 @@ export class IModelHost {
     throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
-  /**
-   * @beta
-   * @note A reference implementation is set by default for [AzureBlobStorage]. To supply a different implementation for any service provider (such as AWS),
-   *       set this property with a custom [CloudStorageService] and also set [IModelHostConfiguration.tileCacheCredentials] using "external" for the service name.
-   *       Note that the account and access key members of [CloudStorageServiceCredentials] may have blank values unless the custom service implementation uses them.
-   */
+  /** @beta */
   public static tileCacheService: CloudStorageService;
 
   /** @internal */
@@ -346,7 +347,7 @@ export class IModelHost {
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
-    this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
+    this.platform.setUseTileCache(configuration.tileCacheService ? false : true);
 
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
@@ -450,7 +451,7 @@ export class IModelHost {
    * @internal
    */
   public static get usingExternalTileCache(): boolean {
-    return undefined !== IModelHost.configuration?.tileCacheCredentials;
+    return undefined !== IModelHost.tileCacheService;
   }
 
   /** Whether to restrict tile cache URLs by client IP address.
@@ -465,18 +466,20 @@ export class IModelHost {
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;
-    const credentials = config.tileCacheCredentials;
-    if (undefined === credentials)
+    const service = config.tileCacheService;
+    const credentials = config.tileCacheAzureCredentials;
+
+    if (!service && !credentials)
       return;
 
     IModelHost.tileUploader = new CloudStorageTileUploader();
 
-    if (credentials.service === "azure" && !IModelHost.tileCacheService) {
+    if (credentials && !service) {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
-    } else if (credentials.service === "alicloud") {
-      IModelHost.tileCacheService = new AliCloudStorageService(credentials);
-    } else if (credentials.service !== "external") {
-      throw new IModelError(BentleyStatus.ERROR, "Unsupported cloud service credentials for tile cache.");
+    } else if (!credentials && service) {
+      IModelHost.tileCacheService = service;
+    } else {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom tile cache service providers.");
     }
   }
 }

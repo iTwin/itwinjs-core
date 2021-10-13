@@ -14,8 +14,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
 /** @beta */
-export interface CloudStorageServiceCredentials {
-  service: "azure" | "alicloud" | "external";
+export interface AzureBlobStorageCredentials {
   account: string;
   accessKey: string;
 }
@@ -46,10 +45,10 @@ export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
   private _credential: Azure.StorageSharedKeyCredential;
 
-  public constructor(credentials: CloudStorageServiceCredentials) {
+  public constructor(credentials: AzureBlobStorageCredentials) {
     super();
 
-    if (credentials.service !== "azure" || !credentials.account || !credentials.accessKey) {
+    if (!credentials.account || !credentials.accessKey) {
       throw new IModelError(BentleyStatus.ERROR, "Invalid credentials for Azure blob storage.");
     }
 

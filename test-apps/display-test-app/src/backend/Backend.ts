@@ -131,9 +131,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   if (dtaConfig.customOrchestratorUri)
     iModelHost.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
-  if (dtaConfig.useFakeCloudStorageTileCache)
-    iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
-
   let logLevel = LogLevel.None;
   if (undefined !== dtaConfig.logLevel)
     logLevel = Logger.parseLogLevel(dtaConfig.logLevel);
