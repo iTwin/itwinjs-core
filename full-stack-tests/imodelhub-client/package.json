@@ -53,7 +53,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
+    "@itwin/projects-client": "^0.1.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",

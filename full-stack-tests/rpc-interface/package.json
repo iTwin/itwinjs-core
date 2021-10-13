@@ -61,7 +61,7 @@
     "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
+    "@itwin/projects-client": "^0.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
