@@ -46,7 +46,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * @returns URL for the service
    */
   public override async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    if (this._settingsUrl && excludeApiVersion == this._urlExcludesApiVersion)
+    if (this._settingsUrl && excludeApiVersion === this._urlExcludesApiVersion)
       return this._settingsUrl;
 
     const url = await super.getUrl(requestContext);
