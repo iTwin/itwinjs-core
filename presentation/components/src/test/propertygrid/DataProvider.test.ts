@@ -62,9 +62,11 @@ describe("PropertyDataProvider", () => {
 
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setLocalization(new ITwinLocalization({
+    const localize = new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    }));
+    });
+    await localize.initialize(["iModelJS"]);
+    Presentation.setLocalization(localize);
     await initializeLocalization();
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });

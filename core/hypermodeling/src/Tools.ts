@@ -6,12 +6,8 @@
  * @module HyperModeling
  */
 
-import { Localization, SectionType } from "@itwin/core-common";
-import {
-  IModelApp,
-  ScreenViewport,
-  Tool,
-} from "@itwin/core-frontend";
+import { SectionType } from "@itwin/core-common";
+import { IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
 import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
@@ -194,8 +190,8 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 }
 
 /** @internal */
-export function registerTools(namespace: string, localization: Localization): void {
-  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, localization);
+export function registerTools(namespace: string): void {
+  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);
   register(SectionMarkerDecoratorConfigTool);

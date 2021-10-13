@@ -563,6 +563,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "i18next-xhr-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "ignore-styles",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
