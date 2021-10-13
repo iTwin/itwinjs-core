@@ -16,6 +16,7 @@ describe("Background map", () => {
 
   before(async () => {
     await TestUtility.startFrontend({
+      ...TestUtility.iModelAppOptions,
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,

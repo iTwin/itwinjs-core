@@ -20,9 +20,7 @@ describe("HyperModeling (#integration)", () => {
 
   before(async () => {
     await TestUtility.shutdownFrontend();
-    await TestUtility.startFrontend({
-      ...TestUtility.iModelAppOptions,
-    });
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();

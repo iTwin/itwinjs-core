@@ -149,29 +149,11 @@ export class TestUtility {
    */
   public static async shutdownFrontend(): Promise<void> {
     this.systemFactory = () => TestUtility.createDefaultRenderSystem();
-    if (ProcessDetector.isElectronAppFrontend)
-      return ElectronApp.shutdown();
+    // FIXME: The ElectronApp.shutdown() has side-effects that aren't currently cleaned up properly
+    // so that a new ElectronApp.startup() has a clean slate. It is somewhere in Ipc land as the error
+    // is a missing Ipc method.
+    // if (ProcessDetector.isElectronAppFrontend)
+    //   return ElectronApp.shutdown();
     return IModelApp.shutdown();
   }
 }
-
-// export class MockRenderApp {
-//   public static systemFactory: MockRender.SystemFactory = () => MockRenderApp.createDefaultRenderSystem();
-
-//   public static async startup(opts?: IModelAppOptions): Promise<void> {
-//     opts = opts ? opts : {};
-//     opts.renderSys = this.systemFactory();
-//     if (ProcessDetector.isElectronAppFrontend)
-//       await ElectronApp.startup({ iModelApp: opts } );
-//     await IModelApp.startup(opts);
-//   }
-//   public static async shutdown(): Promise<void> {
-//     this.systemFactory = () => MockRenderApp.createDefaultRenderSystem();
-//     await IModelApp.shutdown();
-//     if (ProcessDetector.isElectronAppFrontend)
-//       await ElectronApp.shutdown();
-//     await IModelApp.shutdown();
-//   }
-
-//   protected static createDefaultRenderSystem() { return new MockRender.System(); }
-// }

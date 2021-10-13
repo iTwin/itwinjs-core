@@ -18,6 +18,7 @@ describe("Background map (#integration)", () => {
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
 
     await TestUtility.startFrontend({
+      ...TestUtility.iModelAppOptions,
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,

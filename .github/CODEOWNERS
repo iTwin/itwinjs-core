@@ -18,7 +18,6 @@
 rush.json       @calebmshafer @pmconne @wgoehrig
 
 /clients                        @calebmshafer @ramanujam-raman
-/clients/extension              @calebmshafer @paulius-valiunas
 /clients/imodelhub              @amikoliunas @Animagne
 
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
