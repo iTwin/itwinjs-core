@@ -8,11 +8,20 @@ import * as path from "path";
 import { AccessToken, BentleyStatus, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps, ChangesetType } from "@itwin/core-common";
+import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
+
+/** the types of users available for tests */
+export enum TestUserType {
+  Regular,
+  Manager,
+  Super,
+  SuperManager
+}
 
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
@@ -26,6 +35,34 @@ export class HubUtility {
     readOnly: "ReadOnlyTest",
     readWrite: "ReadWriteTest",
   };
+
+  /** get an AuthorizedClientRequestContext for a [[TestUserType]].
+   * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
+   * but with different credentials. This can be useful for simulating more than one user of the same type on the same iTwin.
+   * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
+   */
+   public static async getAccessToken(user: TestUserType): Promise<AccessToken> {
+    if (HubMock.isValid) {
+      return TestUserType[user];
+    }
+
+    let credentials: TestUserCredentials;
+    switch (user) {
+      case TestUserType.Regular:
+        credentials = TestUsers.regular;
+        break;
+      case TestUserType.Manager:
+        credentials = TestUsers.manager;
+        break;
+      case TestUserType.Super:
+        credentials = TestUsers.super;
+        break;
+      case TestUserType.SuperManager:
+        credentials = TestUsers.superManager;
+        break;
+    }
+    return TestUtility.getAccessToken(credentials);
+  }
 
   public static iTwinId: GuidString | undefined;
   /** Returns the iTwinId if an iTwin with the name exists. Otherwise, returns undefined. */

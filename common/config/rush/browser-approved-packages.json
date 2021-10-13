@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend", "integration-testing" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/units-schema",
@@ -148,7 +148,7 @@
     },
     {
       "name": "@itwin/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
@@ -300,7 +300,7 @@
     },
     {
       "name": "azurite",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "benchmark",

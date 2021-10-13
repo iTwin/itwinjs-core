@@ -9,7 +9,6 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import {
   AccessToken, BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
@@ -22,7 +21,6 @@ import {
   SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
@@ -140,47 +138,7 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
   public static override onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
-/** the types of users available for tests */
-export enum TestUserType {
-  Regular,
-  Manager,
-  Super,
-  SuperManager
-}
-
 export class IModelTestUtils {
-  private static testOrg = {
-    name: "Test Organization",
-    id: Guid.createValue(),
-  };
-
-  /** get an AuthorizedClientRequestContext for a [[TestUserType]].
-     * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
-     * but with different credentials. This can be useful for simulating more than one user of the same type on the same iTwin.
-     * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
-     */
-  public static async getAccessToken(user: TestUserType): Promise<AccessToken> {
-    if (HubMock.isValid) {
-      return TestUserType[user];
-    }
-
-    let credentials: TestUserCredentials;
-    switch (user) {
-      case TestUserType.Regular:
-        credentials = TestUsers.regular;
-        break;
-      case TestUserType.Manager:
-        credentials = TestUsers.manager;
-        break;
-      case TestUserType.Super:
-        credentials = TestUsers.super;
-        break;
-      case TestUserType.SuperManager:
-        credentials = TestUsers.superManager;
-        break;
-    }
-    return TestUtility.getAccessToken(credentials);
-  }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
   public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
@@ -476,7 +434,6 @@ export class IModelTestUtils {
     loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
     const cfg = config ? config : new IModelHostConfiguration();
     cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-    cfg.hubAccess = IModelHubBackend;
     return IModelHost.startup(cfg);
   }
 

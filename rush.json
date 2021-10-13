@@ -60,7 +60,7 @@
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "prerelease-monorepo-lockStep",
     },
     {
       "packageName": "@bentley/itwin-client",
@@ -513,6 +513,12 @@
     {
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "backend-integration-tests",
+      "projectFolder": "full-stack-tests/backend",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
