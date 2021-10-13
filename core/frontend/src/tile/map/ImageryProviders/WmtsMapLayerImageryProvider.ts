@@ -15,7 +15,6 @@ import {
   WmsUtilities, WmtsCapabilities, WmtsCapability,
 } from "../../internal";
 
-// eslint-disable-next-line prefer-const
 interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
 /** @internal */
 export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -89,6 +88,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
             return layer.tileMatrixSetLinks.some((tmsl) => { return (tmsl.tileMatrixSet === tms.identifier); });
           });
         }
+        */
 
         if (tileMatrixSets && tileMatrixSets.length === 1)
           preferredTms = tileMatrixSets[0];
