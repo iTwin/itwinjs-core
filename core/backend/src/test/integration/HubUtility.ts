@@ -119,17 +119,6 @@ export class HubUtility {
       IModelJsFs.recursiveMkDirSync(downloadDir);
     }
 
-    const test = await IModelHost.hubAccess.downloadV1Checkpoint({
-      localFile: "",
-      checkpoint: {
-        iTwinId,
-        iModelId,
-        changeset: {
-          id: "0",
-        },
-      },
-    });
-
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModelId.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
@@ -142,8 +131,8 @@ export class HubUtility {
           changeset: {
             id: "0",
             index: 0,
-          }
-        }
+          },
+        },
       });
       perfLogger.dispose();
     }
