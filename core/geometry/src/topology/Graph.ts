@@ -379,7 +379,7 @@ export class HalfEdge {
     return count;
   }
 
-  /** Return true of other is in the vertex loop around this. */
+  /** Return true if other is in the vertex loop around this. */
   public findAroundVertex(other: HalfEdge): boolean {
     let node: HalfEdge = this;
     do {

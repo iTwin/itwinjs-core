@@ -120,7 +120,7 @@ export class HalfEdgeGraphOps {
   }
 
   /**
-   * @description Compute convexity of a sector of a super-face.
+   * Compute convexity of a sector of a super-face.
    * @param base node whose edge is to be tested for removal
    * @param ignore edges with this mask (on either side) are ignored for the purposes of computing convexity
    * @param barrier edges with this mask (on either side) will not be removed
