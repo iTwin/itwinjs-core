@@ -1069,7 +1069,7 @@ A new @itwin/imodel-components-react package has been added and contains items r
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
-For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
 ### New options for defining Frontstages
 
