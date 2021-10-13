@@ -59,7 +59,12 @@ describe("Unexpected error handling", () => {
     expect(unexpectedCalled).equals(4);
     expect(telemetry1).equals(2); // now it should not be called either
 
+    const dropBad = UnexpectedErrors.addTelemetry(() => { throw new Error("from telemetry"); });
+    myEvent.raiseEvent(); // bad telemetry should not cause errors
+    dropBad();
+
     UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
     expect(() => myEvent.raiseEvent()).to.throw(error.message);
+
   });
 });
