@@ -2,12 +2,14 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+beta;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
 public;BindParameter = number | string
@@ -35,7 +37,6 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 beta;class CloudStorageService
-beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
