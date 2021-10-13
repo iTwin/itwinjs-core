@@ -8,8 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
-import { imageElementFromImageSource } from "../../ImageUtil";
+import { Cartographic, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -202,14 +201,11 @@ class ImageryTileLoader extends RealityTileLoader {
     return IModelApp.tileAdmin.channels.getForHttp("itwinjs-imagery");
   }
 
-  public override async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<ImageryTileContent> {
-    if (undefined === isCanceled)
-      isCanceled = () => !tile.isLoading;
-
+  public override async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem): Promise<ImageryTileContent> {
     assert(data instanceof ImageSource);
     assert(tile instanceof ImageryMapTile);
     const content: ImageryTileContent = {};
-    const texture = await this.loadTextureImage(data, this._iModel, system, isCanceled);
+    const texture = await this.loadTextureImage(data, system);
     if (undefined === texture)
       return content;
 
@@ -217,18 +213,18 @@ class ImageryTileLoader extends RealityTileLoader {
     return content;
   }
 
-  private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {
+  private async loadTextureImage(source: ImageSource, system: RenderSystem): Promise<RenderTexture | undefined> {
     try {
-      const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.FilteredTileSection);
-
-      return await imageElementFromImageSource(imageSource)
-        .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
-        .catch((_) => undefined);
-    } catch (e) {
+      return await system.createTextureFromSource({
+        type: RenderTexture.Type.FilteredTileSection,
+        source,
+      });
+    } catch {
       return undefined;
     }
   }
 }
+
 interface ImageryMapLayerTreeId {
   settings: MapLayerSettings;
 }

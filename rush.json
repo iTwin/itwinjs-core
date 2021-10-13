@@ -49,16 +49,9 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/context-registry-client",
-      "projectFolder": "clients/context-registry",
+      "packageName": "@bentley/itwin-registry-client",
+      "projectFolder": "clients/itwin-registry",
       "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/frontend-authorization-client",
-      "projectFolder": "clients/frontend-authorization",
-      "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -364,15 +357,15 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/electron-manager",
-      "projectFolder": "core/electron-manager",
+      "packageName": "@itwin/core-electron",
+      "projectFolder": "core/electron",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/mobile-manager",
-      "projectFolder": "core/mobile-manager",
+      "packageName": "@itwin/core-mobile",
+      "projectFolder": "core/mobile",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -509,12 +502,6 @@
     {
       "packageName": "imodel-from-orbitgt-pointcloud",
       "projectFolder": "test-apps/imodel-from-orbitgt",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "ninezone-test-app",
-      "projectFolder": "test-apps/ninezone-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

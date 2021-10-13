@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 // required to get certa to read the .env file - should be reworked
-import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, Logger, LogLevel } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
@@ -17,8 +17,8 @@ import {
 } from "@itwin/core-backend";
 import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/TestUsers";
-import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
+import { testIpcChannel, TestIpcInterface, TestITwinProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 /** Loads the provided `.env` file into process.env */
@@ -56,15 +56,16 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getTestProjectProps(_user: TestUserCredentials): Promise<TestProjectProps> {
-    const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
+  public async getTestITwinProps(_user: TestUserCredentials): Promise<TestITwinProps> {
+    // TODO: Update config to match iTwin naming
+    const iTwinName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
-      return { projectName, iModelHub: { region } };
+      const region = "0";
+      return { iTwinName, iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl();
-    return { projectName, iModelBank: { url } };
+    return { iTwinName, iModelBank: { url } };
   }
 
   public async purgeStorageCache(): Promise<void> {
@@ -84,7 +85,7 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   }
 
   public async createChangeSummary(iModelRpcProps: IModelRpcProps): Promise<string> {
-    const accessToken = (await IModelHost.getAccessToken())!;
+    const accessToken = await IModelHost.getAccessToken();
     return ChangeSummaryManager.createChangeSummary(accessToken, BriefcaseDb.findByKey(iModelRpcProps.key));
   }
 
@@ -110,8 +111,6 @@ async function init() {
   // Start the backend
   const iModelHost = new IModelHostConfiguration();
   iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
-  iModelHost.concurrentQuery.concurrent = 2;
-  iModelHost.concurrentQuery.pollInterval = 5;
   iModelHost.cacheDir = path.join(__dirname, "out");
 
   await ElectronHost.startup({

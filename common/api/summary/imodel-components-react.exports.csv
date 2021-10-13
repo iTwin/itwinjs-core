@@ -36,8 +36,8 @@ public;CubeProps
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 internal;CustomThumb(): JSX.Element
-beta;DrawingNavigationAid 
-beta;DrawingNavigationAidProps 
+public;DrawingNavigationAid 
+public;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
 public;DrawingViewportChangeEvent 
@@ -68,8 +68,8 @@ deprecated;HitBoxZ
 beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
 beta;HueSliderProps 
 internal;InlineEdit 
-beta;LineWeightSwatch 
-beta;LineWeightSwatchProps 
+public;LineWeightSwatch 
+public;LineWeightSwatchProps 
 internal;MapMode
 internal;MenuItem
 deprecated;MenuItem
@@ -124,7 +124,7 @@ public;ViewportProps
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
-beta;WeightEditor 
-beta;WeightPickerButton 
-beta;WeightPickerProps 
-beta;WeightPropertyEditor 
+public;WeightEditor 
+public;WeightPickerButton 
+public;WeightPickerProps 
+public;WeightPropertyEditor 

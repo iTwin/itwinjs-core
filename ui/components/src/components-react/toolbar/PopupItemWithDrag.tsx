@@ -19,7 +19,7 @@ import { useDragInteraction } from "./useDragInteraction";
 import { Direction } from "./utilities/Direction";
 
 /** Properties of [[PopupItem]] component.
- * @beta
+ * @public
  */
 export interface PopupItemWithDragProps extends ToolbarButtonItemProps {
   /** Panel of the toolbar. */
@@ -76,7 +76,7 @@ function getActiveAction(item: GroupButton): ActionButton | undefined {
 }
 
 /** Expandable Group button Item
- * @beta
+ * @public
  */
 export function PopupItemWithDrag(props: PopupItemWithDragProps) {
   const [isPanelShown, setPanelShown] = React.useState(false);

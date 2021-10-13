@@ -14,6 +14,7 @@ import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../appui-
 import { ViewAttributesStatusField } from "../../appui-react/statusfields/ViewAttributes";
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
+import { I18N } from "@itwin/core-i18n";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -34,7 +35,7 @@ describe("ViewAttributes", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup({ localization: new I18N() });
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,

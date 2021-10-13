@@ -12,6 +12,7 @@ import classnames from "classnames";
 import classnamesDedupe from "classnames/dedupe";
 import { memoize } from "lodash";
 import * as React from "react";
+import ReactDataGrid from "react-data-grid";
 import { DisposableList, Guid, GuidString } from "@itwin/core-bentley";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import {
@@ -38,10 +39,6 @@ import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell";
 import { ReactDataGridColumn, TableColumn } from "./TableColumn";
-
-// Matches how react-data-grid is exported
-// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
-import ReactDataGrid = require("react-data-grid");
 
 // cspell:ignore Overscan columnfiltering Dedupe popout
 
@@ -115,11 +112,9 @@ export interface TableProps extends CommonProps {
   /** Specifies the selection mode. The default is Single. */
   selectionMode?: SelectionMode;
 
-  /** Callback for when properties are being edited
-   * @beta */
+  /** Callback for when properties are being edited */
   onPropertyEditing?: (args: TableCellEditorState) => void;
-  /** Callback for when properties are updated
-   * @beta */
+  /** Callback for when properties are updated */
   onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
 
   /** @internal */
@@ -154,8 +149,7 @@ export interface TableProps extends CommonProps {
   /** @internal */
   onApplyFilter?: () => void;
 
-  /** Called to show a context menu when a cell is right-clicked.
-   * @beta */
+  /** Called to show a context menu when a cell is right-clicked. */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
   /** Maximum number of distinct values for filtering */
   maximumDistinctValues?: number;
@@ -213,7 +207,7 @@ export interface TableCellUpdatedArgs {
 }
 
 /** Arguments for `TableProps.onCellContextMenu` callback
- * @beta
+ * @public
  */
 export interface TableCellContextMenuArgs {
   /** Index of the row clicked */

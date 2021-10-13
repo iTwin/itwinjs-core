@@ -5,10 +5,9 @@
 import "./IModelIndex.scss";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { IModelClient, IModelHubClient, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { LoadingSpinner } from "@itwin/core-react";
-import { UiFramework } from "@itwin/appui-react";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
@@ -53,8 +52,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     super(props, context);
 
     // TODO: registering categories is application specific, move this to Navigator source.
-    IModelIndex.RegisterCategory(UiFramework.translate("iModelIndex.views"), this._renderSheets);
-    IModelIndex.RegisterCategory(UiFramework.translate("iModelIndex.3dModels"), this._render3dModels);
+    IModelIndex.RegisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.views"), this._renderSheets);
+    IModelIndex.RegisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.3dModels"), this._render3dModels);
 
     this.state = {
       currentCategory: 0, thumbnail: undefined, upToDate: false, header: undefined,
@@ -64,17 +63,17 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public override async componentDidMount() {
-    const projectId = this.props.iModelConnection.iTwinId!;
+    const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
 
-    await this.startRetrieveThumbnail(projectId, iModelId);
+    await this.startRetrieveThumbnail(iTwinId, iModelId);
     await this.startRetrieveIModelInfo();
   }
 
   public override componentWillUnmount() {
     // TODO: an application should not have to unregister categories/tabs.
-    IModelIndex.UnregisterCategory(UiFramework.translate("iModelIndex.views"));
-    IModelIndex.UnregisterCategory(UiFramework.translate("iModelIndex.3dModels"));
+    IModelIndex.UnregisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.views"));
+    IModelIndex.UnregisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.3dModels"));
   }
 
   /* register a category (tab) */
@@ -90,8 +89,9 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   /* retrieves the iModel thumbnail. */
-  private async startRetrieveThumbnail(projectId: string, iModelId: string) {
-    const _thumbnail = await UiFramework.iModelServices.getThumbnail(projectId, iModelId);
+  private async startRetrieveThumbnail(iTwinId: string, iModelId: string) {
+    const hubFrontend = new IModelHubFrontend();
+    const _thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken())!, iModelId, { iTwinId, size: "Small" });
     this.setState({ thumbnail: _thumbnail });
   }
 
@@ -100,7 +100,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     const hubClient: IModelClient = new IModelHubClient();
     const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
-    const accessToken = (await IModelApp.authorizationClient?.getAccessToken()) ?? "";
+    const accessToken = await IModelApp.getAccessToken();
 
     /* get the iModel name */
     const imodels = await hubClient.iModels.get(accessToken, iTwinId, new IModelQuery().byId(iModelId));
@@ -173,14 +173,14 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     return (
       <div className="imodelindex-waiting fade-in">
         <div className="entering-imodel">
-          <LoadingSpinner message={UiFramework.translate("iModelIndex.enteriModeling")} />
+          <LoadingSpinner message={IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.enteriModeling")} />
         </div>
       </div>
     );
   }
   public override render() {
-    const statusText = (this.state.upToDate) ? UiFramework.translate("iModelIndex.upToDate") :
-      UiFramework.translate("iModelIndex.updatesAvailable");
+    const statusText = (this.state.upToDate) ? IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.upToDate") :
+      IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.updatesAvailable");
     return (
       <div className="imodelindex fade-in">
         <div className="imodelindex-header">

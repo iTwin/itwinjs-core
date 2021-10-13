@@ -23,7 +23,7 @@ interface WeightEditorState {
 }
 
 /** WeightEditor React component that is a property editor for picking a weight using a [[WeightPickerButton]] component
- * @beta
+ * @public
  */
 export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
   private _control: any | null = null;
@@ -165,7 +165,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
 
 /** Weight Property Editor registered for the "number" type name and "weight-picker" editor name.
  * It uses the [[WeightEditor]] React component.
- * @beta
+ * @public
  */
 export class WeightPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next

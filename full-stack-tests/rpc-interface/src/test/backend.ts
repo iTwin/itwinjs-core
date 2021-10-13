@@ -30,7 +30,6 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
-process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
@@ -38,8 +37,6 @@ process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

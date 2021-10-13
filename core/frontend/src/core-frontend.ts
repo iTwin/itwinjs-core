@@ -92,6 +92,7 @@ export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
 export * from "./render/RenderTarget";
 export * from "./render/RenderSystem";
+export * from "./render/RenderTexture";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
 export * from "./render/VisibleFeature";
@@ -117,6 +118,8 @@ export * from "./BackgroundMapGeometry";
 export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
+export * from "./RealityDataSource";
+export * from "./RealityDataConnection";
 
 /** @docs-package-description
  * The core-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -228,4 +231,8 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
+ */
+/**
+ * @docs-group-description RealityData
+ * APIs for working with ProjectWise Context Share
  */

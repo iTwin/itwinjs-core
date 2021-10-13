@@ -6,14 +6,14 @@ import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronHost, ElectronHostOptions } from "@itwin/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
@@ -114,7 +114,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   return rpcs;
 };
 
-const getBackendConfig = (): DtaConfiguration => {
+export const loadBackendConfig = (): DtaConfiguration => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
@@ -122,7 +122,7 @@ const getBackendConfig = (): DtaConfiguration => {
 };
 
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
-  const dtaConfig = getBackendConfig();
+  const dtaConfig = loadBackendConfig();
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.logTileLoadTimeThreshold = 3;

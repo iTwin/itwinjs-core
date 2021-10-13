@@ -1,6 +1,6 @@
 # iModels
 
-To work with iModelHub, an [iModel](../../Glossary.md#iModel) has to be created for the [ITwin]($context-registry-client). You can read more about iModels in the [overview page]($docs/learning/iModels.md).
+To work with iModelHub, an [iModel](../../Glossary.md#iModel) has to be created for the [ITwin]($itwin-registry-client). You can read more about iModels in the [overview page]($docs/learning/iModels.md).
 
 ## Working with iModels
 

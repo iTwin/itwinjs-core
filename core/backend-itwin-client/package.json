@@ -1,29 +1,30 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "3.0.0-dev.71",
+  "version": "3.0.0-dev.80",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "lib/backend-itwin-client.js",
+  "main": "lib/cjs/backend-itwin-client.js",
+  "typings": "lib/cjs/backend-itwin-client",
   "browser": {
-    "./lib/backend-itwin-client.js": "./lib/backend-itwin-client-mobile.js"
+    "./lib/cjs/backend-itwin-client.js": "./lib/cjs/backend-itwin-client-mobile.js"
   },
-  "typings": "lib/backend-itwin-client",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "compile": "npm run -s build",
+    "build": "npm run -s build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
+    "cover": "nyc npm -s test",
+    "cover:integration": "nyc --report-dir ./lib/cjs/test/coverage/integration npm run -s test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "npm run copy:test-assets",
+    "pretest": "npm run -s copy:test-assets",
     "test": "mocha --grep=\"#integration\" --invert",
-    "test:integration": "npm run pretest && mocha --grep=\"#integration\"",
+    "test:integration": "",
     "copy:config": "internal-tools copy-config"
   },
   "repository": {
@@ -38,13 +39,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.71",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.71",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.71",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.71",
-    "@itwin/core-common": "workspace:^3.0.0-dev.71",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.71",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.71"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.80",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.80",
+    "@itwin/core-common": "workspace:^3.0.0-dev.80",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.80",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.80"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -53,9 +53,8 @@
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

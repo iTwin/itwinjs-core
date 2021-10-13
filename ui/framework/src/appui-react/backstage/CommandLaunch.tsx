@@ -47,6 +47,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
     if (props.stateSyncIds)
       this._stateSyncIds = props.stateSyncIds.map((value) => value.toLowerCase());
 
+    // eslint-disable-next-line deprecation/deprecation
     this.state = BackstageItemUtilities.getBackstageItemStateFromProps(props);
   }
 
@@ -94,6 +95,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   // deprecated class
   // istanbul ignore next
   public override componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
+    // eslint-disable-next-line deprecation/deprecation
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))
       this.setState((_prevState) => updatedState);

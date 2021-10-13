@@ -224,7 +224,7 @@ describe("RpcInterface", () => {
 
     const endpoints = await RpcManager.describeAvailableEndpoints();
     assert.equal(endpoints[0].interfaceName, "IModelReadRpcInterface");
-    assert.equal(endpoints[0].operationNames[0], "openForRead");
+    assert.equal(endpoints[0].operationNames[0], "getConnectionProps");
     assert(typeof (endpoints[0].interfaceVersion) === "string");
     assert.isTrue(endpoints[0].compatible);
 
@@ -476,10 +476,10 @@ describe("RpcInterface", () => {
     }
 
     const change1 = { id: "change1" };
-    await check("key1", "context1", "imodel1", change1);
-    await check("key1", "context1", "imodel1", undefined);
-    await check("key1", "context1", "imodel1", { id: "" });
-    await check("", "context1", "imodel1", change1);
+    await check("key1", "itwin1", "imodel1", change1);
+    await check("key1", "itwin1", "imodel1", undefined);
+    await check("key1", "itwin1", "imodel1", { id: "" });
+    await check("", "itwin1", "imodel1", change1);
   });
 
   it("should recover when the underlying transport is replaced, resend all active requests, and disregard any zombie responses", async () => {

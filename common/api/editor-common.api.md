@@ -4,6 +4,7 @@
 
 ```ts
 
+import { AngleProps } from '@itwin/core-geometry';
 import { ColorDefProps } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EcefLocationProps } from '@itwin/core-common';
@@ -15,6 +16,7 @@ import { GeometryPartProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelStatus } from '@itwin/core-bentley';
 import { Matrix3dProps } from '@itwin/core-geometry';
+import { Range1dProps } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
@@ -33,6 +35,71 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
     updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
     updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
     updateProjectExtents(extents: Range3dProps): Promise<void>;
+}
+
+// @alpha (undocumented)
+export interface BlendEdgesProps {
+    edges: SubEntityProps | SubEntityProps[];
+    propagateSmooth: boolean;
+    radii: number | number[];
+}
+
+// @alpha (undocumented)
+export enum BooleanMode {
+    Intersect = 2,
+    Subtract = 1,
+    Unite = 0
+}
+
+// @alpha (undocumented)
+export interface BooleanOperationProps {
+    mode: BooleanMode;
+    tools: Id64String | Id64String[];
+}
+
+// @alpha (undocumented)
+export enum BRepEntityType {
+    Invalid = 3,
+    Sheet = 1,
+    Solid = 0,
+    Wire = 2
+}
+
+// @alpha (undocumented)
+export interface ChamferEdgesProps {
+    edges: SubEntityProps | SubEntityProps[];
+    mode: ChamferMode;
+    propagateSmooth: boolean;
+    values1: number | number[];
+    values2?: number | number[];
+}
+
+// @alpha (undocumented)
+export enum ChamferMode {
+    AngleDistance = 4,
+    DistanceAngle = 3,
+    Distances = 2,
+    Length = 1,
+    Ranges = 0
+}
+
+// @alpha (undocumented)
+export interface ConnectedSubEntityProps {
+    adjacentFaces?: true;
+    loopFace?: SubEntityProps;
+    sameSurface?: true;
+    smoothEdges?: true;
+    smoothFaces?: true;
+}
+
+// @alpha (undocumented)
+export interface DeleteSubEntityProps {
+    subEntities: SubEntityProps | SubEntityProps[];
+}
+
+// @alpha (undocumented)
+export interface EdgeParameterRangeProps {
+    uRange: Range1dProps;
 }
 
 // @alpha (undocumented)
@@ -78,11 +145,11 @@ export interface ElementGeometryResultOptions {
     chordTolerance?: number;
     insertProps?: GeometricElementProps;
     requestId?: string;
-    wantAppearance?: true | undefined;
-    wantGeometry?: true | undefined;
-    wantGraphic?: true | undefined;
-    wantRange?: true | undefined;
-    writeChanges?: true | undefined;
+    wantAppearance?: true;
+    wantGeometry?: true;
+    wantGraphic?: true;
+    wantRange?: true;
+    writeChanges?: true;
 }
 
 // @alpha (undocumented)
@@ -92,6 +159,31 @@ export interface ElementGeometryResultProps {
     geometry?: ElementGeometryInfo;
     graphic?: Uint8Array;
     range?: Range3dProps;
+}
+
+// @alpha (undocumented)
+export interface EvaluatedEdgeProps {
+    point: XYZProps;
+    uDir: XYZProps;
+}
+
+// @alpha (undocumented)
+export interface EvaluatedFaceProps {
+    normal: XYZProps;
+    point: XYZProps;
+    uDir: XYZProps;
+    vDir: XYZProps;
+}
+
+// @alpha (undocumented)
+export interface EvaluatedVertexProps {
+    point: XYZProps;
+}
+
+// @alpha (undocumented)
+export interface FaceParameterRangeProps {
+    uRange: Range1dProps;
+    vRange: Range1dProps;
 }
 
 // @alpha (undocumented)
@@ -119,24 +211,94 @@ export interface FlatBufferGeometryPartData {
     is2dPart?: boolean;
 }
 
-// @alpha (undocumented)
-export interface OffsetFacesProps {
+// @alpha
+export interface HollowFacesProps {
+    defaultDistance: number;
     distances: number | number[];
     faces: SubEntityProps | SubEntityProps[];
 }
 
 // @alpha (undocumented)
+export interface LocateSubEntityProps {
+    filter?: SubEntityFilter;
+    hiddenEdgesVisible: boolean;
+    maxDistance?: number;
+    maxEdge: number;
+    maxFace: number;
+    maxVertex: number;
+}
+
+// @alpha (undocumented)
+export interface OffsetEdgesProps {
+    direction: XYZProps;
+    distance: number;
+    edges: SubEntityProps | SubEntityProps[];
+    propagateSmooth: boolean;
+}
+
+// @alpha (undocumented)
+export interface OffsetFacesProps {
+    distances: number | number[];
+    faces: SubEntityProps | SubEntityProps[];
+    offsetAll?: true;
+}
+
+// @alpha (undocumented)
+export interface PointInsideResultProps {
+    index: number;
+    inside: boolean;
+}
+
+// @alpha (undocumented)
+export interface SewSheetProps {
+    tools: Id64String | Id64String[];
+}
+
+// @alpha (undocumented)
 export interface SolidModelingCommandIpc extends EditCommandIpc {
-    // (undocumented)
+    blendEdges(id: Id64String, params: BlendEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    booleanOperation(id: Id64String, params: BooleanOperationProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    chamferEdges(id: Id64String, params: ChamferEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     clearElementGeometryCache(): Promise<void>;
-    // (undocumented)
     createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
-    // (undocumented)
+    deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    evaluateSubEntity(id: Id64String, subEntity: SubEntityProps, uParam?: number, vParam?: number): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined>;
+    getBodySubEntities(id: Id64String, type: SubEntityType, firstOnly?: true): Promise<SubEntityProps[] | undefined>;
     getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
-    // (undocumented)
+    getClosestPoint(id: Id64String, subEntity: SubEntityProps, point: XYZProps): Promise<SubEntityLocationProps | undefined>;
+    getClosestSubEntity(id: Id64String, testPoint: XYZProps): Promise<SubEntityLocationProps | undefined>;
+    getConnectedSubEntities(id: Id64String, subEntity: SubEntityProps, type: SubEntityType, opts?: ConnectedSubEntityProps): Promise<SubEntityProps[] | undefined>;
     getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
-    // (undocumented)
+    getSubEntityParameterRange(id: Id64String, subEntity: SubEntityProps): Promise<FaceParameterRangeProps | EdgeParameterRangeProps | undefined>;
+    hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean>;
+    hasOnlyPlanarFaces(id: Id64String, index: number): Promise<boolean>;
+    hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    isDisjointBody(id: Id64String, index: number): Promise<boolean>;
+    isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
+    isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
+    isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    locateFace(id: Id64String, subEntity: SubEntityProps, point: XYZProps, direction: XYZProps): Promise<SubEntityLocationProps[] | undefined>;
+    locateSubEntities(id: Id64String, spacePoint: XYZProps, direction: XYZProps, opts: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
+    offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined>;
+    sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+}
+
+// @alpha (undocumented)
+export interface SpinFacesProps {
+    angle?: AngleProps;
+    direction: XYZProps;
+    faces: SubEntityProps | SubEntityProps[];
+    origin: XYZProps;
 }
 
 // @alpha (undocumented)
@@ -147,6 +309,15 @@ export interface SubEntityAppearanceProps {
     subCategory?: Id64String;
     transparency?: number;
     weight?: number;
+}
+
+// @alpha (undocumented)
+export interface SubEntityFilter {
+    laminarEdges?: true;
+    nonLinearEdges?: true;
+    nonPlanarFaces?: true;
+    smoothEdges?: true;
+    smoothVertices?: true;
 }
 
 // @alpha (undocumented)
@@ -178,6 +349,24 @@ export enum SubEntityType {
     Edge = 1,
     Face = 0,
     Vertex = 2
+}
+
+// @alpha (undocumented)
+export interface SweepFacesProps {
+    faces: SubEntityProps | SubEntityProps[];
+    path: XYZProps;
+}
+
+// @alpha (undocumented)
+export interface ThickenSheetProps {
+    back: number;
+    front: number;
+}
+
+// @alpha (undocumented)
+export interface TransformSubEntityProps {
+    subEntities: SubEntityProps | SubEntityProps[];
+    transforms: TransformProps | TransformProps[];
 }
 
 

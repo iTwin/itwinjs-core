@@ -13,7 +13,7 @@ import { PropertyData } from "../propertygrid/PropertyDataProvider";
 import { FavoritePropertyList } from "./FavoritePropertyList";
 
 /** Renderer for Favorite Property List
- * @beta
+ * @public
  */
 export class FavoritePropertiesRenderer {
 

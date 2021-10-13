@@ -6,23 +6,21 @@
  * @module IModelHost
  */
 
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
-import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -149,23 +147,6 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
-  public concurrentQuery: ConcurrentQueryConfig = {
-    concurrent: os.cpus().length,
-    autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
-    minMonitorInterval: 1, // 1 seconds
-    idleCleanupTime: 30 * 60, // 30 minutes
-    cachedStatementsPerThread: 40,
-    maxQueueSize: (os.cpus().length) * 500,
-    pollInterval: 50,
-    useSharedCache: false,
-    useUncommittedRead: false,
-    resetStatisticsInterval: 60, // minutes
-    logStatisticsInterval: 5, // minutes
-    quota: {
-      maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
-    },
-  };
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -218,11 +199,19 @@ export class IModelHost {
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
-  /** Get the active authorization/access token for use with various services
-   * @throws if authorizationClient has not been set up
+  /** Get the current access token for this IModelHost, or a blank string if none is available.
+   * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
+   * For all IpcHosts, where this backend is servicing a single frontend, this will be the user's token. For ElectronHost, the backend
+   * obtains the token and forwards it to the frontend.
+   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * returned by this method may change over time throughout the course of a session.
    */
-  public static async getAccessToken(): Promise<AccessToken | undefined> {
-    return this.authorizationClient!.getAccessToken();
+  public static async getAccessToken(): Promise<AccessToken> {
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
   }
 
   /** @internal */
@@ -247,7 +236,7 @@ export class IModelHost {
   }
 
   private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
+    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
@@ -299,7 +288,7 @@ export class IModelHost {
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
 
-    this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
     if (this._platform === undefined) {
@@ -378,7 +367,7 @@ export class IModelHost {
       if (serviceNameComponents.length === 7) {
         startupInfo = {
           ...startupInfo,
-          contextId: serviceNameComponents[4],
+          iTwinId: serviceNameComponents[4],
           iModelId: serviceNameComponents[5],
           changeSetId: serviceNameComponents[6],
         };

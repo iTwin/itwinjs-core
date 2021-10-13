@@ -12,10 +12,11 @@ import {
 } from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
-import { System } from "@itwin/core-frontend/lib/webgl";
+import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
@@ -142,6 +143,8 @@ export class TestRunner {
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
+
+    ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
   }
 
   /** Run all the tests. */
@@ -181,6 +184,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: this.curConfig.renderOptions,
           tileAdmin: this.curConfig.tileProps,
+          realityDataAccess: new RealityDataAccessClient(),
         });
       }
 
@@ -213,9 +217,13 @@ export class TestRunner {
 
       await this.logTest();
 
-      const result = await this.runTest(context);
-      if (result)
-        await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      try {
+        const result = await this.runTest(context);
+        if (result)
+          await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      } catch (ex) {
+        await this.onException(ex);
+      }
     }
   }
 
@@ -376,7 +384,7 @@ export class TestRunner {
           }
         }
       } catch (err: any) {
-        await this.logError(err.toString());
+        await DisplayPerfTestApp.logException(err, { dir: this.curConfig.outputPath, name: this._logFileName });
       }
     }
 
@@ -661,8 +669,6 @@ export class TestRunner {
 
     await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
     await this.logToConsole("Tests complete. Press Ctrl-C to exit.");
-
-    return DisplayPerfRpcInterface.getClient().finishTest();
   }
 
   private async saveCsv(row: Map<string, number | string>): Promise<void> {
@@ -959,6 +965,13 @@ export class TestRunner {
       ctx.putImageData(typeImgData, 0, 0);
       await savePng(this.getImageName(test, `type_${pixStr}_`), canvas);
     }
+  }
+
+  private async onException(ex: any): Promise<void> {
+    // We need to log here so it gets written to the file.
+    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if ("terminate" === this.curConfig.onException)
+      await DisplayPerfRpcInterface.getClient().terminate();
   }
 }
 

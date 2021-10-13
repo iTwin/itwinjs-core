@@ -28,9 +28,7 @@ export interface ExpandableBlockProps extends CommonProps {
   onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
   /** Additional text displayed in the block below the label and in a smaller font size */
   caption?: string;
-  /** Custom tooltip for the component.
-   * @beta
-   */
+  /** Custom tooltip for the component. */
   tooltip?: string;
 }
 

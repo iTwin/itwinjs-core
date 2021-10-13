@@ -34,7 +34,7 @@ describe("V1 Checkpoint Manager", () => {
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
 
-  it("changeset+context props", async () => {
+  it("changeset+itwin props", async () => {
     const props = {
       iTwinId: "5678",
       iModelId: "",
@@ -43,7 +43,7 @@ describe("V1 Checkpoint Manager", () => {
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
 
-  it("changeset+context+imodel props", async () => {
+  it("changeset+itwin+imodel props", async () => {
     const props = {
       iTwinId: "5678",
       iModelId: "910",
@@ -154,7 +154,7 @@ describe("Checkpoint Manager", () => {
 
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { user: "dummy", iTwinId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
   });

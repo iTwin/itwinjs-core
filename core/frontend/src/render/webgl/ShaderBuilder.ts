@@ -471,7 +471,7 @@ export const enum ShaderBuilderFlags {
   InstancedVertexTable = VertexTable | Instanced,
 }
 
-/*
+/**
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
  * @internal

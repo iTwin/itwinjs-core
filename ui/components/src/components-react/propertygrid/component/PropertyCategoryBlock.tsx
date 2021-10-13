@@ -22,9 +22,7 @@ export interface PropertyCategoryBlockProps extends CommonProps {
   category: PropertyCategory;
   /** Callback to when PropertyCategoryBlock gets expended or collapsed */
   onExpansionToggled?: (categoryName: string) => void;
-  /** Properties used for highlighting
-  * @beta
-  */
+  /** Properties used for highlighting */
   highlight?: HighlightingComponentProps;
 }
 

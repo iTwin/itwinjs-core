@@ -95,6 +95,9 @@ const dtaFrontendMain = async () => {
   if (false === configuration.useProjectExtents)
     tileAdminProps.useProjectExtents = false;
 
+  if (configuration.cacheTileMetadata)
+    tileAdminProps.cacheTileMetadata = true;
+
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;
 

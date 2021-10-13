@@ -17,7 +17,7 @@ import { MessageLabel } from "./MessageLabel";
 import { getToastCategory } from "./getToastCategory";
 
 /** Properties for a [[StickyMessage]]
- * @beta
+ * @public
  */
 export interface StickyMessageProps {
   id: string;
@@ -27,7 +27,7 @@ export interface StickyMessageProps {
 }
 
 /** Sticky Message React component
- * @beta
+ * @public
  */
 export function StickyMessage(props: StickyMessageProps) {
   const { id, messageDetails, severity, closeMessage } = props;

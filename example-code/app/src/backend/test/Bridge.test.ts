@@ -7,7 +7,7 @@ import * as path from "path";
 
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
@@ -53,8 +53,8 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function getITwinByName(requestContext: AccessToken, name: string): Promise<ITwin> {
-  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+async function getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
     search: {
       searchString: name,
       propertyName: ITwinSearchableProperty.Name,
@@ -70,33 +70,33 @@ async function getITwinByName(requestContext: AccessToken, name: string): Promis
   return iTwinList[0];
 }
 
-async function createIModel(user: AccessToken, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
+async function createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
   try {
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     if (iModelId !== undefined)
-      await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const newIModelId = await IModelHost.hubAccess.createNewIModel({ user, iModelName, iTwinId, revision0 });
+  const newIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iModelName, iTwinId, revision0 });
   // __PUBLISH_EXTRACT_END__
   return newIModelId;
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
-async function runBridgeFirstTime(user: AccessToken, iModelId: GuidString, iTwinId: GuidString, assetsDir: string) {
+async function runBridgeFirstTime(accessToken: AccessToken, iModelId: GuidString, iTwinId: GuidString, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
 
-  const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
+  const props = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
   const briefcase = await BriefcaseDb.open({ fileName: props.fileName });
 
   // I. Import the schema.
   await briefcase.importSchemas([path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
-  await briefcase.pullChanges({ user });
-  await briefcase.pushChanges({ user, description: "bridge test" });
+  await briefcase.pullChanges({ accessToken });
+  await briefcase.pushChanges({ accessToken, description: "bridge test" });
 
   // II. Import data
 
@@ -144,24 +144,24 @@ async function runBridgeFirstTime(user: AccessToken, iModelId: GuidString, iTwin
   //    Note that you pull and merge first, in case another user has pushed.
   //    Also note that after pushing, all locks will be released.
   briefcase.saveChanges();
-  await briefcase.pullChanges({ user });
-  await briefcase.pushChanges({ user, description: "bridge test" });
+  await briefcase.pullChanges({ accessToken });
+  await briefcase.pushChanges({ accessToken, description: "bridge test" });
 }
 // __PUBLISH_EXTRACT_END__
 
 describe.skip("Bridge", async () => {
 
-  let user: AccessToken;
+  let accessToken: AccessToken;
   let testITwinId: GuidString;
   let revision0: LocalFileName;
   let iModelId: GuidString;
 
   before(async () => {
     await IModelHost.startup();
-    user = await TestUtility.getAccessToken(TestUsers.superManager);
-    testITwinId = (await getITwinByName(user, "iModelJsIntegrationTest")).id;
+    accessToken = await TestUtility.getAccessToken(TestUsers.superManager);
+    testITwinId = (await getITwinByName(accessToken, "iModelJsIntegrationTest")).id;
     revision0 = path.join(KnownTestLocations.assetsDir, "empty.bim");
-    iModelId = await createIModel(user, testITwinId, "BridgeTest", revision0);
+    iModelId = await createIModel(accessToken, testITwinId, "BridgeTest", revision0);
     await IModelHost.shutdown();
   });
 
@@ -171,6 +171,6 @@ describe.skip("Bridge", async () => {
 
   it("should run bridge the first time", async () => {
     const assetsDir = path.join(__dirname, "..", "assets");
-    await runBridgeFirstTime(user, iModelId, testITwinId, assetsDir);
+    await runBridgeFirstTime(accessToken, iModelId, testITwinId, assetsDir);
   });
 });

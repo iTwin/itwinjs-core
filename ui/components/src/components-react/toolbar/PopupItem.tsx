@@ -42,7 +42,7 @@ export function useToolbarPopupContext() {
 }
 
 /** Properties of [[PopupItem]] component.
- * @beta
+ * @public
  */
 export interface PopupItemProps extends ToolbarButtonItemProps {
   /** Describes if expandable item triangle indicator should be hidden. */
@@ -52,7 +52,7 @@ export interface PopupItemProps extends ToolbarButtonItemProps {
 }
 
 /** Popup toolbar item that displays a panel
- * @beta
+ * @public
  */
 export function PopupItem(props: PopupItemProps) {
   const [isPanelShown, setPanelShown] = React.useState(false);

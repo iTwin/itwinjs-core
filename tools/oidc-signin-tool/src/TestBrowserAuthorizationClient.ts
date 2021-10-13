@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, assert, BeEvent } from "@itwin/core-bentley";
-import { AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -23,8 +24,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   private _imsUrl!: string;
   private readonly _config: TestBrowserAuthorizationClientConfiguration;
   private readonly _user: TestUserCredentials;
-  private _accessToken?: AccessToken;
-  private _deploymentRegion?: number;
+  private _accessToken: AccessToken = "";
   private _expiresAt?: Date | undefined = undefined;
 
   /**
@@ -37,20 +37,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     this._user = user;
   }
 
-  /**
-   * Set the deployment region
-   * - For Bentley internal applications, the deployment region is automatically inferred from the "IMJS_BUDDI_RESOLVE_URL_USING_REGION" configuration if possible
-   * - Defaults to PROD if un-specified
-   * @internal
-   */
-  public set deploymentRegion(deploymentRegion: number) {
-    this._deploymentRegion = deploymentRegion;
-  }
-
   private async initialize() {
-    if (undefined === this._deploymentRegion)
-      this._deploymentRegion = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION !== undefined ? Number(process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION) : 0; // Defaults to PROD (for 3rd party users)
-
     const imsClient = new ImsAuthorizationClient();
     this._imsUrl = await imsClient.getUrl();
 
@@ -66,7 +53,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 
   /** Returns true if there's a current authorized user or client (in the case of agent applications).
    * Returns true if signed in and the access token has not expired, and false otherwise.
@@ -96,7 +83,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
    */
   public async getAccessToken(): Promise<AccessToken> {
     if (this.isAuthorized)
-      return this._accessToken!;
+      return this._accessToken;
 
     // Add retry logic to help avoid flaky issues on CI machines.
     let numRetries = 0;
@@ -115,7 +102,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
       break;
     }
 
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   public async signIn(): Promise<void> {
@@ -180,18 +167,15 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     await page.close();
     await browser.close();
 
-    // eslint-disable-next-line no-console
-    // console.log(`Finished OIDC signin for ${this._user.email} ...`);
-
     this._accessToken = `Bearer ${tokenSet.access_token}`;
     if (tokenSet.expires_at)
       this._expiresAt = new Date(tokenSet.expires_at * 1000);
-    this.onUserStateChanged.raiseEvent(this._accessToken);
+    this.onAccessTokenChanged.raiseEvent(this._accessToken);
   }
 
   public async signOut(): Promise<void> {
-    this._accessToken = undefined;
-    this.onUserStateChanged.raiseEvent(this._accessToken);
+    this._accessToken = "";
+    this.onAccessTokenChanged.raiseEvent(this._accessToken);
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {
@@ -438,9 +422,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
  * @param deploymentRegion Deployment region. If unspecified, it's inferred from configuration, or simply defaults to "0" for PROD use
  * @alpha
  */
-export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessToken | undefined> {
+export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials): Promise<AccessToken | undefined> {
   const client = new TestBrowserAuthorizationClient(config, user);
-  if (undefined !== deploymentRegion)
-    client.deploymentRegion = deploymentRegion;
   return client.getAccessToken();
 }

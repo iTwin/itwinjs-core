@@ -12,8 +12,10 @@ import { ColorDef, FillFlags, Gradient, GraphicParams, LinePixels, RenderMateria
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
   return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);
 }
-function compareTextureMappings(lhs?: TextureMapping, rhs?: TextureMapping): number {
-  return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
+function compareTextureMappings(_lhs?: TextureMapping, _rhs?: TextureMapping): number {
+  // ###TODO
+  // return comparePossiblyUndefined((lhTex: TextureMapping, rhTex: TextureMapping) => lhTex === rhTex ? 0 : compareStringsOrUndefined(lhTex.texture.key, rhTex.texture.key), lhs, rhs);
+  return 0;
 }
 
 /** This class is used to determine if things can be batched together for display.

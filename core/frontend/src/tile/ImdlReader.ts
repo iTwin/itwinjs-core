@@ -382,7 +382,7 @@ export class ImdlReader extends GltfReader {
     // We produce unique tile sections for very large (> 8 megapixel) textures, and unique glyph atlases for raster text.
     // Neither should be cached.
     const cacheable = !isGlyph && !isTileSection;
-    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
+    const ownership = cacheable ? { iModel: this._iModel, key: name } : undefined;
 
     const bufferViewId = JsonUtils.asString(namedTex.bufferView);
     const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
@@ -395,11 +395,13 @@ export class ImdlReader extends GltfReader {
 
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
-      const imageSource = new ImageSource(texBytes, format);
-      return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+      const source = new ImageSource(texBytes, format);
+      return this._system.createTextureFromSource({ source, ownership, type: textureType });
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
+    // eslint-disable-next-line deprecation/deprecation
+    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return this._system.createTextureFromElement(name, this._iModel, params, namedTex.format);
   }
 

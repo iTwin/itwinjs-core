@@ -13,7 +13,7 @@ import { ExternalIModel } from "../ExternalIModel";
 
 export interface ViewportDialogProps {
   opened: boolean;
-  projectName: string;
+  iTwinName: string;
   imodelName: string;
   dialogId: string;
 }
@@ -25,7 +25,7 @@ export interface ViewportDialogState {
 }
 
 export class ViewportDialog extends React.Component<ViewportDialogProps, ViewportDialogState> {
-  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _loading = IModelApp.localization.getLocalizedString("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
   public override readonly state: Readonly<ViewportDialogState>;
@@ -38,7 +38,7 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
   }
 
   public override async componentDidMount() {
-    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    const externalIModel = await ExternalIModel.create({iTwinName: this.props.iTwinName, iModelName: this.props.imodelName});
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {

@@ -94,7 +94,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   private getViewFlagItem(flagName: string, value: boolean, labelKey?: string) {
-    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : /* istanbul ignore next */ this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
+    return <Checkbox key={flagName} label={labelKey ? IModelApp.localization.getLocalizedString(labelKey) : /* istanbul ignore next */ this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
   }
 
   private getFlagState(flagName: string) {
@@ -102,7 +102,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   private getToggleCameraItem() {
-    return <Checkbox key={"toggleCamera"} label={IModelApp.i18n.translate("UiFramework:listTools.camera")} onClick={this._handleToggleCamera} defaultChecked={this.state.cameraOn} />;
+    return <Checkbox key={"toggleCamera"} label={IModelApp.localization.getLocalizedString("UiFramework:listTools.camera")} onClick={this._handleToggleCamera} defaultChecked={this.state.cameraOn} />;
   }
 
   private getViewFlags() {

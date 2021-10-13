@@ -71,7 +71,7 @@ public;GroupButton
 public;IconDefinition
 public;IconEditorParams 
 public;IconListEditorParams 
-beta;IconSpecUtilities
+public;IconSpecUtilities
 internal;IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null
 public;ImageCheckBoxParams 
 public;IMatch
@@ -121,7 +121,7 @@ public;PropertyChangeResult
 public;PropertyChangeStatus
 public;PropertyConverterInfo
 public;PropertyDescription
-beta;PropertyDescriptionHelper
+public;PropertyDescriptionHelper
 public;PropertyEditorInfo
 public;PropertyEditorParams = BasePropertyEditorParams
 public;PropertyEditorParamTypes
@@ -138,8 +138,8 @@ public;StagePanelLocation
 public;StagePanelSection
 public;StageUsage
 public;StandardContentLayouts
-beta;StandardEditorNames
-beta;StandardTypeNames
+public;StandardEditorNames
+public;StandardTypeNames
 internal;startsWithIgnoreCase(str: string, candidate: string): boolean
 public;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
@@ -166,8 +166,10 @@ public;UiError
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
 beta;UiItemsApplication
+deprecated;UiItemsApplication
 public;UiItemsApplicationAction
 beta;UiItemsArbiter
+deprecated;UiItemsArbiter
 public;UiItemsManager
 public;UiItemsProvider
 public;class UiLayoutDataProvider 

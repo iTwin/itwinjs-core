@@ -24,7 +24,7 @@ interface EnumEditorState {
 }
 
 /** EnumEditor React component that is a property editor with select input
-  * @beta
+  * @public
   */
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
@@ -186,7 +186,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
 /** Enum Property Button Group Editor registered for the "enum" type name.
   * It uses the [[EnumEditor]] React component.
-  * @beta
+  * @public
   */
 export class EnumPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next
