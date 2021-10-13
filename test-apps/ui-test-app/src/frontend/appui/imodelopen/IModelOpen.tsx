@@ -7,7 +7,7 @@ import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { AccessToken, BeDuration } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient } from "@bentley/itwin-registry-client";
+import { Project, ProjectsAccessClient } from "@itwin/projects-client/lib/cjs/projects-client";
 import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";
@@ -30,9 +30,9 @@ interface IModelOpenState {
   isLoadingITwins: boolean;
   isLoadingIModels: boolean;
   isLoadingIModel: boolean;
-  recentITwins?: ITwin[];
+  recentITwins?: Project[];
   iModels?: IModelInfo[];
-  currentITwin?: ITwin;
+  currentITwin?: Project;
   prompt: string;
   isNavigationExpanded: boolean;
 }
@@ -72,7 +72,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       return;
 
     const accessToken = await IModelApp.getAccessToken();
-    const client = new ITwinAccessClient();
+    const client = new ProjectsAccessClient();
     const iTwins = await client.getAll(accessToken, { pagination: { skip: 0, top: 10 } });
     this.setState({
       isLoadingITwins: false,
@@ -116,7 +116,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   // retrieves the IModels for a iTwin. Called when first mounted and when a new iTwin is selected.
-  private startRetrieveIModels = async (iTwin: ITwin) => {
+  private startRetrieveIModels = async (iTwin: Project) => {
     this.setState({
       prompt: "Fetching iModel information...",
       isLoadingIModels: true,
@@ -135,7 +135,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
-  private _selectITwin = async (iTwin: ITwin) => {
+  private _selectITwin = async (iTwin: Project) => {
     return this.startRetrieveIModels(iTwin);
   };
 

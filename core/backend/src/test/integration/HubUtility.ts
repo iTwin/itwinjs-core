@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { AccessToken, BentleyStatus, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -593,20 +593,20 @@ class TestITwin {
     return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
-  private static _iTwinAccessClient?: ITwinAccessClient;
+  private static _iTwinAccessClient?: ProjectsAccessClient;
 
-  private static get iTwinClient(): ITwinAccessClient {
+  private static get iTwinClient(): ProjectsAccessClient {
     if (this._iTwinAccessClient === undefined)
-      this._iTwinAccessClient = new ITwinAccessClient();
+      this._iTwinAccessClient = new ProjectsAccessClient();
     return this._iTwinAccessClient;
   }
 
-  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<Project> {
     const client = TestITwin.iTwinClient;
-    const iTwinList: ITwin[] = await client.getAll(accessToken, {
+    const iTwinList: Project[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
-        propertyName: ITwinSearchableProperty.Name,
+        propertyName: ProjectsSearchableProperty.Name,
         exactMatch: true,
       },
     });

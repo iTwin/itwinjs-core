@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 
 /** Basic configuration used by all tests
@@ -17,12 +17,12 @@ export class TestConfig {
     return getAccessTokenFromBackend(user);
   }
 
-  public static async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
-    const iTwinAccessClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken, {
+  public static async getITwinByName(accessToken: AccessToken, name: string): Promise<Project> {
+    const iTwinAccessClient = new ProjectsAccessClient();
+    const iTwinList: Project[] = await iTwinAccessClient.getAll(accessToken, {
       search: {
         searchString: name,
-        propertyName: ITwinSearchableProperty.Name,
+        propertyName: ProjectsSearchableProperty.Name,
         exactMatch: true,
       },
     });

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/itwin-registry-client";
+import { Project } from "@itwin/projects-client/lib/cjs/projects-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -90,7 +90,7 @@ export class TestUtility {
     if (accessToken === "")
       throw new Error("no access token");
 
-    const iTwin: ITwin = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
+    const iTwin: Project = await this.iTwinPlatformEnv.iTwinMgr.getITwinByName(accessToken, iTwinName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }

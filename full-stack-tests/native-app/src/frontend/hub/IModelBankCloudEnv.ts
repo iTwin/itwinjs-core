@@ -6,7 +6,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { IModelBankClient, IModelBankFileSystemITwinClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
-import { ITwin } from "@bentley/itwin-registry-client";
+import { Project } from "@itwin/projects-client/lib/cjs/projects-client";
 import { AccessToken } from "@itwin/core-bentley";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
@@ -28,7 +28,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
   }
 
   public async bootstrapITwin(accessToken: AccessToken, iTwinName: string): Promise<void> {
-    let iTwin: ITwin | undefined;
+    let iTwin: Project | undefined;
     try {
       iTwin = await this.iTwinMgr.getITwinByName(accessToken, iTwinName);
       if (iTwin === undefined)

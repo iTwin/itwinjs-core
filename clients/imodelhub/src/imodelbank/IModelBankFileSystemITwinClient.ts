@@ -6,7 +6,7 @@
  * @module iModelBankClient
  */
 import { AccessToken, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/itwin-registry-client";
+import { Project } from "@itwin/projects-client/lib/cjs/projects-client";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgError, WSStatus } from "../wsg/WsgClient";
@@ -63,11 +63,11 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     return props.map((value) => value.properties as IModelFileSystemITwinProps);
   }
 
-  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<Project> {
     const props = await this.queryITwinProps(accessToken, name);
 
     // Get first iTwin
-    return props[0] as ITwin;
+    return props[0] as Project;
   }
 
   public async createITwin(accessToken: AccessToken, name: string): Promise<void> {

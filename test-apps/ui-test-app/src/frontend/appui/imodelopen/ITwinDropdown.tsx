@@ -7,14 +7,14 @@ import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { Popup } from "@itwin/core-react";
-import { ITwin } from "@bentley/itwin-registry-client";
+import { Project } from "@itwin/projects-client/lib/cjs/projects-client";
 
 /** Properties for the [[ITwinDropdown]] component */
 export interface ITwinDropdownProps {
   numVisibleITwins?: number;
-  recentITwins?: ITwin[];
-  currentITwin?: ITwin;
-  onITwinClicked: (iTwin: ITwin) => any;
+  recentITwins?: Project[];
+  currentITwin?: Project;
+  onITwinClicked: (iTwin: Project) => any;
 }
 
 interface ITwinDropdownState {
@@ -43,12 +43,12 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     this.setState({ showITwinsDialog: true });
   };
 
-  private _onItemClick(iTwin: ITwin) {
+  private _onItemClick(iTwin: Project) {
     this.closeDropdown();
     this.props.onITwinClicked(iTwin);
   }
 
-  private _onITwinSelected = (iTwin: ITwin) => {
+  private _onITwinSelected = (iTwin: Project) => {
     this.closeDialog();
     this.props.onITwinClicked(iTwin);
   };
@@ -69,7 +69,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     this.setState({ showITwinsDialog: false });
   }
 
-  private getITwins(): ITwin[] {
+  private getITwins(): Project[] {
     if (this.props.recentITwins) {
       return this.props.recentITwins;
     }
@@ -77,7 +77,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
   }
 
   private renderITwins() {
-    const iTwins: ITwin[] = this.getITwins();
+    const iTwins: Project[] = this.getITwins();
     const ulStyle: React.CSSProperties = {
       height: `${this.props.numVisibleITwins! * this._itemHeight}em`,
     };
@@ -92,7 +92,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     } else {
       return (
         <ul style={ulStyle}>
-          {iTwins && iTwins.map((iTwin: ITwin, i: number) => (
+          {iTwins && iTwins.map((iTwin: Project, i: number) => (
             <li style={liStyle} key={i} onClick={() => this._onItemClick(iTwin)}>
               <span className="ip-icon icon icon-placeholder" />
               <div className="ip-details">
