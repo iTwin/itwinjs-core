@@ -540,14 +540,18 @@
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-http-backend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "i18next-xhr-backend",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -580,11 +584,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "backend", "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "backend", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",
@@ -944,7 +948,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "xpath",

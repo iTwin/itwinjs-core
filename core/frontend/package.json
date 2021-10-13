@@ -42,7 +42,6 @@
     "@itwin/core-bentley": "workspace:^3.0.0-dev.84",
     "@itwin/core-geometry": "workspace:^3.0.0-dev.84",
     "@itwin/core-common": "workspace:^3.0.0-dev.84",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.84",
     "@itwin/core-quantity": "workspace:^3.0.0-dev.84",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.84",
     "@itwin/core-orbitgt": "workspace:^3.0.0-dev.84",
@@ -62,7 +61,6 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
@@ -94,6 +92,7 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@itwin/core-i18n": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",
