@@ -13,8 +13,8 @@ describe("Unexpected error handling", () => {
     let unexpectedCalled = 0;
     let telemetry1 = 0;
     let telemetry2 = 0;
-    let evListener1 = 0; // before bad listener
-    let evListener2 = 0; // after bad listener
+    let evListener1 = 0;
+    let evListener2 = 0;
     const error = new Error("something bad happened");
 
     UnexpectedErrors.setHandler((e) => {
@@ -30,9 +30,9 @@ describe("Unexpected error handling", () => {
       telemetry2++;
     });
     const myEvent = new BeEvent<() => void>();
-    myEvent.addListener(() => evListener1++);
-    myEvent.addListener(() => { throw error; });
-    myEvent.addListener(() => evListener2++);
+    myEvent.addListener(() => evListener1++); // before bad listener
+    myEvent.addListener(() => { throw error; }); // bang
+    myEvent.addListener(() => evListener2++); // after bad listener
 
     myEvent.raiseEvent();
     expect(unexpectedCalled).equals(1);
@@ -65,6 +65,5 @@ describe("Unexpected error handling", () => {
 
     UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
     expect(() => myEvent.raiseEvent()).to.throw(error.message);
-
   });
 });
