@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { Format, FormatTraits, FormatType, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECClassModifier } from "@itwin/ecschema-metadata";
 
 describe("Formats tests", () => {
   let testEditor: SchemaContextEditor;
@@ -23,6 +24,12 @@ describe("Formats tests", () => {
     const format = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as Format;
     expect(format.fullName).to.eql("testSchema.testFormat");
     expect(format.label).to.eql("testLabel");
+  });
+
+  it("create Format with invalid type for units, throws", async () => {
+    const entityResult = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
+    const result = await testEditor.formats.create(testKey, "testFormat", FormatType.Decimal, "testLabel", [entityResult.itemKey!]);
+    expect(result.errorMessage).to.equal("testSchema.testEntity is not of type Unit or InvertedUnit.");
   });
 
   it("should create a valid Format from FormatProps", async () => {

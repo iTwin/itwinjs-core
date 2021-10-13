@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { FormatProps, FormatType, InvertedUnit, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { FormatProps, FormatType, InvertedUnit, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
 
@@ -29,6 +29,9 @@ export class Formats {
         if (unitItem === undefined) {
           return { errorMessage: `Failed to locate unit ${unit.name} in Schema Context.` };
         }
+
+        if ((unitItem as SchemaItem).schemaItemType !== SchemaItemType.Unit && (unitItem as SchemaItem).schemaItemType !== SchemaItemType.InvertedUnit)
+          return { errorMessage: `${unitItem.fullName} is not of type Unit or InvertedUnit.` };
         newFormat.addUnit(unitItem);
       }
     }

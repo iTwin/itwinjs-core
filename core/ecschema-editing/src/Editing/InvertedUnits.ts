@@ -28,17 +28,17 @@ export class InvertedUnits {
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
     }
 
-    const invertsUnit = await schema.lookupItem(invertsUnitKey) as Unit;
+    const invertsUnit = await schema.lookupItem(invertsUnitKey);
     if (invertsUnit === undefined) return { errorMessage: `Unable to locate unit ${invertsUnitKey.fullName} in schema ${schema.fullName}.` };
     if (invertsUnit.schemaItemType !== SchemaItemType.Unit) return { errorMessage: `${invertsUnit.fullName} is not of type Unit.` };
 
-    newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+    newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit as Unit));
 
-    const unitSystem = await schema.lookupItem(unitSystemKey) as UnitSystem;
+    const unitSystem = await schema.lookupItem(unitSystemKey);
     if (unitSystem === undefined) return { errorMessage: `Unable to locate unit system ${unitSystemKey.fullName} in schema ${schema.fullName}.` };
     if (unitSystem.schemaItemType !== SchemaItemType.UnitSystem) return { errorMessage: `${unitSystemKey.fullName} is not of type Unit System.` };
 
-    newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
+    newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem as UnitSystem));
 
     if (displayLabel) { newUnit.setDisplayLabel(displayLabel); }
 
@@ -65,11 +65,11 @@ export class InvertedUnits {
     if (invertedUnit === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Inverted Unit ${invertedUnitKey.fullName} not found in schema context.`);
     if (invertedUnit.schemaItemType !== SchemaItemType.InvertedUnit) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`);
 
-    const invertsUnit = await this._schemaEditor.schemaContext.getSchemaItem(invertsUnitKey) as Unit;
+    const invertsUnit = await this._schemaEditor.schemaContext.getSchemaItem(invertsUnitKey);
     if (invertsUnit === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unit ${invertsUnitKey.fullName} not found in schema context.`);
     if (invertsUnit.schemaItemType !== SchemaItemType.Unit) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${invertsUnitKey.fullName} to be of type Unit.`);
 
-    invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+    invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit as Unit));
   }
 
   public async setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void> {
@@ -78,10 +78,10 @@ export class InvertedUnits {
     if (invertedUnit === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Inverted Unit ${invertedUnitKey.fullName} not found in schema context.`);
     if (invertedUnit.schemaItemType !== SchemaItemType.InvertedUnit) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`);
 
-    const unitSystem = await this._schemaEditor.schemaContext.getSchemaItem(unitSystemKey) as UnitSystem;
+    const unitSystem = await this._schemaEditor.schemaContext.getSchemaItem(unitSystemKey);
     if (unitSystem === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unit ${unitSystemKey.fullName} not found in schema context.`);
     if (unitSystem.schemaItemType !== SchemaItemType.UnitSystem) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${unitSystemKey.fullName} to be of type Unit System.`);
 
-    invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
+    invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem as UnitSystem));
   }
 }

@@ -45,12 +45,12 @@ export class KindOfQuantities {
     if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
     if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
-    const presentationFormat = await (this._schemaEditor.schemaContext.getSchemaItem(format)) as Format;
+    const presentationFormat = await (this._schemaEditor.schemaContext.getSchemaItem(format));
     if (undefined === presentationFormat)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${format.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
     if (presentationFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${presentationFormat.fullName} to be of type Format.`);
 
-    kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
+    kindOfQuantity.addPresentationFormat(presentationFormat as Format, isDefault);
   }
 
   public async addPresentationOverrideFormat(koqKey: SchemaItemKey, overrideFormat: OverrideFormat, isDefault: boolean = false): Promise<void> {
@@ -73,11 +73,11 @@ export class KindOfQuantities {
     if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
     if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
-    const parentFormat = await (this._schemaEditor.schemaContext.getSchemaItem(parent)) as Format;
+    const parentFormat = await (this._schemaEditor.schemaContext.getSchemaItem(parent));
     if (undefined === parentFormat)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${parent.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
     if (parentFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${parentFormat.fullName} to be of type Format.`);
 
-    return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
+    return new OverrideFormat(parentFormat as Format, precision, unitLabelOverrides);
   }
 }

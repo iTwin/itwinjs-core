@@ -7,8 +7,8 @@
  */
 
 import {
-  CustomAttributeClass, CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
-  SchemaItemKey, SchemaKey,
+  CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
+  SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
@@ -33,8 +33,10 @@ export class CustomAttributes extends ECClasses {
     }
 
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass) as CustomAttributeClass;
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
+      const baseClassItem = await schema.lookupItem(baseClass);
+      if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
+      if (baseClassItem.schemaItemType !== SchemaItemType.CustomAttributeClass) return { errorMessage: `${baseClassItem.fullName} is not of type CustomAttribute Class.` };
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem as ECClass);
     }
     if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 

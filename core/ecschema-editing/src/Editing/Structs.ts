@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
@@ -29,8 +29,10 @@ export class Structs extends ECClasses {
     }
 
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass) as StructClass;
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
+      const baseClassItem = await schema.lookupItem(baseClass);
+      if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
+      if (baseClassItem.schemaItemType !== SchemaItemType.StructClass) return { errorMessage: `${baseClassItem.fullName} is not of type Struct Class.` };
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem as StructClass);
     }
 
     if (displayLabel) { newClass.setDisplayLabel(displayLabel); }

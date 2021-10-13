@@ -33,10 +33,10 @@ export class Entities extends ECClasses {
 
     // Add a deserializing method.
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass) as EntityClass;
+      const baseClassItem = await schema.lookupItem(baseClass);
       if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
       if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass) return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem as EntityClass);
     }
 
     if (mixins !== undefined) {
@@ -68,7 +68,7 @@ export class Entities extends ECClasses {
   }
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
     const entity = (await this._schemaEditor.schemaContext.getSchemaItem(entityKey)) as MutableEntityClass;
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem(mixinKey)) as Mixin;
+    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem(mixinKey));
 
     // TODO: have a helpful returns
     if (entity === undefined) return;
@@ -76,7 +76,7 @@ export class Entities extends ECClasses {
     if (entity.schemaItemType !== SchemaItemType.EntityClass) return;
     if (mixin.schemaItemType !== SchemaItemType.Mixin) return;
 
-    entity.addMixin(mixin);
+    entity.addMixin(mixin as Mixin);
   }
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {

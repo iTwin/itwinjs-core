@@ -164,6 +164,21 @@ export class SchemaContextEditor {
   }
 
   /**
+   * Sets the schema version.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param readVersion The read version of the schema. If not specified, the existing read version will be maintained.
+   * @param writeVersion The write version of the schema. If not specified, the existing write version will be maintained.
+   * @param minorVersion The minor version of the schema. If not specified, the existing minor version will be maintained.
+   */
+  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
+    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+    schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
+    return {};
+  }
+
+  /**
    * Increments the minor version of a schema.
    * @param schemaKey The SchemaKey identifying the schema.
    */
