@@ -6,7 +6,7 @@
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 
 /**
- * Argument for methods that must supply an iTwinId
+ * Argument for methods that can supply an iTwinId and iModelId.
  * @beta
  */
 export interface ITwinIdArg {
@@ -15,7 +15,7 @@ export interface ITwinIdArg {
 }
 
 /**
- * Argument for methods that must supply an IModelId
+ * Argument for methods that can supply an access token.
  * @beta
  */
 export interface TokenArg {
@@ -23,7 +23,7 @@ export interface TokenArg {
 }
 
 /**
- * Argument for methods that must supply an IModelId
+ * Argument for methods that can supply the user preference content.
  * @beta
  */
 export interface PreferenceArg extends PreferenceKeyArg {
@@ -31,7 +31,7 @@ export interface PreferenceArg extends PreferenceKeyArg {
 }
 
 /**
- * Argument for methods that must supply an IModelId
+ * Argument for methods that must supply a key for the user preference.
  * @beta
  */
 export interface PreferenceKeyArg {
