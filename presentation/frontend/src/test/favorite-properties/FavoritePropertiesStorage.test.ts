@@ -66,9 +66,17 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       expect(properties).to.be.undefined;
     });
 
+    it("throws when user preferences not set up", async () => {
+      sinon.stub(IModelApp, "userPreferences").get(() => undefined);
+      await expect(storage.loadProperties()).to.eventually.be.rejected;
+    });
+
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
+      await expect(storage.loadProperties()).to.eventually.be.rejected;
+
+      IModelApp.authorizationClient = undefined;
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
@@ -84,10 +92,18 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       settingsAdminMock.verify(async (x) => x.save(moq.It.isAny()), moq.Times.once());
     });
 
+    it("throws when user preferences not set up", async () => {
+      sinon.stub(IModelApp, "userPreferences").get(() => undefined);
+      await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
+    });
+
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
+
+      IModelApp.authorizationClient = undefined;
+      await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
   });
@@ -117,10 +133,18 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       expect(properties).to.be.undefined;
     });
 
+    it("throws when user preferences not set up", async () => {
+      sinon.stub(IModelApp, "userPreferences").get(() => undefined);
+      await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
+    });
+
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.loadPropertiesOrder("iTwinId", "imodelId")).to.eventually.be.rejected;
+
+      IModelApp.authorizationClient = undefined;
+      await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
   });
@@ -149,10 +173,18 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       settingsAdminMock.verifyAll();
     });
 
+    it("throws when user preferences not set up", async () => {
+      sinon.stub(IModelApp, "userPreferences").get(() => undefined);
+      await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
+    });
+
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
       authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(""));
       await expect(storage.savePropertiesOrder([], "iTwinId", "imodelId")).to.eventually.be.rejected;
+
+      IModelApp.authorizationClient = undefined;
+      await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
   });

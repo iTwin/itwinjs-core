@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
@@ -79,17 +79,18 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
  */
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
 
-  private async isSignedIn(): Promise<boolean> {
-    // If the authorization client is provided, it should give a valid response to getAccessToken
-    return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
+  private async ensureIsSignedIn(): Promise<{ accessToken: AccessToken }> {
+    const accessToken = IModelApp.authorizationClient ? await IModelApp.authorizationClient.getAccessToken() : "";
+    if (accessToken)
+      return { accessToken };
+    throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
   }
 
   public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
 
-    const accessToken = await IModelApp.getAccessToken();
+    const { accessToken } = await this.ensureIsSignedIn();
     let setting = await IModelApp.userPreferences.get({
       accessToken,
       iTwinId,
@@ -115,10 +116,10 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void> {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
-    const accessToken = await IModelApp.getAccessToken();
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+
+    const { accessToken } = await this.ensureIsSignedIn();
     await IModelApp.userPreferences.save({
       accessToken,
       iTwinId,
@@ -129,10 +130,10 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
-    const accessToken = await IModelApp.getAccessToken();
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+
+    const { accessToken } = await this.ensureIsSignedIn();
     const setting = await IModelApp.userPreferences.get({
       accessToken,
       iTwinId,
@@ -143,10 +144,10 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string) {
-    if (!(await this.isSignedIn())) {
-      throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
-    }
-    const accessToken = await IModelApp.getAccessToken();
+    if (!IModelApp.userPreferences)
+      throw new PresentationError(PresentationStatus.Error, "User preferences service is not set up");
+
+    const { accessToken } = await this.ensureIsSignedIn();
     await IModelApp.userPreferences.save({
       accessToken,
       iTwinId,
