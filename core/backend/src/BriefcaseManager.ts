@@ -243,8 +243,8 @@ export class BriefcaseManager {
    * @internal
    */
   public static deleteChangeSetsFromLocalDisk(iModelId: string) {
-    const changeSetsPath = BriefcaseManager.getChangeSetsPath(iModelId);
-    BriefcaseManager.deleteFolderAndContents(changeSetsPath);
+    const changesetsPath = BriefcaseManager.getChangeSetsPath(iModelId);
+    BriefcaseManager.deleteFolderAndContents(changesetsPath);
   }
 
   /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.

@@ -354,7 +354,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.equal(masterDb.iTwinId, iTwinId);
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
-    const changeSetMasterState0 = masterDb.changeset.id;
+    const changesetMasterState0 = masterDb.changeset.id;
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
@@ -364,7 +364,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(branchDb1.isBriefcaseDb());
     assert.equal(branchDb1.iTwinId, iTwinId);
     assertPhysicalObjects(branchDb1, state0);
-    const changeSetBranch1First = branchDb1.changeset.id;
+    const changesetBranch1First = branchDb1.changeset.id;
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
@@ -373,7 +373,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(branchDb2.isBriefcaseDb());
     assert.equal(branchDb2.iTwinId, iTwinId);
     assertPhysicalObjects(branchDb2, state0);
-    const changeSetBranch2First = branchDb2.changeset.id;
+    const changesetBranch2First = branchDb2.changeset.id;
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
@@ -402,10 +402,10 @@ describe("IModelTransformerHub (#integration)", () => {
       // push Branch1 and Branch2 provenance changes
       await saveAndPushChanges(branchDb1, "State0");
       await saveAndPushChanges(branchDb2, "State0");
-      const changeSetBranch1State0 = branchDb1.changeset.id;
-      const changeSetBranch2State0 = branchDb2.changeset.id;
-      assert.notEqual(changeSetBranch1State0, changeSetBranch1First);
-      assert.notEqual(changeSetBranch2State0, changeSetBranch2First);
+      const changesetBranch1State0 = branchDb1.changeset.id;
+      const changesetBranch2State0 = branchDb2.changeset.id;
+      assert.notEqual(changesetBranch1State0, changesetBranch1First);
+      assert.notEqual(changesetBranch2State0, changesetBranch2First);
 
       // push Branch1 State1
       const delta01 = [2, 3, 4]; // update 2, insert 3 and 4
@@ -413,8 +413,8 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(branchDb1, delta01);
       assertPhysicalObjects(branchDb1, state1);
       await saveAndPushChanges(branchDb1, "State0 -> State1");
-      const changeSetBranch1State1 = branchDb1.changeset.id;
-      assert.notEqual(changeSetBranch1State1, changeSetBranch1State0);
+      const changesetBranch1State1 = branchDb1.changeset.id;
+      assert.notEqual(changesetBranch1State1, changesetBranch1State0);
 
       // push Branch1 State2
       const delta12 = [1, -3, 5, 6]; // update 1, delete 3, insert 5 and 6
@@ -422,32 +422,32 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(branchDb1, delta12);
       assertPhysicalObjects(branchDb1, state2);
       await saveAndPushChanges(branchDb1, "State1 -> State2");
-      const changeSetBranch1State2 = branchDb1.changeset.id;
-      assert.notEqual(changeSetBranch1State2, changeSetBranch1State1);
+      const changesetBranch1State2 = branchDb1.changeset.id;
+      assert.notEqual(changesetBranch1State2, changesetBranch1State1);
 
       // merge changes made on Branch1 back to Master
       const branch1ToMaster = new IModelTransformer(branchDb1, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      await branch1ToMaster.processChanges(accessToken, changeSetBranch1State1);
+      await branch1ToMaster.processChanges(accessToken, changesetBranch1State1);
       branch1ToMaster.dispose();
       assertPhysicalObjects(masterDb, state2);
       assertPhysicalObjectUpdated(masterDb, 1);
       assertPhysicalObjectUpdated(masterDb, 2);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
       await saveAndPushChanges(masterDb, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
-      const changeSetMasterState2 = masterDb.changeset.id;
-      assert.notEqual(changeSetMasterState2, changeSetMasterState0);
+      const changesetMasterState2 = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState2, changesetMasterState0);
       branchDb1.saveChanges(); // saves provenance locally in case of re-merge
 
       // merge changes from Master to Branch2
       const masterToBranch2 = new IModelTransformer(masterDb, branchDb2);
-      await masterToBranch2.processChanges(accessToken, changeSetMasterState2);
+      await masterToBranch2.processChanges(accessToken, changesetMasterState2);
       masterToBranch2.dispose();
       assertPhysicalObjects(branchDb2, state2);
       await saveAndPushChanges(branchDb2, "State0 -> State2");
-      const changeSetBranch2State2 = branchDb2.changeset.id;
-      assert.notEqual(changeSetBranch2State2, changeSetBranch2State0);
+      const changesetBranch2State2 = branchDb2.changeset.id;
+      assert.notEqual(changesetBranch2State2, changesetBranch2State0);
 
       // make changes to Branch2
       const delta23 = [7, 8];
@@ -455,20 +455,20 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
       await saveAndPushChanges(branchDb2, "State2 -> State3");
-      const changeSetBranch2State3 = branchDb2.changeset.id;
-      assert.notEqual(changeSetBranch2State3, changeSetBranch2State2);
+      const changesetBranch2State3 = branchDb2.changeset.id;
+      assert.notEqual(changesetBranch2State3, changesetBranch2State2);
 
       // merge changes made on Branch2 back to Master
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      await branch2ToMaster.processChanges(accessToken, changeSetBranch2State3);
+      await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
       branch2ToMaster.dispose();
       assertPhysicalObjects(masterDb, state3);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
       await saveAndPushChanges(masterDb, "State2 -> State3");
-      const changeSetMasterState3 = masterDb.changeset.id;
-      assert.notEqual(changeSetMasterState3, changeSetMasterState2);
+      const changesetMasterState3 = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState3, changesetMasterState2);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
 
       // make change directly on Master
@@ -477,29 +477,29 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
       await saveAndPushChanges(masterDb, "State3 -> State4");
-      const changeSetMasterState4 = masterDb.changeset.id;
-      assert.notEqual(changeSetMasterState4, changeSetMasterState3);
+      const changesetMasterState4 = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState4, changesetMasterState3);
 
       // merge Master to Branch1
       const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
-      await masterToBranch1.processChanges(accessToken, changeSetMasterState3);
+      await masterToBranch1.processChanges(accessToken, changesetMasterState3);
       masterToBranch1.dispose();
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
       await saveAndPushChanges(branchDb1, "State2 -> State4");
-      const changeSetBranch1State4 = branchDb1.changeset.id;
-      assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
+      const changesetBranch1State4 = branchDb1.changeset.id;
+      assert.notEqual(changesetBranch1State4, changesetBranch1State2);
 
-      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
-      assert.equal(masterDbChangeSets.length, 3);
+      const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
+      assert.equal(masterDbChangesets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
-      for (const masterDbChangeSet of masterDbChangeSets) {
-        assert.isDefined(masterDbChangeSet.id);
-        assert.isDefined(masterDbChangeSet.description); // test code above always included a change description when pushChanges was called
-        const changeSetPath = masterDbChangeSet.pathname;
-        assert.isTrue(IModelJsFs.existsSync(changeSetPath));
-        // below is one way of determining the set of elements that were deleted in a specific changeSet
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+      for (const masterDbChangeset of masterDbChangesets) {
+        assert.isDefined(masterDbChangeset.id);
+        assert.isDefined(masterDbChangeset.description); // test code above always included a change description when pushChanges was called
+        const changesetPath = masterDbChangeset.pathname;
+        assert.isTrue(IModelJsFs.existsSync(changesetPath));
+        // below is one way of determining the set of elements that were deleted in a specific changeset
+        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
         assert.isUndefined(statusOrResult.error);
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
         assert.isDefined(result.element);
@@ -519,25 +519,25 @@ describe("IModelTransformerHub (#integration)", () => {
       // note: this test knows that there were no schema changes, so does not call `processSchemas`
       await replayTransformer.processAll(); // process any elements that were part of the "seed"
       await saveAndPushChanges(replayedDb, "changes from source seed");
-      for (const masterDbChangeSet of masterDbChangeSets) {
-        await sourceDb.pullChanges({ accessToken, toIndex: masterDbChangeSet.index });
+      for (const masterDbChangeset of masterDbChangesets) {
+        await sourceDb.pullChanges({ accessToken, toIndex: masterDbChangeset.index });
         await replayTransformer.processChanges(accessToken, sourceDb.changeset.id);
-        await saveAndPushChanges(replayedDb, masterDbChangeSet.description ?? "");
+        await saveAndPushChanges(replayedDb, masterDbChangeset.description ?? "");
       }
       replayTransformer.dispose();
       sourceDb.close();
       assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
-      assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
+      const replayedDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
+      assert.isAtLeast(replayedDbChangesets.length, masterDbChangesets.length); // replayedDb will have more changesets when seed contains elements
       const replayedDeletedElementIds = new Set<Id64String>();
-      for (const replayedDbChangeSet of replayedDbChangeSets) {
-        assert.isDefined(replayedDbChangeSet.id);
-        const changeSetPath = replayedDbChangeSet.pathname;
-        assert.isTrue(IModelJsFs.existsSync(changeSetPath));
-        // below is one way of determining the set of elements that were deleted in a specific changeSet
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+      for (const replayedDbChangeset of replayedDbChangesets) {
+        assert.isDefined(replayedDbChangeset.id);
+        const changesetPath = replayedDbChangeset.pathname;
+        assert.isTrue(IModelJsFs.existsSync(changesetPath));
+        // below is one way of determining the set of elements that were deleted in a specific changeset
+        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
         assert.isUndefined(statusOrResult.error);
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
         assert.isDefined(result.element);

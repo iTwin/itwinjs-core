@@ -366,7 +366,7 @@ export class IModelHost {
           ...startupInfo,
           iTwinId: serviceNameComponents[4],
           iModelId: serviceNameComponents[5],
-          changeSetId: serviceNameComponents[6],
+          changesetId: serviceNameComponents[6],
         };
       }
     }

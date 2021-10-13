@@ -4625,7 +4625,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: string): IModelVersion;
+    static asOfChangeSet(changesetId: string): IModelVersion;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     getAsOfChangeSet(): ChangesetId | undefined;

@@ -112,17 +112,17 @@ describe("BriefcaseManager (#integration)", () => {
     assert.exists(iModelFirstVersion);
     assert.strictEqual(iModelFirstVersion.changeset.id, "");
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: readOnlyTestIModelId });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: readOnlyTestIModelId });
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
-      const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
+      const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changesets[arrayIndex + 1].id).toJSON() });
       assert.exists(iModelFromVersion);
-      assert.strictEqual(iModelFromVersion.changeset.id, changeSets[arrayIndex + 1].id);
+      assert.strictEqual(iModelFromVersion.changeset.id, changesets[arrayIndex + 1].id);
 
       const iModelFromChangeSet = await IModelTestUtils.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named(versionName).toJSON() });
       assert.exists(iModelFromChangeSet);
       assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
-      assert.strictEqual(iModelFromChangeSet.changeset.id, changeSets[arrayIndex + 1].id);
+      assert.strictEqual(iModelFromChangeSet.changeset.id, changesets[arrayIndex + 1].id);
 
       const elementCount = iModelFromVersion.withStatement("SELECT COUNT(*) FROM bis.Element", (stmt) => {
         stmt.step();
@@ -136,9 +136,9 @@ describe("BriefcaseManager (#integration)", () => {
 
     const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, deleteFirst: true });
     assert.isDefined(iModelLatestVersion);
-    assert.strictEqual(iModelLatestVersion.nativeDb.getCurrentChangeset().id, changeSets[3].id);
+    assert.strictEqual(iModelLatestVersion.nativeDb.getCurrentChangeset().id, changesets[3].id);
 
-    assert.equal(iModelLatestVersion.nativeDb.getCurrentChangeset().index, changeSets[3].index);
+    assert.equal(iModelLatestVersion.nativeDb.getCurrentChangeset().index, changesets[3].index);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModelFirstVersion);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModelLatestVersion);
@@ -239,7 +239,7 @@ describe("BriefcaseManager (#integration)", () => {
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
 
-    // User 2 reopens the iModel pullOnly/pullPush => Expect the same briefcase to be re-used, but the changeSet should have been updated!!
+    // User 2 reopens the iModel pullOnly/pullPush => Expect the same briefcase to be re-used, but the changeset should have been updated!!
     const iModelPullAndPush2 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseIdPullAndPush2: number = iModelPullAndPush2.briefcaseId;
     assert.strictEqual(briefcaseIdPullAndPush2, briefcaseIdPullAndPush);

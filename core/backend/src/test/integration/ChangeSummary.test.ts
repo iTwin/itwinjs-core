@@ -495,11 +495,11 @@ describe("ChangeSummary (#integration)", () => {
 
   it("Detaching and reattaching change cache", async () => {
     setupTest(iModelId);
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.first().toJSON(), briefcaseId: 0 });
     try {
-      for (const changeSet of changeSets) {
-        await iModel.pullChanges({ accessToken, toIndex: changeSet.index });
+      for (const changeset of changesets) {
+        await iModel.pullChanges({ accessToken, toIndex: changeset.index });
 
         const changeSummaryId = await ChangeSummaryManager.createChangeSummary(accessToken, iModel);
 
@@ -511,14 +511,14 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
           const row: any = myStmt.getRow();
           assert.isDefined(row.wsgId);
-          assert.equal(row.wsgId, changeSet.id);
+          assert.equal(row.wsgId, changeset.id);
           assert.isDefined(row.summary);
           assert.equal(row.summary.id, changeSummaryId);
         });
 
         for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
           assert.isDefined(row.wsgId);
-          assert.equal(row.wsgId, changeSet.id);
+          assert.equal(row.wsgId, changeset.id);
           assert.isDefined(row.summary);
           assert.equal(row.summary.id, changeSummaryId);
         }
@@ -534,14 +534,14 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
           const row: any = myStmt.getRow();
           assert.isDefined(row.wsgId);
-          assert.equal(row.wsgId, changeSet.id);
+          assert.equal(row.wsgId, changeset.id);
           assert.isDefined(row.summary);
           assert.equal(row.summary.id, changeSummaryId);
         });
 
         for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
           assert.isDefined(row.wsgId);
-          assert.equal(row.wsgId, changeSet.id);
+          assert.equal(row.wsgId, changeset.id);
           assert.isDefined(row.summary);
           assert.equal(row.summary.id, changeSummaryId);
         }

@@ -61,11 +61,11 @@ describe("IModelOpen (#integration)", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
-    const numChangeSets = changeSets.length;
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const numChangeSets = changesets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[9].id).toJSON() });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changesets[9].id).toJSON() });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });

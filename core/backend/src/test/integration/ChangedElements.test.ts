@@ -34,7 +34,7 @@ describe("ChangedElements (#integration)", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
@@ -43,8 +43,8 @@ describe("ChangedElements (#integration)", () => {
 
     let cache = ChangedElementsDb.createDb(iModel, filePath);
     assert.isDefined(cache);
-    const startChangesetId = changeSets[0].id;
-    const endChangesetId = changeSets[changeSets.length - 1].id;
+    const startChangesetId = changesets[0].id;
+    const endChangesetId = changesets[changesets.length - 1].id;
     // Check that the changesets have not been processed yet
     assert.isFalse(cache.isProcessed(startChangesetId));
     assert.isFalse(cache.isProcessed(endChangesetId));
@@ -169,7 +169,7 @@ describe("ChangedElements (#integration)", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
@@ -179,7 +179,7 @@ describe("ChangedElements (#integration)", () => {
     const cache = ChangedElementsDb.createDb(iModel, filePath);
     assert.isDefined(cache);
     // Process single
-    const changesetId = changeSets[0].id;
+    const changesetId = changesets[0].id;
     // Check that the changesets have not been processed yet
     assert.isFalse(cache.isProcessed(changesetId));
 
