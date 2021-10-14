@@ -113,7 +113,6 @@ export class ThumbnailHandler {
   }
 
   /** Download the thumbnail.
-   * @param requestContext The client request context.
    * @param url Url to download thumbnail.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes
    */
@@ -138,7 +137,6 @@ export class ThumbnailHandler {
   }
 
   /** Download the latest iModel's thumbnail.
-   * @param requestContext The client request context.
    * @param iTwinId Id of the iModel's parent iTwin.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
@@ -157,7 +155,6 @@ export class ThumbnailHandler {
   }
 
   /** Get the [[Thumbnail]]s. Returned Thumbnails are ordered from the latest [[ChangeSet]] to the oldest.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    * @param query Optional query object to filter the queried Thumbnails.
@@ -179,7 +176,6 @@ export class ThumbnailHandler {
   }
 
   /** Download a [[Thumbnail]].
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param thumbnail Small, Large or Tip thumbnail. Use [[ThumbnailHandler.get]] to get a [[SmallThumbnail]] or [[LargeThumbnail]] instance or provide Tip thumbnail information by constructing a [[TipThumbnail]] instance.
    * @return Base64 encoded string containing the PNG image.

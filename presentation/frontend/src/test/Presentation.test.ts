@@ -2,12 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
@@ -15,24 +13,23 @@ import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../pr
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import * as selection from "../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
+import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Presentation", () => {
 
   const shutdownIModelApp = async () => {
-    if (IModelApp.initialized)
-      await IModelApp.shutdown();
+    await IModelApp.shutdown();
   };
 
   const mockI18N = (languages: string[] = ["en"]) => {
-    const mock = moq.Mock.ofType<ITwinLocalization>();
-    mock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
+    const mock = moq.Mock.ofInstance(IModelApp.localization);
     mock.setup((x) => x.getLanguageList()).returns(() => languages);
     return mock;
   };
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup({ localization: new ITwinLocalization() });
+    await NoRenderApp.startup({ localization: new EmptyLocalization() });
     Presentation.terminate();
   });
 
@@ -61,13 +58,6 @@ describe("Presentation", () => {
       };
       await Presentation.initialize({ presentation: props });
       expect(constructorSpy).to.be.calledWith(props);
-    });
-
-    it("initializes PresentationManager.i18n with IModelApp.i18", async () => {
-      const i18nMock = mockI18N();
-      (IModelApp as any)._localization = i18nMock.object;
-      await Presentation.initialize({ presentation: { activeLocale: "test" } });
-      expect(Presentation.localization).to.equal(i18nMock.object);
     });
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
