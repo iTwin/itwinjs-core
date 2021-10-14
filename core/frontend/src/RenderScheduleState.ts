@@ -13,7 +13,8 @@ import { IModelApp } from "./IModelApp";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { AnimationBranchState, AnimationBranchStates } from "./render/GraphicBranch";
 
-function formatBranchId(modelId: Id64String, branchId: number): string {
+/** @internal */
+export function formatAnimationBranchId(modelId: Id64String, branchId: number): string {
   if (branchId < 0)
     return modelId;
 
@@ -24,7 +25,7 @@ function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeli
   const clipVector = timeline.getClipVector(time);
   const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
   if (clip)
-    branches.set(formatBranchId(modelId, branchId), { clip });
+    branches.set(formatAnimationBranchId(modelId, branchId), { clip });
 }
 
 /** Provides frontend-specific APIs for applying a RenderSchedule.Script to a view via a DisplayStyleState.
@@ -49,7 +50,7 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
       addAnimationBranch(model.modelId, model, -1, branches, time);
       for (const elem of model.elementTimelines) {
         if (elem.getVisibility(time) <= 0)
-          branches.set(formatBranchId(model.modelId, elem.batchId), { omit: true });
+          branches.set(formatAnimationBranchId(model.modelId, elem.batchId), { omit: true });
         else
           addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
       }

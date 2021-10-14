@@ -16,7 +16,7 @@ import { IModelConnection } from "../IModelConnection";
 import { AnimationNodeId } from "../imodeljs-frontend";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderScheduleState } from "../RenderScheduleState";
+import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
@@ -275,6 +275,13 @@ class PrimaryTreeReference extends TileTreeReference {
 
 /** @internal */
 export class AnimatedTreeReference extends PrimaryTreeReference {
+  private readonly _branchId: string;
+
+  public constructor(view: ViewState, model: GeometricModelState, transformNodeId: number) {
+    super(view, model, false, transformNodeId);
+    this._branchId = formatAnimationBranchId(model.id, transformNodeId);
+  }
+
   protected override computeBaseTransform(tree: TileTree): Transform {
     const tf = super.computeBaseTransform(tree);
     const style = this.view.displayStyle;
@@ -288,6 +295,14 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
       animTf.multiplyTransformTransform(tf, tf);
 
     return tf;
+  }
+
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const animBranch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
+    if (animBranch && animBranch.omit)
+      return undefined;
+
+    return super.createDrawArgs(context);
   }
 }
 
@@ -477,7 +492,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
     const nodeIds = script?.getTransformNodeIds(ref.model.id);
     if (nodeIds)
       for (const nodeId of nodeIds)
-        this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, false, nodeId));
+        this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, nodeId));
   }
 
   public updateSectionCut(clip: StringifiedClipVector | undefined): void {
