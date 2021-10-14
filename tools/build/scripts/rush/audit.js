@@ -37,18 +37,12 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // for development dependencies only.
   // All security issues should be addressed asap.
   const excludedAdvisories = [
-    "GHSA-8p5q-j9m2-g8wr", // https://github.com/advisories/GHSA-8p5q-j9m2-g8wr.
-    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6.
-    "GHSA-8v27-2fg9-7h62", // https://github.com/advisories/GHSA-8v27-2fg9-7h62.
-    "GHSA-33f9-j839-rf8h", // https://github.com/advisories/GHSA-33f9-j839-rf8h.
-    "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx.
-    "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr.
-    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9.
-    "GHSA-9r2w-394v-53qc", // https://github.com/advisories/GHSA-9r2w-394v-53qc.
-    "GHSA-5955-9wpr-37jh", // https://github.com/advisories/GHSA-5955-9wpr-37jh.
-    "GHSA-qq89-hq3f-393p", // https://github.com/advisories/GHSA-qq89-hq3f-393p.
-    "GHSA-cph5-m8f7-6c5x", // need to investigate updating azurite. https://github.com/advisories/GHSA-cph5-m8f7-6c5x.
-    "GHSA-w5p7-h5w8-2hfq", // Ignored, test app dependency. https://github.com/advisories/GHSA-w5p7-h5w8-2hfq.
+    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6. path to vulnerability @bentley/backend-application-insights>webpack>watchpack>watchpack-chokidar2>chokidar>glob-parent and @bentley/imodeljs-backend>cpx>chokidar>glob-parent
+    "GHSA-33f9-j839-rf8h", // https://github.com/advisories/GHSA-33f9-j839-rf8h. path to vulnerability @bentley/extension-webpack>react-dev-utils>immer
+    "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx. path to vulnerability @bentley/extension-webpack>react-dev-utils>immer
+    "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr. path to vulnerability @bentley/backend-application-insights>webpack>micromatch>snapdragon>base>cache-base>set-value
+    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9. path to vulnerability @bentley/map-layers>@bentley/react-scripts>@pmmmwh/react-refresh-webpack-plugin>ansi-html
+    "GHSA-w5p7-h5w8-2hfq", // https://github.com/advisories/GHSA-w5p7-h5w8-2hfq. path to vulnerability ninezone-test-app>react-markdown>remark-parse>trim. Ignored, test app dependency.
   ];
 
   let shouldFailBuild = false;
