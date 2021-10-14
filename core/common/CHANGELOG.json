@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.19.17",
+      "tag": "@bentley/imodeljs-common_v2.19.17",
+      "date": "Thu, 14 Oct 2021 21:19:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their  own azure environment."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.16",
       "tag": "@bentley/imodeljs-common_v2.19.16",
       "date": "Mon, 11 Oct 2021 17:37:46 GMT",
