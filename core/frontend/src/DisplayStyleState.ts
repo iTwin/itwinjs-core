@@ -841,17 +841,17 @@ export namespace SkyBox { // eslint-disable-line no-redeclare
 export class SkyGradient extends SkyBox {
   /** If true, a 2-color gradient is used (nadir and zenith colors only); if false a 4-color gradient is used. Defaults to false. */
   public readonly twoColor: boolean = false;
-  /** @see [SkyBoxProps.skyColor]($frontend). */
+  /** @see [SkyBoxProps.skyColor]($common). */
   public readonly skyColor: ColorDef;
-  /** @see [SkyBoxProps.groundColor]($frontend). */
+  /** @see [SkyBoxProps.groundColor]($common). */
   public readonly groundColor: ColorDef;
-  /** @see [SkyBoxProps.zenithColor]($frontend). */
+  /** @see [SkyBoxProps.zenithColor]($common). */
   public readonly zenithColor: ColorDef;
-  /** @see [SkyBoxProps.nadirColor]($frontend). */
+  /** @see [SkyBoxProps.nadirColor]($common). */
   public readonly nadirColor: ColorDef;
-  /** @see [SkyBoxProps.skyExponent]($frontend). */
+  /** @see [SkyBoxProps.skyExponent]($common). */
   public readonly skyExponent: number = 4.0;
-  /** @see [SkyBoxProps.groundExponent]($frontend). */
+  /** @see [SkyBoxProps.groundExponent]($common). */
   public readonly groundExponent: number = 4.0;
 
   /** Construct a SkyGradient from its JSON representation. */
