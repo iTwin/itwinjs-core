@@ -7,12 +7,11 @@ import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinAccessClient } from "../../ITwinRegistryClient";
 import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
-import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Error);
-Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
-Logger.logInfo(ITwinClientLoggerCategory.Request, "Setup logger");
+Logger.setLevel("itwin-client.Request", LogLevel.Trace);
+Logger.logInfo("itwin-client.Request", "Setup logger");
 
 chai.should();
 describe("ITwinRegistryClient (#integration)", () => {
@@ -20,14 +19,14 @@ describe("ITwinRegistryClient (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async function () {
-    Logger.logInfo(ITwinClientLoggerCategory.Request, "Entered before function");
+    Logger.logInfo("itwin-client.Request", "Entered before function");
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
-    Logger.logInfo(ITwinClientLoggerCategory.Request, "Retrieved access token");
+    Logger.logInfo("itwin-client.Request", "Retrieved access token");
   });
 
   it("should get a list of iTwins (#integration)", async () => {
-    Logger.logInfo(ITwinClientLoggerCategory.Request, "List of iTwins test");
+    Logger.logInfo("itwin-client.Request", "List of iTwins test");
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken);
 
     // At least one iTwin
