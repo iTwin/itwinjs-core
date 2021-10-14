@@ -3534,6 +3534,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/ui-test-extension': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 14.14.31
       '@types/react': ^17.0.0
@@ -3604,6 +3605,7 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/ui-test-extension': link:../ui-test-extension
       classnames: 2.3.1
       lorem-ipsum: 2.0.4
       react: 17.0.2
