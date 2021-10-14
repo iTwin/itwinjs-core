@@ -6,12 +6,11 @@
  * @module Utils
  */
 
-import { request, RequestOptions } from "@bentley/itwin-client";
 import {
-  assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, GuidString, Id64String,
+  assert, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider,
   RealityDataSourceKey,
   SpatialClassifiers, ViewFlagOverrides,
@@ -30,7 +29,7 @@ import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
@@ -247,13 +246,13 @@ class RealityModelTileTreeProps {
   public location: Transform;
   public tilesetJson: any;
   public doDrapeBackgroundMap: boolean = false;
-  public client: RealityModelTileClient;
+  public rdSource: RealityDataSource;
   public yAxisUp = false;
   public root: any;
 
-  constructor(json: any, root: any, client: RealityModelTileClient, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
+  constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
     this.tilesetJson = root;
-    this.client = client;
+    this.rdSource = rdSource;
     this.location = tilesetToDbTransform;
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
@@ -366,10 +365,10 @@ function addUrlPrefix(subTree: any, prefix: string) {
 }
 
 /** @internal */
-async function expandSubTree(root: any, client: RealityModelTileClient): Promise<any> {
+async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
   const childUrl = getUrl(root.content);
   if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
-    const subTree = await client.getTileJson(childUrl);
+    const subTree = await rdsource.getTileJson(childUrl);
     const prefixIndex = childUrl.lastIndexOf("/");
     if (prefixIndex > 0)
       addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
@@ -447,7 +446,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     if (undefined === foundChild || undefined === foundChild.json.content || isCanceled())
       return undefined;
 
-    return this.tree.client.getTileContent(getUrl(foundChild.json.content));
+    return this.tree.rdSource.getTileContent(getUrl(foundChild.json.content));
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
@@ -460,7 +459,6 @@ class RealityModelTileLoader extends RealityTileLoader {
 
     if (isNaN(childIndex) || tilesetJson === undefined || tilesetJson.children === undefined || childIndex >= tilesetJson.children.length) {
       assert(false, "scalable mesh child not found.");
-      return undefined;
     }
 
     const foundChild = tilesetJson.children[childIndex];
@@ -474,7 +472,7 @@ class RealityModelTileLoader extends RealityTileLoader {
       return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId, transformToRoot);
     }
 
-    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.client);
+    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.rdSource);
 
     return new FindChildResult(thisParentId, tilesetJson.children[childIndex], transformToRoot);
   }
@@ -639,8 +637,7 @@ export namespace RealityModelTileTree {
   }
 
   async function getTileTreeProps(rdSource: RealityDataSource, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
-    const tileClient = new RealityModelTileClient(rdSource);
-    const json = await tileClient.getRootDocument(iModel.iTwinId);
+    const json = await rdSource.getRootDocument(iModel.iTwinId);
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
     if (geoConverter !== undefined) {
@@ -687,8 +684,8 @@ export namespace RealityModelTileTree {
     if (undefined !== tilesetToDbJson)
       rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
 
-    const root = await expandSubTree(json.root, tileClient);
-    return new RealityModelTileTreeProps(json, root, tileClient, rootTransform, tilesetToEcef);
+    const root = await expandSubTree(json.root, rdSource);
+    return new RealityModelTileTreeProps(json, root, rdSource, rootTransform, tilesetToEcef);
   }
 }
 
@@ -761,7 +758,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const strings = [];
 
     const loader = (tree as RealityModelTileTree).loader;
-    const type = (loader as RealityModelTileLoader).tree.client.getRealityDataType();
+    const type = (loader as RealityModelTileLoader).tree.rdSource.realityDataType;
 
     // If a type is specified, display it
     if (type !== undefined) {
@@ -782,7 +779,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (this._name) {
       strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
     } else {
-      const cesiumAsset = this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset ? parseCesiumUrl(this._rdSourceKey.id) : undefined;
+      const cesiumAsset = this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset ? CesiumIonAssetProvider.parseCesiumUrl(this._rdSourceKey.id) : undefined;
       strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : this._rdSourceKey.id);
     }
 
@@ -803,147 +800,3 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 }
 
-// TBD - Allow an object to override the URL and provide its own authentication.
-function parseCesiumUrl(url: string): { id: number, key: string } | undefined {
-  const cesiumSuffix = "$CesiumIonAsset=";
-  const cesiumIndex = url.indexOf(cesiumSuffix);
-  if (cesiumIndex < 0)
-    return undefined;
-  const cesiumIonString = url.slice(cesiumIndex + cesiumSuffix.length);
-  const cesiumParts = cesiumIonString.split(":");
-  if (cesiumParts.length !== 2)
-    return undefined;
-
-  const id = parseInt(cesiumParts[0], 10);
-  if (id === undefined)
-    return undefined;
-
-  return { id, key: cesiumParts[1] };
-}
-/**
- * ###TODO temporarily here for testing, needs to be moved to the clients repo
- * @internal
- * This class encapsulates access to a reality data wether it be from local access, http or RDS
- * The url provided at the creation is parsed to determine if this is a RDS (ProjectWise Context Share) reference.
- * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
- * There is a one to one relationship between a reality data and the instances of present class.
- */
-export class RealityModelTileClient {
-  private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
-  private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
-  private _rdSource: RealityDataSource;
-
-  constructor(rdSource: RealityDataSource) {
-    this._rdSource = rdSource;
-    this.initializeRDSRealityData();
-  }
-
-  private initializeRDSRealityData(): void {
-    if (undefined !== this._rdSource.isContextShare) {
-      if (!this._rdSource.realityData)
-        throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
-
-      // A reality data that has not root document set should not be considered.
-      const rootDocument: string = this._rdSource.realityData.rootDocument ?? "";
-      this.setBaseUrl(rootDocument);
-    }
-  }
-
-  // This is to set the root url from the provided root document path.
-  // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
-  // otherwise the full path to root document is given.
-  // The base URL contains the base URL from which tile relative path are constructed.
-  // The tile's path root will need to be reinserted for child tiles to return a 200
-  private setBaseUrl(url: string): void {
-    const urlParts = url.split("/");
-    urlParts.pop();
-    if (urlParts.length === 0)
-      this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
-  }
-
-  private async _doRequest(url: string, responseType: string): Promise<any> {
-    const authToken = this._requestAuthorization ?? (await IModelApp.getAccessToken());
-
-    const options: RequestOptions = {
-      method: "GET",
-      responseType,
-      headers: {
-        authorization: authToken,
-      },
-    };
-    const data = await request(url, options);
-    return data.body;
-  }
-
-  public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
-    let url = await this._rdSource.getServiceUrl(iTwinId);
-    if (!url)
-      throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
-
-    const token = await IModelApp.getAccessToken();
-    if (this._rdSource.isContextShare && token) {
-      const realityData = this._rdSource.realityData;
-
-      if (!realityData)
-        throw new Error(`Reality Data not defined`);
-
-      if (!realityData.rootDocument)
-        throw new Error(`Root document not defined for reality data: ${realityData.id}`);
-
-      return realityData.getTileJson(token, realityData.rootDocument);
-    }
-
-    // The following is only if the reality data is not stored on PW Context Share.
-    const cesiumAsset = parseCesiumUrl(url);
-    if (cesiumAsset) {
-      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(cesiumAsset.id, cesiumAsset.key);
-      if (tokenAndUrl.url && tokenAndUrl.token) {
-        url = tokenAndUrl.url;
-        this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
-      }
-    }
-
-    // The following is only if the reality data is not stored on PW Context Share.
-    this.setBaseUrl(url);
-    return this._doRequest(url, "json");
-  }
-
-  /**
-   * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
-   */
-  public async getTileContent(url: string): Promise<any> {
-    assert(url !== undefined);
-    const token = await IModelApp.getAccessToken();
-    const useRds = this._rdSource.isContextShare && token !== undefined;
-
-    const tileUrl = this._baseUrl + url;
-    if (useRds)
-      return this._rdSource.realityData!.getTileContent(token, tileUrl);
-
-    return this._doRequest(tileUrl, "arraybuffer");
-  }
-
-  /**
-   * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
-   */
-  public async getTileJson(url: string): Promise<any> {
-    assert(url !== undefined);
-    const token = await IModelApp.getAccessToken();
-    const tileUrl = this._baseUrl + url;
-
-    if (this._rdSource.isContextShare && undefined !== token)
-      return this._rdSource.realityData!.getTileJson(token, tileUrl);
-
-    return this._doRequest(tileUrl, "json");
-  }
-
-  /**
-   * Returns Reality Data type if available
-   */
-  public getRealityDataType(): string | undefined {
-    // The reality data type is not available if not stored on PW Context Share -> undefined will be returned
-    return this._rdSource.realityDataType;
-  }
-}
