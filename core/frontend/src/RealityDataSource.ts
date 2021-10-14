@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Guid, GuidString, Logger } from "@itwin/core-bentley";
-import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 
@@ -107,6 +107,32 @@ export class RealityDataSource {
     format = inputFormat ? inputFormat : isOPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile;
     const contextShareKey: RealityDataSourceKey = { provider, format, id: containerName };
     return contextShareKey;
+  }
+  public static createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+    const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
+    if(orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
+      return RealityDataSource.createFromBlobUrl(orbitGtBlob.blobFileName,inputProvider,format);
+    } else if (orbitGtBlob.rdsUrl) {
+      return RealityDataSource.createRealityDataSourceKeyFromUrl(orbitGtBlob.rdsUrl,inputProvider,format);
+    }
+    const provider = inputProvider ? inputProvider : RealityDataProvider.OrbitGtBlob;
+    const id = `${orbitGtBlob.accountName}:${orbitGtBlob.containerName}:${orbitGtBlob.blobFileName}:?${orbitGtBlob.sasToken}`;
+    return { provider, format, id };
+  }
+  public static createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
+    if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
+      return undefined;
+    const splitIds = rdSourceKey.id.split(":");
+    const sasTokenIndex = rdSourceKey.id.indexOf(":?");
+    const sasToken = rdSourceKey.id.substr(sasTokenIndex+2);
+    const orbitGtBlob: OrbitGtBlobProps = {
+      accountName: splitIds[0],
+      containerName: splitIds[1],
+      blobFileName: splitIds[2],
+      sasToken,
+    };
+
+    return orbitGtBlob;
   }
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
