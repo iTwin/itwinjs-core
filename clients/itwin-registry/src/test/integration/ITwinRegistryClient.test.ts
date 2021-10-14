@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinAccessClient } from "../../ITwinRegistryClient";
 import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
+import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
 chai.should();
 describe("ITwinRegistryClient (#integration)", () => {
@@ -14,6 +15,7 @@ describe("ITwinRegistryClient (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async function () {
+    Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
   });
