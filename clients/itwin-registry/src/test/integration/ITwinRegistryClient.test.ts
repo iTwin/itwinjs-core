@@ -15,6 +15,8 @@ describe("ITwinRegistryClient (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async function () {
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
