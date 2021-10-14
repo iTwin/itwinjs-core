@@ -18,9 +18,7 @@ import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
-import * as React from "react";
-import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
-import { FillCentered } from "@itwin/core-react";
+import { ContentLayoutProps, FunctionKey, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 
 import {
@@ -32,10 +30,6 @@ import {
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
-  UiFramework,
-  WidgetDef,
-  WidgetProvider,
-  ZoneLocation,
 } from "@itwin/appui-react";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
