@@ -39,7 +39,7 @@ describe("PresentationRpcInterface", () => {
       expect(result).to.matchSnapshot();
     });
 
-    it.only("returns properties for some elements of class 'GeometricElement3d", async () => {
+    it("returns properties for some elements of class 'GeometricElement3d", async () => {
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementClasses: ["BisCore:GeometricElement3d"],
         paging: { start: 0, size: 5 },
