@@ -137,6 +137,7 @@ export class ToggleTileTreeReferencesTool extends Tool {
         deactivate = !deactivate;
 
       this._deactivate = deactivate;
+    } else {
       modelIds = args[1];
     }
 
