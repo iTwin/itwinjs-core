@@ -1,6 +1,6 @@
-# The ui-framework package
+# The appui-react package
 
-The ui-framework package contains classes and components for specifying the application UI consisting of the
+The appui-react package contains classes and components for specifying the application UI consisting of the
 Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
 
 ## Application UI Configuration

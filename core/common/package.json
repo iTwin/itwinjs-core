@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.0.0-dev.85",
+  "version": "3.0.0-dev.86",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -41,9 +41,9 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.85",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.85",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.85"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.86",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.86",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.86"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

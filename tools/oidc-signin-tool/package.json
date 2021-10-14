@@ -1,6 +1,6 @@
 {
   "name": "@itwin/oidc-signin-tool",
-  "version": "3.0.0-dev.85",
+  "version": "3.0.0-dev.86",
   "description": "OIDC Signin Helper",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
