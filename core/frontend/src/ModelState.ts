@@ -6,9 +6,9 @@
  * @module ModelState
  */
 
-import { Guid, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
@@ -152,14 +152,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           orbitGtName = orbitGtBlob.blobFileName;
       }
       // Create rdSourceKey if not provided
-      let rdSourceKeyOGT: RealityDataSourceKey;
-      if (orbitGtBlob.rdsUrl) {
-        rdSourceKeyOGT = RealityDataSource.createKeyFromUrl(orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
-      } else if (orbitGtBlob.containerName && Guid.isGuid(orbitGtBlob.containerName)) {
-        rdSourceKeyOGT = {provider: RealityDataProvider.ContextShare, format: RealityDataFormat.OPC, id: orbitGtBlob.containerName };
-      } else {
-        rdSourceKeyOGT = RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName, RealityDataProvider.ContextShare, RealityDataFormat.OPC);
-      }
+      const rdSourceKeyOGT: RealityDataSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
 
       return createOrbitGtTileTreeReference({
         rdSourceKey: rdSourceKeyOGT,

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "3.0.0-dev.80",
+  "version": "3.0.0-dev.86",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -42,12 +42,12 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
-    "@itwin/core-common": "workspace:^3.0.0-dev.80",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.80",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.80",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.80",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.80"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.86",
+    "@itwin/core-common": "workspace:^3.0.0-dev.86",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.86",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.86",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.86",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.86"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
@@ -77,31 +77,19 @@
     "deep-equal": "^1",
     "eslint": "^7.11.0",
     "faker": "^4.1.0",
+    "jsdom": "^17.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
+    "source-map-support": "^0.5.6",
     "typemoq": "^2.1.0",
-    "typescript": "~4.4.0",
-    "xmlhttprequest": "^1.8.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "check-coverage": true,
-    "statements": 100,
-    "functions": 100,
-    "branches": 98,
-    "lines": 100,
-    "require": [
-      "jsdom-global/register"
-    ],
-    "exclude": [
-      "src/presentation-frontend.ts",
-      "src/test/**",
-      "lib/cjs/test/**"
-    ]
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

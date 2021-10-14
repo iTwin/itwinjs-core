@@ -28,7 +28,6 @@ import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
-import { GuidString as GuidString_2 } from '@itwin/core-bentley/src/Id';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
@@ -507,6 +506,14 @@ export class BaseMapLayerSettings extends MapLayerSettings {
 }
 
 // @public
+export interface BaseReaderOptions {
+    priority?: number;
+    quota?: QueryQuota;
+    restartToken?: string;
+    usePrimaryConn?: boolean;
+}
+
+// @public
 export enum BatchType {
     PlanarClassifier = 2,
     Primary = 0,
@@ -600,6 +607,32 @@ export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
 
 // @internal (undocumented)
 export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
+
+// @beta (undocumented)
+export interface BlobOptions extends BaseReaderOptions {
+    // (undocumented)
+    range?: BlobRange;
+}
+
+// @beta (undocumented)
+export class BlobOptionsBuilder {
+    constructor(_options?: BlobOptions);
+    // (undocumented)
+    getOptions(): BlobOptions;
+    // (undocumented)
+    setPriority(val: number): this;
+    // (undocumented)
+    setQuota(val: QueryQuota): this;
+    // (undocumented)
+    setRange(val: BlobRange): this;
+    // (undocumented)
+    setRestartToken(val: string): this;
+    // (undocumented)
+    setUsePrimaryConnection(val: boolean): this;
+}
+
+// @beta (undocumented)
+export type BlobRange = QueryLimit;
 
 // @public
 export class BoundingSphere {
@@ -1822,7 +1855,126 @@ export interface CutStyleProps {
 // @public
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
+// @internal (undocumented)
+export interface DbBlobRequest extends DbRequest, BlobOptions {
+    // (undocumented)
+    accessString: string;
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    instanceId: Id64String;
+}
+
+// @internal (undocumented)
+export interface DbBlobResponse extends DbResponse {
+    // (undocumented)
+    data?: Uint8Array;
+    // (undocumented)
+    rawBlobSize: number;
+}
+
+// @public (undocumented)
+export class DbQueryError extends BentleyError {
+    constructor(response: any, request?: any, rc?: DbResult);
+    // (undocumented)
+    readonly request?: any;
+    // (undocumented)
+    readonly response: any;
+    // (undocumented)
+    static throwIfError(response: any, request?: any): void;
+}
+
+// @internal (undocumented)
+export interface DbQueryRequest extends DbRequest, QueryOptions {
+    // (undocumented)
+    args?: object;
+    // (undocumented)
+    query: string;
+}
+
+// @internal (undocumented)
+export interface DbQueryResponse extends DbResponse {
+    // (undocumented)
+    data: any[];
+    // (undocumented)
+    meta: QueryPropertyMetaData[];
+    // (undocumented)
+    rowCount: number;
+}
+
+// @internal (undocumented)
+export interface DbRequest extends BaseReaderOptions {
+    // (undocumented)
+    kind: DbRequestKind;
+}
+
+// @internal (undocumented)
+export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
+    // (undocumented)
+    execute(request: TRequest): Promise<TResponse>;
+}
+
+// @internal (undocumented)
+export enum DbRequestKind {
+    // (undocumented)
+    BlobIO = 0,
+    // (undocumented)
+    ECSql = 1
+}
+
+// @internal (undocumented)
+export interface DbResponse {
+    // (undocumented)
+    error?: string;
+    // (undocumented)
+    kind: DbResponseKind;
+    // (undocumented)
+    stats: DbRuntimeStats;
+    // (undocumented)
+    status: DbResponseStatus;
+}
+
+// @internal (undocumented)
+export enum DbResponseKind {
+    // (undocumented)
+    BlobIO = 0,
+    // (undocumented)
+    ECSql = 1,
+    // (undocumented)
+    NoResult = 2
+}
+
+// @internal (undocumented)
+export enum DbResponseStatus {
+    // (undocumented)
+    Cancel = 2,
+    // (undocumented)
+    Done = 1,
+    // (undocumented)
+    Error = 0,
+    // (undocumented)
+    Partial = 3,
+    // (undocumented)
+    QueueFull = 5,
+    // (undocumented)
+    TimeOut = 4
+}
+
 export { DbResult }
+
+// @beta (undocumented)
+export interface DbRuntimeStats {
+    // (undocumented)
+    cpuTime: number;
+    // (undocumented)
+    memLimit: number;
+    // (undocumented)
+    memUsed: number;
+    // (undocumented)
+    timeLimit: number;
+    // (undocumented)
+    totalTime: number;
+}
 
 // @internal
 export interface DecorationGeometryProps {
@@ -2218,6 +2370,34 @@ export class ECJsNames {
     static toJsName(propName: string, isSystemProperty?: boolean): string;
 }
 
+// @beta (undocumented)
+export class ECSqlReader {
+    // @internal
+    constructor(_executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, query: string, param?: QueryBinder, options?: QueryOptions);
+    // (undocumented)
+    get current(): QueryRowProxy;
+    // (undocumented)
+    get done(): boolean;
+    // (undocumented)
+    formatCurrentRow(format: QueryRowFormat): any[] | object;
+    // (undocumented)
+    getMetaData(): QueryPropertyMetaData[];
+    // (undocumented)
+    getRowInternal(): any[];
+    // (undocumented)
+    readonly query: string;
+    // (undocumented)
+    reset(options?: QueryOptions): void;
+    // (undocumented)
+    resetBindings(): void;
+    // (undocumented)
+    setParams(param: QueryBinder): void;
+    // (undocumented)
+    step(): Promise<boolean>;
+    // (undocumented)
+    toArray(format: QueryRowFormat): Promise<any[]>;
+}
+
 // @public
 export enum ECSqlSystemProperty {
     // (undocumented)
@@ -2521,7 +2701,11 @@ export interface EmphasizeElementsProps {
 // @public
 export class EmptyLocalization implements Localization {
     // (undocumented)
+    changeLanguage(): Promise<void>;
+    // (undocumented)
     getEnglishString(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getLanguageList(): readonly string[];
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
@@ -2529,9 +2713,9 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
     // (undocumented)
-    getNamespace(): Promise<void> | undefined;
+    getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
-    languageList(): string[];
+    initialize(): Promise<void>;
     // (undocumented)
     registerNamespace(): Promise<void>;
     // (undocumented)
@@ -4367,6 +4551,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
     // (undocumented)
+    queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
+    // (undocumented)
     queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]>;
     // (undocumented)
     queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]>;
@@ -4375,7 +4561,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
-    queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse>;
     // (undocumented)
     queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)
@@ -4846,19 +5032,17 @@ export type LocalFileName = string;
 
 // @public
 export interface Localization {
-    // (undocumented)
+    changeLanguage(language: string): Promise<void>;
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
+    getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
-    getNamespace(name: string): Promise<void> | undefined;
-    // (undocumented)
-    languageList(): string[];
-    // (undocumented)
+    // @internal (undocumented)
+    getNamespacePromise(name: string): Promise<void> | undefined;
+    initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 
@@ -6041,6 +6225,23 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 }
 
 // @beta (undocumented)
+export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
+    // (undocumented)
+    [Symbol.iterator](): Iterator<QueryPropertyMetaData, any, undefined>;
+    constructor(properties: QueryPropertyMetaData[]);
+    // (undocumented)
+    findByJsonName(name: string): QueryPropertyMetaData | undefined;
+    // (undocumented)
+    findByName(name: string): QueryPropertyMetaData | undefined;
+    // (undocumented)
+    findByNoCase(name: string): QueryPropertyMetaData | undefined;
+    // (undocumented)
+    get length(): number;
+    // (undocumented)
+    readonly properties: QueryPropertyMetaData[];
+}
+
+// @beta (undocumented)
 export interface PropertyMetaDataProps {
     // (undocumented)
     customAttributes?: CustomAttribute[];
@@ -6205,51 +6406,125 @@ export namespace Quantization {
     export function unquantize(qpos: number, origin: number, scale: number): number;
 }
 
+// @public (undocumented)
+export class QueryBinder {
+    // (undocumented)
+    bindBlob(indexOrName: string | number, val: Uint8Array): this;
+    // (undocumented)
+    bindBoolean(indexOrName: string | number, val: boolean): this;
+    // (undocumented)
+    bindDouble(indexOrName: string | number, val: number): this;
+    // (undocumented)
+    bindId(indexOrName: string | number, val: Id64String): this;
+    // (undocumented)
+    bindIdSet(indexOrName: string | number, val: OrderedId64Iterable): this;
+    // (undocumented)
+    bindInt(indexOrName: string | number, val: number): this;
+    // (undocumented)
+    bindLong(indexOrName: string | number, val: number): this;
+    // (undocumented)
+    bindNull(indexOrName: string | number): this;
+    // (undocumented)
+    bindPoint2d(indexOrName: string | number, val: Point2d): this;
+    // (undocumented)
+    bindPoint3d(indexOrName: string | number, val: Point3d): this;
+    // (undocumented)
+    bindString(indexOrName: string | number, val: string): this;
+    // (undocumented)
+    bindStruct(indexOrName: string | number, val: object): this;
+    // (undocumented)
+    static from(args: any[] | object | undefined): QueryBinder;
+    // (undocumented)
+    serialize(): object;
+    }
+
 // @public
 export interface QueryLimit {
-    maxRowAllowed?: number;
-    startRowOffset?: number;
+    count?: number;
+    offset?: number;
 }
 
 // @public
-export enum QueryPriority {
+export interface QueryOptions extends BaseReaderOptions {
+    abbreviateBlobs?: boolean;
+    convertClassIdsToClassNames?: boolean;
+    includeMetaData?: boolean;
+    limit?: QueryLimit;
+    suppressLogErrors?: boolean;
+}
+
+// @public (undocumented)
+export class QueryOptionsBuilder {
+    constructor(_options?: QueryOptions);
     // (undocumented)
-    High = 2,
+    getOptions(): QueryOptions;
     // (undocumented)
-    Low = 0,
+    setAbbreviateBlobs(val: boolean): this;
     // (undocumented)
-    Normal = 1
+    setConvertClassIdsToNames(val: boolean): this;
+    // (undocumented)
+    setLimit(val: QueryLimit): this;
+    // (undocumented)
+    setPriority(val: number): this;
+    // (undocumented)
+    setQuota(val: QueryQuota): this;
+    // (undocumented)
+    setRestartToken(val: string): this;
+    // (undocumented)
+    setSuppressLogErrors(val: boolean): this;
+    // (undocumented)
+    setUsePrimaryConnection(val: boolean): this;
+}
+
+// @beta (undocumented)
+export interface QueryPropertyMetaData {
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    generated: boolean;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    jsonName: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    system: boolean;
+    // (undocumented)
+    typeName: string;
 }
 
 // @public
 export interface QueryQuota {
-    maxMemoryAllowed?: number;
-    maxTimeAllowed?: number;
+    memory?: number;
+    time?: number;
 }
 
 // @public
-export interface QueryResponse {
-    // (undocumented)
-    rows: any[];
-    // (undocumented)
-    status: QueryResponseStatus;
+export enum QueryRowFormat {
+    UseArrayIndexes = 2,
+    UseECSqlPropertyNames = 0,
+    UseJsPropertyNames = 1
 }
 
-// @public
-export enum QueryResponseStatus {
+// @beta (undocumented)
+export interface QueryRowProxy {
     // (undocumented)
-    Cancelled = 7,
+    [propertyName: string]: QueryValueType;
     // (undocumented)
-    Done = 2,
+    [propertyIndex: number]: QueryValueType;
     // (undocumented)
-    Error = 5,
+    getMetaData(): QueryPropertyMetaData[];
     // (undocumented)
-    Partial = 3,
+    toArray(): QueryValueType[];
     // (undocumented)
-    PostError = 6,
+    toJsRow(): any;
     // (undocumented)
-    Timeout = 4
+    toRow(): any;
 }
+
+// @beta (undocumented)
+export type QueryValueType = any;
 
 // @public
 export enum Rank {
@@ -6280,6 +6555,7 @@ export enum RealityDataFormat {
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
+    OrbitGtBlob = "OrbitGtBlob",
     TilesetUrl = "TilesetUrl"
 }
 
@@ -7568,7 +7844,7 @@ export class ServerTimeoutError extends ServerError {
 export interface SessionProps {
     readonly applicationId: string;
     readonly applicationVersion: string;
-    readonly sessionId: GuidString_2;
+    readonly sessionId: GuidString;
 }
 
 // @beta

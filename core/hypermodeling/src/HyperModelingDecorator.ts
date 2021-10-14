@@ -389,7 +389,7 @@ export class HyperModelingDecorator implements Decorator {
 
   private sync(): void {
     this._needSync = false;
-    if (this.viewport.view.is3d() && this.updateMarkerVisibility()) {
+    if (HyperModeling.isInitialized && this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
       this.viewport.invalidateCachedDecorations(this);
     }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { request, RequestOptions } from "@bentley/itwin-client";
-import { assert, BentleyStatus, Guid, GuidString, Logger } from "@itwin/core-bentley";
-import { IModelError, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { assert, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
+import { IModelError, OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { RealityData } from "./RealityDataAccessProps";
@@ -86,6 +86,31 @@ export namespace RealityDataSource {
     const provider = inputProvider ? inputProvider : info.provider;
     const contextShareKey: RealityDataSourceKey = { provider, format, id: info.id };
     return contextShareKey;
+  }
+  export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+    const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
+    if(orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
+      return RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName,inputProvider,format);
+    } else if (orbitGtBlob.rdsUrl) {
+      return RealityDataSource.createKeyFromUrl(orbitGtBlob.rdsUrl,inputProvider,format);
+    }
+    const provider = inputProvider ? inputProvider : RealityDataProvider.OrbitGtBlob;
+    const id = `${orbitGtBlob.accountName}:${orbitGtBlob.containerName}:${orbitGtBlob.blobFileName}:?${orbitGtBlob.sasToken}`;
+    return { provider, format, id };
+  }
+  export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
+    if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
+      return undefined;
+    const splitIds = rdSourceKey.id.split(":");
+    const sasTokenIndex = rdSourceKey.id.indexOf(":?");
+    const sasToken = rdSourceKey.id.substr(sasTokenIndex+2);
+    const orbitGtBlob: OrbitGtBlobProps = {
+      accountName: splitIds[0],
+      containerName: splitIds[1],
+      blobFileName: splitIds[2],
+      sasToken,
+    };
+    return orbitGtBlob;
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.

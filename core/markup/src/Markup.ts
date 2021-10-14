@@ -271,7 +271,7 @@ export class MarkupApp {
       IModelApp.tools.registerModule(textTool, this.namespace);
       return namespacePromise;
     }
-    return IModelApp.localization.getNamespace(this.namespace)!; // so caller can make sure localized messages are ready.
+    return IModelApp.localization.getNamespacePromise(this.namespace)!; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics

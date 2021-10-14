@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-common",
+      "comment": "Added locate method for finding faces, edges, and vertices that intersect a ray.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-common"
+}

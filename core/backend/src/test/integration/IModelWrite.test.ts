@@ -6,16 +6,15 @@
 import { assert, expect } from "chai";
 import * as semver from "semver";
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import {
-  Code, ColorDef, GeometryStreamProps, IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  Code, ColorDef, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
+import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { DrawingCategory } from "../../Category";
-import { ECSqlStatement } from "../../ECSqlStatement";
 import {
-  BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
-  SqliteValue, SqliteValueType,
+  BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../core-backend";
+import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -485,7 +484,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement")) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -503,7 +502,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement")) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);
@@ -591,7 +590,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement")) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     assert.equal(rows.length, 30);
@@ -608,7 +607,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd")) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -631,7 +630,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement")) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
         rows.push(row);
       }
       assert.equal(rows.length, 30);
@@ -675,7 +674,7 @@ describe("IModelWriteTest (#integration)", () => {
         }
       }
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd")) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);

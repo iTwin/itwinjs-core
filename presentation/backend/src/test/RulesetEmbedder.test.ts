@@ -6,11 +6,11 @@ import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
 } from "@itwin/core-backend";
-import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@itwin/core-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
@@ -187,7 +187,7 @@ describe("RulesetEmbedder", () => {
         };
       }
     }
-    imodelMock.setup((x) => x.query(moq.It.isAnyString(), { rulesetId })).returns(() => asyncIterator());
+    imodelMock.setup((x) => x.query(moq.It.isAnyString(), QueryBinder.from({ rulesetId }), QueryRowFormat.UseJsPropertyNames)).returns(() => asyncIterator());
   }
 
   function createRulesetElementProps(ruleset: Ruleset): DefinitionElementProps {
