@@ -144,8 +144,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
       result.addCrossProductToTargetsInPlace(data[originIndex].x, data[originIndex].y, data[originIndex].z, data[indexA].x, data[indexA].y, data[indexA].z, data[indexB].x, data[indexB].y, data[indexB].z);
   }
   /**
-   * * compute the cross product from indexed origin t indexed targets targetAIndex and targetB index.
-   * * accumulate it to the result.
+   * Accumulate scale times the x,y,z values at index.
+   * No action if index is out of bounds.
    */
   public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
     if (this.isValidIndex(index)) {
