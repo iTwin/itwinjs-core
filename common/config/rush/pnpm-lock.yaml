@@ -596,7 +596,7 @@ importers:
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/ws': ^6.0.4
-      azurite: ^3.8.0
+      azurite: ^3.14.2
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
@@ -9511,7 +9511,7 @@ packages:
       istanbul-lib-instrument: 4.0.3
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.1
-      istanbul-reports: 3.0.4
+      istanbul-reports: 3.0.5
       jest-haste-map: 26.6.2
       jest-resolve: 26.6.2
       jest-util: 26.6.2
@@ -10538,7 +10538,7 @@ packages:
   /@types/i18next-node-fs-backend/2.1.1:
     resolution: {integrity: sha512-ESvH90OICQkKU3yuuRzF6YfHt5KACE55FOiUM59mMGnC+h03lHGdEYo3z3THbwS5FdMskLyIs2O7f6Oaz8P9sw==}
     dependencies:
-      i18next: 21.3.0
+      i18next: 21.3.1
     dev: true
 
   /@types/i18next/8.4.6:
@@ -10668,8 +10668,8 @@ packages:
   /@types/node/10.14.1:
     resolution: {integrity: sha512-Rymt08vh1GaW4vYB6QP61/5m/CFLGnFZP++bJpWbiNxceNa6RBipDmb413jvtSf/R1gg5a/jQVl2jY4XVRscEA==}
 
-  /@types/node/12.20.30:
-    resolution: {integrity: sha512-XYRJM0gRRtwfCq4mFRMMtX10kSgpPyR8neFFwpAnt3M74mJSsyIYmcIQ9LYoWwLr75AWnFg5Y3eJbiwUoLUfrw==}
+  /@types/node/12.20.33:
+    resolution: {integrity: sha512-5XmYX2GECSa+CxMYaFsr2mrql71Q4EvHjKS+ox/SiwSdaASMoBIWE6UmZqFO+VX1jIcsYLStI4FFoB6V7FeIYw==}
 
   /@types/node/8.10.54:
     resolution: {integrity: sha512-kaYyLYf6ICn6/isAyD4K1MyWWd5Q3JgH6bnMN089LUx88+s4W8GvK9Q6JMBVu5vsFFp7pMdSxdKmlBXwH/VFRg==}
@@ -14798,7 +14798,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@electron/get': 1.13.0
-      '@types/node': 12.20.30
+      '@types/node': 12.20.33
       extract-zip: 1.7.0
     transitivePeerDependencies:
       - supports-color
@@ -15177,8 +15177,8 @@ packages:
       - supports-color
     dev: false
 
-  /eslint-module-utils/2.7.0:
-    resolution: {integrity: sha512-hqSE88MmHl3ru9SYvDyGrlo0JwROlf9fiEMplEV7j/EAuq9iSlIlyCFbBT6pdULQBSnBYtYKiMLps+hKkyP7Gg==}
+  /eslint-module-utils/2.7.1:
+    resolution: {integrity: sha512-fjoetBXQZq2tSTWZ9yWVl2KuFrTZZH3V+9iD1V1RfpDgxzJR+mPd/KZmMiA8gbPqdBzpNiEHOuT7IYEWxrH0zQ==}
     engines: {node: '>=4'}
     dependencies:
       debug: 3.2.7
@@ -15223,7 +15223,7 @@ packages:
       doctrine: 2.1.0
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.4
-      eslint-module-utils: 2.7.0
+      eslint-module-utils: 2.7.1
       find-up: 2.1.0
       has: 1.0.3
       is-core-module: 2.7.0
@@ -17074,8 +17074,8 @@ packages:
     resolution: {integrity: sha1-kP/Z+bxhfzS5oS4DcmD1JERfdoQ=}
     dev: false
 
-  /i18next/21.3.0:
-    resolution: {integrity: sha512-MiarmWb/a+5z8C7QvihkcJf2YofuyhGvH28Wlip/c1YTSvHijYBFmc7dH6RrNkc2O44ApTdHnkK4FaM/S33C0w==}
+  /i18next/21.3.1:
+    resolution: {integrity: sha512-VElMm+LoeEuhViVwnDw1gR3snTItK9NJqgok8PZ5WU870MVO1x+5KEbzLO/6GC1zu42Uc3EuGj3nsGMGMNwT0A==}
     dependencies:
       '@babel/runtime': 7.15.4
     dev: true
@@ -17799,8 +17799,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /istanbul-reports/3.0.4:
-    resolution: {integrity: sha512-bFjUnc95rHjdCR63WMHUS7yfJJh8T9IPSWavvR02hhjVwezWALZ5axF9EqjmwZHpXqkzbgAMP8DmAtiyNxrdrQ==}
+  /istanbul-reports/3.0.5:
+    resolution: {integrity: sha512-5+19PlhnGabNWB7kOFnuxT8H3T/iIyQzIbQMxXsURmmvKg86P2sbkrGOT77VnHw0Qr0gc2XzRaRfMZYYbSQCJQ==}
     engines: {node: '>=8'}
     dependencies:
       html-escaper: 2.0.2
@@ -20279,7 +20279,7 @@ packages:
       istanbul-lib-processinfo: 2.0.2
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.1
-      istanbul-reports: 3.0.4
+      istanbul-reports: 3.0.5
       make-dir: 3.1.0
       node-preload: 0.2.1
       p-map: 3.0.0
@@ -22592,7 +22592,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.15.4
+      '@babel/runtime': 7.9.0
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
