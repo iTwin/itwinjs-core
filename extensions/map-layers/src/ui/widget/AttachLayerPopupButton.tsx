@@ -12,6 +12,7 @@ import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
 import { Button, Input } from "@itwin/itwinui-react";
+import { Guid } from "@itwin/core-bentley";
 
 // cSpell:ignore droppable Sublayer
 
