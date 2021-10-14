@@ -12,7 +12,7 @@ import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Error);
 Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
-Logger.logInfo("ITwinRegistry-Debug", "Setup logger");
+Logger.logInfo(ITwinClientLoggerCategory.Request, "Setup logger");
 
 chai.should();
 describe("ITwinRegistryClient (#integration)", () => {
@@ -20,14 +20,14 @@ describe("ITwinRegistryClient (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async function () {
-    Logger.logInfo("ITwinRegistry-Debug", "Entered before function");
+    Logger.logInfo(ITwinClientLoggerCategory.Request, "Entered before function");
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
-    Logger.logInfo("ITwinRegistry-Debug", "Retrieved access token");
+    Logger.logInfo(ITwinClientLoggerCategory.Request, "Retrieved access token");
   });
 
   it("should get a list of iTwins (#integration)", async () => {
-    Logger.logInfo("ITwinRegistry-Debug", "List of iTwins test");
+    Logger.logInfo(ITwinClientLoggerCategory.Request, "List of iTwins test");
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken);
 
     // At least one iTwin
