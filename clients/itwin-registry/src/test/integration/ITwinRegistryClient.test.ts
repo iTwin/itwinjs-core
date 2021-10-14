@@ -18,8 +18,10 @@ describe("ITwinRegistryClient (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
+    Logger.logInfo("ITwinREgistry-Debug", "Setup logger");
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
+    Logger.logInfo("ITwinREgistry-Debug", "Retrieved access token");
   });
 
   it("should get a list of iTwins (#integration)", async () => {
