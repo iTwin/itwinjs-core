@@ -33,11 +33,11 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
   describe("UiShowHideManager", () => {
 
-    before(async () => {
+    beforeEach(async () => {
       await TestUtils.initializeUiFramework();
     });
 
-    after(() => {
+    afterEach(() => {
       TestUtils.terminateUiFramework();
     });
 

@@ -963,6 +963,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "wtfnode",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "xml-js",
       "allowedCategories": [ "frontend" ]
     },

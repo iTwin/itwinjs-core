@@ -211,6 +211,7 @@ export class UiFramework {
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
     UiIModelComponents.terminate();
+    UiShowHideManager.terminate();
     UiFramework._initialized = false;
   }
 
@@ -533,7 +534,7 @@ export class UiFramework {
       };
       const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
-    } catch {}
+    } catch { }
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
