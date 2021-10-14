@@ -9,7 +9,7 @@
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import {
-  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey,
+  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps, RealityDataFormat, RealityDataSourceKey,
 } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -57,12 +57,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     if (undefined === props.orbitGtBlob) {
       this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl);
     } else {
-      const provider = RealityDataProvider.ContextShare;
-      const format = RealityDataFormat.OPC;
-      if (props.orbitGtBlob.rdsUrl)
-        this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl,provider, format);
-      else
-        this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.blobFileName,provider, format);
+      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }
     const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
     this._treeRef = (!useOrbitGtTileTreeReference) ?
