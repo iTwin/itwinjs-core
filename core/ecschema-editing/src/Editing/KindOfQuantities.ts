@@ -40,21 +40,21 @@ export class KindOfQuantities {
    * @param isDefault .is set to false when not explicitly passed.
    */
   public async addPresentationFormat(koqKey: SchemaItemKey, format: SchemaItemKey, isDefault: boolean = false): Promise<void> {
-    const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem(koqKey)) as MutableKindOfQuantity;
+    const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey));
 
     if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
     if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
-    const presentationFormat = await (this._schemaEditor.schemaContext.getSchemaItem(format));
+    const presentationFormat = await (this._schemaEditor.schemaContext.getSchemaItem<Format>(format));
     if (undefined === presentationFormat)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${format.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
     if (presentationFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${presentationFormat.fullName} to be of type Format.`);
 
-    kindOfQuantity.addPresentationFormat(presentationFormat as Format, isDefault);
+    kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
   }
 
   public async addPresentationOverrideFormat(koqKey: SchemaItemKey, overrideFormat: OverrideFormat, isDefault: boolean = false): Promise<void> {
-    const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem(koqKey)) as MutableKindOfQuantity;
+    const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey));
 
     if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
     if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
@@ -68,16 +68,16 @@ export class KindOfQuantities {
    * @param unitLabelOverrides The list of Unit (or InvertedUnit) and label overrides. The length of list should be equal to the number of units in the parent Format.
    */
   public async createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
-    const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem(koqKey)) as MutableKindOfQuantity;
+    const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey));
 
     if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
     if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
-    const parentFormat = await (this._schemaEditor.schemaContext.getSchemaItem(parent));
+    const parentFormat = await (this._schemaEditor.schemaContext.getSchemaItem<Format>(parent));
     if (undefined === parentFormat)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${parent.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
     if (parentFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${parentFormat.fullName} to be of type Format.`);
 
-    return new OverrideFormat(parentFormat as Format, precision, unitLabelOverrides);
+    return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
   }
 }

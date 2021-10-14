@@ -34,15 +34,15 @@ export class Mixins extends ECClasses {
     }
 
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass);
+      const baseClassItem = await schema.lookupItem<Mixin>(baseClass);
       if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
       if (baseClassItem.schemaItemType !== SchemaItemType.Mixin) return { errorMessage: `${baseClassItem.fullName} is not of type Mixin.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClass, async () => baseClassItem as Mixin);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClass, async () => baseClassItem);
     }
 
-    const newAppliesTo = (await this._schemaEditor.schemaContext.getSchemaItem(appliesTo));
+    const newAppliesTo = (await this._schemaEditor.schemaContext.getSchemaItem<EntityClass>(appliesTo));
     if (newAppliesTo === undefined || newAppliesTo.schemaItemType !== SchemaItemType.EntityClass) { return { errorMessage: `Failed to locate the appliedTo entity class ${appliesTo.name}.` }; }
-    newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo as EntityClass));
+    newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
 
     if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 
@@ -70,19 +70,19 @@ export class Mixins extends ECClasses {
   }
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem(entityKey)) as MutableEntityClass;
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem(mixinKey));
+    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
 
     if (entity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
     if (mixin === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
     if (entity.schemaItemType !== SchemaItemType.EntityClass) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);
     if (mixin.schemaItemType !== SchemaItemType.Mixin) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${mixinKey.fullName} to be of type Mixin.`);
 
-    entity.addMixin(mixin as Mixin);
+    entity.addMixin(mixin);
   }
 
   public async createNavigationProperty(mixinKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem(mixinKey)) as MutableMixin;
+    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<MutableMixin>(mixinKey));
 
     if (mixin === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Mixin Class ${mixinKey.fullName} not found in schema context.`);
     if (mixin.schemaItemType !== SchemaItemType.Mixin) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${mixinKey.fullName} to be of type Mixin.`);

@@ -63,7 +63,7 @@ export class Enumerations {
   }
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
-    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem(enumerationKey)) as Enumeration;
+    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
 
     if (enumeration === undefined) {
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);

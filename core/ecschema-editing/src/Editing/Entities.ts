@@ -33,10 +33,10 @@ export class Entities extends ECClasses {
 
     // Add a deserializing method.
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass);
+      const baseClassItem = await schema.lookupItem<EntityClass>(baseClass);
       if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
       if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass) return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem as EntityClass);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem);
     }
 
     if (mixins !== undefined) {
@@ -67,8 +67,8 @@ export class Entities extends ECClasses {
     return { itemKey: newClass.key };
   }
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem(entityKey)) as MutableEntityClass;
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem(mixinKey));
+    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
 
     // TODO: have a helpful returns
     if (entity === undefined) return;
@@ -76,11 +76,11 @@ export class Entities extends ECClasses {
     if (entity.schemaItemType !== SchemaItemType.EntityClass) return;
     if (mixin.schemaItemType !== SchemaItemType.Mixin) return;
 
-    entity.addMixin(mixin as Mixin);
+    entity.addMixin(mixin);
   }
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem(entityKey)) as MutableEntityClass;
+    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
 
     if (entity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
     if (entity.schemaItemType !== SchemaItemType.EntityClass) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);

@@ -30,8 +30,8 @@ export class Formats {
           return { errorMessage: `Failed to locate unit ${unit.name} in Schema Context.` };
         }
 
-        if ((unitItem as SchemaItem).schemaItemType !== SchemaItemType.Unit && (unitItem as SchemaItem).schemaItemType !== SchemaItemType.InvertedUnit)
-          return { errorMessage: `${unitItem.fullName} is not of type Unit or InvertedUnit.` };
+        if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
+          return { errorMessage: `${(unitItem as SchemaItem).fullName} is not of type Unit or InvertedUnit.` };
         newFormat.addUnit(unitItem);
       }
     }

@@ -27,11 +27,11 @@ export class Constants {
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
     }
 
-    const newPhenomenon = (await this._schemaEditor.schemaContext.getSchemaItem(phenomenon));
+    const newPhenomenon = (await this._schemaEditor.schemaContext.getSchemaItem<Phenomenon>(phenomenon));
     if (newPhenomenon === undefined || newPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
       return { errorMessage: `Unable to locate phenomenon ${phenomenon.name}` };
     }
-    newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon as Phenomenon));
+    newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
     newConstant.setDefinition(definition);
 
     if (numerator) { newConstant.setNumerator(numerator); }

@@ -33,10 +33,10 @@ export class CustomAttributes extends ECClasses {
     }
 
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass);
+      const baseClassItem = await schema.lookupItem<ECClass>(baseClass);
       if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
       if (baseClassItem.schemaItemType !== SchemaItemType.CustomAttributeClass) return { errorMessage: `${baseClassItem.fullName} is not of type CustomAttribute Class.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem as ECClass);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
     }
     if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 

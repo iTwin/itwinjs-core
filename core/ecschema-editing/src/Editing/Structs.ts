@@ -29,10 +29,10 @@ export class Structs extends ECClasses {
     }
 
     if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass);
+      const baseClassItem = await schema.lookupItem<StructClass>(baseClass);
       if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
       if (baseClassItem.schemaItemType !== SchemaItemType.StructClass) return { errorMessage: `${baseClassItem.fullName} is not of type Struct Class.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem as StructClass);
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
     }
 
     if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
