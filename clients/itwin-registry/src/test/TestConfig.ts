@@ -20,7 +20,7 @@ export class TestConfig {
       // scope: `${process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? ""} projects:read`,
       scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
     };
-    Logger.logInfo("itwin-client.Request", "Getting access token");
+    Logger.logInfo("itwin-client.Request", `Getting access token with scopes: ${debugConfig.scope}`);
     return getAccessTokenFromBackend(user, debugConfig);
   }
 }
