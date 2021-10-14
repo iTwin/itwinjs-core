@@ -380,7 +380,7 @@ export namespace OrbitGtTileTree {
   function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
 
     // Check main OrbitGtBlobProps fields are defined
-    if(!props.rdsUrl ||!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
+    if(!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
       return false;
 
     // Check SAS token is valid
