@@ -21,7 +21,8 @@ import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
   public static readonly searchKey: string = "ProductSettingsService.RP";
   public static readonly apiVersion: string = "v1.0";
-  protected override _url?: string;
+  private _settingsUrl?: string;
+  private _urlExcludesApiVersion?: boolean;
 
   /** Creates an instance of ConnectSettingsClient.
    */
@@ -45,15 +46,16 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    * @returns URL for the service
    */
   public override async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    if (this._url)
-      return this._url;
+    if (this._settingsUrl && excludeApiVersion === this._urlExcludesApiVersion)
+      return this._settingsUrl;
 
     const url = await super.getUrl(requestContext);
-    this._url = url;
+    this._settingsUrl = url;
+    this._urlExcludesApiVersion = excludeApiVersion;
     if (!excludeApiVersion)
-      this._url = `${this._url}/${ConnectSettingsClient.apiVersion}`;
+      this._settingsUrl = `${this._settingsUrl}/${ConnectSettingsClient.apiVersion}`;
 
-    return this._url;
+    return this._settingsUrl;
   }
 
   // gets the portion of the Url that encapsulates the type of setting requested.
