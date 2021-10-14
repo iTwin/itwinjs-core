@@ -60,10 +60,6 @@ export class AppUi {
     // initialize content groups and layouts before any frontstages.
     AppUi.defineFrontstages();
     AppUi.defineKeyboardShortcuts();
-
-    // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
-    // use to test WidgetProvider API - Note: this is different from UiItemsProvider
-    AppUi.defineDynamicWidgets();
   }
 
   /** Define Frontstages
@@ -250,46 +246,5 @@ export class AppUi {
         KeyboardShortcutManager.displayShortcutsMenu();
       },
     });
-  }
-
-  private static defineDynamicWidgets() {
-    const widgetDef1 = new WidgetDef({
-      iconSpec: "icon-placeholder",
-      label: "Dynamic Widget 1",
-      element: <FillCentered>Dynamic Widget for ViewsFrontstage</FillCentered>,
-      fillZone: true,
-      priority: -1,
-      badgeType: BadgeType.TechnicalPreview,
-    });
-    UiFramework.widgetManager.addWidgetDef(widgetDef1, "ViewsFrontstage", undefined, ZoneLocation.BottomRight);
-
-    const widgetDef2 = new WidgetDef({
-      iconSpec: "icon-placeholder",
-      label: "Dynamic Widget 2",
-      element: <FillCentered>Dynamic Widget for StageUsage.General</FillCentered>,
-      fillZone: true,
-      priority: -1,
-    });
-    UiFramework.widgetManager.addWidgetDef(widgetDef2, undefined, StageUsage.General, ZoneLocation.BottomRight);
-
-    const widgetDef3 = new WidgetDef({
-      id: "uitestapp-test-wd3",
-      iconSpec: "icon-placeholder",
-      label: "Dynamic Widget 3",
-      element: <FillCentered>Dynamic Widget in panel</FillCentered>,
-      fillZone: true,
-      priority: -1,
-    });
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
-        _section?: StagePanelSection | undefined, _frontstageAppData?: any): ReadonlyArray<WidgetDef> | undefined => {
-        if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
-          return [widgetDef3];
-        }
-        return undefined;
-      },
-    };
-    UiFramework.widgetManager.addWidgetProvider(provider);
   }
 }
