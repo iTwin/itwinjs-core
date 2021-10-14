@@ -81,6 +81,7 @@ public;NonFunctionPropertiesOf
 public;NonFunctionPropertyNamesOf
 public;ObservableSet
 beta;OneAtATimeAction
+public;OnUnexpectedError = (error: any) => void
 public;OpenMode
 public;OrderedComparator
 public;OrderedId64Array 
@@ -101,6 +102,7 @@ public;SortedArray
 beta;StatusCodeWithMessage
 public;StopWatch
 public;TransientIdSequence
+public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined

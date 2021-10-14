@@ -20,16 +20,14 @@ export class TestUtils {
   private static _uiComponentsInitialized = false;
 
   public static get i18n(): ITwinLocalization {
-    if (!TestUtils._i18n) {
-      // const port = process.debugPort;
-      // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new ITwinLocalization();
-    }
-    return TestUtils._i18n;
+    return TestUtils._i18n!;
   }
 
   public static async initializeUiComponents() {
     if (!TestUtils._uiComponentsInitialized) {
+      TestUtils._i18n = new ITwinLocalization();
+      await TestUtils.i18n.initialize(["IModelJs"]);
+
       await UiComponents.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
 

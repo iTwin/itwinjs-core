@@ -628,7 +628,7 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
@@ -740,16 +740,10 @@
       "cwd": "${workspaceFolder}/presentation/components",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "-r",
-        "ignore-styles",
-        "-r",
-        "jsdom-global/register",
-        "lib/test/**/*.test.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js"
@@ -784,13 +778,10 @@
       "cwd": "${workspaceFolder}/full-stack-tests/presentation",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "jsdom-global/register",
-        "-r",
-        "ignore-styles",
-        "lib/**/*.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test"
       ],
       "env": {
         "NODE_ENV": "development",
