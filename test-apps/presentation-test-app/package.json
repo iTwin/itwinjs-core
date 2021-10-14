@@ -32,7 +32,6 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-electron": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@itwin/core-common": "workspace:*",
@@ -48,6 +47,7 @@
     "@itwin/core-react": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
+    "@itwin/electron-authorization": "^0.2.0",
     "@itwin/itwinui-css": "^0.27.0",
     "@itwin/itwinui-react": "^1.16.2",
     "react": "^17.0.0",

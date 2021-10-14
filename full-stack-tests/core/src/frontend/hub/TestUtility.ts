@@ -7,7 +7,7 @@ import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
 import { IModelApp, IModelAppOptions, NativeApp  } from "@itwin/core-frontend";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronAppAuthorization } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 import { TestRpcInterface } from "../../common/RpcInterfaces";

@@ -12,7 +12,7 @@ import * as Http from "http";
 import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
-import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
+import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 
 type StateEventsPair = [string, ElectronAuthorizationEvents];
 

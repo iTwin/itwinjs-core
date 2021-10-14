@@ -39,6 +39,7 @@
     "@itwin/core-markup": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/electron-authorization": "^0.2.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "fs-extra": "^8.1.0",

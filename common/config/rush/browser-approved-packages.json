@@ -352,6 +352,12 @@
       ]
     },
     {
+      "name": "@itwin/electron-authorization",
+      "allowedCategories": [
+        "internal"
+      ]
+    },
+    {
       "name": "@itwin/eslint-plugin",
       "allowedCategories": [
         "backend",
@@ -501,7 +507,8 @@
     {
       "name": "@openid/appauth",
       "allowedCategories": [
-        "backend"
+        "backend",
+        "internal"
       ]
     },
     {
@@ -1060,7 +1067,9 @@
     },
     {
       "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [
+        "frontend"
+      ]
     },
     {
       "name": "ignore-styles",
@@ -1154,6 +1163,12 @@
       "name": "jsonwebtoken",
       "allowedCategories": [
         "backend"
+      ]
+    },
+    {
+      "name": "keytar",
+      "allowedCategories": [
+        "internal"
       ]
     },
     {
@@ -1285,7 +1300,8 @@
     {
       "name": "open",
       "allowedCategories": [
-        "backend"
+        "backend",
+        "internal"
       ]
     },
     {
@@ -1703,7 +1719,8 @@
     {
       "name": "username",
       "allowedCategories": [
-        "backend"
+        "backend",
+        "internal"
       ]
     },
     {

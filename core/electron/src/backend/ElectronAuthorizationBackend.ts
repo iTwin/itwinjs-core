@@ -23,7 +23,7 @@ import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
-import { DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
+import { DefaultRequestOptionsProvider, RequestOptions } from "@bentley/itwin-client";
 import { ipcMain } from "electron";
 import { ElectronHost } from "./ElectronHost";
 import { electronIPCChannelName } from "../frontend/ElectronAuthorizationFrontend";
@@ -33,7 +33,7 @@ const loggerCategory = "electron-auth";
  * Utility to generate OIDC/OAuth tokens for Desktop Applications
  * @beta
  */
-export class ElectronAuthorizationBackend implements AuthorizationClient {
+class ElectronAuthorizationBackend implements AuthorizationClient {
   protected _accessToken: AccessToken = "";
   public config?: NativeAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time

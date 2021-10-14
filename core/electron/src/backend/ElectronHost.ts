@@ -15,7 +15,7 @@ import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
+import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
