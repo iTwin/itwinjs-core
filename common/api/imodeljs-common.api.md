@@ -6241,6 +6241,7 @@ export enum RealityDataFormat {
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
+    OrbitGtBlob = "OrbitGtBlob",
     TilesetUrl = "TilesetUrl"
 }
 
