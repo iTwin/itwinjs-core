@@ -9,7 +9,7 @@
 
 import * as React from "react";
 import {
-  CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
+  CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsManager,
 } from "@itwin/appui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
@@ -42,8 +42,7 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
         currentStageRef.current = stageId;
         providersRef.current = uiProviders;
         const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, usage, toolbarUsage, toolbarOrientation, applicationData);
-        const updatedToolbarItems = UiItemsArbiter.updateToolbarButtonItems(toolbarItems);
-        manager.loadItems(updatedToolbarItems);
+        manager.loadItems(toolbarItems);
         setItems(manager.items);
       }
     }

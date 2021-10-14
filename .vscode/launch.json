@@ -628,7 +628,7 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
@@ -740,16 +740,10 @@
       "cwd": "${workspaceFolder}/presentation/components",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "-r",
-        "ignore-styles",
-        "-r",
-        "jsdom-global/register",
-        "lib/test/**/*.test.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js"
@@ -784,13 +778,10 @@
       "cwd": "${workspaceFolder}/full-stack-tests/presentation",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "jsdom-global/register",
-        "-r",
-        "ignore-styles",
-        "lib/**/*.js"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -1053,7 +1044,7 @@
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
       ],
       "autoAttachChildProcesses": false,
       "attachSimplePort": 0,
@@ -1072,7 +1063,7 @@
       "port": 9223,
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] ui-test-app (electron)"
@@ -1089,7 +1080,7 @@
       "program": "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js",
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] ui-test-app (chrome)"
@@ -1105,7 +1096,7 @@
       "url": "http://localhost:3000/",
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] ui-test-app (chrome)"
@@ -1125,7 +1116,7 @@
       "program": "${workspaceFolder}/test-apps/display-test-app/lib/backend/WebMain.js",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1142,7 +1133,7 @@
       "url": "http://localhost:3000",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1169,7 +1160,7 @@
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
@@ -1186,7 +1177,7 @@
       "port": 9223,
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
         "${workspaceFolder}/ui/abstract/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [

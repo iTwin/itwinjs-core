@@ -8,7 +8,7 @@
  */
 
 import { BeUiEvent, Logger } from "@itwin/core-bentley";
-import { AbstractZoneLocation, StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@itwin/appui-abstract";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection, UiItemsManager } from "@itwin/appui-abstract";
 import { UiFramework } from "../UiFramework";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { WidgetDef } from "./WidgetDef";
@@ -240,8 +240,7 @@ export class WidgetManager {
     // Consult the UiItemsManager to get any Abstract widgets
     if (location in StagePanelLocation) {
       const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection, frontstageApplicationData);
-      const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
-      updatedWidgets.forEach((abstractProps, index) => {
+      widgets.forEach((abstractProps, index) => {
         const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
         const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);
         const stableProps = getStableWidgetProps(props, stableId);
@@ -255,8 +254,7 @@ export class WidgetManager {
         // istanbul ignore else
         if (panelLocation && location in AbstractZoneLocation) {
           const widgets = UiItemsManager.getWidgets(stageId, stageUsage, panelLocation, undefined, location as unknown as AbstractZoneLocation, frontstageApplicationData);
-          const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
-          updatedWidgets.forEach((abstractProps, index) => {
+          widgets.forEach((abstractProps, index) => {
             const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
             const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);
             const stableProps = getStableWidgetProps(props, stableId);
