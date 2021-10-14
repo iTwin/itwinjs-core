@@ -22,6 +22,35 @@ export class ECClasses {
   protected constructor(protected _schemaEditor: SchemaContextEditor) { }
 
   /**
+   * Creates a property on class identified by the given SchemaItemKey. This method restricts the
+   * property type to primitives of type Double, String, DateTime and Integer.
+   * @param classKey The SchemaItemKey of the class.
+   * @param name The name of the new property.
+   * @param type The PrimitiveType assigned to the new property.
+   */
+  public async createProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType, prefix: string): Promise<PropertyEditResults> {
+    let mutableClass: MutableClass;
+
+    if (type !== PrimitiveType.Double && type !== PrimitiveType.String && type !== PrimitiveType.DateTime
+      && type !== PrimitiveType.Integer)
+      throw new Error ("Property creation is restricted to type Double, String, DateTime, and Integer.");
+
+    if ("" === prefix)
+      throw new Error("The specified property name prefix is invalid");
+
+    const prefixedName = `${prefix}_${name}`;
+
+    try {
+      mutableClass = await this.getClass(classKey, prefixedName);
+    } catch (e: any) {
+      return { errorMessage: e.message };
+    }
+
+    await mutableClass.createPrimitiveProperty(prefixedName, type);
+    return { itemKey: classKey, propertyName: prefixedName };
+  }
+
+  /**
    * Create a primitive property on class identified by the given SchemaItemKey.
    * @param classKey The SchemaItemKey of the class.
    * @param name The name of the new property.
