@@ -1088,7 +1088,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      i18next: 21.2.6
+      i18next: 21.3.1
       i18next-browser-languagedetector: 6.1.2
       i18next-http-backend: 1.3.1
       i18next-xhr-backend: 3.2.2
@@ -6610,7 +6610,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.16_webpack@4.44.2
+      '@bentley/webpack-tools-core': 2.19.15_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6710,7 +6710,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.16_webpack@4.44.2
+      '@bentley/webpack-tools-core': 2.19.15_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.31.2_3815fab247b4312be6d1f55eb1f81298
@@ -6801,8 +6801,8 @@ packages:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
     dev: true
 
-  /@bentley/webpack-tools-core/2.19.16_webpack@4.44.2:
-    resolution: {integrity: sha512-mG9g2V7orqOJey6jH6PjEg1brh/Y1o/uvtojil06FWXZx6eFSMDoySz8OnRHzsmAq8wRJyuIvCktSVA055ESzw==}
+  /@bentley/webpack-tools-core/2.19.15_webpack@4.44.2:
+    resolution: {integrity: sha512-eEnJJjjQbW0pyNYUhsaD34Amf/03/DPhaKemGIUzyvGVuIuveqPrE0hd1O4icTv4B1d/bwb+AYN5hnjVW4jGlw==}
     peerDependencies:
       webpack: 4.42.0
     dependencies:
@@ -14035,8 +14035,8 @@ packages:
       '@babel/runtime': 7.15.4
     dev: false
 
-  /i18next/21.2.6:
-    resolution: {integrity: sha512-xnCodgPo1ASLfdPs2/GS8jQFqQsaWrQKdsqfYgf5juANavIos4kjahgBkrMU8SUCn2kv7TSssfnyVu5LZjBWXw==}
+  /i18next/21.3.1:
+    resolution: {integrity: sha512-VElMm+LoeEuhViVwnDw1gR3snTItK9NJqgok8PZ5WU870MVO1x+5KEbzLO/6GC1zu42Uc3EuGj3nsGMGMNwT0A==}
     dependencies:
       '@babel/runtime': 7.15.4
     dev: false
