@@ -46,6 +46,7 @@ import { SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -193,7 +194,7 @@ export class DisplayTestApp {
     socketUrl.protocol = "ws";
     socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
 
-    const opts = {
+    const opts: any = {
       iModelApp: {
         localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -224,7 +225,8 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      // const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);

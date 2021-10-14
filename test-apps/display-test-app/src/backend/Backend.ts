@@ -156,9 +156,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup(opts);
     IModelHost.authorizationClient = new ElectronAuthorizationBackend({
-      clientId: "imodeljs-electron-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization itwinjs",
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
     await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
