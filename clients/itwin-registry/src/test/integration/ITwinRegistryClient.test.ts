@@ -9,16 +9,18 @@ import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Error);
+Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
+Logger.logInfo("ITwinREgistry-Debug", "Setup logger");
+
 chai.should();
 describe("ITwinRegistryClient (#integration)", () => {
   const iTwinAccessClient: ITwinAccessClient = new ITwinAccessClient();
   let accessToken: AccessToken;
 
   before(async function () {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Error);
-    Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
-    Logger.logInfo("ITwinREgistry-Debug", "Setup logger");
+    Logger.logInfo("ITwinREgistry-Debug", "Entered before function");
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
     Logger.logInfo("ITwinREgistry-Debug", "Retrieved access token");
