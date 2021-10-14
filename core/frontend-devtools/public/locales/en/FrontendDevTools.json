@@ -444,6 +444,9 @@
     },
     "QueryScheduleScript": {
       "keyin": "fdt query schedule script"
+    },
+    "ToggleTileTreeReferences": {
+      "keyin": "fdt toggle treerefs"
     }
   }
 }

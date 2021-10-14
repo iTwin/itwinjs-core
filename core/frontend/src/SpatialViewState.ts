@@ -192,6 +192,17 @@ export class SpatialViewState extends ViewState3d {
     this.unregisterModelSelectorListeners();
   }
 
+  /** Chiefly for debugging: change the "deactivated" state of one or more tile tree references. Deactivated references are
+   * omitted when iterating the references, so e.g. their graphics are omitted from the scene.
+   * @param modelIds The Ids of one or more models whose tile tree references are to be affected. If omitted, all models are affected.
+   * @param deactivated True to deactivate the specified references, false to reactivate them, undefined to invert each one's current state.
+   * @param which The references to be affected as either a broad category or one or more indices of animated references.
+   * @internal
+   */
+  public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+    this._treeRefs.setDeactivated(modelIds, deactivated, which);
+  }
+
   private registerModelSelectorListeners(): void {
     const models = this.modelSelector.observableModels;
     const func = () => {

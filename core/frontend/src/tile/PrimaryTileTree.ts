@@ -128,6 +128,8 @@ export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iM
 class PrimaryTreeReference extends TileTreeReference {
   public readonly view: ViewState;
   public readonly model: GeometricModelState;
+  /** Chiefly for debugging - disables iteration of this reference in SpatialModelRefs to e.g. omit the reference from the scene. */
+  public deactivated = false;
   protected readonly _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
@@ -373,7 +375,7 @@ function isPlanProjection(view: ViewState, model: GeometricModelState): boolean 
   return undefined !== model3d && model3d.isPlanProjection;
 }
 
-function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): TileTreeReference {
+function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): PrimaryTreeReference {
   if (false !== IModelApp.renderSystem.options.planProjections && isPlanProjection(view, model))
     return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut);
 
@@ -381,7 +383,7 @@ function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: 
 }
 
 /** @internal */
-export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
+export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference {
   return createTreeRef(view, model, undefined);
 }
 
@@ -421,9 +423,11 @@ export function createMaskTreeReference(model: GeometricModelState): TileTreeRef
  */
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   /** Supplies an iterator over all of the [[TileTreeReference]]s. */
-  readonly [Symbol.iterator]: () => Iterator<TileTreeReference>;
+  [Symbol.iterator](): Iterator<TileTreeReference>;
   /** Requests that the set of [[TileTreeReference]]s be updated to match the current state of the view, e.g., after the model selector's contents have changed. */
-  readonly update: () => void;
+  update(): void;
+  /** @see SpatialViewState.setTileTreeReferencesDeactivated. */
+  setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
@@ -441,9 +445,9 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
   /** The TileTreeReference representing the model's primary content. */
   private readonly _modelRef: TileTreeReference;
   /** TileTreeReferences representing nodes transformed by the view's schedule script. */
-  private readonly _animatedRefs: TileTreeReference[] = [];
+  private readonly _animatedRefs: PrimaryTreeReference[] = [];
   /** TileTreeReference providing cut geometry intersecting the view's clip volume. */
-  private _sectionCutRef?: TileTreeReference;
+  private _sectionCutRef?: PrimaryTreeReference;
   /** Whether `this._modelRef` is a [[PrimaryTreeReference]] (as opposed to, e.g., a reality model tree reference). */
   private readonly _isPrimaryRef: boolean;
 
@@ -453,11 +457,14 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
   }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
-    yield this._modelRef;
-    for (const animated of this._animatedRefs)
-      yield animated;
+    if (!this._primaryRef || !this._primaryRef.deactivated)
+      yield this._modelRef;
 
-    if (this._sectionCutRef)
+    for (const animated of this._animatedRefs)
+      if (!animated.deactivated)
+        yield animated;
+
+    if (this._sectionCutRef && !this._sectionCutRef.deactivated)
       yield this._sectionCutRef;
   }
 
@@ -487,6 +494,26 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       clip = undefined;
 
     this._sectionCutRef = clip ? createTreeRef(ref.view, ref.model, clip) : undefined;
+  }
+
+  public setDeactivated(deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+    if (typeof which !== "string") {
+      for (const index of which)
+        if (this._animatedRefs[index])
+          this._animatedRefs[index].deactivated = deactivated ?? !this._animatedRefs[index].deactivated;
+
+      return;
+    }
+
+    if (("all" === which || "primary" === which) && this._primaryRef)
+      this._primaryRef.deactivated = deactivated ?? !this._primaryRef.deactivated;
+
+    if (("all" === which || "section" === which) && this._sectionCutRef)
+      this._sectionCutRef.deactivated = deactivated ?? !this._sectionCutRef.deactivated;
+
+    if (("all" === which || "animated" === which))
+      for (const ref of this._animatedRefs)
+        ref.deactivated = deactivated ?? !ref.deactivated;
   }
 
   private get _primaryRef(): PrimaryTreeReference | undefined {
@@ -522,6 +549,21 @@ class SpatialRefs implements SpatialTileTreeReferences {
     for (const modelRef of this._refs.values())
       for (const ref of modelRef)
         yield ref;
+  }
+
+  public setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean, refs: "all" | "animated" | "primary" | "section" | number[]): void {
+    if (undefined === modelIds) {
+      for (const model of this._refs.values())
+        model.setDeactivated(deactivated, refs);
+
+      return;
+    }
+
+    if (typeof modelIds === "string")
+      modelIds = [modelIds];
+
+    for (const modelId of modelIds)
+      this._refs.get(modelId)?.setDeactivated(deactivated, refs);
   }
 
   private load(): void {
