@@ -39,8 +39,11 @@ export function registerBackendCallback(name: string, cb: CertaBackendCallback):
 
 export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
   Logger.logInfo("itwin-client.Request", "executeBackendCallback");
-  if (!isFrontend)
+  if (!isFrontend) {
+    Logger.logInfo("itwin-client.Request", "Attempting executeRegisteredCallback");
     return executeRegisteredCallback(name, args);
+  }
 
+  Logger.logInfo("itwin-client.Request", "Attempting _CertaSendToBackend");
   return window._CertaSendToBackend(name, args);
 }
