@@ -82,14 +82,13 @@ export class MobileFileHandler implements FileHandler {
 
   /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
-   * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async downloadFile(_requestContext: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
@@ -128,7 +127,7 @@ export class MobileFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(_requestContext: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
+  private async uploadChunk(_accessToken: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -156,13 +155,12 @@ export class MobileFileHandler implements FileHandler {
 
   /**
    * Upload a file to AzureBlobStorage for iModelHub.
-   * @param requestContext The client request context
    * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async uploadFile(requestContext: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async uploadFile(accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     defined("uploadUrlString", uploadUrlString);
@@ -180,7 +178,7 @@ export class MobileFileHandler implements FileHandler {
         progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };
       for (; i * chunkSize < fileSize; ++i) {
-        await this.uploadChunk(requestContext, uploadUrlString, file, i, progressCallback ? callback : undefined);
+        await this.uploadChunk(accessToken, uploadUrlString, file, i, progressCallback ? callback : undefined);
         blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
       }
       blockList += "</BlockList>";
