@@ -18,7 +18,6 @@
   "repository": {},
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-electron": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

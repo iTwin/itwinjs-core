@@ -116,7 +116,6 @@
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
     "@bentley/imodeljs-native": "3.0.14",
-    "async_hooks": "^1.0.0",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
