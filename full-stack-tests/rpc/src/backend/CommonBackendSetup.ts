@@ -29,6 +29,7 @@ export async function commonSetup(): Promise<void> {
       redirectUri: "http://localhost:3000/signin-callback",
       scope: baseOidcScopes.join(" "),
     });
+    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
     await ElectronHost.startup({ electronHost: { rpcInterfaces } });
   } else
     await IModelHost.startup();

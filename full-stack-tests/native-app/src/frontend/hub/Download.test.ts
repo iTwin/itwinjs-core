@@ -5,8 +5,9 @@
 import { assert } from "chai";
 import { GuidString } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@itwin/core-common";
-import { BriefcaseConnection, NativeApp } from "@itwin/core-frontend";
+import { BriefcaseConnection, IModelApp, NativeApp } from "@itwin/core-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";
@@ -20,8 +21,10 @@ describe("NativeApp Download (#integration)", () => {
         applicationId: "1234",
         applicationVersion: "testappversion",
         sessionId: "testsessionid",
+        authorizationClient: new ElectronAppAuthorization(),
       },
     });
+    await (IModelApp.authorizationClient as ElectronAppAuthorization).signIn();
 
     testITwinId = await NativeAppTest.initializeTestITwin();
   });

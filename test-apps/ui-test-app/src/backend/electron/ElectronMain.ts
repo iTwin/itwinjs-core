@@ -32,13 +32,13 @@ export async function initializeElectron() {
     },
   };
 
-  await ElectronHost.startup(opt);
   IModelHost.authorizationClient = new ElectronAuthorizationBackend({
     clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
   await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
+  await ElectronHost.startup(opt);
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts

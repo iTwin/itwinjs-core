@@ -115,12 +115,13 @@ async function init() {
   iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
   iModelHost.cacheDir = path.join(__dirname, "out");
 
-  await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
   IModelHost.authorizationClient = new ElectronAuthorizationBackend({
     clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
+  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
+  await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
 }
 
 module.exports = init();

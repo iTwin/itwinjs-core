@@ -121,7 +121,6 @@ export class NativeApp {
     }
 
     IModelApp.authorizationClient = opts?.iModelApp?.authorizationClient;
-    // TODO: Do we need to call IModelApp.authorizationClient.signIn() if it exists???
   }
 
   /** @internal */
