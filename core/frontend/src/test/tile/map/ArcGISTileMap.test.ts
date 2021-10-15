@@ -101,7 +101,7 @@ const emptyBundleError = {
   },
 };
 
-describe.only("ArcGISTileMap", () => {
+describe("ArcGISTileMap", () => {
   const sandbox = sinon.createSandbox();
 
   const getRequestTile = (parentTile: QuadId, tileMapRequestSize?: number) => {
