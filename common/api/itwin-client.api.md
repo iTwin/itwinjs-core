@@ -64,7 +64,6 @@ export class ImsAuthorizationClient extends Client {
     constructor();
     // (undocumented)
     protected baseUrl: string;
-    // (undocumented)
     getUrl(): Promise<string>;
 }
 
