@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { IModelApp, MockRender } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { UiIModelComponents } from "../imodel-components-react";
 import TestUtils from "./TestUtils";
 
@@ -13,10 +13,6 @@ describe("UiIModelComponents", () => {
 
   beforeEach(() => {
     TestUtils.terminateUiIModelComponents();
-  });
-
-  it("i18n should throw Error without initialize", () => {
-    expect(() => UiIModelComponents.localization).to.throw(Error);
   });
 
   it("i18nNamespace should return 'UiIModelComponents'", () => {
@@ -43,9 +39,9 @@ describe("UiIModelComponents", () => {
   it("calling initialize twice should log", async () => {
     const spyLogger = sinon.spy(Logger, "logInfo");
     expect(UiIModelComponents.initialized).to.be.false;
-    await UiIModelComponents.initialize(TestUtils.i18n);
+    await UiIModelComponents.initialize();
     expect(UiIModelComponents.initialized).to.be.true;
-    await UiIModelComponents.initialize(TestUtils.i18n);
+    await UiIModelComponents.initialize();
     spyLogger.calledOnce.should.true;
     (Logger.logInfo as any).restore();
   });
@@ -54,8 +50,6 @@ describe("UiIModelComponents", () => {
     await MockRender.App.startup();
 
     await UiIModelComponents.initialize();
-    expect(UiIModelComponents.localization).to.eq(IModelApp.localization);
-
     await MockRender.App.shutdown();
   });
 

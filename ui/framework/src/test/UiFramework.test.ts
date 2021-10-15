@@ -121,9 +121,9 @@ describe("UiFramework localStorage Wrapper", () => {
     it("calling initialize twice should log", async () => {
       const spyLogger = sinon.spy(Logger, "logInfo");
       expect(UiFramework.initialized).to.be.false;
-      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
+      await UiFramework.initialize(TestUtils.store);
       expect(UiFramework.initialized).to.be.true;
-      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
+      await UiFramework.initialize(TestUtils.store);
       spyLogger.calledOnce.should.true;
     });
 

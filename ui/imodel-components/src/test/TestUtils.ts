@@ -29,7 +29,7 @@ export class TestUtils {
       TestUtils._i18n = new ITwinLocalization();
       await TestUtils._i18n.initialize(["IModelJs"]);
 
-      await UiIModelComponents.initialize(TestUtils.i18n);
+      await UiIModelComponents.initialize();
       TestUtils._uiIModelComponentsInitialized = true;
 
       const mp: MessagePresenter = {

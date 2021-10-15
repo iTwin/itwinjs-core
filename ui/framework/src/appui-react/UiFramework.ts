@@ -180,7 +180,7 @@ export class UiFramework {
     UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
 
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
-    await UiIModelComponents.initialize(UiFramework._localization);
+    await UiIModelComponents.initialize();
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
