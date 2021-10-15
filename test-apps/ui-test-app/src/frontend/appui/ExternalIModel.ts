@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger } from "@itwin/core-bentley";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";

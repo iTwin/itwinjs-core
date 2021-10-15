@@ -77,7 +77,7 @@
     "@itwin/oidc-signin-tool": "workspace:*",
     "@itwin/perf-tools": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
-    "@itwin/projects-client": "^0.1.0",
+    "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",

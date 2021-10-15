@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";

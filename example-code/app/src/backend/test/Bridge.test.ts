@@ -7,7 +7,7 @@ import * as path from "path";
 
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,

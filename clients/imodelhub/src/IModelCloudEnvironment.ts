@@ -7,7 +7,7 @@
  */
 
 import { AccessToken } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 

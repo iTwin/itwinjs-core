@@ -7,7 +7,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { Popup } from "@itwin/core-react";
-import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client";
 
 /** Properties for the [[ITwinDropdown]] component */
 export interface ITwinDropdownProps {

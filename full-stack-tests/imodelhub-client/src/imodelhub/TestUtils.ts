@@ -8,7 +8,7 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemITwinClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,

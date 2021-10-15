@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";

@@ -37,7 +37,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/deep-assign': ^0.1.0
       '@types/lodash': ^4.14.0
       '@types/node': 14.14.31
@@ -59,7 +59,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/deep-assign': 0.1.1
       '@types/lodash': 4.14.175
       '@types/node': 14.14.31
@@ -177,7 +177,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -212,7 +212,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -286,7 +286,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
       '@itwin/perf-tools': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -353,7 +353,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/perf-tools': link:../../tools/perf-tools
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -401,7 +401,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
@@ -462,7 +462,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
@@ -1642,7 +1642,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1692,7 +1692,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
@@ -1722,7 +1722,7 @@ importers:
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1774,7 +1774,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
@@ -1963,7 +1963,7 @@ importers:
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -2017,7 +2017,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/fs-extra': 4.0.12
@@ -2061,7 +2061,7 @@ importers:
       '@itwin/oidc-signin-tool': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2112,7 +2112,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/express-server': link:../../core/express-server
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/mocha': 8.2.3
@@ -2140,7 +2140,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
@@ -2176,7 +2176,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
@@ -2208,7 +2208,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/oidc-signin-tool': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -2251,7 +2251,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -2486,7 +2486,7 @@ importers:
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2537,7 +2537,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/express-server': link:../../core/express-server
       '@itwin/presentation-backend': link:../../presentation/backend
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/mocha': 8.2.3
@@ -3362,7 +3362,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
@@ -3389,7 +3389,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/fs-extra': 4.0.12
       '@types/lodash': 4.14.175
@@ -3538,7 +3538,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@itwin/projects-client': ^0.1.0
+      '@itwin/projects-client': ^0.2.0
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 14.14.31
       '@types/react': ^17.0.0
@@ -3624,7 +3624,7 @@ importers:
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.3
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/projects-client': 0.1.0
+      '@itwin/projects-client': 0.2.0
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 14.14.31
       '@types/react': 17.0.27
@@ -7100,8 +7100,8 @@ packages:
       react-transition-group: 4.4.2_react@17.0.2
     dev: true
 
-  /@itwin/projects-client/0.1.0:
-    resolution: {integrity: sha512-pTGydXlCcHalXICwJK8TSFu/ldPEDPjsSHskaHIXhiooxaLlR2MyptH7Ygau1fgpUPN3FgTWzG47sv2l3Y/gQg==}
+  /@itwin/projects-client/0.2.0:
+    resolution: {integrity: sha512-KgculN59Iu3YqgGLB9HjATyy+Nl6PJXDc8oHQfhZGB8ZUcA17SQ6QznVDbG1NGoHMPH3RaLMPhQgO0NZNh3A5Q==}
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.85_@itwin+core-bentley@3.0.0-dev.85
       '@itwin/core-bentley': 3.0.0-dev.85

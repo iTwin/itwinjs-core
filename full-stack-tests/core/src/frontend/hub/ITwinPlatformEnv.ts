@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin } from "@itwin/projects-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import {
   BriefcaseQuery,

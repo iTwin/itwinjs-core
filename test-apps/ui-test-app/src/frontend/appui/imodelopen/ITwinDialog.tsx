@@ -9,7 +9,7 @@ import * as React from "react";
 import { SearchBox } from "@itwin/core-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ITwinTab, ITwinTabs } from "./ITwinTabs";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client/lib/cjs/projects-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelApp } from "@itwin/core-frontend";
 
 /** Properties for the [[ITwinDialog]] component */

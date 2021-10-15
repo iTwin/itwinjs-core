@@ -53,7 +53,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/projects-client": "^0.1.0",
+    "@itwin/projects-client": "^0.2.0",
     "@types/deep-assign": "^0.1.0",
     "@types/node": "14.14.31",
     "@types/lodash": "^4.14.0",
