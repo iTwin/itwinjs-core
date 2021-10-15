@@ -153,7 +153,11 @@ export class UiFramework {
       return;
     }
 
-    // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
+    /* if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducers registered with it.
+      If the app has no reducers to add and does not initialize a StateManager then just initialize the StateManager with the default framework reducer now */
+    if (undefined === store && !StateManager.isInitialized(true))
+      new StateManager();
+
     UiFramework._store = store;
     UiFramework._localization = localization || IModelApp.localization;
     // ignore setting _frameworkStateKeyInStore if not using store
@@ -199,7 +203,8 @@ export class UiFramework {
   public static terminate() {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
-
+    if (StateManager.isInitialized(true))
+      StateManager.clearStore();
     if (UiFramework._localization)
       UiFramework._localization.unregisterNamespace(UiFramework.localizationNamespace);
     UiFramework._localization = undefined;
@@ -249,7 +254,7 @@ export class UiFramework {
 
     // istanbul ignore else
     if (!StateManager.isInitialized(true))
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), `Error trying to access redux store before either store or StateManager has been initialized.`);
 
     // istanbul ignore next
     return StateManager.store;
@@ -533,7 +538,7 @@ export class UiFramework {
       };
       const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
-    } catch {}
+    } catch { }
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
