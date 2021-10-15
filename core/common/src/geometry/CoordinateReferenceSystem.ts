@@ -285,22 +285,31 @@ export class HorizontalCRS implements HorizontalCRSProps {
  */
 export interface VerticalCRSProps {
   /** Vertical CRS Key name. */
-  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 
 /** Vertical Coordinate reference System implementation.
  *  The VerticalCRS contains currently a single identifier property of string type. Although
- *  we currently only support four distinct key values "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29"
+ *  we currently only support five distinct key values "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID"
  *  we expect to support a broader set in the future including, eventually, user defined vertical CRS
  *  which will require additional parameters to be added.
  *  @public
 */
 export class VerticalCRS implements VerticalCRSProps {
-  /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29". The default is ELLIPSOID */
-  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+  /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID".
+   *  GEOID indicates elevations are to be interpreted relative to the local Geoid of the dataset. It can also be considered to be Mean Sea Level.
+   *  NAVD88 is the local geoid model for the USA. This vertical datum can only be used if the horizontal portion is based on a
+   *         datum variation of NAD83, NAD27, NSRS2007 and NSRS2011.
+   *  NGVD29 is the former local geoid model for the USA. This vertical datum can only be used if the horizontal portion is based on a
+   *         datum variation of NAD83, NAD27, NSRS2007 and NSRS2011.
+   *  ELLIPSOID indicates that elevations are relative to the surface of the WGS84(or current coincident) ellipsoid.
+   *  LOCAL_ELLIPSOID indicates that elevations are relative to the surface of the local ellipsoid used by the horizontal CRS. It can only
+   *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
+  */
+  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 
   public constructor(data?: VerticalCRSProps) {
-    this.id = "ELLIPSOID";
+    this.id = "GEOID";
     if (data)
       this.id = data.id;
   }
@@ -354,7 +363,6 @@ export interface GeographicCRSProps {
  *  The reprojection engine will use the engine internal dictionary to obtain the details if it can.
  *  Some definitions will originate from other sources (a parsed WKT for example) and the reprojection engine will require
  *  all mathematical and operational details to perform any conversion (descriptive information are ignored in the conversion process).
- *  @note In the absence of the verticalCRS property then ELLIPSOID (Geodetic elevation) will be assumed by reprojection engines.
  *  @note see important detailed explanation in the [[HorizontalCRS]] documentation.
  *  @note Earth Centered, Earth Fixed coordinate system (ECEF) is a full 3D cartesian system that unambiguously
  *        expressed coordinates relative to the Earth Center. Since there is no horizontal portion independent from
