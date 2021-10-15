@@ -3,15 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { AccessToken } from "@itwin/core-bentley";
 import { ITwinAccessClient } from "../../ITwinRegistryClient";
 import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
-
-Logger.initializeToConsole();
-Logger.setLevelDefault(LogLevel.Error);
-Logger.setLevel("itwin-client.Request", LogLevel.Trace);
-Logger.logInfo("itwin-client.Request", "Setup logger");
 
 chai.should();
 describe("ITwinRegistryClient (#integration)", () => {
@@ -19,14 +14,11 @@ describe("ITwinRegistryClient (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async function () {
-    Logger.logInfo("itwin-client.Request", "Entered before function");
     this.timeout(0);
     accessToken = await TestConfig.getAccessToken();
-    Logger.logInfo("itwin-client.Request", "Retrieved access token");
   });
 
   it("should get a list of iTwins (#integration)", async () => {
-    Logger.logInfo("itwin-client.Request", "List of iTwins test");
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken);
 
     // At least one iTwin

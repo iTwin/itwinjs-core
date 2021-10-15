@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@itwin/core-bentley";
-
 declare const window: any;
 declare const global: any;
 
@@ -15,7 +13,6 @@ export function getCallbacksRegisteredOnBackend(): { [name: string]: CertaBacken
   if (isFrontend)
     throw new Error("This should only be called on the backend!");
 
-  Logger.logInfo("itwin-client.Request", "getCallbacksRegisteredOnBackend");
   global._CertaRegisteredCallbacks = global._CertaRegisteredCallbacks || {};
   return global._CertaRegisteredCallbacks;
 }
@@ -38,12 +35,9 @@ export function registerBackendCallback(name: string, cb: CertaBackendCallback):
 }
 
 export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
-  Logger.logInfo("itwin-client.Request", "executeBackendCallback");
   if (!isFrontend) {
-    Logger.logInfo("itwin-client.Request", "Attempting executeRegisteredCallback");
     return executeRegisteredCallback(name, args);
   }
 
-  Logger.logInfo("itwin-client.Request", "Attempting _CertaSendToBackend");
   return window._CertaSendToBackend(name, args);
 }
