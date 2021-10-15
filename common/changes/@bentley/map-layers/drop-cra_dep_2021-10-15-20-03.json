@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/map-layers",
-      "comment": "Drop unecessary dep on @bentley/react-scripts",
+      "comment": "Drop unnecessary dep on @bentley/react-scripts",
       "type": "none"
     }
   ],
