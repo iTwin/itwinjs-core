@@ -161,7 +161,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   }
   public override get useGeographicTilingScheme(): boolean {
     const matrixSetAndLimits = this.getDisplayedTileMatrixSetAndLimits();
-    return matrixSetAndLimits ? matrixSetAndLimits?.tileMatrixSet.identifier?.includes("4326") : false;
+    return matrixSetAndLimits ? (matrixSetAndLimits?.tileMatrixSet.identifier?.includes("4326") || matrixSetAndLimits?.tileMatrixSet.supportedCrs?.includes("4326")) : false;
   }
 
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {

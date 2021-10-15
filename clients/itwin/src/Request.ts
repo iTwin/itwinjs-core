@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, GetMetaDataFunction, Guid, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;
@@ -283,8 +283,8 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     sareq = sareq.set(options.headers);
 
   // Add an x-correlation-id header with a new GUID if one doesn't already exist.
-  if (!options.headers || !options.headers.hasOwnProperty(requestIdHeaderName))
-    sareq = sareq.set(requestIdHeaderName, Guid.createValue());
+  // if (!options.headers || !options.headers.hasOwnProperty(requestIdHeaderName))
+  // sareq = sareq.set(requestIdHeaderName, Guid.createValue());
 
   let queryStr: string = "";
   let fullUrl: string = "";

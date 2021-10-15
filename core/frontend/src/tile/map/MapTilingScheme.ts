@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Angle, Matrix3d, Point2d, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
@@ -32,7 +32,7 @@ export abstract class MapTilingScheme {
   public abstract yFractionToLatitude(yFraction: number): number;
   public abstract latitudeToYFraction(latitude: number): number;
 
-  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean) {
+  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean, private _rectangle = Range2d.createXYXY(-Angle.piRadians, -Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians)) {
   }
   /**
    * Gets the total number of tiles in the X direction at a specified level-of-detail.
@@ -119,7 +119,7 @@ export abstract class MapTilingScheme {
   }
 
   public tileXYToRectangle(x: number, y: number, level: number, result?: MapCartoRectangle) {
-    return MapCartoRectangle.create(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
+    return level < 0 ? MapCartoRectangle.create() : MapCartoRectangle.create(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
   }
   public tileBordersNorthPole(row: number, level: number) {
     return this.rowZeroAtNorthPole ? this.tileYToFraction(row, level) === 0.0 : this.tileYToFraction(row + 1, level) === 1.0;
@@ -186,20 +186,27 @@ export abstract class MapTilingScheme {
     const mercatorToDb = dbToMercator.inverse();
     return mercatorToDb === undefined ? Transform.createIdentity() : mercatorToDb;
   }
+
+  protected yFractionFlip(fraction: number) {
+    return this.rowZeroAtNorthPole ? (1.0 - fraction) : fraction;
+  }
 }
+
+// eslint-disable-next-line prefer-const
+let forceGeographicFlip = false;
 
 /** @internal */
 export class GeographicTilingScheme extends MapTilingScheme {
-  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole: boolean = false) {
+  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole = forceGeographicFlip) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
   public yFractionToLatitude(yFraction: number): number {
-    return Math.PI * (yFraction - .5);
+    return Math.PI * (this.yFractionFlip(yFraction) - .5);
   }
 
   public latitudeToYFraction(latitude: number): number {
-    return .5 + latitude / Math.PI;
+    return this.yFractionFlip(.5 + latitude / Math.PI);
   }
 }
 
