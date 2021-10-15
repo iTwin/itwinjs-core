@@ -2,7 +2,7 @@
 
 A [Web Agent](./App.md#imodel-agents) is backend code.
 
-Follow the [Agent Starter Tutorial](https://github.com/imodeljs/agent-starter) for a complete example of an agent.
+Follow the [Agent Starter Tutorial](https://github.com/iTwin/agent-starter) for a complete example of an agent.
 
 See [how to write backend code](./backend/index.md).
 

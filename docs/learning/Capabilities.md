@@ -344,7 +344,7 @@ Desktop and Mobile device Web browsers.
 
 ## Further Resources
 
-- [GitHub](https://github.com/imodeljs/imodeljs): the imodeljs repository along with samples.
+- [GitHub](https://github.com/iTwin/itwinjs-core): the imodeljs repository along with samples.
 - [Documentation](https://www.itwinjs.org/learning/):
   - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.

@@ -6,11 +6,11 @@ This package contains unit and integration tests for the iModelHub client (`@ben
 
 ## Prerequisites
 
-Refer to the iTwin.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
+Refer to the iTwin.js [prerequisites](https://github.com/iTwin/itwinjs-core#prerequisites)
 
 ## Running the tests
 
-Start by running the [build instructions from this repository](https://github.com/imodeljs/imodeljs#build-instructions)
+Start by running the [build instructions from this repository](https://github.com/iTwin/itwinjs-core#build-instructions)
 
 There are multiple sets of tests:
 

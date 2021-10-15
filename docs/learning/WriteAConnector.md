@@ -78,7 +78,7 @@ A complete list of available connectors can be found in [iTwin Services Communit
 
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
-However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/imodeljs/imodeljs)
+However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/iTwin/itwinjs-core)
 
 The imodel-bridge package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
 

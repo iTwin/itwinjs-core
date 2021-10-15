@@ -29,4 +29,4 @@ This package can also be installed into an application and the method MapLayersU
 
 ## Contributing
 
-[Contributing to iTwin.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)
+[Contributing to iTwin.js](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md)

@@ -8,7 +8,7 @@
   "imodeljsSharedLibrary": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-metadata"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-metadata"
   },
   "scripts": {
     "compile": "npm run -s build",

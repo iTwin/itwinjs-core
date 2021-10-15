@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/webpack-core"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/webpack-core"
   },
   "author": {
     "name": "Bentley Systems, Inc.",

@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/quantity"
   },
   "scripts": {
     "compile": "npm run -s build",
