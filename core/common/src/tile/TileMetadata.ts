@@ -349,7 +349,7 @@ export interface PrimaryTileTreeId {
   enforceDisplayPriority?: boolean;
   /** If defined, the compact string representation of a clip vector applied to the tiles to produce cut geometry at the intersections with the clip planes.
    * Any geometry *not* intersecting the clip planes is omitted from the tiles.
-   * @see [ClipVector.toCompactString[($geometry-core).
+   * @see [ClipVector.toCompactString]($geometry-core).
    */
   sectionCut?: string;
 }
