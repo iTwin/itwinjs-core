@@ -8,7 +8,6 @@
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
-import { SessionProps } from "./SessionProps";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";

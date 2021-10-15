@@ -63,11 +63,7 @@ async function createOidcClient(): Promise<ElectronAppAuthorization | BrowserAut
   const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
-    // const clientId = "imodeljs-electron-test";
-    // const redirectUri = "http://localhost:3000/signin-callback";
-    // const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new ElectronAppAuthorization();
-    // await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";

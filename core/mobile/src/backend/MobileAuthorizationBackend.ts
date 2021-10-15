@@ -36,7 +36,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
       throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
     if (this.config.expiryBuffer)
       this.expireSafety = this.config.expiryBuffer;
-    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl();
+    this.issuerUrl = this.config.issuerUrl ?? this.getUrl();
     if (!this.issuerUrl)
       throw new IModelError(AuthStatus.Error, "The URL of the authorization provider was not initialized");
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removed NativeAppAuthorization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
