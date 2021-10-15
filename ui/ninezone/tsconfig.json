@@ -9,7 +9,6 @@
       "chai-as-promised",
       "mocha",
       "chai-jest-snapshot",
-      "@bentley/react-scripts"
     ]
   },
   "include": [
