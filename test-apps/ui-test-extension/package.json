@@ -6,10 +6,11 @@
   "typings": "lib/ui-test-extension",
   "scripts": {
     "compile": "npm run -s build",
-    "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets",
+    "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets && npm run -s copy:locale",
     "build": "npm run -s prebuild && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public/",
+    "copy:locale": "cpx \"./src/public/locales/**/*\" ./lib/public",
     "cover": "",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
