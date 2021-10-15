@@ -88,12 +88,6 @@ export class EdgeSettings {
   }
 
   public getColor(vf: ViewFlags): FloatRgba | undefined {
-    // In SolidFill mode, if edge color is not overridden, the edges don't use the element's line color.
-    // if (RenderMode.SolidFill === vf.renderMode && !this._colorOverridden) {
-    //   // ###TODO? MicroStation seems to compute some contrast with fill and/or background color. Use white for now.
-    //   return white;
-    // }
-
     return this._colorOverridden && this.isOverridden(vf) ? this._color : undefined;
   }
 
