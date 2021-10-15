@@ -7,7 +7,6 @@ internal;DownloadFailed
 beta;FileHandler
 internal;getArrayBuffer(url: string): Promise
 internal;getJson(url: string): Promise
-beta;ImsAuthorizationClient 
 beta;ITwinClientLoggerCategory
 beta;ProgressCallback = (progress: ProgressInfo) => void
 beta;ProgressInfo

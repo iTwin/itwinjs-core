@@ -216,7 +216,6 @@ public;LockState
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-internal;class NativeAppAuthorizationBackend 
 public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 

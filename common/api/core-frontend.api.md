@@ -181,7 +181,6 @@ import { ModelQueryParams } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
 import { MonochromeMode } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppFunctions } from '@itwin/core-common';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
@@ -248,7 +247,6 @@ import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SectionDrawingViewProps } from '@itwin/core-common';
-import { SessionProps } from '@itwin/core-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -6507,23 +6505,6 @@ export class NativeApp {
     // @internal
     static startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
     }
-
-// @public
-export class NativeAppAuthorization implements AuthorizationClient {
-    constructor(config?: NativeAppAuthorizationConfiguration);
-    // (undocumented)
-    protected _expireSafety: number;
-    getAccessToken(): Promise<AccessToken>;
-    // (undocumented)
-    get hasSignedIn(): boolean;
-    initialize(props: SessionProps): Promise<void>;
-    // (undocumented)
-    get isAuthorized(): boolean;
-    // (undocumented)
-    readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
-    signIn(): Promise<void>;
-    signOut(): Promise<void>;
-}
 
 // @internal
 export class NativeAppLogger {

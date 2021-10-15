@@ -4,19 +4,16 @@
 
 ```ts
 
-import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
+import { ElectronAuthorizationBackend } from '@itwin/electron-authorization/lib/cjs/ElectronBackend';
 import { IpcHandler } from '@itwin/core-backend';
-import { NativeAppAuthorizationBackend } from '@itwin/core-backend';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
-import { TokenResponse } from '@openid/appauth';
 
 // @beta
 export class ElectronApp {
@@ -62,15 +59,11 @@ export class ElectronHost {
 
 // @beta
 export interface ElectronHostOptions {
-    // (undocumented)
-    applicationName?: never;
-    authConfig?: NativeAppAuthorizationConfiguration;
     developmentServer?: boolean;
     frontendPort?: number;
     frontendURL?: string;
     iconName?: string;
     ipcHandlers?: (typeof IpcHandler)[];
-    noInitializeAuthClient?: boolean;
     rpcInterfaces?: RpcInterfaceDefinition[];
     webResourcesPath?: string;
 }

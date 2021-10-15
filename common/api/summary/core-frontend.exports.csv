@@ -356,7 +356,6 @@ public;ModelState
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
-public;NativeAppAuthorization 
 internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp

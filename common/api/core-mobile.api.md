@@ -6,10 +6,10 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
+import { AuthorizationClient } from '@itwin/core-common';
 import { BeEvent } from '@itwin/core-bentley';
 import { CancelRequest } from '@bentley/itwin-client';
 import { IModelAppOptions } from '@itwin/core-frontend';
-import { NativeAppAuthorizationBackend } from '@itwin/core-backend';
 import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';

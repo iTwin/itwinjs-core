@@ -59,11 +59,6 @@ export function getArrayBuffer(url: string): Promise<any>;
 // @internal
 export function getJson(url: string): Promise<any>;
 
-// @beta (undocumented)
-export class ImsAuthorizationClient extends Client {
-    constructor();
-}
-
 // @beta
 export enum ITwinClientLoggerCategory {
     // (undocumented)
