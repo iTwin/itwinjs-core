@@ -1971,6 +1971,7 @@ export enum ToolbarUsage {
 export class UiAbstract {
     static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
+    // @internal
     static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)

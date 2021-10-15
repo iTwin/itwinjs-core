@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

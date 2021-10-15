@@ -23,7 +23,7 @@ export class UiAbstract {
 
   /**
    * Registers the Localization service namespace for UiAbstract
-   * @param localization The internationalization service created by the application.
+   * @param localization The internationalization service created by the host application.
    */
   public static async initialize(localization: Localization): Promise<void> {
     if (UiAbstract._initialized) {
@@ -47,7 +47,9 @@ export class UiAbstract {
   /** Determines if UiAbstract has been initialized */
   public static get initialized(): boolean { return UiAbstract._initialized; }
 
-  /** The internationalization service created by the application. */
+  /** The internationalization service created by the host application.
+   * @internal
+   */
   public static get localization(): Localization {
     if (!UiAbstract._localization)
       throw new UiError(UiAbstract.loggerCategory(this), "UiAbstract not initialized");

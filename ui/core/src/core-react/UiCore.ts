@@ -28,7 +28,7 @@ export class UiCore {
 
   /**
    * Registers the Localization service namespace for UiCore. Also initializes UiAbstract.
-   * @param localization The internationalization service created by the application.
+   * @param localization The internationalization service created by the host application.
    */
   public static async initialize(localization: Localization): Promise<void> {
     if (UiCore._initialized) {
@@ -55,7 +55,7 @@ export class UiCore {
   /** Determines if UiCore has been initialized */
   public static get initialized(): boolean { return UiCore._initialized; }
 
-  /** The internationalization service created by the application.
+  /** The internationalization service created by the host application.
    * @internal
    */
   public static get localization(): Localization {
