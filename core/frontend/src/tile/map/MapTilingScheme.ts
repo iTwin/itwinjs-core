@@ -192,12 +192,9 @@ export abstract class MapTilingScheme {
   }
 }
 
-// eslint-disable-next-line prefer-const
-let forceGeographicFlip = false;
-
 /** @internal */
 export class GeographicTilingScheme extends MapTilingScheme {
-  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole = forceGeographicFlip) {
+  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole = false) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 

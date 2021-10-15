@@ -45,7 +45,7 @@ export abstract class MapLayerImageryProvider {
   protected get _filterByCartoRange() { return true; }
   constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._geographicTilingScheme = new GeographicTilingScheme();
+    this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
   }
 
   public async initialize(): Promise<void> {
