@@ -89,10 +89,10 @@ export class EdgeSettings {
 
   public getColor(vf: ViewFlags): FloatRgba | undefined {
     // In SolidFill mode, if edge color is not overridden, the edges don't use the element's line color.
-    if (RenderMode.SolidFill === vf.renderMode && !this._colorOverridden) {
-      // ###TODO? MicroStation seems to compute some contrast with fill and/or background color. Use white for now.
-      return white;
-    }
+    // if (RenderMode.SolidFill === vf.renderMode && !this._colorOverridden) {
+    //   // ###TODO? MicroStation seems to compute some contrast with fill and/or background color. Use white for now.
+    //   return white;
+    // }
 
     return this._colorOverridden && this.isOverridden(vf) ? this._color : undefined;
   }
@@ -116,6 +116,10 @@ export class EdgeSettings {
     this._visibleLineCode = this._visibleWeight = undefined;
     this._hiddenLineCode = this._hiddenWeight = undefined;
     this._transparencyThreshold = 0;
+  }
+
+  public wantContrastingColor(renderMode: RenderMode): boolean {
+    return !this._colorOverridden && RenderMode.SolidFill === renderMode;
   }
 
   private isOverridden(vf: ViewFlags): boolean {
