@@ -11,8 +11,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-metadata"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",

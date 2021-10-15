@@ -10,8 +10,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/perf-tools"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./reporter/**/*.ts\" 1>&2",

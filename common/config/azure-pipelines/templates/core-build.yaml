@@ -57,11 +57,11 @@ steps:
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
-  - script: node common/scripts/install-run-rush.js build -v -p max
+  - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
-  - script: node common/scripts/install-run-rush.js compile -v -p max
+  - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
