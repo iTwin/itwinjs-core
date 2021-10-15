@@ -62,8 +62,8 @@
     "@itwin/components-react": "workspace:^3.0.0-dev.87",
     "@itwin/core-react": "workspace:^3.0.0-dev.87",
     "@itwin/imodel-components-react": "workspace:^3.0.0-dev.87",
-    "react": "^16.8.6 || ^17.0.0",
-    "react-dom": "^16.8.6 || ^17.0.0"
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
