@@ -88,8 +88,11 @@ function createElementsFilterClause(elementAlias: string, classNames?: string[])
 
   // check if list contains only valid class names
   const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
-  if (classNames.some((name) => !name.match(classNameRegExp)))
-    throw new PresentationError(PresentationStatus.InvalidArgument, "Encountered invalid class name in the list");
+  const invalidName = classNames.find((name) => !name.match(classNameRegExp));
+  if (invalidName) {
+    throw new PresentationError(PresentationStatus.InvalidArgument, `Encountered invalid class name - ${invalidName}.
+      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`);
+  }
 
   return `WHERE ${elementAlias}.ECClassId IS (${classNames.join(",")})`;
 }
