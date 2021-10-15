@@ -2,7 +2,8 @@
   "name": "@itwin/ui-test-extension",
   "version": "2.5.0-dev.2",
   "description": "Example extension to exercise adding UI components and stages",
-  "main": "index.js",
+  "main": "lib/ui-test-extension.js",
+  "typings": "lib/ui-test-extension",
   "scripts": {
     "compile": "npm run -s build",
     "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets",
