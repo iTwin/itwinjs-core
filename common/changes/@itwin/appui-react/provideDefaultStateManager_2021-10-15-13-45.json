@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Initialize StateManager store if necessary during UiFramework initialization.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
