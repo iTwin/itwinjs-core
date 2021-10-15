@@ -11,8 +11,6 @@ import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./LineCode";
 
-const white = FloatRgba.fromColorDef(ColorDef.white);
-
 /** Controls symbology of edges based on ViewFlags and HiddenLine.Settings. Typically these come from the Target's
  * RenderPlan, but a GraphicBranch may override those settings.
  * @internal
