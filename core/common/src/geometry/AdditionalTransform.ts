@@ -95,7 +95,7 @@ export interface AdditionalTransformProps {
 
 /** Additional Transform implementation.
  *  An additional transform is a transformation that can apply to either the horizontal or vertical coordinates of a
- *  geographic CRS. The transformation is applied after the latitude/longitude have been reprojected thus the process
+ *  geographic CRS. The transformation is applied after the latitude/longitude have been projected thus the process
  *  is applied to the result Cartesian coordinates of the projection process.
  *  @public
 */

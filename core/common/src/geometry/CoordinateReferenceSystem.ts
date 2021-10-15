@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Geometry
  */
-// cspell:ignore NAVD, NGVD
+// cspell:ignore NAVD, NGVD, NSRS, Helmert
 
 import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
@@ -284,7 +284,9 @@ export class HorizontalCRS implements HorizontalCRSProps {
  * @public
  */
 export interface VerticalCRSProps {
-  /** Vertical CRS Key name. */
+  /** Vertical CRS Key name.
+   * @see [[VerticalCRS.id]]
+   */
   id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 
@@ -333,7 +335,9 @@ export class VerticalCRS implements VerticalCRSProps {
   }
 }
 
-/** Geographic Coordinate Reference System definition that includes both the horizontal and vertical definitions
+/** Geographic Coordinate Reference System definition that includes the horizontal and vertical definitions as well as an optional
+ *  additional transformation.
+ *  @see [[GeographicCRS]].
  *  @public
  */
 export interface GeographicCRSProps {
@@ -346,8 +350,11 @@ export interface GeographicCRSProps {
 }
 
 /** Geographic Coordinate Reference System implementation. This is the class that indicates the definition of a Geographic
- *  coordinate reference system comprised of two components: Horizontal and Vertical.
- *  The vertical component (see [[VerticalCRS]]) is the simplest being formed of a simple identifier as a string.
+ *  coordinate reference system comprised of three components: Horizontal and Vertical and an optional additional transform.
+ *  The vertical component (see [[VerticalCRS]]) is the simplest portion containing a simple identifier as a string.
+ *  The optional additional transform of which, currently, only the type Helmert 2D with Z offset [[Helmert2DWithZOffset]] is supported
+ *  defines a transformation of x,y, and z cartesian coordinate of the projection to the final
+ *  Geographic Coordinate Reference System cartesian coordinates.
  *  The horizontal component contains a list of identification and documentation properties as well as
  *  defining details possibly including the projection with method and parameters, the definition of the datum, ellipsoid, extent and so on.
  *  The principle of describing a Geographic CRS is that the definition may be incomplete. The whole set of classes related to geographic
@@ -363,7 +370,7 @@ export interface GeographicCRSProps {
  *  The reprojection engine will use the engine internal dictionary to obtain the details if it can.
  *  Some definitions will originate from other sources (a parsed WKT for example) and the reprojection engine will require
  *  all mathematical and operational details to perform any conversion (descriptive information are ignored in the conversion process).
- *  @note see important detailed explanation in the [[HorizontalCRS]] documentation.
+ *  @note see important detailed explanation in the [[HorizontalCRS]], [[VerticalCRS]] and [[AdditionalTransform]] documentation.
  *  @note Earth Centered, Earth Fixed coordinate system (ECEF) is a full 3D cartesian system that unambiguously
  *        expressed coordinates relative to the Earth Center. Since there is no horizontal portion independent from
  *        the vertical portion this system cannot be represented by a GeographicCRS and remains a separate concept.
