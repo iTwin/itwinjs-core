@@ -35,9 +35,8 @@ export function registerBackendCallback(name: string, cb: CertaBackendCallback):
 }
 
 export async function executeBackendCallback(name: string, ...args: any[]): Promise<any> {
-  if (!isFrontend) {
+  if (!isFrontend)
     return executeRegisteredCallback(name, args);
-  }
 
   return window._CertaSendToBackend(name, args);
 }
