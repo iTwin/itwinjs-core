@@ -99,7 +99,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   public async makeTileRequest(url: string) {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
+    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer", disableCorrelationHeader: true };
     tileRequestOptions.auth = this.getRequestAuthorization();
     return request(url, tileRequestOptions);
   }

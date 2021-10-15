@@ -21,6 +21,7 @@ export abstract class Client {
     protected baseUrl?: string;
     protected delete(accessToken: AccessToken, relativeUrlPath: string): Promise<void>;
     getUrl(): Promise<string>;
+    // @internal
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
@@ -54,9 +55,6 @@ export interface FileHandler {
 }
 
 // @internal
-export function getArrayBuffer(url: string): Promise<any>;
-
-// @internal
 export function getJson(url: string): Promise<any>;
 
 // @beta (undocumented)
@@ -73,10 +71,10 @@ export enum ITwinClientLoggerCategory {
     Request = "itwin-client.Request"
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export type ProgressCallback = (progress: ProgressInfo) => void;
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface ProgressInfo {
     // (undocumented)
     loaded: number;
@@ -92,7 +90,7 @@ export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): A
 // @internal
 export function request(url: string, options: RequestOptions): Promise<Response>;
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface RequestBasicCredentials {
     // (undocumented)
     password: string;
@@ -100,9 +98,8 @@ export interface RequestBasicCredentials {
     user: string;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class RequestGlobalOptions {
-    // @internal
     static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined;
     // (undocumented)
     static httpsProxy?: https.Agent;
@@ -114,10 +111,10 @@ export class RequestGlobalOptions {
     static timeout: RequestTimeoutOptions;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export const requestIdHeaderName = "X-Correlation-Id";
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface RequestOptions {
     // (undocumented)
     accept?: string;
@@ -129,6 +126,8 @@ export interface RequestOptions {
     body?: any;
     // (undocumented)
     buffer?: any;
+    // (undocumented)
+    disableCorrelationHeader?: boolean;
     // (undocumented)
     errorCallback?: (response: any) => ResponseError;
     // (undocumented)
@@ -159,7 +158,7 @@ export interface RequestOptions {
     useCorsProxy?: boolean;
 }
 
-// @beta
+// @internal
 export interface RequestQueryOptions {
     $filter?: string;
     $orderby?: string;
@@ -169,7 +168,7 @@ export interface RequestQueryOptions {
     $top?: number;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface RequestQueryStringifyOptions {
     // (undocumented)
     delimiter?: string;
@@ -177,13 +176,13 @@ export interface RequestQueryStringifyOptions {
     encode?: boolean;
 }
 
-// @beta
+// @internal
 export interface RequestTimeoutOptions {
     deadline?: number;
     response?: number;
 }
 
-// @beta
+// @internal
 export interface Response {
     // (undocumented)
     body: any;
@@ -195,22 +194,19 @@ export interface Response {
     text: string | undefined;
 }
 
-// @beta
+// @internal
 export class ResponseError extends BentleyError {
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     protected _data?: any;
     // (undocumented)
     description?: string;
-    // @internal
     log(): void;
-    // @internal (undocumented)
+    // (undocumented)
     logMessage(): string;
-    // @internal
     static parse(response: any, log?: boolean): ResponseError;
-    // @internal (undocumented)
+    // (undocumented)
     static parseHttpStatus(statusType: number): HttpStatus;
-    // @internal
     static shouldRetry(error: any, response: any): boolean;
     // (undocumented)
     status?: number;

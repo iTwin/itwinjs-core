@@ -38,7 +38,6 @@ export class DefaultRequestOptionsProvider {
   }
 }
 
-// @todo Setup a logging framework.
 /**
  * Base class for all Client implementations
  * @beta
@@ -61,6 +60,7 @@ export abstract class Client {
    * @note The options passed in by clients override any defaults where necessary.
    * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
+   * @internal
    */
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     if (!Client._defaultRequestOptionsProvider)
