@@ -17,18 +17,14 @@ export class ImsAuthorizationClient extends Client {
   }
 
   public override async getUrl() {
-    if (this._url) {
-      console.log(`IMS client - found url: ${this._url}`);
+    if (this._url)
       return this._url;
-    }
 
     if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY) {
       // Strip trailing '/'
       this._url = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY.replace(/\/$/, "");
-      console.log(`IMS client - returning custom url: ${this._url}`);
       return this._url;
     }
-    console.log(`IMS client - returning url with prefix: ${process.env.IMJS_URL_PREFIX}`);
     return super.getUrl();
   }
 }
