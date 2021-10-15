@@ -113,6 +113,7 @@ const adjustContrast = `
   return vec4(vec3(s), baseColor.a);
 `;
 
+/** @internal */
 export function addEdgeContrast(vert: VertexShaderBuilder): void {
   vert.addUniform("u_bgIntensity", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_bgIntensity", (uniform, params) => {
