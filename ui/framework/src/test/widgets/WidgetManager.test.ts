@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
-import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../appui-react";
+import { WidgetDef, WidgetManager, ZoneLocation } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
@@ -100,30 +100,6 @@ describe("WidgetManager", () => {
     expect(widgetManager.widgetCount).to.eq(1);
   });
 
-  it("addWidgetProvider should add a provider", () => {
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (_stageId: string, _stageUsage: string, _location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
-        return undefined;
-      },
-    };
-    widgetManager.addWidgetProvider(provider);
-    expect(widgetManager.providers.length).to.eq(1);
-  });
-
-  it("addWidgetProvider should not add a duplicate provider", () => {
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (_stageId: string, _stageUsage: string, _location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
-        return undefined;
-      },
-    };
-    widgetManager.addWidgetProvider(provider);
-    expect(widgetManager.providers.length).to.eq(1);
-    widgetManager.addWidgetProvider(provider);
-    expect(widgetManager.providers.length).to.eq(1);
-  });
-
   it("getWidgetDefs should find a WidgetDef targeting a stageId", () => {
     const widgetDef = new WidgetDef({ id: "test" });
     widgetManager.addWidgetDef(widgetDef, "TestStage", undefined, ZoneLocation.BottomRight);
@@ -155,28 +131,6 @@ describe("WidgetManager", () => {
     expect(widgetDefs).to.not.be.undefined;
     if (widgetDefs)
       expect(widgetDefs.length).to.eq(1);
-  });
-
-  it("getWidgetDefs should get a WidgetDef from a provider", () => {
-    const widgetDef = new WidgetDef({ id: "test" });
-    widgetManager.addWidgetDef(widgetDef, "TestStage", undefined, ZoneLocation.BottomRight);
-    expect(widgetManager.widgetCount).to.eq(1);
-
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
-        if (stageId === "TestStage" && location === ZoneLocation.BottomRight)
-          return [new WidgetDef({ id: "test2" })];
-        return undefined;
-      },
-    };
-    widgetManager.addWidgetProvider(provider);
-    expect(widgetManager.providers.length).to.eq(1);
-
-    const widgetDefs = widgetManager.getWidgetDefs("TestStage", StageUsage.General, ZoneLocation.BottomRight);
-    expect(widgetDefs).to.not.be.undefined;
-    if (widgetDefs)
-      expect(widgetDefs.length).to.eq(2);
   });
 
   it("getWidgetDefs should get a WidgetDef from an 'addon' UiItemsProvider", async () => {
@@ -241,36 +195,6 @@ describe("WidgetManager", () => {
     const result = widgetManager.removeWidgetDef("test2");
     expect(result).to.be.false;
     expect(widgetManager.widgetCount).to.eq(1);
-  });
-
-  it("removeWidgetProvider should remove a WidgetProvider", () => {
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (_stageId: string, _stageUsage: string, _location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
-        return undefined;
-      },
-    };
-    widgetManager.addWidgetProvider(provider);
-    expect(widgetManager.providers.length).to.eq(1);
-
-    const result = widgetManager.removeWidgetProvider("test");
-    expect(result).to.be.true;
-    expect(widgetManager.providers.length).to.eq(0);
-  });
-
-  it("removeWidgetProvider should not remove a WidgetProvider if not found", () => {
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (_stageId: string, _stageUsage: string, _location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
-        return undefined;
-      },
-    };
-    widgetManager.addWidgetProvider(provider);
-    expect(widgetManager.providers.length).to.eq(1);
-
-    const result = widgetManager.removeWidgetProvider("test2");
-    expect(result).to.be.false;
-    expect(widgetManager.providers.length).to.eq(1);
   });
 
 });

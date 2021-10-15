@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Remove react 16 peer dependency.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

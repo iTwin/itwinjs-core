@@ -27,7 +27,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
-    "@itwin/electron-authorization": "^0.2.0",
+    "@itwin/electron-authorization": "^0.3.0",
     "chai": "^4.1.2",
     "electron": "^14.0.0",
     "express": "^4.16.3",

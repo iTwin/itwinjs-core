@@ -18,9 +18,7 @@ import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
-import * as React from "react";
-import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
-import { FillCentered } from "@itwin/core-react";
+import { ContentLayoutProps, FunctionKey, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 
 import {
@@ -32,10 +30,6 @@ import {
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
-  UiFramework,
-  WidgetDef,
-  WidgetProvider,
-  ZoneLocation,
 } from "@itwin/appui-react";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
@@ -60,10 +54,6 @@ export class AppUi {
     // initialize content groups and layouts before any frontstages.
     AppUi.defineFrontstages();
     AppUi.defineKeyboardShortcuts();
-
-    // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
-    // use to test WidgetProvider API - Note: this is different from UiItemsProvider
-    AppUi.defineDynamicWidgets();
   }
 
   /** Define Frontstages
@@ -250,46 +240,5 @@ export class AppUi {
         KeyboardShortcutManager.displayShortcutsMenu();
       },
     });
-  }
-
-  private static defineDynamicWidgets() {
-    const widgetDef1 = new WidgetDef({
-      iconSpec: "icon-placeholder",
-      label: "Dynamic Widget 1",
-      element: <FillCentered>Dynamic Widget for ViewsFrontstage</FillCentered>,
-      fillZone: true,
-      priority: -1,
-      badgeType: BadgeType.TechnicalPreview,
-    });
-    UiFramework.widgetManager.addWidgetDef(widgetDef1, "ViewsFrontstage", undefined, ZoneLocation.BottomRight);
-
-    const widgetDef2 = new WidgetDef({
-      iconSpec: "icon-placeholder",
-      label: "Dynamic Widget 2",
-      element: <FillCentered>Dynamic Widget for StageUsage.General</FillCentered>,
-      fillZone: true,
-      priority: -1,
-    });
-    UiFramework.widgetManager.addWidgetDef(widgetDef2, undefined, StageUsage.General, ZoneLocation.BottomRight);
-
-    const widgetDef3 = new WidgetDef({
-      id: "uitestapp-test-wd3",
-      iconSpec: "icon-placeholder",
-      label: "Dynamic Widget 3",
-      element: <FillCentered>Dynamic Widget in panel</FillCentered>,
-      fillZone: true,
-      priority: -1,
-    });
-    const provider: WidgetProvider = {
-      id: "test",
-      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
-        _section?: StagePanelSection | undefined, _frontstageAppData?: any): ReadonlyArray<WidgetDef> | undefined => {
-        if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
-          return [widgetDef3];
-        }
-        return undefined;
-      },
-    };
-    UiFramework.widgetManager.addWidgetProvider(provider);
   }
 }
