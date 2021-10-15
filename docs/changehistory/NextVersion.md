@@ -1046,6 +1046,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
+### @bentley/appui-react
+
+| Removed                            | Replacement                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+
 ### @bentley/frontend-authorization-client
 
 | Removed                                          | Replacement                    |

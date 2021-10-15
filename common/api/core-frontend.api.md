@@ -7417,6 +7417,10 @@ export class RealityDataSource {
     // (undocumented)
     static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // (undocumented)
+    static createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
+    // (undocumented)
     static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     static fromProps(props: RealityDataSourceProps): RealityDataSource;
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
