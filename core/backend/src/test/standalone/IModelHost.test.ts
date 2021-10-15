@@ -7,7 +7,7 @@ import * as path from "path";
 import { IModelHost, IModelHostConfiguration, KnownLocations } from "../../IModelHost";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { RpcRegistry } from "@itwin/core-common";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUtils } from "../IModelTestUtils";
 import { Schemas } from "../../Schema";
 import sinon = require("sinon");
 import { SnapshotDb } from "../../IModelDb";
@@ -17,12 +17,12 @@ describe("IModelHost", () => {
   afterEach(async () => {
     sinon.restore();
     // Restore the backend to the initial state.
-    await IModelTestUtils.shutdownBackend();
-    await IModelTestUtils.startBackend();
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
   });
 
   it("valid default configuration", async () => {
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
     await IModelHost.startup();
 
     // Valid registered implemented RPCs
@@ -39,7 +39,7 @@ describe("IModelHost", () => {
   });
 
   it("should raise onAfterStartup events", async () => {
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
 
     const eventHandler = sinon.spy();
     IModelHost.onAfterStartup.addOnce(eventHandler);
@@ -63,7 +63,7 @@ describe("IModelHost", () => {
     expect(imodel2.isOpen).to.be.true;
     expect(imodel3.isOpen).to.be.true;
     imodel4.close(); // make sure it gets removed so we don't try to close it again on shutdown
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
     expect(eventHandler.calledOnce).to.be.true;
     assert.isFalse(imodel1.isOpen, "shutdown should close iModel1");
     assert.isFalse(imodel2.isOpen, "shutdown should close iModel2");
@@ -82,7 +82,7 @@ describe("IModelHost", () => {
 
   it("should set the briefcase cache directory to expected locations", async () => {
     // Shutdown IModelHost to allow this test to use it.
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
 
     const config = new IModelHostConfiguration();
     const cacheSubDir = "imodels";

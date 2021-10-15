@@ -7,13 +7,9 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { DbResult, StopWatch, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode } from "../ECDb";
-import { IModelHost } from "../IModelHost";
-import { SqliteStatement } from "../SqliteStatement";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { ECDb, ECDbOpenMode, IModelHost, SqliteStatement } from "@itwin/core-backend";
+import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
-IModelTestUtils.init();
 function makeRandStr(length: number) {
   let text = "";
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

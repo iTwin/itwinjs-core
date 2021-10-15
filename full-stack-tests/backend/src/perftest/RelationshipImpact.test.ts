@@ -10,12 +10,8 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { SpatialCategory } from "../Category";
-import { ECSqlStatement } from "../ECSqlStatement";
-import { IModelDb, SnapshotDb } from "../IModelDb";
-import { IModelJsFs } from "../IModelJsFs";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {

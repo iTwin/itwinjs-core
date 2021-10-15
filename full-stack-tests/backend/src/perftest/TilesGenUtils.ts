@@ -8,8 +8,7 @@ import { Range3d } from "@itwin/core-geometry";
 import {
   BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
 } from "@itwin/core-common";
-import { IModelDb } from "../IModelDb";
-import { SpatialModel } from "../Model";
+import { IModelDb, SpatialModel } from "@itwin/core-backend";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
 
 interface TileTreeInfo {

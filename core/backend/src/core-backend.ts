@@ -27,6 +27,7 @@ export * from "./BackendLoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
+export * from "./RpcBackend";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./SQLiteDb";

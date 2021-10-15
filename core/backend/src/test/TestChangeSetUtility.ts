@@ -5,10 +5,9 @@
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { SpatialCategory } from "../../Category";
-import { BriefcaseDb, IModelHost } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubUtility } from "./HubUtility";
+import { BriefcaseDb, IModelHost, SpatialCategory } from "../core-backend";
+import { HubWrappers } from "./IModelTestUtils";
+import { HubMock, IModelTestUtils } from "./index";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
@@ -24,11 +23,11 @@ export class TestChangeSetUtility {
 
   constructor(accessToken: AccessToken, iModelName: string) {
     this._accessToken = accessToken;
-    this._iModelName = HubUtility.generateUniqueName(iModelName); // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
+    this._iModelName = IModelTestUtils.generateUniqueName(iModelName); // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
+    this._iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     this._iModel.saveChanges("Added test model");
   }
@@ -45,10 +44,10 @@ export class TestChangeSetUtility {
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    this.iTwinId = await HubUtility.getTestITwinId(this._accessToken);
+    this.iTwinId = HubMock.iTwinId;
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
+    this.iModelId = await HubWrappers.recreateIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();
@@ -70,7 +69,7 @@ export class TestChangeSetUtility {
   public async deleteTestIModel(): Promise<void> {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(this._accessToken, this._iModel);
+    await HubWrappers.closeAndDeleteBriefcaseDb(this._accessToken, this._iModel);
     await IModelHost.hubAccess.deleteIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
   }
 }

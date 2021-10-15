@@ -10,13 +10,10 @@ import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../core-backend";
-import { IModelDb } from "../../IModelDb";
-import { RpcTrace } from "../../RpcBackend";
-import { HubMock } from "../HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { GeometricModel3d, IModelDb, IModelHost, IModelHostConfiguration, RpcTrace } from "@itwin/core-backend";
+import { HubWrappers, IModelTestUtils, TestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { HubUtility } from "../HubUtility";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { HubUtility } from "..";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -71,7 +68,7 @@ describe("TileUpload (#integration)", () => {
 
   before(async () => {
     // Shutdown IModelHost to allow this test to use it.
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
 
     const config = new IModelHostConfiguration();
 
@@ -82,8 +79,7 @@ describe("TileUpload (#integration)", () => {
       accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
     };
 
-    await IModelTestUtils.startBackend(config);
-    HubMock.startup("TileTest");
+    await TestUtils.startBackend(config);
     testIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId: testITwinId, iModelName: "TileUpload", revision0 });
 
     assert.isTrue(IModelHost.usingExternalTileCache);
@@ -105,20 +101,19 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 
   after(async () => {
-    HubMock.shutdown();
     // Re-start backend with default config
-    await IModelTestUtils.shutdownBackend();
-    await IModelTestUtils.startBackend();
+    await TestUtils.shutdownBackend();
+    await TestUtils.startBackend();
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile
@@ -155,7 +150,7 @@ describe("TileUpload (#integration)", () => {
     assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
 
     await blob.delete();
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, iModel);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 });
 

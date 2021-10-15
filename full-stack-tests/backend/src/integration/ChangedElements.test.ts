@@ -7,16 +7,12 @@ import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley
 import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { ChangedElementsDb, ProcessChangesetOptions } from "../../ChangedElementsDb";
-import { ChangedElementsManager } from "../../ChangedElementsManager";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelHost } from "../../IModelHost";
-import { IModelJsFs } from "../../IModelJsFs";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubUtility } from "./HubUtility";
+import { BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
+import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedElementsManager";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
+import { HubUtility } from "../HubUtility";
 
-describe("ChangedElements (#integration)", () => {
+describe("ChangedElements", () => {
   let accessToken: AccessToken;
   let testITwinId: GuidString;
   let testIModelId: GuidString;
@@ -25,7 +21,6 @@ describe("ChangedElements (#integration)", () => {
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
     testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
-
   });
 
   it("Create ChangedElements Cache and process changesets", async () => {
@@ -33,7 +28,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
@@ -168,7 +163,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 

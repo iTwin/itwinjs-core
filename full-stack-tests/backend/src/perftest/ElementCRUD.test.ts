@@ -10,9 +10,8 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../core-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */

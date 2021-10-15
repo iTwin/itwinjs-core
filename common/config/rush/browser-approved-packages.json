@@ -8,7 +8,7 @@
     },
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
@@ -32,7 +32,7 @@
     },
     {
       "name": "@bentley/itwin-registry-client",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/product-settings-client",
@@ -204,7 +204,7 @@
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/perf-tools",
@@ -300,7 +300,7 @@
     },
     {
       "name": "azurite",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "benchmark",
@@ -632,7 +632,7 @@
     },
     {
       "name": "mkdirp",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "mocha",

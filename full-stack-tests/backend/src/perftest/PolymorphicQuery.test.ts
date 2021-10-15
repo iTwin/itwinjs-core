@@ -10,9 +10,8 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../core-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Polymorphic query", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "PolymorphicPerformance");

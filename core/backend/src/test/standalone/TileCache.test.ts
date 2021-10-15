@@ -3,20 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
 import * as path from "path";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { DbResult, Guid, Logger } from "@itwin/core-bentley";
-import { IModelTileRpcInterface, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
+import { BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
-import { SnapshotDb } from "../../IModelDb";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { getTileProps } from "../integration/TileUpload.test";
+import { IModelTestUtils, TestUtils } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
 
-import sinon = require("sinon");
 import { HubMock } from "..";
+import { GeometricModel3d } from "../../Model";
+
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
   activityId: "activity123",
@@ -24,6 +25,50 @@ const fakeRpc: RpcActivity = {
   applicationVersion: "1.2.3",
   sessionId: "session 123",
 };
+
+interface TileContentRequestProps {
+  treeId: string;
+  contentId: string;
+  guid: string;
+}
+
+// Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
+export async function getTileProps(iModel: IModelDb): Promise<TileContentRequestProps | undefined> {
+  const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
+  for (const modelId of iModel.queryEntityIds(queryParams)) {
+    let model;
+    try {
+      model = iModel.models.getModel<GeometricModel3d>(modelId);
+    } catch (err) {
+      continue;
+    }
+
+    if (model.isNotSpatiallyLocated || model.isTemplate)
+      continue;
+
+    iModelTileTreeIdToString
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
+    const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
+    // Ignore empty tile trees.
+    if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
+      continue;
+
+    let guid = model.geometryGuid || iModel.changeset.id || "first";
+    if (treeProps.contentIdQualifier)
+      guid = `${guid}_${treeProps.contentIdQualifier}`;
+
+    const idProvider = ContentIdProvider.create(true, defaultTileOptions);
+    const contentId = idProvider.rootContentId;
+
+    return {
+      treeId,
+      contentId,
+      guid,
+    };
+  }
+
+  return undefined;
+}
 
 describe("TileCache open v1", () => {
   let tileRpcInterface: IModelTileRpcInterface;
@@ -46,9 +91,9 @@ describe("TileCache open v1", () => {
   };
   it("should create .tiles file next to .bim with default cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
     const config = new IModelHostConfiguration();
-    await IModelTestUtils.startBackend(config);
+    await TestUtils.startBackend(config);
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
@@ -58,10 +103,10 @@ describe("TileCache open v1", () => {
   });
   it("should create .tiles file next to .bim with set cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
-    await IModelTestUtils.shutdownBackend();
+    await TestUtils.shutdownBackend();
     const config = new IModelHostConfiguration();
     config.cacheDir = path.join(__dirname, ".cache");
-    await IModelTestUtils.startBackend(config);
+    await TestUtils.startBackend(config);
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));

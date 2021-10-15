@@ -17,9 +17,9 @@ import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
-import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { LocalHub } from "./LocalHub";
+import { HubWrappers } from ".";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -57,9 +57,16 @@ export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
   private static _saveHubAccess: BackendHubAccess;
+  private static _iTwinId: GuidString | undefined;
 
   /** Determine whether a test us currently being run under HubMock */
   public static get isValid() { return undefined !== this.mockRoot; }
+
+  public static get iTwinId() {
+    if (undefined === this._iTwinId)
+      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+    return this._iTwinId;
+  }
 
   /**
    * Begin mocking IModelHub access. After this call, all access to IModelHub will be directed to a [[LocalHub]].
@@ -76,7 +83,7 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
-    HubUtility.iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
+    HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
@@ -86,7 +93,7 @@ export class HubMock {
     if (!this.isValid)
       return;
 
-    HubUtility.iTwinId = undefined;
+    HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
 

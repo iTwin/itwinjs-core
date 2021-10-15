@@ -30,7 +30,7 @@ describe("IModelTransformerHub (#integration)", () => {
     HubMock.startup("IModelTransformerHub");
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Regular);
+    accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
     iTwinId = HubUtility.iTwinId!;
 
     // initialize logging

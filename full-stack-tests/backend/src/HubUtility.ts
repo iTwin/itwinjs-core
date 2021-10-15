@@ -5,15 +5,11 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, BentleyStatus, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
+import { AccessToken, BentleyStatus, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps, ChangesetType } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelDb } from "../../IModelDb";
-import { IModelHost } from "../../IModelHost";
-import { IModelJsFs } from "../../IModelJsFs";
-import { HubMock } from "../HubMock";
+import { IModelDb, IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
 
 /** the types of users available for tests */
 export enum TestUserType {
@@ -41,11 +37,7 @@ export class HubUtility {
    * but with different credentials. This can be useful for simulating more than one user of the same type on the same iTwin.
    * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
    */
-   public static async getAccessToken(user: TestUserType): Promise<AccessToken> {
-    if (HubMock.isValid) {
-      return TestUserType[user];
-    }
-
+  public static async getAccessToken(user: TestUserType): Promise<AccessToken> {
     let credentials: TestUserCredentials;
     switch (user) {
       case TestUserType.Regular:
@@ -67,7 +59,6 @@ export class HubUtility {
   public static iTwinId: GuidString | undefined;
   /** Returns the iTwinId if an iTwin with the name exists. Otherwise, returns undefined. */
   public static async getTestITwinId(accessToken: AccessToken): Promise<GuidString> {
-
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
     return HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
@@ -80,13 +71,11 @@ export class HubUtility {
       return HubUtility.imodelCache.get(name)!;
 
     const iTwinId = await HubUtility.getTestITwinId(accessToken);
-    const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, name);
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName: name });
+    if (undefined === iModelId)
+      throw new Error(`Cannot find iModel with ${name} in ${iTwinId}`);
     HubUtility.imodelCache.set(name, iModelId);
     return iModelId;
-  }
-
-  public static async queryIModelByName(accessToken: AccessToken, iTwinId: string, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
   }
 
   /**
@@ -104,19 +93,6 @@ export class HubUtility {
       throw new Error(`ITwin ${name} was not found for the user.`);
 
     return iTwin.id;
-  }
-
-  /** Queries the iModel id by its name
-   * @param accessToken The client request context
-   * @param iTwinId Id of the parent iTwin
-   * @param iModelName Name of the iModel
-   * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
-   */
-  public static async queryIModelIdByName(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
-    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
-    if (!iModelId)
-      throw new Error(`IModel ${iModelName} not found`);
-    return iModelId;
   }
 
   /** Download all change sets of the specified iModel */
@@ -189,7 +165,7 @@ export class HubUtility {
   public static async downloadIModelByName(accessToken: AccessToken, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
 
-    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
 
@@ -199,8 +175,10 @@ export class HubUtility {
   /** Delete an IModel from the hub */
   public static async deleteIModel(accessToken: AccessToken, iTwinName: string, iModelName: string): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
-    const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, iModelName);
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
 
+    if (!iModelId)
+      return;
     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
   }
 
@@ -343,27 +321,11 @@ export class HubUtility {
     return seedPathname;
   }
 
-  /** Push an iModel to the Hub */
-  public static async pushIModel(accessToken: AccessToken, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModels");
-    // Delete any existing iModels with the same name as the required iModel
-    const locIModelName = iModelName || path.basename(pathname, ".bim");
-    const iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, locIModelName);
-    if (iModelId) {
-      if (!overwrite)
-        return iModelId;
-      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
-    }
-
-    // Upload a new iModel
-    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, revision0: pathname });
-  }
-
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
-    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    assert.isTrue(this.allowHubBriefcases, "Must use HubMock for tests that modify iModels");
     const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
@@ -375,19 +337,6 @@ export class HubUtility {
       });
       await Promise.all(promises);
     }
-  }
-
-  /**
-   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
-   */
-  public static async purgeAcquiredBriefcases(accessToken: AccessToken, iTwinName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
-    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
-    const iModelId = await HubUtility.queryIModelIdByName(accessToken, iTwinId, iModelName);
-
-    return this.purgeAcquiredBriefcasesById(accessToken, iModelId, () => {
-      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${iTwinName}:${iModelName}. Purging all briefcases.`);
-    }, acquireThreshold);
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
@@ -485,33 +434,6 @@ export class HubUtility {
     if (!IModelJsFs.existsSync(changeSetPathname))
       throw new Error("Changeset file does not exists");
     return IModelHost.platform.RevisionUtility.dumpChangesetToDb(changeSetPathname, changeSetDbPathname, dumpColumns);
-  }
-
-  /** Generate a name (for an iModel) that's unique for the user + host */
-  public static generateUniqueName(baseName: string) {
-    return `${baseName} - ${Guid.createValue()}`;
-  }
-
-  /** Deletes and re-creates an iModel with the provided name in the iTwin.
-   * @returns the iModelId of the newly created iModel.
-  */
-  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const deleteIModel = await HubUtility.queryIModelByName(arg.accessToken, arg.iTwinId, arg.iModelName);
-    if (undefined !== deleteIModel)
-      await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
-
-    // Create a new iModel
-    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
-  }
-
-  /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
-  public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    let iModelId = await HubUtility.queryIModelByName(accessToken, iTwinId, iModelName);
-    if (!iModelId)
-      iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
-    return iModelId;
   }
 }
 

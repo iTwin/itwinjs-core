@@ -9,9 +9,8 @@ import { AccessToken, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
-import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../core-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -39,7 +38,7 @@ describe("ElementAspectPerformance", () => {
     const imodelId = configData.basicTest.aspectIModelId;
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId: imodelId });
+    iModelDbHub = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId: imodelId });
     assert.exists(iModelDbHub);
   });
 

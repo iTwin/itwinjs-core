@@ -7,12 +7,12 @@ import { assert } from "chai";
 import * as path from "path";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { IModelHost, IModelJsFs } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubUtility } from "./HubUtility";
+import { IModelHost, IModelJsFs } from "@itwin/core-backend";
+import { HubUtility } from "../HubUtility";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/";
 
 // Useful utilities to download/upload test cases from/to iModelHub
-describe("ApplyChangesets (#integration)", () => {
+describe("ApplyChangesets", () => {
   const testAllChangeSetOperations = async (accessToken: AccessToken, iTwinId: string, iModelId: GuidString) => {
     const iModelDir = path.join(IModelHost.cacheDir, iModelId.toString());
     await HubUtility.validateAllChangeSetOperations(accessToken, iTwinId, iModelId, iModelDir);
@@ -20,7 +20,7 @@ describe("ApplyChangesets (#integration)", () => {
   };
 
   const testOpen = async (accessToken: AccessToken, iTwinId: string, iModelId: string) => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
+    const iModelDb = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   };

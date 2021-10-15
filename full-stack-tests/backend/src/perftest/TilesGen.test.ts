@@ -10,10 +10,8 @@ import { AccessToken, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
-import { StandaloneDb } from "../IModelDb";
-import { IModelJsFs } from "../IModelJsFs";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { HubUtility } from "../test/integration/HubUtility";
+import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
+import { HubWrappers, IModelTestUtils, TestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
 
 interface TileResult {
@@ -125,10 +123,12 @@ async function generateIModelDbTiles(accessToken: AccessToken, config: ConfigDat
   if (config.localPath) {
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
-    const iModelId = await HubUtility.queryIModelIdByName(accessToken, config.iTwinId, config.iModelName);
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId: config.iTwinId, iModelName: config.iModelName });
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
+    if (!iModelId)
+      throw new Error(`iMode with name ${config.iModelName} does not exist`);
 
-    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
+    iModelDb = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: config.iTwinId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 
@@ -200,7 +200,7 @@ describe("TilesGenerationPerformance", () => {
     assert.isDefined(config.iTwinId, "No iTwinId defined");
     imodels.forEach((element) => element.iTwinId = config.iTwinId);
 
-    IModelTestUtils.setupLogging();
+    TestUtils.setupLogging();
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");

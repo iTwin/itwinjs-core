@@ -11,8 +11,8 @@ import {
 import { IModelHost } from "../../IModelHost";
 import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../core-backend";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { HubUtility } from "./HubUtility";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { HubWrappers } from "..";
 
 class TestIModelWriter {
   public static insertGeometryPart(iModel: IModelDb, definitionModelId: Id64String): Id64String {
@@ -82,8 +82,8 @@ describe("PushChangesTest (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("PushChangesTest");
 
-    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
-    iTwinId = await HubUtility.getTestITwinId(accessToken);
+    accessToken = "manager token";
+    iTwinId = HubMock.iTwinId;
 
     IModelHost.authorizationClient = {
       getAccessToken: async () => accessToken,
@@ -95,8 +95,8 @@ describe("PushChangesTest (#integration)", () => {
   });
 
   it.skip("Push changes while refreshing token", async () => {
-    const iModelName = HubUtility.generateUniqueName("PushChangesTest");
-    const iModelId = await HubUtility.recreateIModel({ accessToken, iTwinId, iModelName, noLocks: true });
+    const iModelName = IModelTestUtils.generateUniqueName("PushChangesTest");
+    const iModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName, noLocks: true });
 
     const briefcaseProps = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;

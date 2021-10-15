@@ -17,7 +17,7 @@ import {
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { HubUtility } from "./HubUtility";
+import { HubWrappers } from "..";
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -34,7 +34,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   return { modelId, spatialCategoryId };
 }
 
-describe("IModelWriteTest (#integration)", () => {
+describe("IModelWriteTest", () => {
   let managerAccessToken: AccessToken;
   let superAccessToken: AccessToken;
   let testITwinId: string;
@@ -46,20 +46,17 @@ describe("IModelWriteTest (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("IModelWriteTest");
 
-    managerAccessToken = await IModelTestUtils.getAccessToken(TestUserType.Manager);
-    superAccessToken = await IModelTestUtils.getAccessToken(TestUserType.Super);
-
-    testITwinId = await HubUtility.getTestITwinId(managerAccessToken);
-    readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubUtility.recreateIModel({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelName: readWriteTestIModelName });
+    testITwinId = HubMock.iTwinId;
+    readWriteTestIModelName = IModelTestUtils.generateUniqueName("ReadWriteTest");
+    readWriteTestIModelId = await HubWrappers.recreateIModel({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelName: readWriteTestIModelName });
 
     // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcasesById(managerAccessToken, readWriteTestIModelId);
+    await HubWrappers.purgeAcquiredBriefcasesById(managerAccessToken, readWriteTestIModelId);
   });
 
   after(async () => {
     try {
-      await HubUtility.deleteIModel(managerAccessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
+      await HubWrappers.deleteIModel(managerAccessToken, "iModelJsIntegrationTest", readWriteTestIModelName);
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -67,8 +64,8 @@ describe("IModelWriteTest (#integration)", () => {
     }
   });
 
-  it("should handle undo/redo (#integration)", async () => {
-    const adminAccessToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
+  it("should handle undo/redo", async () => {
+    const adminAccessToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelName });
@@ -78,7 +75,7 @@ describe("IModelWriteTest (#integration)", () => {
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelId: rwIModelId });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: adminAccessToken, iTwinId: testITwinId, iModelId: rwIModelId });
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
@@ -125,7 +122,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against fixed version connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -190,14 +187,14 @@ describe("IModelWriteTest (#integration)", () => {
       if (iModel.isOpen)
         briefcasePath = iModel.pathName;
 
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(managerAccessToken, iModel);
+      await HubWrappers.closeAndDeleteBriefcaseDb(managerAccessToken, iModel);
       if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath))
         IModelJsFs.unlinkSync(briefcasePath);
     }
   });
 
   it("Run plain SQL against readonly connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken: managerAccessToken, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount = 0;
@@ -235,7 +232,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should be able to upgrade a briefcase with an older schema", async () => {
-    const iTwinId = await HubUtility.getTestITwinId(managerAccessToken);
+    const iTwinId = HubMock.iTwinId;
 
     /**
      * Test validates that -
@@ -245,8 +242,8 @@ describe("IModelWriteTest (#integration)", () => {
 
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const hubName = HubUtility.generateUniqueName("CompatibilityTest");
-    const iModelId = await HubUtility.pushIModel(managerAccessToken, iTwinId, pathname, hubName, true);
+    const hubName = IModelTestUtils.generateUniqueName("CompatibilityTest");
+    const iModelId = await HubWrappers.pushIModel(managerAccessToken, iTwinId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
     const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
@@ -312,12 +309,12 @@ describe("IModelWriteTest (#integration)", () => {
     await IModelHost.hubAccess.deleteIModel({ accessToken: managerAccessToken, iTwinId, iModelId });
   });
   it("changeset size and ec schema version change", async () => {
-    const adminToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
-    const iTwinId = await HubUtility.getTestITwinId(adminToken);
-    const iModelName = HubUtility.generateUniqueName("changeset_size");
+    const adminToken = "super manager token";
+    const iTwinId = HubMock.iTwinId;
+    const iModelName = IModelTestUtils.generateUniqueName("changeset_size");
     const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
     assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -385,18 +382,18 @@ describe("IModelWriteTest (#integration)", () => {
     rwIModel.close();
   });
   it("clear cache on schema changes", async () => {
-    const adminToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
-    const userToken = await IModelTestUtils.getAccessToken(TestUserType.Super);
-    const iTwinId = await HubUtility.getTestITwinId(adminToken);
+    const adminToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
+    const userToken = await HubWrappers.getAccessToken(TestUserType.Super);
+    const iTwinId = HubMock.iTwinId;
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
-    const iModelName = HubUtility.generateUniqueName("SchemaChanges");
+    const iModelName = IModelTestUtils.generateUniqueName("SchemaChanges");
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     const rwIModelId = await IModelHost.hubAccess.createNewIModel({ noLocks: true, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
 
-    const rwIModel2 = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
+    const rwIModel2 = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: userToken });
 
     // enable change tracking
     assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
