@@ -17,7 +17,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 const closestPointProblemFileFile = "./src/test/testInputs/CurveChainWithDistanceIndex/ClosestPointProblem.imjs";
 
 describe("CurveChainWithDistanceIndex", () => {
-  it.only("ClosestPointProblem", () => {
+  it("ClosestPointProblem", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
