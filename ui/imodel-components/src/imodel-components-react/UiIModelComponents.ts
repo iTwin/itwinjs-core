@@ -21,8 +21,7 @@ export class UiIModelComponents {
   private static _initialized = false;
 
   /**
-   * Registers the localization service namespace for UiIModelComponents. Also initializes UiCore.
-   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
+   * initialize UiIModelComponents.
    */
   public static async initialize(): Promise<void> {
     if (UiIModelComponents._initialized) {
@@ -73,7 +72,7 @@ export class UiIModelComponents {
       Logger.logError(UiIModelComponents.loggerCategory(this), `translate: IModelApp.localization has not been setup. Returning blank string.`);
       return "";
     }
-    return IModelApp.localization?.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
   }
 
   /** @internal */

@@ -10,7 +10,7 @@
 
 import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { Localization, RpcActivity } from "@itwin/core-common";
+import { EmptyLocalization, Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -87,7 +87,6 @@ export interface TrackingTime {
  */
 export class UiFramework {
   private static _initialized = false;
-  private static _localization?: Localization;
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
@@ -132,22 +131,20 @@ export class UiFramework {
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void> {
-    return this.initializeEx(store, localization, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
+    return this.initializeEx(store, frameworkStateKey);
   }
 
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -159,13 +156,12 @@ export class UiFramework {
       new StateManager();
 
     UiFramework._store = store;
-    UiFramework._localization = localization || IModelApp.localization;
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     // set up namespace and register all tools from package
-    const frameworkNamespace = UiFramework._localization.registerNamespace(UiFramework.localizationNamespace);
+    const frameworkNamespace = IModelApp.localization?.registerNamespace(UiFramework.localizationNamespace);
     [
       restoreLayoutTools,
       keyinPaletteTools,
@@ -205,9 +201,7 @@ export class UiFramework {
     UiFramework._frameworkStateKeyInStore = "frameworkState";
     if (StateManager.isInitialized(true))
       StateManager.clearStore();
-    if (UiFramework._localization)
-      UiFramework._localization.unregisterNamespace(UiFramework.localizationNamespace);
-    UiFramework._localization = undefined;
+    IModelApp.localization.unregisterNamespace(UiFramework.localizationNamespace);
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;
@@ -260,11 +254,14 @@ export class UiFramework {
     return StateManager.store;
   }
 
-  /** The internationalization service created by the app. */
+  /** The internationalization service created by the app.
+   * @internal
+  */
   public static get localization(): Localization {
-    if (!UiFramework._localization)
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._localization;
+    // istanbul ignore next
+    if (!IModelApp.localization)
+      throw new UiError(UiFramework.loggerCategory(this), `IModelApp.localization has not been defined.`);
+    return IModelApp.localization;
   }
 
   /** The internationalization service namespace. */
@@ -309,7 +306,7 @@ export class UiFramework {
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return UiFramework.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
   /** @internal */
@@ -383,7 +380,7 @@ export class UiFramework {
     const oldConnection = UiFramework.getIModelConnection();
     if (oldConnection !== iModelConnection) {
       if (oldConnection?.iModelId)
-        FrontstageManager.clearFrontstageDefsForIModelId(oldConnection?.iModelId);
+        FrontstageManager.clearFrontstageDefsForIModelId(oldConnection.iModelId);
       oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
       iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);

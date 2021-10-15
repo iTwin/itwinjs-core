@@ -59,8 +59,10 @@ export class UiCore {
    * @internal
    */
   public static get localization(): Localization {
+    // istanbul ignore else
     if (!UiCore._localization)
       throw new UiError(UiCore.loggerCategory(this), "localization: UiCore.initialize has not been called. Unable to return Localization object.");
+    // istanbul ignore next
     return UiCore._localization;
   }
 
@@ -77,7 +79,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore must be initialize with a localization provider. Returning blank string.`);
       return "";
     }
-    return UiCore._localization?.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
+    return UiCore._localization.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
   }
 
   /** @internal */
