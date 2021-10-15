@@ -8,7 +8,7 @@
 
 import { AccessToken } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { IModelClient } from "./IModelClient";
 
 /** How to discover iTwins

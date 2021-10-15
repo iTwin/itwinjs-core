@@ -58,7 +58,7 @@ export class SampleApp {
     await Presentation.initialize({
       presentation: {
         // specify locale for localizing presentation data, it can be changed afterwards
-        activeLocale: IModelApp.localization.languageList()[0],
+        activeLocale: IModelApp.localization.getLanguageList()[0],
 
         // specify the preferred unit system
         activeUnitSystem: "metric",

@@ -42,10 +42,6 @@ async function setUpTest() {
 if (ProcessDetector.isElectronAppFrontend) {
   describe("RobotWorldRpc", () => {
 
-    // This node-based implementation of XHR is *not* required by our RPC mechanism. It is required by our
-    // I18n module (specifically the i18next package).
-    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
-
     it("should run robotWorld through Ipc as a client", async () => {
       // Simulate the deployment of the backend server
       await simulateBackendDeployment();

@@ -127,7 +127,6 @@ export class CheckpointHandler {
   }
 
   /** Get the [[Checkpoint]]s.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Checkpoints or select different data from them.
    * @returns Checkpoints that match the query.
@@ -158,7 +157,6 @@ export class CheckpointHandler {
 
   /** Download the specified checkpoint file. This only downloads the file and does not update the [[Checkpoint]] id. Use [IModelDb.open]($backend) instead if you want to get a usable checkpoint file.
    * This method does not work on the browser. Directory containing the Checkpoint file is created if it does not exist. If there is an error during download, any partially downloaded file is deleted from disk.
-   * @param requestContext The client request context
    * @param checkpoint Checkpoint to download. This needs to include a download link. See [[CheckpointQuery.selectDownloadUrl]].
    * @param path Path where checkpoint file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.

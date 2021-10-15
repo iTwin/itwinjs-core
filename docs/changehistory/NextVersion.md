@@ -12,8 +12,10 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 
 The following dependencies of iTwin.js have been updated;
 
-- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
-- `electron` updated to from `^11.1.0` -> `^14.0.0`,
+- `openid-client` updated from to `^3.15.3` -> `^4.7.4`,
+- `electron` updated from to `^11.1.0` -> `^14.0.0`,
+- `react` updated from to `^16.8.9` -> `^17.0.0`,
+- `react-dom` updated from to `^16.8.9` -> `^17.0.0`,
 
 ## Package name changes
 
@@ -790,16 +792,21 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
 
-| Removed                             | Replacement                                  |
-| ----------------------------------- | -------------------------------------------- |
-| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
-| `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
+| Removed                             | Replacement                                                 |
+| ----------------------------------- | --------------------------------------------                |
+| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`                |
+| `OidcDelegationClient`              | `DelegationAuthorizationClient`                             |
+| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient  |
+| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
+| `DelegationAuthorizationClient`     | *removed*                                                   |
+| `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
 
 ### @itwin/appui-abstract
 
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | *eliminated* |
+| `UiItemsArbiter`              | *eliminated* |
 
 ### @itwin/core-react
 
@@ -1039,6 +1046,24 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
+### @bentley/appui-react
+
+| Removed                            | Replacement                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+
+### @bentley/frontend-authorization-client
+
+| Removed                                          | Replacement                    |
+| -------------------------------------------------| ------------------------------ |
+| `FrontendAuthorizationClient`                    | *removed*                      |
+| `FrontendAuthorizationClientLoggerCategory`      | *removed*                      |
+| `BrowserAuthorizationCallbackHandler`            | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationBase`                       | *removed*                      |
+| `BrowserAuthorizationClient`                     | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationClientRedirectState`        | Moved to iTwin/auth-clients    |
+| `BrowserAuthorizationLogger`                     | Moved to iTwin/auth-clients    |
+
 <!---
 User Interface Changes - section to comment below
 -->
@@ -1048,11 +1073,12 @@ User Interface Changes - section to comment below
 Several changes were made in the @itwin ui packages.
 Some components in @itwin/core-react were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @itwin/core-react package with alternatives elsewhere.
+The [Table]($components-react) component has been deprecated in favor of the Table in @itwinui-react.
 A new @itwin/imodel-components-react package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
-For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
 ### New options for defining Frontstages
 
@@ -1077,6 +1103,10 @@ Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Flo
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
+
+### Removed user change monitoring from @itwin/appui-react
+
+Previously `UiFramework` would monitor the state of an access token and would close all UI popups if the token was found to be empty. This feature has been removed. It is now the applications responsibility to enable this capability if they want it. The method [ConfigurableUiManager.closeUi]($appui-react) is now public and can be called by application to close the popup items.
 
 ### `ControlledTree` API Changes
 
@@ -1216,7 +1246,7 @@ Some have replacements within the @itwin/core-react package.
 
 A new @itwin/imodel-components-react package has been added, and some items were moved from @itwin/core-react and @itwin/components-react into this new package.
 The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
-Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
+Dependencies on these other iTwin.js packages have been removed from core-react and components-react.
 The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
@@ -1261,6 +1291,119 @@ were removed from the `@itwin/core-backend` package and moved to a new package, 
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
 
+## Changes to ECSql APIs
+
+Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
+
+- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
+
+- The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
+
+- The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
+
+### Binding parameters using QueryBinder
+
+[QueryBinder]($common) is a more type-safe way to bind parameters to an ECSql statement. It allows mixing indexed and named parameters in a single statement. For example:
+
+```ts
+  const params = new QueryBinder()
+    .bindString("name", "hello")
+    .bindId(1, "0x123");
+
+  for await (const row of db.query("SELECT ECInstanceId, Name from bis.Element WHERE ECInstanceId=? AND Name=:name", params)) {
+    const obj = { id: row[0], name: row[1] };
+    // ...
+  }
+```
+
+### Id64Set parameter bindings
+
+It is now possible to efficiently bind a large set of ECInstanceIds to a query parameter. This can be very useful for `IN` clauses. For example, imagine you wanted to select some properties of all of the [SpatialModel]($backend)s belonging to a [ModelSelector]($backend). Previously you would need to write something like this:
+
+```ts
+  const ids = Array.from(modelSelector.models).join(",");
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN (" + ids + ")");
+```
+
+The list of comma-separated Ids could be extremely long - in some cases, it might be so long that it would need to be split up into multiple queries!
+
+Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will be serialized in a compact string format.
+
+```ts
+  const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
+```
+
+### Upgrading existing code to use the new `query` methods
+
+The signature of the method has changed to:
+
+```ts
+query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
+```
+
+The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
+
+```ts
+  // Replace this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
+  // With this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), QueryRowFormat.UseJsPropertyNames);
+  // The code that accesses the properties of each row can remain unchanged.
+```
+
+Similarly, if your existing code passes an object instead of an array as the query parameter, change it as follows:
+
+```ts
+  // Replace this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
+  // With this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), QueryRowFormat.UseJsPropertyNames);
+  // The code that accesses the properties of each row can remain unchanged.
+```
+
+### Upgrading existing code to use the new `restartQuery` methods
+
+The parameters have changed in the same way as `query`, so they can be changed as described for `query` above.
+
+### Upgrading existing code to use the new `queryRowCount` methods
+
+The behavior of this method has not changed, but the parameters must be provided as a [QueryBinder]($common) object instead of an array or object. Upgrade your existing code as described for `query` above.
+
 ## Remove ninezone-test-app
 
 The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
+
+## Localization Changes
+
+### IModelApp.startup
+
+In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an optional object that implements [Localization]($common). The [ITwinLocalization]($i18n) class supplies the default implementation, and may be customized with [LocalizationOptions]($i18n) in the constructor and supplied via [IModelAppOptions.localization]($frontend).
+
+The previous way to provide localization options:
+
+```ts
+const i18nOptions: I18NOptions = {
+  urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
+};
+
+await IModelApp.startup({ i18n: i18nOptions });
+```
+
+Now becomes:
+
+```ts
+const localizationOptions: LocalizationOptions = {
+  urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
+};
+
+await IModelApp.startup({ localization: new ITwinLocalization(localizationOptions) });
+```
+
+### Registering Tools
+
+In previous versions, the [Tool.register]($frontend) method took an optional argument to supply the localization object. Since it always existed on `IModelApp`, that argument served no purpose and is now removed. If you previously passed it, simply remove it.
+
+## Improve/Enhance particle systems
+
+Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.

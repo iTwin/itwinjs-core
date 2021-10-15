@@ -20,6 +20,7 @@ import { GeometryPartProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelDb } from '@itwin/core-backend';
 import { IModelStatus } from '@itwin/core-bentley';
+import { LocateSubEntityProps } from '@itwin/editor-common';
 import { Matrix3dProps } from '@itwin/core-geometry';
 import { OffsetFacesProps } from '@itwin/editor-common';
 import { Range3dProps } from '@itwin/core-geometry';
@@ -108,6 +109,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     getClosestFace(id: Id64String, point: XYZProps, direction?: XYZProps): Promise<SubEntityLocationProps | undefined>;
     // (undocumented)
     getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+    // (undocumented)
+    locateSubEntities(id: Id64String, point: XYZProps, direction: XYZProps, options: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     }

@@ -6,10 +6,12 @@
 import { assert } from "chai";
 import * as path from "path";
 import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
-import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements,
-  IModelHost, IModelJsFs, SpatialCategory,
+  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
+} from "@itwin/core-common";
+import {
+  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
+  SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -514,7 +516,7 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(row.summary.id, changeSummaryId);
         });
 
-        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", [changeSummaryId])) {
+        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
           assert.isDefined(row.wsgId);
           assert.equal(row.wsgId, changeSet.id);
           assert.isDefined(row.summary);
@@ -537,7 +539,7 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(row.summary.id, changeSummaryId);
         });
 
-        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", [changeSummaryId])) {
+        for await (const row of iModel.query("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", QueryBinder.from([changeSummaryId]), QueryRowFormat.UseJsPropertyNames)) {
           assert.isDefined(row.wsgId);
           assert.equal(row.wsgId, changeSet.id);
           assert.isDefined(row.summary);

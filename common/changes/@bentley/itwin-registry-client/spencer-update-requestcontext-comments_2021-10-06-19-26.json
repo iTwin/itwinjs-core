@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-registry-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-registry-client"
+}

@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, assert, BeEvent } from "@itwin/core-bentley";
-import { AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -377,6 +378,16 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
           waitUntil: "networkidle2",
         }),
         page.$eval(".allow", (button: any) => button.click()),
+      ]);
+    } else if (await page.title() === "Permissions") { // Another new consent page...
+      await page.waitForSelector("div.iui-input-bar button");
+
+      await Promise.all([
+        page.waitForNavigation({
+          timeout: 60000,
+          waitUntil: "networkidle2",
+        }),
+        page.$eval("div.iui-input-bar button span", (button: any) => button.click()),
       ]);
     }
   }

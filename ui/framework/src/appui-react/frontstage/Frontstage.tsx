@@ -24,7 +24,7 @@ import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
 import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
-import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../widgets/WidgetManager";
+import { WidgetsChangedEventArgs } from "../widgets/WidgetManager";
 import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
@@ -148,7 +148,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   public override async componentDidMount() {
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.addListener(this._handleWidgetsChanged);
-    UiFramework.widgetManager.onWidgetProvidersChanged.addListener(this._handleWidgetProvidersChanged);
     UiItemsManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
@@ -168,8 +167,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
    */
   public override componentWillUnmount() {
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
-    UiFramework.widgetManager.onWidgetsChanged.removeListener(this._handleWidgetsChanged);
-    UiFramework.widgetManager.onWidgetProvidersChanged.removeListener(this._handleWidgetProvidersChanged);
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
@@ -178,10 +175,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   };
 
   private _handleWidgetsChanged = (_args: WidgetsChangedEventArgs): void => {
-    this.updateWidgetDefs();
-  };
-
-  private _handleWidgetProvidersChanged = (_args: WidgetProvidersChangedEventArgs): void => {
     this.updateWidgetDefs();
   };
 

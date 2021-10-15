@@ -38,6 +38,7 @@ export class HyperModeling {
     static get graphicsConfig(): SectionGraphicsConfig;
     static initialize(config?: HyperModelingConfig): Promise<void>;
     static isEnabledForViewport(viewport: ScreenViewport): boolean;
+    static get isInitialized(): boolean;
     static isSupportedForIModel(imodel: IModelConnection): Promise<boolean>;
     static get markerConfig(): SectionMarkerConfig;
     static get markerHandler(): SectionMarkerHandler;

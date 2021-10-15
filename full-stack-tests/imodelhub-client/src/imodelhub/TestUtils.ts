@@ -375,10 +375,14 @@ export function generateChangeSet(id?: string): ChangeSet {
 }
 
 export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]) {
-  mockGetChangeSetChunk(imodelId, getDownloadUrl, query, undefined, ...changeSets);
+  mockGetChangeSetChunk(imodelId, getDownloadUrl, false, query, undefined, ...changeSets);
 }
 
-export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: boolean, query?: string, headers?: any, ...changeSets: ChangeSet[]) {
+export function mockGetChangeSetById(imodelId: GuidString, changeset: ChangeSet, getDownloadUrl: boolean, query?: string): void {
+  mockGetChangeSetChunk(imodelId, getDownloadUrl, true, query, undefined, changeset);
+}
+
+export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: boolean, byId?: boolean, query?: string, headers?: any, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -395,8 +399,9 @@ export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: bool
   });
   if (!query)
     query = "";
+  const changesetId: string = byId ? changeSets[0].id! : "";
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
-    getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL${query}` : query);
+    getDownloadUrl ? `${changesetId}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL${query}` : changesetId + query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse, undefined, undefined, headers);
 }

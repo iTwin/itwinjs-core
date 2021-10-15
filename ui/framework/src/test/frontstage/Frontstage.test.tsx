@@ -7,10 +7,10 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { StagePanelLocation, StagePanelSection, WidgetState } from "@itwin/appui-abstract";
+import { WidgetState } from "@itwin/appui-abstract";
 import { getDefaultZonesManagerProps } from "@itwin/appui-layout-react";
 import {
-  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, WidgetProvider, ZoneDef, ZoneDefProvider,
+  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, ZoneDef, ZoneDefProvider,
   ZoneLocation,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
@@ -291,39 +291,6 @@ describe("Frontstage", () => {
       }
     });
   });
-
-  it("WidgetManager should add dynamic WidgetDef to Frontstage from provider", async () => {
-    const wrapper = mount(<FrontstageComposer />);
-    const frontstageProvider = new TestFrontstage();
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
-
-      const widgetId = "ProviderTest";
-      const provider: WidgetProvider = {
-        id: "test",
-        getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
-          _section?: StagePanelSection | undefined, _frontstageAppData?: any): readonly WidgetDef[] | undefined => {
-          if (stageId === TestFrontstage.stageId && location === ZoneLocation.BottomRight) {
-            const widgetDef = new WidgetDef({ id: widgetId });
-            return [widgetDef];
-          }
-          return undefined;
-        },
-      };
-      UiFramework.widgetManager.addWidgetProvider(provider);
-      expect(UiFramework.widgetManager.providers.length).to.eq(1);
-
-      if (frontstageDef) {
-        const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
-        expect(foundWidgetDef).to.not.be.undefined;
-      }
-    });
-  });
-
 });
 
 describe("getExtendedZone", () => {

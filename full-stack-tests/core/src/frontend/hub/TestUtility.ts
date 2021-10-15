@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AuthorizationClient } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
@@ -59,7 +59,7 @@ export class TestUtility {
     if (!IModelApp.initialized)
       throw new Error("IModelApp must be initialized");
 
-    let authorizationClient: FrontendAuthorizationClient | undefined;
+    let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
       authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
       IModelApp.authorizationClient = authorizationClient;
@@ -73,7 +73,7 @@ export class TestUtility {
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
-      await authorizationClient.signIn();
+      await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();

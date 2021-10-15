@@ -402,7 +402,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance..
+  /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
    * @param ids The IDs of the elements to always draw.
    * @param vp The viewport.
    * @param defaultAppearance Optional default appearance, uses non-locatable transparent grey if not specified.

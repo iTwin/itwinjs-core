@@ -2053,47 +2053,11 @@ export interface UiItemProviderRegisteredEventArgs {
     providerId: string;
 }
 
-// @beta @deprecated
-export interface UiItemsApplication {
-    validateBackstageItem?: (item: BackstageItem) => {
-        updatedItem: BackstageItem;
-        action: UiItemsApplicationAction;
-    };
-    validateStatusBarItem?: (item: CommonStatusBarItem) => {
-        updatedItem: CommonStatusBarItem;
-        action: UiItemsApplicationAction;
-    };
-    validateToolbarButtonItem?: (item: CommonToolbarItem) => {
-        updatedItem: CommonToolbarItem;
-        action: UiItemsApplicationAction;
-    };
-    validateWidget?: (widget: AbstractWidgetProps) => {
-        updatedWidget: AbstractWidgetProps;
-        action: UiItemsApplicationAction;
-    };
-}
-
 // @public
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,
     Update = 2
-}
-
-// @beta @deprecated
-export class UiItemsArbiter {
-    // @internal (undocumented)
-    static clearApplication(): void;
-    static get uiItemsApplication(): UiItemsApplication | undefined;
-    static set uiItemsApplication(app: UiItemsApplication | undefined);
-    // @internal (undocumented)
-    static updateBackstageItems(items: ReadonlyArray<BackstageItem>): ReadonlyArray<BackstageItem>;
-    // @internal (undocumented)
-    static updateStatusBarItems(items: ReadonlyArray<CommonStatusBarItem>): ReadonlyArray<CommonStatusBarItem>;
-    // @internal (undocumented)
-    static updateToolbarButtonItems(items: ReadonlyArray<CommonToolbarItem>): ReadonlyArray<CommonToolbarItem>;
-    // @internal (undocumented)
-    static updateWidgets(widgets: ReadonlyArray<AbstractWidgetProps>): ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public

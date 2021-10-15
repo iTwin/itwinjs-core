@@ -6,12 +6,12 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { BeTimePoint, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
-  Quantization, ViewFlagOverrides,
+  Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
 } from "@itwin/core-common";
+import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
@@ -21,6 +21,9 @@ import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { RealityData } from "../RealityDataAccessProps";
+import { RealityDataConnection } from "../RealityDataConnection";
+import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -29,7 +32,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityModelTileClient, RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
+  RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
   TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "./internal";
 
@@ -37,7 +40,7 @@ const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
 
 interface OrbitGtTreeId {
-  orbitGtProps: OrbitGtBlobProps;
+  rdSourceKey: RealityDataSourceKey;
   modelId: Id64String;
 }
 
@@ -47,21 +50,18 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: OrbitGtTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, iModel, treeId.modelId);
+    return OrbitGtTileTree.createOrbitGtTileTree(treeId.rdSourceKey, iModel, treeId.modelId);
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
-    let cmp = compareStrings(lhs.orbitGtProps.accountName, rhs.orbitGtProps.accountName);
+    let cmp = compareStringsOrUndefined(lhs.rdSourceKey.id, rhs.rdSourceKey.id);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.rdSourceKey.format, rhs.rdSourceKey.format);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.rdSourceKey.iTwinId, rhs.rdSourceKey.iTwinId);
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
-    if (0 === cmp) {
-      cmp = compareStrings(lhs.orbitGtProps.blobFileName, rhs.orbitGtProps.blobFileName);
-      if (0 === cmp) {
-        cmp = compareStrings(lhs.orbitGtProps.containerName, rhs.orbitGtProps.containerName);
-        if (0 === cmp)
-          cmp = compareStrings(lhs.orbitGtProps.sasToken, rhs.orbitGtProps.sasToken);
-      }
-    }
+
     return cmp;
   }
 }
@@ -104,7 +104,9 @@ function rangeFromOrbitGt(ogtBounds: OrbitGtBounds, result?: Range3d) {
 }
 
 /** @internal */
-export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference { return new OrbitGtTreeReference(props); }
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference {
+  return new OrbitGtTreeReference(props);
+}
 
 class OrbitGtTileTreeParams implements TileTreeParams {
   public id: string;
@@ -112,9 +114,9 @@ class OrbitGtTileTreeParams implements TileTreeParams {
   public iModel: IModelConnection;
   public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
 
-  public constructor(blobProps: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String, public location: Transform) {
-    const { accountName, containerName, blobFileName } = blobProps;
-    this.id = `${accountName}:${containerName}:${blobFileName}`;
+  public constructor(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, public location: Transform) {
+    const key = rdSourceKey;
+    this.id = `${key.provider}:${key.format}:${key.id}:${key.iTwinId}`;
     this.modelId = modelId;
     this.iModel = iModel;
   }
@@ -338,14 +340,30 @@ export class OrbitGtTileTree extends TileTree {
 // eslint-disable-next-line no-redeclare
 export namespace OrbitGtTileTree {
   export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
-    orbitGtBlob: OrbitGtBlobProps;
+    orbitGtBlob?: OrbitGtBlobProps;
     modelId?: Id64String;
+  }
+  /**
+   * Gets string url to fetch blob data from. Access is read-only.
+   * @param accessToken The client request context.
+   * @param name name or path of tile
+   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
+   * @returns string url for blob data
+   */
+  export async function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string> {
+    const url = await realityData.getBlobUrl(accessToken);
+
+    const host = `${url.origin + url.pathname}/`;
+
+    const query = url.search;
+
+    return `${host}${realityData.rootDocument}${query}`;
   }
 
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
-    if (!downloadUrl.startsWith("http"))
+    if(!downloadUrl.startsWith("http"))
       downloadUrl = `http://x.com/x?${downloadUrl}`;
 
     const sasUrl = new URL(downloadUrl);
@@ -361,91 +379,50 @@ export namespace OrbitGtTileTree {
 
     return false;
   }
-
   function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
 
     // Check main OrbitGtBlobProps fields are defined
-    if (!props.rdsUrl || !props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
+    if(!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
       return false;
 
     // Check SAS token is valid
     return isValidSASToken(props.sasToken);
   }
 
-  function parseOrbitGtBlobUrl(blobUrl: string, props: OrbitGtBlobProps) {
+  export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+    const rdConnection = await RealityDataConnection.fromSourceKey(rdSourceKey, iModel.iTwinId);
+    const isContextShare = rdSourceKey.provider === RealityDataProvider.ContextShare;
 
-    const url = new URL(blobUrl);
-
-    if (!url.hostname || !url.pathname || !url.search)
-      return false;
-
-    props.accountName = url.hostname.split(".")[0];
-    const pathSplit = url.pathname.split("/");
-    props.containerName = pathSplit[1];
-    props.blobFileName = `/${pathSplit[2]}`;
-    props.sasToken = url.search.substr(1);
-
-    return true;
-  }
-
-  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, containerId: string | undefined): Promise<boolean> {
-
-    if (!rdsUrl || !containerId)
-      return false;
-
-    const tileClient = new RealityModelTileClient(rdsUrl, containerId);
-
-    const blobUrl = await tileClient.getBlobAccessData();
-    if (!blobUrl)
-      return false;
-
-    props.accountName = blobUrl.hostname.split(".")[0];     // take first word up to first .
-    props.containerName = blobUrl.pathname.substring(1);      // strip off leading slash
-    props.sasToken = blobUrl.search.substring(1);        // strip off leading ?
-
-    return isValidOrbitGtBlobProps(props);
-  }
-
-  async function initializeOrbitGtBlobProps(props: OrbitGtBlobProps, iModel: IModelConnection): Promise<boolean> {
-
-    // If blobFileName is full http(s), parse it to orbitGtBlobProps
-    if (props.blobFileName) {
-      if (props.blobFileName.toLowerCase().startsWith("http"))
-        if (parseOrbitGtBlobUrl(props.blobFileName, props) === false)
-          return false;
+    let blobStringUrl: string;
+    if (isContextShare) {
+      const realityData = rdConnection ? rdConnection.realityData : undefined;
+      if (rdConnection === undefined || realityData === undefined)
+        return undefined;
+      const docRootName = realityData.rootDocument;
+      if (!docRootName)
+        return undefined;
+      const token = await IModelApp.getAccessToken();
+      blobStringUrl = await getBlobStringUrl(token, realityData );
+    } else {
+      const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
+      if (orbitGtBlobProps === undefined)
+        return undefined;
+      if(!isValidOrbitGtBlobProps(orbitGtBlobProps))
+        return undefined;
+      const { accountName, containerName, blobFileName, sasToken } = orbitGtBlobProps;
+      blobStringUrl = blobFileName;
+      if (accountName.length > 0)
+        blobStringUrl = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
     }
 
-    // If there's no rdsUrl, request one from RealityDataAccessClient
-    if (!props.rdsUrl) {
-      if (undefined === IModelApp.realityDataAccess)
-        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access orbit tiles. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
-      props.rdsUrl = await IModelApp.realityDataAccess.getRealityDataUrl(iModel.iTwinId, props.containerName);
-    }
-
-    // If props are now valid, return OK
-    if (isValidOrbitGtBlobProps(props))
-      return true;
-
-    // Otherwise, refresh using RDS URL
-    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.iTwinId);
-  }
-
-  export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-
-    if (await initializeOrbitGtBlobProps(props, iModel) === false)
-      return undefined;
-
-    const { accountName, containerName, blobFileName, sasToken } = props;
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
     // wrap a caching layer (16 MB) around the blob file
     const urlFS: UrlFS = new UrlFS();
-    let blobFileURL: string = blobFileName;
-    if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
-    const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
+    const blobFileSize: ALong = await urlFS.getFileLength(blobStringUrl);
     const cacheKilobytes = 128;
-    const cachedBlobFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, cacheKilobytes * 1024 /* pageSize*/, 128/* maxPageCount*/);
-    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobFileURL, true/* lazyLoading*/);
+    const cachedBlobFile = new PageCachedFile(urlFS, blobStringUrl, blobFileSize, cacheKilobytes * 1024 /* pageSize*/, 128/* maxPageCount*/);
+    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobStringUrl, true/* lazyLoading*/);
     let pointCloudCRS = pointCloudReader.getFileCRS();
     if (pointCloudCRS == null)
       pointCloudCRS = "";
@@ -491,7 +468,7 @@ export namespace OrbitGtTileTree {
 
       pointCloudCenterToDb = ecefToDb.multiplyTransformTransform(pointCloudCenterToEcef);
     }
-    const params = new OrbitGtTileTreeParams(props, iModel, modelId, pointCloudCenterToDb);
+    const params = new OrbitGtTileTreeParams(rdSourceKey, iModel, modelId, pointCloudCenterToDb);
 
     // We use a RTC transform to avoid jitter from large cloud coordinates.
     const centerOffset = Vector3d.create(-pointCloudCenter.x, -pointCloudCenter.y, -pointCloudCenter.z);
@@ -506,12 +483,22 @@ export namespace OrbitGtTileTree {
  */
 class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
+  protected _rdSourceKey: RealityDataSourceKey;
   public override get castsShadows() { return false; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
+    // Create rdSourceKey if not provided
+    if (props.rdSourceKey) {
+      this._rdSourceKey = props.rdSourceKey;
+    } else if (props.orbitGtBlob) {
+      this._rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
+    } else {
+      // TODO: Maybe we should throw an exception
+      this._rdSourceKey = RealityDataSource.createFromBlobUrl("", RealityDataProvider.OrbitGtBlob, RealityDataFormat.OPC);
+    }
 
-    const ogtTreeId: OrbitGtTreeId = { orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
+    const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
   }
 

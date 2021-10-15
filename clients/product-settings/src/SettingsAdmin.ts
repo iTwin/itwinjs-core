@@ -67,7 +67,7 @@ export class SettingsMapResult {
 export interface SettingsAdmin {
 
   /** Saves a user-specific settings object to the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param settings The object to be saved. It is saved as a JSON string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
@@ -79,7 +79,7 @@ export interface SettingsAdmin {
   saveUserSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves a user-specific settings object from the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
@@ -101,7 +101,7 @@ export interface SettingsAdmin {
   deleteUserSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves an array of user-specific settings objects that are stored with the specified namespace
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param iTwinId The id of the iTwin, if the settings is specific to an iTwin, otherwise undefined.
@@ -111,7 +111,7 @@ export interface SettingsAdmin {
   getUserSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsMapResult>;
 
   /** Saves a shared settings object to the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param settings The object to be saved. It is saved as a JSON string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
@@ -123,7 +123,7 @@ export interface SettingsAdmin {
   saveSharedSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves a shared settings object from the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
@@ -145,7 +145,7 @@ export interface SettingsAdmin {
   deleteSharedSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves an array of shared settings objects that are stored with the specified namespace
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param iTwinId The id of the iTwin (required for Shared Setting).
@@ -155,7 +155,7 @@ export interface SettingsAdmin {
   getSharedSettingsByNamespace(accessToken: AccessToken, namespace: string, applicationSpecific: boolean, iTwinId: string, iModelId?: string): Promise<SettingsMapResult>;
 
   /** Saves a non-user-specific settings object to the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param settings The object to be saved. It is saved as a JSON string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
@@ -168,7 +168,7 @@ export interface SettingsAdmin {
   saveSetting(accessToken: AccessToken, settings: any, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves a non-user-specific settings object from the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
@@ -179,7 +179,7 @@ export interface SettingsAdmin {
   getSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Deletes a non-user-specific settings object from the settings service.
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
@@ -192,7 +192,7 @@ export interface SettingsAdmin {
   deleteSetting(accessToken: AccessToken, namespace: string, name: string, applicationSpecific: boolean, iTwinId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves an array of non-user-specific settings objects that are stored with the specified namespace
-   * @param requestContext The client request context.
+   * @param accessToken A valid access token string.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param iTwinId The id of the iTwin, if the settings is specific to an iTwin, otherwise undefined.

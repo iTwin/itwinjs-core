@@ -96,8 +96,10 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/presentation-*.*                       @imodeljs/presentation
 /common/**/presentation-*/                        @imodeljs/presentation
 /common/**/rpcinterface-full-stack-tests/         @calebmshafer @wgoehrig
-/common/**/ui-*.*                                 @imodeljs/ui
-/common/**/ui-*/                                  @imodeljs/ui
+/common/**/appui-*.*                              @imodeljs/ui
+/common/**/appui-*/                               @imodeljs/ui
+/common/**/*-react.*                              @imodeljs/ui
+/common/**/*-react/                               @imodeljs/ui
 /common/**/webgl-compatibility.*                  @imodeljs/display @Ellord207
 /common/**/webgl-compatibility/                   @imodeljs/display @Ellord207
 /common/**/core-webpack-tools/                    @calebmshafer @wgoehrig @aruniverse

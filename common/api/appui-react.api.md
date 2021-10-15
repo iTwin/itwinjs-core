@@ -1187,7 +1187,6 @@ export class ConfigurableUiManager {
     // @internal (undocumented)
     static readonly activityTracker: ActivityTracker;
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
-    // @internal (undocumented)
     static closeUi(): void;
     static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined;
     // @internal
@@ -7265,17 +7264,10 @@ export interface WidgetInfo {
 // @beta
 export class WidgetManager {
     addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): boolean;
-    addWidgetProvider(widgetProvider: WidgetProvider): void;
     getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
     // @internal
-    readonly onWidgetProvidersChanged: WidgetProvidersChangedEvent;
-    // @internal
     readonly onWidgetsChanged: WidgetsChangedEvent;
-    // @internal (undocumented)
-    get providers(): ReadonlyArray<WidgetProvider>;
-    set providers(p: ReadonlyArray<WidgetProvider>);
     removeWidgetDef(widgetId: string): boolean;
-    removeWidgetProvider(providerId: string): boolean;
     // @internal (undocumented)
     get widgetCount(): number;
     // @internal (undocumented)
@@ -7325,22 +7317,6 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
     // @alpha (undocumented)
     preferredPanelSize?: "fit-content";
     tooltipKey?: string;
-}
-
-// @beta
-export interface WidgetProvider {
-    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
-    readonly id: string;
-}
-
-// @internal
-export class WidgetProvidersChangedEvent extends BeUiEvent<WidgetProvidersChangedEventArgs> {
-}
-
-// @internal
-export interface WidgetProvidersChangedEventArgs {
-    // (undocumented)
-    readonly providers: ReadonlyArray<WidgetProvider>;
 }
 
 // @internal

@@ -4,7 +4,7 @@ AccuDraw is an aide for entering coordinate data in editing and modeling applica
 The `@itwin/appui-react` package contains several classes and components for displaying a UI for AccuDraw
 in a Widget or Dialog.
 
-## AccuDraw UI Implementation in ui-framework
+## AccuDraw UI Implementation in appui-react
 
 AccuDraw UI classes and components include:
 

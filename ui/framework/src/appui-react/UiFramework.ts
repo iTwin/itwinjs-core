@@ -9,8 +9,7 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -154,7 +153,11 @@ export class UiFramework {
       return;
     }
 
-    // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
+    /* if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducers registered with it.
+      If the app has no reducers to add and does not initialize a StateManager then just initialize the StateManager with the default framework reducer now */
+    if (undefined === store && !StateManager.isInitialized(true))
+      new StateManager();
+
     UiFramework._store = store;
     UiFramework._localization = localization || IModelApp.localization;
     // ignore setting _frameworkStateKeyInStore if not using store
@@ -175,12 +178,6 @@ export class UiFramework {
     UiFramework._widgetManager = new WidgetManager();
 
     UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
-
-    const oidcClient = IModelApp.authorizationClient;
-    // istanbul ignore next
-    if (isFrontendAuthorizationClient(oidcClient)) {
-      oidcClient.onAccessTokenChanged.addListener(UiFramework._handleUserStateChanged);
-    }
 
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
     await UiIModelComponents.initialize(UiFramework._localization);
@@ -206,7 +203,8 @@ export class UiFramework {
   public static terminate() {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
-
+    if (StateManager.isInitialized(true))
+      StateManager.clearStore();
     if (UiFramework._localization)
       UiFramework._localization.unregisterNamespace(UiFramework.localizationNamespace);
     UiFramework._localization = undefined;
@@ -256,7 +254,7 @@ export class UiFramework {
 
     // istanbul ignore else
     if (!StateManager.isInitialized(true))
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), `Error trying to access redux store before either store or StateManager has been initialized.`);
 
     // istanbul ignore next
     return StateManager.store;
@@ -540,7 +538,7 @@ export class UiFramework {
       };
       const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
-    } catch {}
+    } catch { }
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
@@ -548,13 +546,6 @@ export class UiFramework {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
     UiFramework.setUiVersion(args.version);
-  };
-
-  // istanbul ignore next
-  private static _handleUserStateChanged = (accessToken: AccessToken) => {
-    if (accessToken === "") {
-      ConfigurableUiManager.closeUi();
-    }
   };
 
   /** Determines whether a ContextMenu is open

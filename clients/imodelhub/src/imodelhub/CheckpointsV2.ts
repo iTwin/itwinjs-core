@@ -175,7 +175,6 @@ export class CheckpointV2Handler {
   }
 
   /** Get the [[CheckpointV2]]s.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried [[CheckpointV2]]s or select different data from them.
    * @returns Checkpoints that match the query.
@@ -192,7 +191,6 @@ export class CheckpointV2Handler {
   }
 
   /** Create a [[CheckpointV2]] for the specified iModel.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param checkpoint [[CheckpointV2]] instance to create. Requires changeSetId to be set. [[CheckpointV2]] is always created with state 'InProgress'.
    * @returns The created [[CheckpointV2]] instance from iModelHub. Container AccessKey is always returned.
@@ -212,7 +210,6 @@ export class CheckpointV2Handler {
   }
 
   /** Update the [[CheckpointV2]] of an iModel.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param checkpoint [[CheckpointV2]] to update. Requires wsgId set to existing [[CheckpointV2]] instance.
    * @returns Updated [[CheckpointV2]] instance from iModelHub. Container AccessKey is returned if [[CheckpointV2]] state is 'InProgress'.
