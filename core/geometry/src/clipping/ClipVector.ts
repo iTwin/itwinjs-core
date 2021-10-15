@@ -379,7 +379,6 @@ export class ClipVector {
    *  Number:
    *    number
    *    _
-   * @alpha
    */
   public toCompactString(): string {
     function formatNumber(num: number) {
