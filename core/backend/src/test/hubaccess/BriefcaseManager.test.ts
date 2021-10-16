@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { BriefcaseIdValue } from "@itwin/core-common";
-import { Element } from "../../Element";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubMock } from "../HubMock";
 import { Guid } from "@itwin/core-bentley";
+import { BriefcaseIdValue } from "@itwin/core-common";
 import { HubWrappers, TestChangeSetUtility } from "..";
+import { Element } from "../../Element";
+import { HubMock } from "../HubMock";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("BriefcaseManager", async () => {
-  let testITwinId: string = Guid.createValue();
+  const testITwinId: string = Guid.createValue();
   const managerAccessToken = "manager mock token";
   const accessToken = "access token";
 
@@ -190,4 +190,4 @@ describe("BriefcaseManager", async () => {
     await testUtility.deleteTestIModel();
     HubMock.shutdown();
   });
-})
+});

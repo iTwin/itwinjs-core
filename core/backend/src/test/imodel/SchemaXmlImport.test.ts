@@ -10,7 +10,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("Schema XML Import Tests (#standalone)", () => {
+describe("Schema XML Import Tests", () => {
   let imodel: SnapshotDb;
 
   before(() => {

@@ -22,8 +22,7 @@ describe("Class Registry", () => {
   });
 
   after(() => {
-    if (imodel)
-      imodel.close();
+    imodel?.close();
   });
 
   it("should verify the Entity metadata of known element subclasses", () => {

@@ -5,11 +5,11 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, BentleyStatus, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
+import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps, ChangesetType } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { IModelDb, IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
 
 /** the types of users available for tests */
 export enum TestUserType {
@@ -22,7 +22,6 @@ export enum TestUserType {
 /** Utility to work with test iModels in the iModelHub */
 export class HubUtility {
   public static logCategory = "HubUtility";
-  public static allowHubBriefcases = false;
 
   public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
@@ -200,7 +199,7 @@ export class HubUtility {
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const changeSets = HubUtility.readChangeSets(iModelDir);
+    const changeSets = HubUtility.readChangesets(iModelDir);
     const endNum: number = endCS ? endCS : changeSets.length;
     const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
 
@@ -234,7 +233,7 @@ export class HubUtility {
   }
 
   /** Validate apply with briefcase on disk */
-  public static validateApplyChangeSetsOnDisk(iModelDir: string) {
+  public static validateApplyChangesetsOnDisk(iModelDir: string) {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
@@ -244,12 +243,9 @@ export class HubUtility {
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const lastAppliedChangeset = nativeDb.getCurrentChangeset();
 
-    const changeSets = HubUtility.readChangeSets(iModelDir);
+    const changeSets = HubUtility.readChangesets(iModelDir);
     const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeset.id);
     const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value) => value.index > lastMergedChangeSet.index) : changeSets;
-
-    // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
-    // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
@@ -262,7 +258,7 @@ export class HubUtility {
    * and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations
    */
-  public static validateAllChangeSetOperationsOnDisk(iModelDir: string) {
+  public static validateAllChangesetOperationsOnDisk(iModelDir: string) {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
@@ -270,12 +266,9 @@ export class HubUtility {
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const changeSets = HubUtility.readChangeSets(iModelDir);
+    const changeSets = HubUtility.readChangesets(iModelDir);
 
     let status: ChangeSetStatus;
-
-    // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
-    // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets);
@@ -303,11 +296,11 @@ export class HubUtility {
    * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
-  public static async validateAllChangeSetOperations(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, iModelDir: string) {
+  public static async validateAllChangesetOperations(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, iModelDir: string) {
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
     await HubUtility.downloadIModelById(accessToken, iTwinId, iModelId, iModelDir, true /* =reDownload */);
 
-    this.validateAllChangeSetOperationsOnDisk(iModelDir);
+    this.validateAllChangesetOperationsOnDisk(iModelDir);
   }
 
   private static getSeedPathname(iModelDir: string) {
@@ -325,7 +318,6 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
-    assert.isTrue(this.allowHubBriefcases, "Must use HubMock for tests that modify iModels");
     const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
@@ -340,7 +332,7 @@ export class HubUtility {
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
-  public static readChangeSets(iModelDir: string): ChangesetFileProps[] {
+  public static readChangesets(iModelDir: string): ChangesetFileProps[] {
     const props: ChangesetFileProps[] = [];
 
     const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
@@ -406,35 +398,6 @@ export class HubUtility {
     return ChangeSetStatus.Success;
   }
 
-  public static dumpChangeSet(iModel: IModelDb, changeSet: ChangesetFileProps) {
-    iModel.nativeDb.dumpChangeset(changeSet);
-  }
-
-  /** Dumps change sets to the log */
-  public static dumpChangeSetsToLog(iModelDb: IModelDb, changeSets: ChangesetFileProps[]) {
-    let count = 0;
-    changeSets.forEach((changeSet) => {
-      count++;
-      Logger.logInfo(HubUtility.logCategory, `Dumping change set: ${count} of ${changeSets.length}`, () => ({ ...changeSet }));
-      HubUtility.dumpChangeSet(iModelDb, changeSet);
-    });
-  }
-
-  /** Dumps change sets to Db */
-  public static dumpChangeSetsToDb(changeSetDbPathname: string, changeSets: ChangesetFileProps[], dumpColumns: boolean = true) {
-    let count = 0;
-    changeSets.forEach((changeSet) => {
-      count++;
-      Logger.logInfo(HubUtility.logCategory, `Dumping change set: ${count} of ${changeSets.length}`, () => ({ ...changeSet }));
-      HubUtility.dumpChangeSetToDb(changeSet.pathname, changeSetDbPathname, dumpColumns);
-    });
-  }
-
-  public static dumpChangeSetToDb(changeSetPathname: string, changeSetDbPathname: string, dumpColumns: boolean = true): BentleyStatus {
-    if (!IModelJsFs.existsSync(changeSetPathname))
-      throw new Error("Changeset file does not exists");
-    return IModelHost.platform.RevisionUtility.dumpChangesetToDb(changeSetPathname, changeSetDbPathname, dumpColumns);
-  }
 }
 
 /** An implementation of TestITwin backed by an iTwin */

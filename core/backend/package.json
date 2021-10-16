@@ -18,11 +18,9 @@
     "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "cover": "nyc npm -s test",
-    "cover:integration": "nyc npm run -s test:integration",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "pretest": "cpx ./src/test/logging.config.json ./lib/cjs/test",
-    "test": "mocha --grep=\"#integration|#WebGLPerformance\" --invert"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",

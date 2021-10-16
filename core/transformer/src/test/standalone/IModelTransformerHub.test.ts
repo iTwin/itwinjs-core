@@ -6,32 +6,31 @@
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
-import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
-  ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
+  IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
+import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  IModelExporter,
-  IModelTransformer, TransformerLoggerCategory,
-} from "../../core-transformer";
-import { ExtensiveTestScenario, HubMock, HubUtility, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
-import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
+  CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
+  TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
+} from "../IModelTransformerUtils";
 
-describe("IModelTransformerHub (#integration)", () => {
+describe("IModelTransformerHub", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
   let iTwinId: GuidString;
   let accessToken: AccessToken;
 
   before(async () => {
     HubMock.startup("IModelTransformerHub");
+    iTwinId = HubMock.iTwinId;
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
-    iTwinId = HubUtility.iTwinId!;
+    accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
 
     // initialize logging
     if (false) {
@@ -75,8 +74,8 @@ describe("IModelTransformerHub (#integration)", () => {
     const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", revision0: targetSeedFileName, noLocks: true });
 
     try {
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
       assert.isTrue(sourceDb.isBriefcaseDb());
       assert.isTrue(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
@@ -249,8 +248,8 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.equal(sourceIModelChangeSets.length, 2);
       assert.equal(targetIModelChangeSets.length, 2);
 
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, targetDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
     } finally {
       try {
         await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
@@ -264,16 +263,16 @@ describe("IModelTransformerHub (#integration)", () => {
   });
 
   it("Clone/upgrade test", async () => {
-    const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
-    const sourceIModelId = await HubUtility.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
+    const sourceIModelName: string = IModelTestUtils.generateUniqueName("CloneSource");
+    const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(sourceIModelId));
-    const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
-    const targetIModelId = await HubUtility.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true });
+    const targetIModelName: string = IModelTestUtils.generateUniqueName("CloneTarget");
+    const targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
       // open/upgrade sourceDb
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       await sourceDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
@@ -301,7 +300,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.pushChanges({ accessToken, description: "Populate Source" });
 
       // open/upgrade targetDb
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
       await targetDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
@@ -318,8 +317,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await targetDb.pushChanges({ accessToken, description: "Import changes from sourceDb" });
 
       // close iModel briefcases
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(accessToken, targetDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
     } finally {
       try {
         // delete iModel briefcases
@@ -349,7 +348,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", revision0: masterSeedFileName, noLocks: true });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
-    const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId });
+    const masterDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId });
     assert.isTrue(masterDb.isBriefcaseDb());
     assert.equal(masterDb.iTwinId, iTwinId);
     assert.equal(masterDb.iModelId, masterIModelId);
@@ -360,7 +359,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const branchIModelName1 = "Branch1";
     const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
 
-    const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId1 });
+    const branchDb1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId1 });
     assert.isTrue(branchDb1.isBriefcaseDb());
     assert.equal(branchDb1.iTwinId, iTwinId);
     assertPhysicalObjects(branchDb1, state0);
@@ -369,7 +368,7 @@ describe("IModelTransformerHub (#integration)", () => {
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
     const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
-    const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId2 });
+    const branchDb2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId2 });
     assert.isTrue(branchDb2.isBriefcaseDb());
     assert.equal(branchDb2.iTwinId, iTwinId);
     assertPhysicalObjects(branchDb2, state0);
@@ -379,7 +378,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const replayedIModelName = "Replayed";
     const replayedIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: replayedIModelName, description: "blank", noLocks: true });
 
-    const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: replayedIModelId });
+    const replayedDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: replayedIModelId });
     assert.isTrue(replayedDb.isBriefcaseDb());
     assert.equal(replayedDb.iTwinId, iTwinId);
 
@@ -510,7 +509,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isAtLeast(masterDeletedElementIds.size, 1);
 
       // replay master history to create replayed iModel
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
       const replayTransformer = new IModelTransformer(sourceDb, replayedDb);
       // this replay strategy pretends that deleted elements never existed
       for (const elementId of masterDeletedElementIds) {

@@ -1,10 +1,9 @@
-
-import { assert } from "chai";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";

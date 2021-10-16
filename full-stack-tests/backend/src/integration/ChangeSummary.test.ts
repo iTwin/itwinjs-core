@@ -71,7 +71,6 @@ describe("ChangeSummary", () => {
   let iModelId: GuidString;
 
   before(async () => {
-    HubUtility.allowHubBriefcases = true;
     accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
 
     iTwinId = await HubUtility.getTestITwinId(accessToken);
@@ -83,8 +82,6 @@ describe("ChangeSummary", () => {
     const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
   });
-
-  after(() => HubUtility.allowHubBriefcases = false);
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
     setupTest(iModelId);

@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Set, Logger, LogLevel } from "@itwin/core-bentley";
+import { Id64, Id64Set } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { GeometryPartProps, IModel } from "@itwin/core-common";
 import {
@@ -24,11 +24,6 @@ describe("DeleteDefinitionElements", () => {
     }
     if (!IModelJsFs.existsSync(outputDir)) {
       IModelJsFs.mkdirSync(outputDir);
-    }
-    // initialize logging
-    if (false) {
-      Logger.initializeToConsole();
-      Logger.setLevelDefault(LogLevel.Error);
     }
   });
 

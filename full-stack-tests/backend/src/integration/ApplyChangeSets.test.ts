@@ -15,7 +15,7 @@ import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/";
 describe("ApplyChangesets", () => {
   const testAllChangeSetOperations = async (accessToken: AccessToken, iTwinId: string, iModelId: GuidString) => {
     const iModelDir = path.join(IModelHost.cacheDir, iModelId.toString());
-    await HubUtility.validateAllChangeSetOperations(accessToken, iTwinId, iModelId, iModelDir);
+    await HubUtility.validateAllChangesetOperations(accessToken, iTwinId, iModelId, iModelDir);
     IModelJsFs.purgeDirSync(iModelDir);
   };
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/IModelHubBackend";
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHostConfiguration } from "@itwin/core-backend";
 import { TestUtils } from "@itwin/core-backend/lib/cjs/test";
 import * as fs from "fs";
 import * as path from "path";
@@ -38,8 +38,10 @@ function loadEnv(envFile: string) {
 //   return IModelHost.startup(cfg);
 // }
 
+loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
+
 before(async () => {
-  loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
+  await TestUtils.shutdownBackend();
 
   const cfg = new IModelHostConfiguration();
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.

@@ -8,14 +8,12 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
 } from "@itwin/core-common";
-import {
-  ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
-} from "../../core-backend";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {
@@ -65,11 +63,6 @@ class TestHelper {
     const writeDbFileName = copyFile(`${testName}.bim`, dbInfo.seedFileName);
     this.db = StandaloneDb.openFile(writeDbFileName, OpenMode.ReadWrite);
     assert.isTrue(this.db !== undefined);
-
-    // Logger.setLevelDefault(LogLevel.Info);
-    // Logger.setLevel("EDGTest", LogLevel.Trace);
-    // Logger.setLevel("ElementDependencyGraph", LogLevel.Trace);
-    // Logger.setLevel("ECObjectsNative", LogLevel.Error);
 
     this.db.nativeDb.enableTxnTesting();
     assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);

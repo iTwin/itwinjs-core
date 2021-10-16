@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { IModelHost, IModelHostConfiguration, KnownLocations } from "../../IModelHost";
-import { BriefcaseManager } from "../../BriefcaseManager";
+import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
-import { IModelTestUtils, TestUtils } from "../IModelTestUtils";
-import { Schemas } from "../../Schema";
-import sinon = require("sinon");
-import { SnapshotDb } from "../../IModelDb";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { SnapshotDb } from "../IModelDb";
+import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
+import { Schemas } from "../Schema";
+import { IModelTestUtils, TestUtils } from "./index";
 
 describe("IModelHost", () => {
 
@@ -99,6 +99,11 @@ describe("IModelHost", () => {
     await IModelHost.startup(config);
     expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
+  });
+
+  // TODO:
+  it.skip("should cleanup everything on shutdown", () => {
+
   });
 
 });

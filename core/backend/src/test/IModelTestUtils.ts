@@ -7,11 +7,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import {
-  AccessToken, BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
-} from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
   ElementProps, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
@@ -20,16 +16,15 @@ import {
   SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import {
   AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
-  ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelHostConfiguration,
-  IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
-  Platform, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
+  ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelJsFs,
+  InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
 import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
@@ -44,23 +39,6 @@ chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
-/** Class for simple test timing */
-export class Timer {
-  private _label: string;
-  private _start: Date;
-  constructor(label: string) {
-    this._label = `\t${label}`;
-    this._start = new Date();
-  }
-
-  public end() {
-    const stop = new Date();
-    const elapsed = stop.getTime() - this._start.getTime();
-    // eslint-disable-next-line no-console
-    console.log(`${this._label}: ${elapsed}ms`);
-  }
-}
-
 RpcConfiguration.developmentMode = true;
 
 // Initialize the RPC interface classes used by tests
@@ -70,28 +48,6 @@ export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
   openMode?: OpenMode;
-}
-
-/**
- * Disables native code assertions from firing. This can be used by tests that intentionally
- * test failing operations. If those failing operations raise assertions in native code, the test
- * would fail unexpectedly in a debug build. In that case the native code assertions can be disabled with
- * this class.
- */
-export class DisableNativeAssertions implements IDisposable {
-  private _native: IModelJsNative.DisableNativeAssertions | undefined;
-
-  constructor() {
-    this._native = new IModelHost.platform.DisableNativeAssertions();
-  }
-
-  public dispose(): void {
-    if (!this._native)
-      return;
-
-    this._native.dispose();
-    this._native = undefined;
-  }
 }
 
 export class TestBim extends Schema {
@@ -121,63 +77,6 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
   public static override onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
-export class TestUtils {
-  /** Handles the startup of IModelHost.
-   * The provided config is used and will override any of the default values used in this method.
-   *
-   * The default includes:
-   * - concurrentQuery.current === 4
-   * - cacheDir === path.join(__dirname, ".cache")
-   */
-   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
-    const cfg = config ? config : new IModelHostConfiguration();
-    cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-    return IModelHost.startup(cfg);
-  }
-
-  public static async shutdownBackend(): Promise<void> {
-    return IModelHost.shutdown();
-  }
-
-  public static setupLogging() {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Error);
-
-    const loggingConfigFile: string = path.join(__dirname, "logging.config.json");
-
-    if (IModelJsFs.existsSync(loggingConfigFile)) {
-      // eslint-disable-next-line no-console
-      console.log(`Setting up logging levels from ${loggingConfigFile}`);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      Logger.configureLevels(require(loggingConfigFile));
-    }
-  }
-
-  public static init() {
-    // dummy method to get this script included
-  }
-
-  private static initDebugLogLevels(reset?: boolean) {
-    Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
-    Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
-    Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
-  }
-
-  // Setup typical programmatic log level overrides here
-  // Convenience method used to debug specific tests/fixtures
-  public static setupDebugLogLevels() {
-    TestUtils.initDebugLogLevels(false);
-  }
-
-  public static resetDebugLogLevels() {
-    TestUtils.initDebugLogLevels(true);
-  }
-}
-
 /** the types of users available for tests */
 export enum TestUserType {
   Regular,
@@ -188,7 +87,7 @@ export enum TestUserType {
 
 export class HubWrappers {
 
-  public static getAccessToken(user: TestUserType) {
+  public static async getAccessToken(user: TestUserType) {
     return TestUserType[user];
   }
 
@@ -204,7 +103,7 @@ export class HubWrappers {
   /** Deletes and re-creates an iModel with the provided name in the iTwin.
    * @returns the iModelId of the newly created iModel.
   */
-   public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
+  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
     if (undefined !== deleteIModel)
@@ -318,7 +217,7 @@ export class HubWrappers {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-   public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
+  public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
     const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
@@ -352,7 +251,7 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
-  /** Generate a name (for an iModel) that's unique for the user + host */
+  /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
   }
@@ -1304,12 +1203,3 @@ export class ExtensiveTestScenario {
     }
   }
 }
-
-before(async () => {
-  TestUtils.setupLogging();
-  await TestUtils.startBackend();
-});
-
-after(async () => {
-  await TestUtils.shutdownBackend();
-});

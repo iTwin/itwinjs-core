@@ -7,14 +7,15 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
+import * as sinon from "sinon";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
-  GeographicCRS, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError,
-  IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
-  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  GeographicCRS, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps,
+  ModelProps, PhysicalElementProps, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
@@ -31,10 +32,9 @@ import {
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../HubMock";
-import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions, IModelTestUtils } from "../index";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-import sinon = require("sinon");
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -50,14 +50,6 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error).not.to.be.undefined;
   expect(error).instanceof(IModelError);
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
-}
-
-function exerciseGc() {
-  for (let i = 0; i < 1000; ++i) {
-    const obj = { value: i };
-    const fmt = obj.value.toString();
-    assert.isTrue(i === parseInt(fmt, 10));
-  }
 }
 
 describe("iModel", () => {
@@ -103,57 +95,6 @@ describe("iModel", () => {
     assert.equal(string1, string2);
     return entity2;
   };
-
-  it("should verify object vault", () => {
-    const platform = IModelHost.platform;
-
-    const o1 = "o1";
-    platform.storeObjectInVault({ thisIs: "obj1" }, o1);
-    exerciseGc();
-    assert.deepEqual(platform.getObjectFromVault(o1), { thisIs: "obj1" });
-    assert.equal(platform.getObjectRefCountFromVault(o1), 1);
-
-    const o2 = "o2";
-    platform.storeObjectInVault({ thatIs: "obj2" }, o2);
-    exerciseGc();
-    assert.deepEqual(platform.getObjectFromVault(o2), { thatIs: "obj2" });
-    exerciseGc();
-    assert.equal(platform.getObjectRefCountFromVault(o2), 1);
-
-    platform.storeObjectInVault(platform.getObjectFromVault(o1), o1); // this is one way to increase the ref count on obj1
-    assert.equal(platform.getObjectRefCountFromVault(o1), 2);
-    assert.equal(platform.getObjectRefCountFromVault(o2), 1);
-
-    platform.addReferenceToObjectInVault(o1); // this is the more direct way to increase the ref count to obj1
-    assert.equal(platform.getObjectRefCountFromVault(o1), 3);
-
-    platform.dropObjectFromVault(o1); // decrease the ref count on obj1
-    platform.dropObjectFromVault(o1); // decrease the ref count on obj1
-    assert.equal(platform.getObjectRefCountFromVault(o1), 1);
-
-    exerciseGc();
-
-    platform.dropObjectFromVault(o1); // remove the only remaining reference to obj1
-    try {
-      platform.getObjectFromVault(o1);
-    } catch (_err) {
-      // expected
-    }
-    try {
-      platform.dropObjectFromVault(o1); // this is ID is invalid and should be rejected.
-    } catch (_err) {
-      // expected
-    }
-
-    assert.equal(platform.getObjectRefCountFromVault(o2), 1);
-    assert.deepEqual(platform.getObjectFromVault(o2), { thatIs: "obj2" });
-    platform.dropObjectFromVault(o2); // remove the only reference to obj2
-    try {
-      platform.getObjectFromVault(o2);
-    } catch (_err) {
-      // expected
-    }
-  });
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
@@ -2553,70 +2494,5 @@ describe("iModel", () => {
     assert.equal(subject4.code.value, "Subject4"); // should not have changed
     assert.equal(subject4.description, "Description4"); // should not have changed
     assert.isUndefined(subject4.federationGuid); // should not have changed
-  });
-});
-describe("computeProjectExtents", () => {
-  let imodel: SnapshotDb;
-
-  before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
-  });
-
-  after(() => {
-    imodel.close();
-  });
-
-  it("should return requested information", () => {
-    const projectExtents = imodel.projectExtents;
-    const args = [undefined, false, true];
-    for (const reportExtentsWithOutliers of args) {
-      for (const reportOutliers of args) {
-        const result = imodel.computeProjectExtents({ reportExtentsWithOutliers, reportOutliers });
-        expect(result.extents.isAlmostEqual(projectExtents)).to.be.true;
-
-        expect(undefined !== result.extentsWithOutliers).to.equal(true === reportExtentsWithOutliers);
-        if (undefined !== result.extentsWithOutliers)
-          expect(result.extentsWithOutliers.isAlmostEqual(projectExtents)).to.be.true;
-
-        expect(undefined !== result.outliers).to.equal(true === reportOutliers);
-        if (undefined !== result.outliers)
-          expect(result.outliers.length).to.equal(0);
-      }
-    }
-  });
-
-  it("should report outliers", () => {
-    const elemProps = imodel.elements.getElementProps<GeometricElement3dProps>({ id: "0x39", wantGeometry: true });
-    elemProps.id = Id64.invalid;
-    const placement = Placement3d.fromJSON(elemProps.placement);
-    const originalOrigin = placement.origin.clone();
-    const mult = 1000000;
-    placement.origin.x *= mult;
-    placement.origin.y *= mult;
-    placement.origin.z *= mult;
-    elemProps.placement = placement;
-    elemProps.geom![2].sphere!.radius = 0.000001;
-    const newId = imodel.elements.insertElement(elemProps);
-    expect(Id64.isValid(newId)).to.be.true;
-    imodel.saveChanges();
-
-    const newElem = imodel.elements.getElement<GeometricElement3d>(newId);
-    expect(newElem).instanceof(GeometricElement3d);
-    expect(newElem.placement.origin.x).to.equal(originalOrigin.x * mult);
-    expect(newElem.placement.origin.y).to.equal(originalOrigin.y * mult);
-    expect(newElem.placement.origin.z).to.equal(originalOrigin.z * mult);
-
-    const outlierRange = placement.calculateRange();
-    const originalExtents = imodel.projectExtents;
-    const extentsWithOutlier = originalExtents.clone();
-    extentsWithOutlier.extendRange(outlierRange);
-
-    const result = imodel.computeProjectExtents({ reportExtentsWithOutliers: true, reportOutliers: true });
-    expect(result.outliers!.length).to.equal(1);
-    expect(result.outliers![0]).to.equal(newId);
-    expect(result.extents.isAlmostEqual(originalExtents)).to.be.true;
-    expect(result.extentsWithOutliers!.isAlmostEqual(originalExtents)).to.be.false;
-    expect(result.extentsWithOutliers!.low.isAlmostEqual(extentsWithOutlier.low)).to.be.true;
-    expect(result.extentsWithOutliers!.high.isAlmostEqual(extentsWithOutlier.high, 20)).to.be.true;
   });
 });

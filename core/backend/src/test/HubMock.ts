@@ -19,7 +19,6 @@ import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { LocalHub } from "./LocalHub";
-import { HubWrappers } from ".";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.

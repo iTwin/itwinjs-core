@@ -12,7 +12,7 @@ import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";
-import { IModelTestUtils, TestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUtils } from "../index";
 import { IModelJsFs } from "../../IModelJsFs";
 
 import { HubMock } from "..";
@@ -46,7 +46,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
     if (model.isNotSpatiallyLocated || model.isTemplate)
       continue;
 
-    iModelTileTreeIdToString
+    iModelTileTreeIdToString;
     const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.

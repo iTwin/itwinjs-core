@@ -27,7 +27,6 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     this._iModel.saveChanges("Added test model");
   }
@@ -43,11 +42,16 @@ export class TestChangeSetUtility {
     this._iModel.saveChanges("Added test elements");
   }
 
+  /** Create a new iModel, populate it, push the changes and returns the opened db.
+   * Uses the iTwinId from HubMock.
+   */
   public async createTestIModel(): Promise<BriefcaseDb> {
     this.iTwinId = HubMock.iTwinId;
 
     // Re-create iModel on iModelHub
     this.iModelId = await HubWrappers.recreateIModel({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
+
+    this._iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken: this._accessToken, iTwinId: this.iTwinId, iModelId: this.iModelId });
 
     // Populate sample data
     await this.addTestModel();
