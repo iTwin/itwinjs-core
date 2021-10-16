@@ -1204,7 +1204,6 @@ export class ClipVector {
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
     sumSizes(intervals: Segment1d[], begin: number, end: number): number;
-    // @alpha
     toCompactString(): string;
     toJSON(): ClipVectorProps;
     transformInPlace(transform: Transform): boolean;
@@ -2379,8 +2378,14 @@ export class HalfEdge {
     i: number;
     get id(): any;
     isEqualXY(other: XAndY): boolean;
+    isFaceConvex(): boolean;
+    get isIsolatedEdge(): boolean;
+    isMaskedAroundFace(mask: HalfEdgeMask, value?: boolean): boolean;
     isMaskSet(mask: HalfEdgeMask): boolean;
     static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean;
+    isolateEdge(): void;
+    static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): boolean;
+    isSectorConvex(): boolean;
     maskBits: number;
     static nodeToId(node: HalfEdge): any;
     static nodeToIdMaskXY(node: HalfEdge): {
@@ -2448,6 +2453,7 @@ export class HalfEdgeGraph {
     createEdgeXYZHalfEdge(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, node: HalfEdge, iB?: number): HalfEdge;
     createEdgeXYZXYZ(xA?: number, yA?: number, zA?: number, iA?: number, xB?: number, yB?: number, zB?: number, iB?: number): HalfEdge;
     decommission(): void;
+    deleteIsolatedEdges(): number;
     dropMask(mask: HalfEdgeMask): void;
     grabMask(clearInAllHalfEdges?: boolean): HalfEdgeMask;
     reverseMask(mask: HalfEdgeMask): void;

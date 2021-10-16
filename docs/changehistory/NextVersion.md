@@ -12,8 +12,10 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 
 The following dependencies of iTwin.js have been updated;
 
-- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
-- `electron` updated to from `^11.1.0` -> `^14.0.0`,
+- `openid-client` updated from to `^3.15.3` -> `^4.7.4`,
+- `electron` updated from to `^11.1.0` -> `^14.0.0`,
+- `react` updated from to `^16.8.9` -> `^17.0.0`,
+- `react-dom` updated from to `^16.8.9` -> `^17.0.0`,
 
 ## Package name changes
 
@@ -805,6 +807,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | *eliminated* |
+| `UiItemsArbiter`              | *eliminated* |
 
 ### @itwin/core-react
 
@@ -1044,6 +1047,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
+### @bentley/appui-react
+
+| Removed                            | Replacement                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+
 ### @bentley/frontend-authorization-client
 
 | Removed                                          | Replacement                    |
@@ -1070,7 +1079,7 @@ A new @itwin/imodel-components-react package has been added and contains items r
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
-For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
 ### New options for defining Frontstages
 
@@ -1238,7 +1247,7 @@ Some have replacements within the @itwin/core-react package.
 
 A new @itwin/imodel-components-react package has been added, and some items were moved from @itwin/core-react and @itwin/components-react into this new package.
 The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
-Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
+Dependencies on these other iTwin.js packages have been removed from core-react and components-react.
 The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).

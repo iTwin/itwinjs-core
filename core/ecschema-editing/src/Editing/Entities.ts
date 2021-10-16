@@ -22,7 +22,53 @@ export class Entities extends ECClasses {
   public constructor(_schemaEditor: SchemaContextEditor) {
     super(_schemaEditor);
   }
-  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+
+  public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
+    if (!baseClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
+
+    if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
+
+    if (!(await (baseClass as EntityClass).is("Element", "BisCore"))) {
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an Element.`);
+    }
+
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
+  }
+
+  public async createElementUniqueAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
+    if (!baseClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
+
+    if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
+
+    if (!(await (baseClass as EntityClass).is("ElementUniqueAspect", "BisCore"))) {
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an ElementUniqueAspect.`);
+    }
+
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
+  }
+
+  public async createElementMultiAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    const baseClass = await this._schemaEditor.schemaContext.getSchemaItem(baseClassKey);
+    if (!baseClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} could be found.`);
+
+    if (baseClass?.schemaItemType !== SchemaItemType.EntityClass)
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an EntityClass.`);
+
+    if (!(await (baseClass as EntityClass).is("ElementMultiAspect", "BisCore"))) {
+      throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not an ElementMultiAspect.`);
+    }
+
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
+  }
+
+  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
@@ -32,11 +78,22 @@ export class Entities extends ECClasses {
     }
 
     // Add a deserializing method.
-    if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass) as EntityClass;
-      if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
-      if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass) return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem);
+    if (baseClassKey !== undefined) {
+      let baseClassSchema = schema;
+      if (!baseClassKey.schemaKey.matches(schema.schemaKey))
+        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+
+      if (baseClassSchema === undefined)
+        return { errorMessage: `Unable to locate the schema ${baseClassKey.schemaKey.toString()} for the specified base class ${baseClassKey.fullName}.` };
+
+      const baseClassItem = await baseClassSchema.lookupItem(baseClassKey) as EntityClass;
+      if (baseClassItem === undefined)
+        return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+
+      if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass)
+        return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
+
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
     }
 
     if (mixins !== undefined) {

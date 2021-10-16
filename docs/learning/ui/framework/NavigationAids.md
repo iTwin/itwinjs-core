@@ -107,5 +107,5 @@ export function SampleNavigationAid(props: SampleNavigationAidProps) {
 
 ## API Reference
 
-- [NavigationAids in ui-framework]($appui-react:NavigationAids)
-- [NavigationAids in ui-imodel-components]($imodel-components-react:NavigationAids)
+- [NavigationAids in appui-react]($appui-react:NavigationAids)
+- [NavigationAids in imodel-components-react]($imodel-components-react:NavigationAids)

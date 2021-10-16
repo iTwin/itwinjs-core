@@ -84,7 +84,7 @@ If the 'Active' Tool updates a property that is being displayed by a type editor
 
 ### Classes and Interfaces used the the Default Tool Settings Provider
 
-The following classes defined within the ui-abstract package are used by the Default Tool Settings Provider.
+The following classes defined within the appui-abstract package are used by the Default Tool Settings Provider.
 
 - [DialogItem]($appui-abstract)
 - [PropertyRecord]($appui-abstract)
