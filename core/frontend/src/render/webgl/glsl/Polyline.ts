@@ -16,6 +16,7 @@ import { System } from "../System";
 import { IsInstanced } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";
+import { addEdgeContrast } from "./Edge";
 import { addFrustum, addShaderFlags } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addHiliter } from "./FeatureSymbology";
@@ -340,6 +341,7 @@ export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
   polylineAddLineCode(builder);
 
   addColor(builder);
+  addEdgeContrast(builder.vert);
   addWhiteOnWhiteReversal(builder.frag);
 
   return builder;

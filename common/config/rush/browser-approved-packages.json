@@ -239,6 +239,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/ui-test-extension",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -552,11 +556,11 @@
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-http-backend",
@@ -596,11 +600,11 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "backend", "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "jsdom-global",
-      "allowedCategories": [ "backend", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "json-schema-faker",
@@ -879,10 +883,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
       "name": "symlink-dir",
       "allowedCategories": [ "internal" ]
     },
@@ -972,7 +972,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "xpath",

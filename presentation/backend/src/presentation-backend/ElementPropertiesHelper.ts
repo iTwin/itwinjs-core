@@ -10,7 +10,7 @@ import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
 import { assert, DbResult, Id64 } from "@itwin/core-bentley";
 import {
   CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
-  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PageOptions, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
+  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PageOptions, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
   ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
   StartStructProps, traverseContent,
 } from "@itwin/presentation-common";
@@ -27,34 +27,30 @@ export const buildElementsProperties = (content: Content | undefined): ElementPr
 
 /** @internal */
 export function getElementsCount(db: IModelDb, classNames?: string[]) {
-  const { whereClause, bindings } = createElementsFilterClauseAndBindings("e", classNames);
   const query = `
     SELECT COUNT(e.ECInstanceId)
     FROM bis.Element e
-    ${whereClause}
+    ${createElementsFilterClause("e", classNames)}
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    stmt.bindValues(bindings);
     return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
   });
 }
 
 /** @internal */
 export function getElementIdsByClass(db: IModelDb, classNames?: string[], pageOptions?: PageOptions) {
-  const { whereClause, bindings } = createElementsFilterClauseAndBindings("e", classNames);
   const query = `
     SELECT e.ECInstanceId elId, eSchemaDef.Name || ':' || eClassDef.Name elClassName
     FROM bis.Element e
     LEFT JOIN meta.ECClassDef eClassDef ON eClassDef.ECInstanceId = e.ECClassId
     LEFT JOIN meta.ECSchemaDef eSchemaDef ON eSchemaDef.ECInstanceId = eClassDef.Schema.Id
-    ${whereClause}
+    ${createElementsFilterClause("e", classNames)}
     ORDER BY e.ECClassId, e.ECInstanceId
     ${createElementsLimitClause(pageOptions)}
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    stmt.bindValues(bindings);
     const ids = new Map<string, string[]>();
     let currentClassName = "";
     let currentIds: string[] = [];
@@ -86,14 +82,19 @@ function createElementsLimitClause(pageOptions?: PageOptions) {
   return `LIMIT ${pageOptions.size ?? -1} OFFSET ${pageOptions.start ?? 0}`;
 }
 
-function createElementsFilterClauseAndBindings(elementAlias: string, classNames?: string[]) {
+function createElementsFilterClause(elementAlias: string, classNames?: string[]) {
   if (classNames === undefined || classNames.length === 0)
-    return { whereClause: "", bindings: [] };
+    return "";
 
-  return {
-    whereClause: `WHERE ${elementAlias}.ECClassId IS (${Array(classNames.length).fill("?").join(",")})`,
-    bindings: classNames,
-  };
+  // check if list contains only valid class names
+  const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
+  const invalidName = classNames.find((name) => !name.match(classNameRegExp));
+  if (invalidName) {
+    throw new PresentationError(PresentationStatus.InvalidArgument, `Encountered invalid class name - ${invalidName}.
+      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`);
+  }
+
+  return `WHERE ${elementAlias}.ECClassId IS (${classNames.join(",")})`;
 }
 
 interface IPropertiesAppender {
