@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "3.0.0-dev.87",
+  "version": "3.0.0-dev.88",
   "description": "iModel.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.87",
-    "@itwin/core-common": "workspace:^3.0.0-dev.87",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.87"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.88",
+    "@itwin/core-common": "workspace:^3.0.0-dev.88",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.88"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
