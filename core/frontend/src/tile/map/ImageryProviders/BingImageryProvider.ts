@@ -167,7 +167,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   public override async initialize(): Promise<void> {
     // get the template url
     const bingRequestUrl = this._urlBase.replace("{bingKey}", this._settings.accessKey ? this._settings.accessKey.value : "");
-    const requestOptions: RequestOptions = { method: "GET", disableCorrelationHeader: true };
+    const requestOptions: RequestOptions = { method: "GET" };
 
     try {
       const response: Response = await request(bingRequestUrl, requestOptions);
