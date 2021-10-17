@@ -592,7 +592,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 }
 
 // @internal (undocumented)
-export type CheckpointArg = DownloadRequest;
+export type CheckpointArg = DownloadRequest & TokenArg;
 
 // @internal (undocumented)
 export class CheckpointManager {
@@ -2538,6 +2538,9 @@ export abstract class InformationReferenceElement extends InformationContentElem
     static get className(): string;
 }
 
+// @internal (undocumented)
+export function initializeRpcBackend(): void;
+
 // @beta
 export interface InstanceChange {
     // (undocumented)
@@ -3391,6 +3394,12 @@ export class RoleModel extends Model {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @public
+export class RpcTrace {
+    static get currentActivity(): RpcActivity | undefined;
+    static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
+    }
 
 // @public
 export class Schema {

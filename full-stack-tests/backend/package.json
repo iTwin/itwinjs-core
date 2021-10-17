@@ -11,6 +11,8 @@
     "copy:config": "internal-tools copy-config",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite --silent --loose --location ./lib/cjs/test/azuriteStorage",
+    "test": "",
+    "cover": "",
     "test:integration": "run-s test:integration:azurite",
     "test:integration:azurite": "run-p -r azurite:setup test:integration:core",
     "test:integration:core": "mocha --grep=\"#integration|#WebGLPerformance\" \"./lib/cjs/integration/**/*.test.js\"",

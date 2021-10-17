@@ -199,6 +199,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@itwin/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [ "common", "integration-testing", "internal" ]
     },

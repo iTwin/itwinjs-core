@@ -87,9 +87,6 @@ export interface ProgressInfo {
 }
 
 // @internal
-export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined;
-
-// @internal
 export function request(url: string, options: RequestOptions): Promise<Response>;
 
 // @beta (undocumented)

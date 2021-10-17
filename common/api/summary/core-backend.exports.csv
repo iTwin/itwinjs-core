@@ -30,7 +30,7 @@ beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
-internal;CheckpointArg = DownloadRequest
+internal;CheckpointArg = DownloadRequest & TokenArg
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -193,6 +193,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
+internal;initializeRpcBackend(): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
@@ -266,6 +267,7 @@ public;RepositoryModel
 public;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
+public;RpcTrace
 public;Schema
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType

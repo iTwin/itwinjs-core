@@ -3405,17 +3405,22 @@ importers:
       '@bentley/itwin-registry-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/reality-data-client': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
       '@itwin/build-tools': workspace:*
+      '@itwin/components-react': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-electron': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/core-i18n': workspace:*
       '@itwin/core-markup': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/core-react': workspace:*
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
@@ -3424,6 +3429,9 @@ importers:
       '@itwin/express-server': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
+      '@itwin/imodel-components-react': workspace:*
+      '@itwin/itwinui-react': ^1.16.2
+      '@itwin/map-layers': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3467,22 +3475,30 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
+      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-layout-react': link:../../ui/ninezone
+      '@itwin/appui-react': link:../../ui/framework
+      '@itwin/browser-authorization': 0.2.0
+      '@itwin/components-react': link:../../ui/components
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-markup': link:../../core/markup
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/core-react': link:../../ui/core
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
       '@itwin/express-server': link:../../core/express-server
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
+      '@itwin/imodel-components-react': link:../../ui/imodel-components
+      '@itwin/itwinui-react': 1.21.1_react-dom@17.0.2+react@17.0.2
+      '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
