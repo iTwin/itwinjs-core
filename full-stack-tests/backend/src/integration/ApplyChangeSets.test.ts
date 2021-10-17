@@ -19,7 +19,7 @@ describe("ApplyChangesets", () => {
     IModelJsFs.purgeDirSync(iModelDir);
   };
 
-  it.only("should test all changeset operations after downloading iModel from the hub (#integration)", async () => {
+  it("should test all changeset operations after downloading iModel from the hub (#integration)", async () => {
     const accessToken = await TestUtility.getAccessToken(TestUsers.regular);
 
     const iTwinId = await HubUtility.getTestITwinId(accessToken);

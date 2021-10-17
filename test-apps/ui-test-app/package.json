@@ -100,6 +100,7 @@
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
     "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.27.0",
     "@itwin/map-layers": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",

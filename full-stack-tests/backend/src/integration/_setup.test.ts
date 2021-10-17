@@ -24,20 +24,6 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
-/** Handles the startup of IModelHost.
-   * The provided config is used and will override any of the default values used in this method.
-   *
-   * The default includes:
-   * - concurrentQuery.current === 4
-   * - cacheDir === path.join(__dirname, ".cache")
-   */
-// async function startBackend(config?: IModelHostConfiguration): Promise<void> {
-//   const cfg = config ? config : new IModelHostConfiguration();
-//   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-//   cfg.hubAccess = IModelHubBackend;
-//   return IModelHost.startup(cfg);
-// }
-
 loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
 before(async () => {
