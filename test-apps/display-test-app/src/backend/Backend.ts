@@ -6,8 +6,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { IModelBankClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { AzureFileHandler, IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { IModelBankClient } from "@bentley/imodelhub-client";
+import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
@@ -128,7 +128,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 
-  IModelHubBackend.setIModelClient(new IModelHubClient(new AzureFileHandler()));
   if (dtaConfig.customOrchestratorUri)
     IModelHubBackend.setIModelClient(new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler()));
 
