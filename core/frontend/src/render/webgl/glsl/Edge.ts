@@ -7,7 +7,7 @@
  */
 
 import { AttributeMap } from "../AttributeMap";
-import { ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addAnimation } from "./Animation";
@@ -96,6 +96,38 @@ const computePosition = `
 `;
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
+const adjustContrast = `
+  float bgi = u_bgIntensity;
+  if (bgi < 0.0)
+    return baseColor;
+
+  float s;
+  float rgbi = baseColor.r * 0.3 + baseColor.g * 0.59 + baseColor.b * 0.11;
+  if (rgbi > 0.81)
+    s = bgi > 0.57 ? 0.0 : 0.699;
+  else if (rgbi > 0.57)
+    s = bgi > 0.57 ? 0.0 : 1.0;
+  else
+    s = bgi < 0.81 ? 1.0 : 0.699;
+
+  return vec4(vec3(s), baseColor.a);
+`;
+
+/** @internal */
+export function addEdgeContrast(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_bgIntensity", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_bgIntensity", (uniform, params) => {
+      let bgi = -1;
+      if (params.geometry.isEdge && params.target.currentEdgeSettings.wantContrastingColor(params.target.currentViewFlags.renderMode))
+        bgi = params.target.uniforms.style.backgroundIntensity;
+
+      uniform.setUniform1f(bgi);
+    });
+  });
+
+  vert.set(VertexShaderComponent.AdjustContrast, adjustContrast);
+}
+
 function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
   const isInstanced = IsInstanced.Yes === instanced;
   const attrMap = AttributeMap.findAttributeMap(isSilhouette ? TechniqueId.SilhouetteEdge : TechniqueId.Edge, isInstanced);
@@ -146,6 +178,7 @@ export function createEdgeBuilder(isSilhouette: boolean, instanced: IsInstanced,
   const builder = createBase(isSilhouette, instanced, isAnimated);
   addShaderFlags(builder);
   addColor(builder);
+  addEdgeContrast(builder.vert);
   addWhiteOnWhiteReversal(builder.frag);
   return builder;
 }

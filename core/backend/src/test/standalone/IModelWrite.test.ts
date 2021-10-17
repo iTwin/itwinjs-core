@@ -308,6 +308,7 @@ describe("IModelWriteTest", () => {
     await BriefcaseDb.upgradeSchemas(superBriefcaseProps);
     await IModelHost.hubAccess.deleteIModel({ accessToken: managerAccessToken, iTwinId, iModelId });
   });
+
   it("changeset size and ec schema version change", async () => {
     const adminToken = "super manager token";
     const iTwinId = HubMock.iTwinId;
@@ -325,7 +326,7 @@ describe("IModelWriteTest", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
-    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "schema changeset" }));
+    rwIModel.saveChanges("user 1: schema changeset");
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -336,6 +337,7 @@ describe("IModelWriteTest", () => {
       const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
       assert.equal(changesets.length, 1);
     }
+    await rwIModel.locks.acquireSharedLock(IModel.dictionaryId);
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
@@ -376,11 +378,12 @@ describe("IModelWriteTest", () => {
     });
     assert.equal(1357661, rwIModel.nativeDb.getChangesetSize());
 
-    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data" }));
+    rwIModel.saveChanges("user 1: data");
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
     rwIModel.close();
   });
+
   it("clear cache on schema changes", async () => {
     const adminToken = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const userToken = await HubWrappers.getAccessToken(TestUserType.Super);
@@ -389,7 +392,7 @@ describe("IModelWriteTest", () => {
     const iModelName = IModelTestUtils.generateUniqueName("SchemaChanges");
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ noLocks: true, iTwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
 
@@ -409,7 +412,7 @@ describe("IModelWriteTest", () => {
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schema]);
 
-    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "schema changeset" }));
+    rwIModel.saveChanges("user 1: schema changeset");
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -423,6 +426,7 @@ describe("IModelWriteTest", () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
+    await rwIModel.locks.acquireSharedLock(IModel.dictionaryId);
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
@@ -460,7 +464,7 @@ describe("IModelWriteTest", () => {
     });
 
     assert.equal(3902, rwIModel.nativeDb.getChangesetSize());
-    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data changeset" }));
+    rwIModel.saveChanges("user 1: data changeset");
 
     if ("push changes") {
       // Push the changes to the hub
@@ -505,11 +509,12 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       // create some element and push those changes
+      await rwIModel2.locks.acquireSharedLock(drawingModelId);
       insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
         return { s: `s-${n}` };
       });
       assert.equal(13, rwIModel.nativeDb.getChangesetSize());
-      rwIModel2.saveChanges(JSON.stringify({ userId: "user2", description: "data changeset" }));
+      rwIModel2.saveChanges("user 2: data changeset");
 
       if ("push changes") {
         // Push the changes to the hub
@@ -540,7 +545,7 @@ describe("IModelWriteTest", () => {
     </ECSchema>`;
     await rwIModel.importSchemaStrings([schemaV2]);
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
-    rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "schema changeset2" }));
+    rwIModel.saveChanges("user 1: schema changeset2");
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
@@ -552,6 +557,7 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 4);
     }
     // create some element and push those changes
+    await rwIModel.locks.acquireSharedLock(drawingModelId);
     insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
       return {
         s: `s-${n}`, v: `v-${n}`,
@@ -565,7 +571,7 @@ describe("IModelWriteTest", () => {
       };
     });
     assert.equal(6279, rwIModel.nativeDb.getChangesetSize());
-    rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data changeset" }));
+    rwIModel.saveChanges("user 1: data changeset");
 
     if ("push changes") {
       // Push the changes to the hub

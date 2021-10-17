@@ -199,10 +199,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@itwin/map-layers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
@@ -233,6 +229,10 @@
     {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ui-test-extension",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -632,7 +632,7 @@
     },
     {
       "name": "mkdirp",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "mocha",
@@ -857,10 +857,6 @@
     {
       "name": "supertest",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "symlink-dir",
