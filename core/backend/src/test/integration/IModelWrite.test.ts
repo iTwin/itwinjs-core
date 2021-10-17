@@ -315,7 +315,7 @@ describe("IModelWriteTest (#integration)", () => {
     const adminToken = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
     const iTwinId = await HubUtility.getTestITwinId(adminToken);
     const iModelName = HubUtility.generateUniqueName("changeset_size");
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken, noLocks: true });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
     assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
