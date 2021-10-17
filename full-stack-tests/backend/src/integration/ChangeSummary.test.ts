@@ -76,11 +76,11 @@ describe("ChangeSummary", () => {
     iTwinId = await HubUtility.getTestITwinId(accessToken);
     iModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
 
-    await HubUtility.purgeAcquiredBriefcasesById(accessToken, iModelId);
+    await HubWrappers.purgeAcquiredBriefcasesById(accessToken, iModelId);
 
     // Purge briefcases that are close to reaching the acquire limit
     const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
-    await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
+    await HubWrappers.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {

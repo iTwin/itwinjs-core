@@ -5,11 +5,11 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
-import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps, ChangesetType } from "@itwin/core-common";
+import { IModelHost, IModelJsFs } from "@itwin/core-backend";
+import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
+import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
 
 /** the types of users available for tests */
 export enum TestUserType {
@@ -136,6 +136,7 @@ export class HubUtility {
     if (!IModelJsFs.existsSync(seedPathname)) {
       const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
       await IModelHost.hubAccess.downloadV1Checkpoint({
+        accessToken,
         localFile: seedPathname,
         checkpoint: {
           iTwinId,
@@ -232,77 +233,6 @@ export class HubUtility {
     return results;
   }
 
-  /** Validate apply with briefcase on disk */
-  public static validateApplyChangesetsOnDisk(iModelDir: string) {
-    const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
-
-    Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, false /* =overwrite */);
-
-    const nativeDb = new IModelHost.platform.DgnDb();
-    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const lastAppliedChangeset = nativeDb.getCurrentChangeset();
-
-    const changeSets = HubUtility.readChangesets(iModelDir);
-    const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeset.id);
-    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value) => value.index > lastMergedChangeSet.index) : changeSets;
-
-    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
-    nativeDb.closeIModel();
-    assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
-  }
-
-  /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
-   * with the seed files, change sets, etc. in a standard format. This tests merging the change sets, reversing them,
-   * and finally reinstating them. The method also logs the necessary performance
-   * metrics with these operations
-   */
-  public static validateAllChangesetOperationsOnDisk(iModelDir: string) {
-    const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
-
-    Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
-    HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
-
-    const nativeDb = new IModelHost.platform.DgnDb();
-    nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const changeSets = HubUtility.readChangesets(iModelDir);
-
-    let status: ChangeSetStatus;
-
-    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets);
-
-    // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
-    const reverseChangeSets = changeSets.reverse();
-    const schemaChangeIndex = reverseChangeSets.findIndex((token) => token.changesType === ChangesetType.Schema);
-    const filteredChangeSets = reverseChangeSets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
-    if (status === ChangeSetStatus.Success) {
-      Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
-    }
-
-    if (status === ChangeSetStatus.Success) {
-      Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
-      filteredChangeSets.reverse();
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
-    }
-
-    nativeDb.closeIModel();
-    assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
-  }
-
-  /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
-   * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
-   * metrics with these operations.
-   */
-  public static async validateAllChangesetOperations(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, iModelDir: string) {
-    Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelById(accessToken, iTwinId, iModelId, iModelDir, true /* =reDownload */);
-
-    this.validateAllChangesetOperationsOnDisk(iModelDir);
-  }
-
   private static getSeedPathname(iModelDir: string) {
     const seedFileDir = path.join(iModelDir, "seed");
     const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
@@ -312,23 +242,6 @@ export class HubUtility {
     const seedFileName = seedFileNames[0];
     const seedPathname = path.join(seedFileDir, seedFileName);
     return seedPathname;
-  }
-
-  /**
-   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
-   */
-  public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
-    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
-    if (briefcases.length > acquireThreshold) {
-      if (undefined !== onReachThreshold)
-        onReachThreshold();
-
-      const promises: Promise<void>[] = [];
-      briefcases.forEach((briefcaseId) => {
-        promises.push(IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
-      });
-      await Promise.all(promises);
-    }
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
@@ -353,7 +266,7 @@ export class HubUtility {
   }
 
   /** Creates a standalone iModel from the seed file (version 0) */
-  private static copyIModelFromSeed(iModelPathname: string, iModelDir: string, overwrite: boolean) {
+  public static copyIModelFromSeed(iModelPathname: string, iModelDir: string, overwrite: boolean) {
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
 
     if (!IModelJsFs.existsSync(iModelPathname)) {
@@ -373,29 +286,6 @@ export class HubUtility {
     nativeDb.closeIModel();
 
     return iModelPathname;
-  }
-
-  /** Applies change sets one by one (for debugging) */
-  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[]): ChangeSetStatus {
-    const perfLogger = new PerfLogger(`Applying change sets]}`);
-
-    // Apply change sets one by one to debug any issues
-    let count = 0;
-    for (const changeSet of changeSets) {
-      ++count;
-      Logger.logInfo(HubUtility.logCategory, `Started applying change set: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
-      try {
-        nativeDb.applyChangeset(changeSet);
-        Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status }));
-      } catch (err: any) {
-        Logger.logError(HubUtility.logCategory, `Error applying ChangeSet ${err.errorNumber}`, () => ({ ...changeSet }));
-        perfLogger.dispose();
-        return err.errorNumber;
-      }
-    }
-
-    perfLogger.dispose();
-    return ChangeSetStatus.Success;
   }
 
 }

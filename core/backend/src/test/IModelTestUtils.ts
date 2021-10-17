@@ -85,6 +85,10 @@ export enum TestUserType {
   SuperManager
 }
 
+/** A wrapper around the BackendHubAccess API through IModelHost.hubAccess.
+ *
+ * All methods in this class should be usable with any BackendHubAccess implementation (i.e. HubMock and IModelHubBackend).
+ */
 export class HubWrappers {
 
   public static async getAccessToken(user: TestUserType) {
