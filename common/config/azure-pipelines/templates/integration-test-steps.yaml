@@ -27,7 +27,7 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to core-backend
+      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
@@ -51,7 +51,7 @@ steps:
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
-    workingDirectory: "core/backend"
+    workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
@@ -99,7 +99,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
-      testResultsFiles: "core/backend/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
