@@ -8,7 +8,6 @@ import {
   CommonStatusBarItem, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { Localization } from "@itwin/core-common";
 import { UiFramework } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
@@ -18,11 +17,9 @@ import { ExtensionFrontstage } from "./Frontstage";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "./widgets/PresentationPropertyGridWidget";
 export class ExtensionUiItemsProvider implements UiItemsProvider {
   public readonly id = "ExtensionUiItemsProvider";
-  public static localization: Localization;
   private _backstageItems?: BackstageItem[];
 
-  public constructor(localization: Localization) {
-    ExtensionUiItemsProvider.localization = localization;
+  public constructor() {
   }
 
   /** provideToolbarButtonItems() is called for each registered UI provider as the Frontstage is building toolbars. We are adding
@@ -38,7 +35,7 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
 
   /** provide backstage item to the host application */
   public provideBackstageItems(): BackstageItem[] {
-    const label = ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:backstage.stageName");
+    const label = IModelApp.localization.getLocalizedString("uiTestExtension:backstage.stageName");
     if (!this._backstageItems) {
       this._backstageItems = [
         BackstageItemUtilities.createStageLauncher(ExtensionFrontstage.stageId, 100, 10, label, undefined, undefined),
@@ -55,9 +52,9 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UnitsFlyover"),
+        AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, IModelApp.localization.getLocalizedString("uiTestExtension:StatusBar.UnitsFlyover"),
           () => {
-            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(ExtensionUiItemsProvider.localization), ExtensionUiItemsProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Units"),
+            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(IModelApp.localization), IModelApp.localization.getLocalizedString("uiTestExtension:StatusBar.Units"),
               true, "uiTestExtension:units-popup", { movable: true, width: 280, minWidth: 280 });
           }
         ));

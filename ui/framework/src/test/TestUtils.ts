@@ -62,14 +62,13 @@ export class TestUtils {
   private static _rootReducer: any;
 
   public static get localization(): Localization {
-    if (!TestUtils._localization) {
-      TestUtils._localization = new ITwinLocalization();
-    }
-    return TestUtils._localization;
+    return TestUtils._localization!;
   }
 
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
+      TestUtils._localization = new ITwinLocalization();
+      await TestUtils._localization.initialize(["IModelJs"]);
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
         this._rootReducer = combineReducers({

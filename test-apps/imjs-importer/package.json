@@ -29,7 +29,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "chai": "^4.1.2",

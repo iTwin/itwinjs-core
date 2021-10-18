@@ -62,10 +62,7 @@ async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAu
   const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
+    const desktopClient = new NativeAppAuthorization();
     await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {

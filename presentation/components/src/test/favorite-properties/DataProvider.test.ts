@@ -31,14 +31,16 @@ describe("FavoritePropertiesDataProvider", () => {
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
   const factoryMock = moq.Mock.ofType<(imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider>();
 
-  before(() => {
+  before(async () => {
     elementId = faker.random.uuid();
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setSelectionManager(selectionManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setLocalization(new ITwinLocalization({
+    const localize = new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    }));
+    });
+    await localize.initialize(["iModelJS"]);
+    Presentation.setLocalization(localize);
   });
 
   after(() => {
