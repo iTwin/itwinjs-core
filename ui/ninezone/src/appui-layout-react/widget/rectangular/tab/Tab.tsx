@@ -15,7 +15,7 @@ import { DragHandle } from "../../../base/DragHandle";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Describes available tab modes.
- * @alpha
+ * @internal
  */
 export enum TabMode {
   Closed,
@@ -24,7 +24,7 @@ export enum TabMode {
 }
 
 /** Helpers for [[TabMode]].
- * @alpha
+ * @internal
  */
 export class TabModeHelpers {
   /** Class name of [[TabMode.Closed]] */
