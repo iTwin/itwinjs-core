@@ -3,30 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@itwin/core-geometry";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
-import {
-  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
-} from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-import { ProcessDetector } from "@itwin/core-bentley";
-import { ITwinLocalization } from "@itwin/core-i18n";
+import { TestUtility } from "../TestUtility";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
   let hypermodel: IModelConnection; // An iModel containing 3 section drawing locations
 
   before(async () => {
-    await IModelApp.shutdown();
-    await IModelApp.startup({
-      ...TestUtility.iModelAppOptions,
-      localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
-    });
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
     await HyperModeling.initialize();
@@ -45,7 +39,7 @@ describe("HyperModeling (#integration)", () => {
     if (hypermodel)
       await hypermodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("determines if hypermodeling is supported for a given iModel", async () => {
