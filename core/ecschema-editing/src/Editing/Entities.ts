@@ -81,7 +81,7 @@ export class Entities extends ECClasses {
     if (baseClassKey !== undefined) {
       let baseClassSchema = schema;
       if (!baseClassKey.schemaKey.matches(schema.schemaKey))
-        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);;
+        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
 
       const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
