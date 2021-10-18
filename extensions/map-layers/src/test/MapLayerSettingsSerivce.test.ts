@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 
-import { MapLayerPreferences } from "../../src/MapLayerSettings";
+import { MapLayerPreferences } from "../MapLayerPreferences";
 import { IModelApp, MapLayerSource } from "@itwin/core-frontend";
 import { setup, restore } from "./UserPreferencesMock";
 

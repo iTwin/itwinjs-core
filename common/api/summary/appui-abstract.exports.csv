@@ -165,11 +165,7 @@ public;class UiDataProvider
 public;UiError 
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
-beta;UiItemsApplication
-deprecated;UiItemsApplication
 public;UiItemsApplicationAction
-beta;UiItemsArbiter
-deprecated;UiItemsArbiter
 public;UiItemsManager
 public;UiItemsProvider
 public;class UiLayoutDataProvider 

@@ -23,7 +23,7 @@ import { BasemapPanel } from "./BasemapPanel";
 import { MapLayerDroppable } from "./MapLayerDroppable";
 import "./MapLayerManager.scss";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
-import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerSettings";
+import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
 
 /** @internal */
 export interface SourceMapContextProps {

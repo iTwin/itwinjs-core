@@ -28,7 +28,7 @@ const assert = chai.assert;
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
-loadEnv(path.join(__dirname, "..", "..", ".env"));
+loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
 describe("Sign in (#integration)", () => {
   let oidcConfig: TestBrowserAuthorizationClientConfiguration;
@@ -51,6 +51,16 @@ describe("Sign in (#integration)", () => {
   it("success with valid user", async () => {
     const validUser = TestUsers.regular;
     const token = await getTestAccessToken(oidcConfig, validUser);
+    assert.exists(token);
+  });
+
+  // test will not work without using a desktop client. setup correctly on master, will enable there.
+  it("success with valid user and iTwin Platform scope", async () => {
+    const validUser = TestUsers.regular;
+    const token = await getTestAccessToken({
+      ...oidcConfig,
+      scope: `${oidcConfig.scope} projects:read`,
+    }, validUser);
     assert.exists(token);
   });
 

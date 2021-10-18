@@ -107,35 +107,6 @@ Below is an example of registering the TestUiProvider defined above.
 UiItemsManager.register( new TestUiProvider());
 ```
 
-## UiItemsArbiter
-
-The [UiItemsArbiter]($appui-abstract) class is used by the application to
-arbitrate or negotiate between the application and a UiItemsProvider.
-
-The application can either allow, disallow or update provided items from a UiItemsProvider.
-These actions are defined by [UiItemsApplicationAction]($appui-abstract).
-The application implements the [UiItemsApplication]($appui-abstract) and provides
-one or more of the following optional functions to validate items:
-
-- validateToolbarButtonItem -  Validate and optionally update a Toolbar button item
-- validateStatusBarItem - Validate and optionally update a StatusBar item
-- validateBackstageItem - Validate and optionally update a Backstage item
-- validateWidget - Validate and optionally update a Widget
-
-To setup for arbitration, the application sets the `UiItemsArbiter.uiItemsApplication` member,
-which may only be set once:
-
-```ts
-UiItemsArbiter.uiItemsApplication = new ExampleUiItemsApplication();
-```
-
-A [UiItemsProvider]($appui-abstract) can listen for the actions taken by the application by defining the following optional methods:
-
-- onToolbarButtonItemArbiterChange - Called if the application changes the Toolbar button item
-- onStatusBarItemArbiterChange - Called if the application changes the StatusBar item
-- onBackstageItemArbiterChange - Called if the application changes the Backstage item
-- onWidgetArbiterChange - Called if the application changes the Widget
-
 ### Examples
 
 The following examples show how an application can allow, disallow and update a Toolbar item.

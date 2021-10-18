@@ -7,7 +7,7 @@ import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayers
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
 import { BentleyError } from "@itwin/core-bentley";
-import { MapLayerPreferences } from "./MapLayerSettings";
+import { MapLayerPreferences } from "./MapLayerPreferences";
 import { ITwinPreferencesAccess } from "./ui/Interfaces";
 
 /**

@@ -17,7 +17,7 @@ import {
 import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
-import { MapLayerPreferences } from "../../MapLayerSettings";
+import { MapLayerPreferences } from "../../MapLayerPreferences";
 
 export const MAP_TYPES = {
   wms: "WMS",
