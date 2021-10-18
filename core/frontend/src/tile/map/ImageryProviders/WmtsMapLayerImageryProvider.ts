@@ -173,8 +173,9 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     if (matrixSetAndLimits && matrixSetAndLimits.tileMatrixSet.tileMatrix.length > zoomLevel)
       tileMatrix = matrixSetAndLimits.tileMatrixSet.tileMatrix[zoomLevel].identifier;
 
-    if (tileMatrix !== undefined && matrixSetAndLimits !== undefined && style !== undefined)
-      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${this.displayedLayerName}&style=${style.identifier}&TileMatrixSet=${matrixSetAndLimits.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
+    const styleParam = (style?.identifier === undefined ? "" : `&style=${style.identifier}`);
+    if (tileMatrix !== undefined && matrixSetAndLimits !== undefined)
+      return `${this._baseUrl}?Service=WMTS&Version=1.0.0&Request=GetTile&Format=image%2Fpng&layer=${this.displayedLayerName}${styleParam}&TileMatrixSet=${matrixSetAndLimits.tileMatrixSet.identifier}&TileMatrix=${tileMatrix}&TileCol=${column}&TileRow=${row} `;
     else
       return "";
 
