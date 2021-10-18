@@ -43,7 +43,7 @@ export class ToolbarPanelAlignmentHelpers {
 }
 
 /** Properties of [[PanelsProvider]] component.
- * @alpha
+ * @internal
  */
 export interface PanelsProviderProps {
   /** Render prop that provides item panels. */
@@ -55,7 +55,7 @@ export interface PanelsProviderProps {
 }
 
 /** Provides panels and histories of toolbar items.
- * @alpha
+ * @internal
  */
 export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   private _update = false;
@@ -130,7 +130,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
   panelAlignment?: ToolbarPanelAlignment;
 }
 
-/** @alpha */
+/** @internal */
 export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection => {
   const orthogonalDirection = DirectionHelpers.getOrthogonalDirection(expandsTo);
   return OrthogonalDirectionHelpers.inverse(orthogonalDirection);
@@ -204,7 +204,7 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
 }
 
 /** Defines toolbar item component.
- * @alpha
+ * @internal
  */
 export interface ToolbarItem {
   readonly panel: HTMLElement;
@@ -212,14 +212,14 @@ export interface ToolbarItem {
 
 /** These props will be injected by Toolbar.
  * @note Must be passed down when wrapping the toolbar item component.
- * @alpha
+ * @internal
  */
 export interface ToolbarItemProps<TItem extends ToolbarItem = ToolbarItem> {
   readonly toolbarItemRef?: React.Ref<TItem>;
 }
 
 /** Extracts [[ToolbarItemProps]] from your props.
- * @alpha
+ * @internal
  */
 export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarItemProps<ToolbarItem> => {
   const toolbarItemProps = props as ToolbarItemProps<ToolbarItem>;
