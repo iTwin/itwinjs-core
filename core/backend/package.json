@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.0.0-dev.86",
+  "version": "3.0.0-dev.90",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -51,14 +51,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.86",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.86",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.86",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.86",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.86",
-    "@itwin/core-common": "workspace:^3.0.0-dev.86",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.86",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.86"
+    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.90",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.90",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.90",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.90",
+    "@itwin/core-common": "workspace:^3.0.0-dev.90",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.90",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.90"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

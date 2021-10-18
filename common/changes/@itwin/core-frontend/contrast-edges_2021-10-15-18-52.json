@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "SolidFill mode chooses an edge color to contrast with the element color and the background color.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

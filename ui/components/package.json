@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.0.0-dev.86",
+  "version": "3.0.0-dev.90",
   "description": "iModel.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
@@ -38,12 +38,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.86",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.86",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.86",
-    "@itwin/core-react": "workspace:^3.0.0-dev.86",
-    "react": "^16.8.6 || ^17.0.0",
-    "react-dom": "^16.8.6 || ^17.0.0"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.90",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.90",
+    "@itwin/core-react": "workspace:^3.0.0-dev.90",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

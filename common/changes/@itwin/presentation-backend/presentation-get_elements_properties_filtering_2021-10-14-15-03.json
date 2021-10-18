@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Fix for getElementProperties request when requesting all elements of specific classes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

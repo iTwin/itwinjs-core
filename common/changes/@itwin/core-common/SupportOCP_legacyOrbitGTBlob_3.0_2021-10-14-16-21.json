@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

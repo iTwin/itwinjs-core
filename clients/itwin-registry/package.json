@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-registry-client",
-  "version": "3.0.0-dev.86",
+  "version": "3.0.0-dev.90",
   "description": "iModel.js iTwin Registry Client",
   "main": "lib/cjs/itwin-registry-client.js",
   "module": "lib/esm/itwin-registry-client.js",
@@ -43,8 +43,8 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.86",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.86"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.90"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
