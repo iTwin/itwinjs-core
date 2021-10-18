@@ -12,7 +12,8 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Item separator in the [[Backstage]] component.
- * @beta
+* @deprecated Use [SeparatorBackstageItem]($appui-react) instead
+* @internal
  */
 export class BackstageSeparator extends React.PureComponent<CommonProps> {
   public override render() {
