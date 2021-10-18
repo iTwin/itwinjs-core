@@ -57,7 +57,6 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
