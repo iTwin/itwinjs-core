@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Columns]] component.
- * @alpha
+ * @internal
  */
 export interface ColumnsProps extends CommonProps {
   /** Actual columns. I.e. [[GroupColumn]] */
@@ -20,7 +20,7 @@ export interface ColumnsProps extends CommonProps {
 }
 
 /** Columns of tool group. Used in [[Group]], [[NestedGroup]] components.
- * @alpha
+ * @internal
  */
 export class Columns extends React.PureComponent<ColumnsProps> {
   public override render() {
