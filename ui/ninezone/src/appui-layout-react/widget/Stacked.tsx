@@ -15,6 +15,7 @@ import { DisabledResizeHandles, DisabledResizeHandlesHelpers } from "../utilitie
 import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
 
 /** Available [[Stacked]] widget horizontal anchors.
+ * @deprecated
  * @beta
  */
 export enum HorizontalAnchor {
@@ -23,7 +24,7 @@ export enum HorizontalAnchor {
 }
 
 /** Available [[Stacked]] widget vertical anchors.
- * @beta
+ * @internal
  */
 export enum VerticalAnchor {
   Bottom,
@@ -33,7 +34,7 @@ export enum VerticalAnchor {
 }
 
 /** Available resize handles of rectangular widget.
- * @beta
+ * @internal
  */
 export enum ResizeHandle {
   Left,
