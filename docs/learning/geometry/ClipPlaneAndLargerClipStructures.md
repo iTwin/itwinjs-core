@@ -47,7 +47,7 @@ Note that there are two other classes for planes with different defining data:
   * The inside of the set is the *intersection*  of the insides of all the planes.
   * That is, a point in space is considered "inside" the convex set if it is to the inside direction from *all* of the individual planes.
   * The inside of a rectangle in the xy plane is defined by 4 `ClipPlane`s.
-    * Note that those 4 planes perpendicular to the xy plane extend to inifinity in the z direction, so this `ConvexClipPlaneSet` that we discuss for a rectangle is actually a rectangular prism extending to infinity in both z directions.
+    * Note that those 4 planes perpendicular to the xy plane extend to infinity in the z direction, so this `ConvexClipPlaneSet` that we discuss for a rectangle is actually a rectangular prism extending to infinity in both z directions.
     * Adding additional planes with normals in the positive and negative z direction restricts that infinite prism.
   * A `ConvexClipPlaneSet` can be unbounded.   For example, if  `ConvexClipPlaneSet` has two plane which are the xz and yz planes, the interior of the set is (depending on direction of the normals) one of the unbounded 4 quadrants:
   * A `ConvexClipPlaneSet` can be *empty* if the normals are aligned to cancel.  This is not commonly useful.   If it occurs it is probably an error in directions of normals.
@@ -90,7 +90,7 @@ The snip below shows
 
  ![>](./figs/ClipStructures/ClipPlaneSetsForNonConvexPolygon.png)
 
- ### Display-Time Clip Support
+ ### Display-Time Clip Usage
 
   ![>](./figs/ClipStructures/DisplayClipping.png)
 
@@ -112,8 +112,8 @@ Interfaces `Clipper` and `PolygonClipper` define methods for clip operations.   
 
 | Interface | method | Remarks |
 |---|---|---|
-| Clipper |  isPointOnOrInside(point: Point3d, tolerance?: number): boolean; | Test if _point_ is inside or on |
-| Clipper |   announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean; | compare a line segment to the clipper.  Issue function calls with fractional intervals that are "in" |
-| Clipper |   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean; | compare an arc to the clipper.  Announce intervals that are in.
+| Clipper |  `isPointOnOrInside(point: Point3d, tolerance?: number): boolean;` | Test if _point_ is inside or on |
+| Clipper |   `announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;` | compare a line segment to the clipper.  Issue function calls with fractional intervals that are "in" |
+| Clipper |   `announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;` | compare an arc to the clipper.  Announce intervals that are in. |
 | PolygonClipper |   `appendPolygonClip(xyz: GrowableXYZArray,  insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[],  arrayCache: GrowableXYZArrayCache): void;` | Clip a single polygon, emitting inside and outside pieces into indicated arrays. |
 
