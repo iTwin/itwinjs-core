@@ -16,7 +16,6 @@ import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
-import { IModelApp } from "./IModelApp";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
  * backwards compatibility, a [SyncMode]($common). If [SyncMode.PullAndPush]($common) is supplied, a new briefcaseId will be acquired.
@@ -119,8 +118,6 @@ export class NativeApp {
       RequestGlobalOptions.online = window.navigator.onLine;
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
-
-    IModelApp.authorizationClient = opts?.iModelApp?.authorizationClient;
   }
 
   /** @internal */

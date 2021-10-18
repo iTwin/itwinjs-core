@@ -9,12 +9,19 @@ import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
-import { IModelHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 
 /** Initializes Electron backend */
 export async function initializeElectron() {
+  const imodelConfig = new IModelHostConfiguration();
+  const authClient = new ElectronAuthorizationBackend({
+    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+  });
+  imodelConfig.authorizationClient = authClient;
 
   const opt = {
     electronHost: {
@@ -30,15 +37,11 @@ export async function initializeElectron() {
     nativeHost: {
       applicationName: "ui-test-app",
     },
+    iModelHost: imodelConfig,
   };
 
-  IModelHost.authorizationClient = new ElectronAuthorizationBackend({
-    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-  });
-  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
   await ElectronHost.startup(opt);
+  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts

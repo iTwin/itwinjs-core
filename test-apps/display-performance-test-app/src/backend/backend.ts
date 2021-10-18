@@ -7,7 +7,7 @@ import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
-import { IModelHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
@@ -33,18 +33,20 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    const iModelHost = new IModelHostConfiguration();
+    iModelHost.authorizationClient = new ElectronAuthorizationBackend({
       clientId: "imodeljs-electron-test",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "openid email profile organization itwinjs",
     });
-    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "build"),
         rpcInterfaces,
       },
+      iModelHost,
     });
+    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
 
   } else
     await IModelHost.startup();

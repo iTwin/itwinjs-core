@@ -147,6 +147,10 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
+  /** The AuthorizationClient used to get accessTokens
+   * @beta
+   */
+  public authorizationClient?: AuthorizationClient;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -283,6 +287,8 @@ export class IModelHost {
 
     if (IModelHost.sessionId === "")
       IModelHost.sessionId = Guid.createValue();
+
+    this.authorizationClient = configuration.authorizationClient;
 
     this.logStartup();
 
