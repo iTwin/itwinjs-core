@@ -106,11 +106,11 @@ export class ECDb implements IDisposable {
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
-   * @param changeSetName The name of the operation that generated these changes.
+   * @param changesetName The name of the operation that generated these changes.
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
-  public saveChanges(changeSetName?: string): void {
-    const status: DbResult = this.nativeDb.saveChanges(changeSetName);
+  public saveChanges(changesetName?: string): void {
+    const status: DbResult = this.nativeDb.saveChanges(changesetName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to save changes");
   }

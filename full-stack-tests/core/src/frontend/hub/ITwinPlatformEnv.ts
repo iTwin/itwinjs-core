@@ -5,8 +5,7 @@
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
 import {
-  BriefcaseQuery,
-  ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";

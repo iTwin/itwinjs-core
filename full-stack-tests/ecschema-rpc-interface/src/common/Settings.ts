@@ -21,7 +21,7 @@ export interface IModelData {
   useITwinName: boolean;
   iTwinId?: string;
   iTwinName?: string;
-  changeSetId?: string;
+  changesetId?: string;
 }
 
 export function getRpcInterfaces() {
@@ -112,7 +112,7 @@ export class Settings {
       useITwinName: !process.env.IMODEL_PROJECTID,
       iTwinId: process.env.IMODEL_PROJECTID,
       iTwinName: process.env.IMODEL_PROJECTNAME,
-      changeSetId: process.env.IMODEL_CHANGESETID,
+      changesetId: process.env.IMODEL_CHANGESETID,
     };
 
     // Parse logging level

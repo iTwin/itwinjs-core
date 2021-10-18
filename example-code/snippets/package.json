@@ -24,7 +24,6 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/service-authorization": "^0.2.0",
