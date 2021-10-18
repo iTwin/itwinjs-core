@@ -38,7 +38,6 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
     "@types/almost-equal": "1.1.0",

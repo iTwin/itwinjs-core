@@ -80,7 +80,6 @@
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/presentation-testing": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
-    "@bentley/telemetry-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/core-react": "workspace:*",
@@ -141,6 +140,7 @@
   "dependencies": {
     "@bentley/icons-generic": "^1.0.15",
     "@bentley/icons-generic-webfont": "^1.0.15",
+    "@bentley/telemetry-client": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/itwinui-css": "^0.27.0",
     "@itwin/itwinui-react": "^1.16.2",

@@ -55,7 +55,6 @@
     "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
     "@itwin/core-common": "workspace:^3.0.0-dev.90",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.90",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.90",
     "@itwin/presentation-common": "workspace:^3.0.0-dev.90",
     "@itwin/presentation-frontend": "workspace:^3.0.0-dev.90",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.90",
