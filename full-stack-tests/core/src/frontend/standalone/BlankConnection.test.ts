@@ -6,7 +6,8 @@ import { assert } from "chai";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
-import { BlankConnection, MockRender, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
+import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 function createViewDiv() {
   const div = document.createElement("div");
@@ -22,7 +23,7 @@ describe("Blank Connection", () => {
   const iTwinId: GuidString = Guid.createValue();
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     const exton = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 });
     blankConnection = BlankConnection.create({
       name: "test",
@@ -33,7 +34,7 @@ describe("Blank Connection", () => {
   });
   after(async () => {
     if (blankConnection) { await blankConnection.close(); }
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("BlankConnection properties", async () => {
