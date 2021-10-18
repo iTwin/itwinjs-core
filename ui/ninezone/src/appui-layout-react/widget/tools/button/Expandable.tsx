@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[ExpandableButton]] component.
- * @alpha
+ * @internal
  */
 export interface ExpandableButtonProps extends CommonProps {
   /** One of toolbar buttons. I.e. [[Item]] */
@@ -20,7 +20,7 @@ export interface ExpandableButtonProps extends CommonProps {
 }
 
 /** Expandable toolbar button. Used in [[Toolbar]] component.
- * @alpha
+ * @internal
  */
 export class ExpandableButton extends React.PureComponent<ExpandableButtonProps> {
   public override render() {
