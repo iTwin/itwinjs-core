@@ -9,7 +9,6 @@ import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
-import { IModelJsFs } from "../IModelJsFs";
 
 /** Class for simple test timing */
 export class Timer {
