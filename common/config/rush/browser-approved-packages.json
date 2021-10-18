@@ -492,6 +492,10 @@
       ]
     },
     {
+      "name": "@itwin/ui-test-extension",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/webgl-compatibility",
       "allowedCategories": [
         "frontend",
