@@ -30,7 +30,7 @@ beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
-internal;CheckpointArg = DownloadRequest & TokenArg
+internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry

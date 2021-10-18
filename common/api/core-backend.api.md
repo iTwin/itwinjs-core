@@ -592,7 +592,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 }
 
 // @internal (undocumented)
-export type CheckpointArg = DownloadRequest & TokenArg;
+export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
 export class CheckpointManager {

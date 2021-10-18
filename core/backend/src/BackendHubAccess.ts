@@ -141,7 +141,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 /** @internal */
-export type CheckpointArg = DownloadRequest & TokenArg;
+export type CheckpointArg = DownloadRequest;
 
 /**
  * Arguments to create a new iModel in iModelHub

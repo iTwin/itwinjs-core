@@ -71,15 +71,6 @@ export class TestUtils {
   public static setupLogging() {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
-
-    const loggingConfigFile: string = path.join(__dirname, "logging.config.json");
-
-    if (IModelJsFs.existsSync(loggingConfigFile)) {
-      // eslint-disable-next-line no-console
-      console.log(`Setting up logging levels from ${loggingConfigFile}`);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      Logger.configureLevels(require(loggingConfigFile));
-    }
   }
 
   private static initDebugLogLevels(reset?: boolean) {
