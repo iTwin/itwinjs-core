@@ -4142,7 +4142,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
-      '@testing-library/user-event': 13.4.2
+      '@testing-library/user-event': 13.5.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -4275,7 +4275,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
-      '@testing-library/user-event': 13.4.2
+      '@testing-library/user-event': 13.5.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -4573,7 +4573,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
-      '@testing-library/user-event': 13.4.2
+      '@testing-library/user-event': 13.5.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -7608,8 +7608,8 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@testing-library/user-event/13.4.2:
-    resolution: {integrity: sha512-IMrlaJVr2TjHggpyBmIsXBgbnphr+G6tESrWzWc6Sy2EsVy4wLskKGMKgZAozlWQa6p5FiqgSr0RpqISsTlNqQ==}
+  /@testing-library/user-event/13.5.0:
+    resolution: {integrity: sha512-5Kwtbo3Y/NowpkbRuSepbyMFkZmHgD+vPzYB/RJ4oxt5Gj/avFFBYjhw27cqSVPVw/3a67NK1PbiIr9k4Gwmdg==}
     engines: {node: '>=10', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
@@ -19031,7 +19031,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.15.4
+      '@babel/runtime': 7.12.1
     dev: true
 
   /regex-cache/0.4.4:
@@ -21887,7 +21887,7 @@ packages:
   /wide-align/1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 4.2.3
+      string-width: 1.0.2
     dev: false
     optional: true
 
