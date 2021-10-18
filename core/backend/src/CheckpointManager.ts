@@ -161,8 +161,8 @@ export class V1CheckpointManager {
   }
 
   public static getFileName(checkpoint: CheckpointProps): LocalFileName {
-    const changeSetId = checkpoint.changeset.id || "first";
-    return path.join(this.getFolder(checkpoint.iModelId), `${changeSetId}.bim`);
+    const changesetId = checkpoint.changeset.id || "first";
+    return path.join(this.getFolder(checkpoint.iModelId), `${changesetId}.bim`);
   }
 
   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {

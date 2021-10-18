@@ -6,6 +6,7 @@ import { assert } from "chai";
 import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
 import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
+import { TestUtility } from "../TestUtility";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
 
 describe("Markup tests", async () => {
@@ -13,7 +14,7 @@ describe("Markup tests", async () => {
   let vp: ScreenTestViewport;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
@@ -23,7 +24,7 @@ describe("Markup tests", async () => {
   after(async () => {
     vp.dispose();
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   const makeRect = (g: G) => g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);

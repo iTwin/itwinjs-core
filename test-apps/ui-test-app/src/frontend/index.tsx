@@ -29,7 +29,6 @@ import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
@@ -180,7 +179,6 @@ export class SampleAppIModelApp {
 
     const iModelAppOpts = {
       ...opts.iModelApp,
-      localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
     };
 
     if (ProcessDetector.isElectronAppFrontend) {

@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
+  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
+  TileRequest, TileRequestChannel, TileTree,
 } from "@itwin/core-frontend";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -71,7 +72,7 @@ describe("TileTreeSupplier", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -79,7 +80,7 @@ describe("TileTreeSupplier", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should be discarded when ecef location is modified if tiles are ecef-dependent", async () => {
@@ -145,7 +146,7 @@ describe("requestTileTreeProps", () => {
 
   before(async () => {
     const tileAdmin = { maxActiveTileTreePropsRequests };
-    await IModelApp.startup({ tileAdmin });
+    await TestUtility.startFrontend({ tileAdmin });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -158,7 +159,7 @@ describe("requestTileTreeProps", () => {
     if (imodel2)
       await imodel2.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should process requests in FIFO order", async () => {
