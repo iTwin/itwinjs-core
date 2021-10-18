@@ -80,6 +80,7 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
 - Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Dropped support for ESLint 6.x.
 
 ## BentleyError constructor no longer logs
 
