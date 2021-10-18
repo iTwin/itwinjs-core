@@ -23,15 +23,11 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to backend-itwin-client
-
       node ./common/scripts/install-run-rush build -v --to itwin-registry-client
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to core-backend
-
-      node ./common/scripts/install-run-rush build -v --to core-transformer
+      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
@@ -55,18 +51,8 @@ steps:
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
-    workingDirectory: "core/backend"
+    workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "core/backend-itwin-client"
-    displayName: "Run Backend iTwin Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "core/transformer"
-    displayName: "Run Transformer Tests"
     condition: succeededOrFailed()
 
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
@@ -113,24 +99,8 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
-      testResultsFiles: "core/backend/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Backend iTwin Client Test Results"
-    inputs:
-      testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend iTwin Client Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Transformer Test Results"
-    inputs:
-      testResultsFiles: "core/transformer/lib/test/junit_results.xml"
-      testRunTitle: "Core - Transformer Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -146,14 +116,6 @@ steps:
     inputs:
       testResultsFiles: "full-stack-tests/imodelhub-client/lib/test/junit_results.xml"
       testRunTitle: "iModelHub Client - Integration Tests - ${{ parameters.Node_Version }}"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Native App Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
-      testRunTitle: "Native App - Integration Tests - ${{ parameters.Node_Version }}"
-    enabled: false
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

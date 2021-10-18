@@ -47,8 +47,6 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
-/// cspell:ignore ecef
-
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Options for [[IModelDb.Models.updateModel]]

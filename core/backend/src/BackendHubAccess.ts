@@ -6,7 +6,7 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
   BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
@@ -18,7 +18,7 @@ import { TokenArg } from "./IModelDb";
  * @public
  */
 export enum LockState {
-  /** The entity is not locked */
+  /** The element is not locked */
   None = 0,
   /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
   Shared = 1,
@@ -45,15 +45,18 @@ export class LockConflict extends IModelError {
 
 /**
  * The properties to access a V2 checkpoint through a daemon.
- * @beta
+ * @internal
  */
 export interface V2CheckpointAccessProps {
-  readonly container: string;
-  readonly auth: string;
-  /** The name of the container */
+  /** blob store account name. */
   readonly user: string;
-  /** The name of the virtual file used for the Checkpoint */
+  /** The name of the iModel's blob store container holding all checkpoints. */
+  readonly container: string;
+  /** AccessToken that grants access to the container. */
+  readonly auth: AccessToken;
+  /** The name of the virtual file within the container, used for the checkpoint */
   readonly dbAlias: string;
+  /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
   readonly storageType: string;
 }
 
@@ -138,7 +141,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 /** @internal */
-export type CheckPointArg = DownloadRequest;
+export type CheckpointArg = DownloadRequest;
 
 /**
  * Arguments to create a new iModel in iModelHub
@@ -164,7 +167,7 @@ export interface BackendHubAccess {
   queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-  /** push a changeset to iMOdelHub. Returns the newly pushed changeSet's index */
+  /** Push a changeset to iModelHub. Returns the newly pushed changeset's index */
   pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
   getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
@@ -187,7 +190,7 @@ export interface BackendHubAccess {
    * download a v1 checkpoint
    * @internal
    */
-  downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+  downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId>;
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
@@ -198,7 +201,7 @@ export interface BackendHubAccess {
    * download a v2 checkpoint
    * @internal
    */
-  downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+  downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired

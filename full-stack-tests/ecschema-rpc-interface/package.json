@@ -26,7 +26,6 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
