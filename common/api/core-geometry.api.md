@@ -3001,6 +3001,7 @@ export interface IStrokeHandler {
     announceSegmentInterval(cp: CurvePrimitive, point0: Point3d, point1: Point3d, numStrokes: number, fraction0: number, fraction1: number): void;
     endCurvePrimitive(cp: CurvePrimitive): void;
     endParentCurvePrimitive(cp: CurvePrimitive): void;
+    needPrimaryGeometryForStrokes?(): boolean;
     startCurvePrimitive(cp: CurvePrimitive): void;
     startParentCurvePrimitive(cp: CurvePrimitive): void;
 }

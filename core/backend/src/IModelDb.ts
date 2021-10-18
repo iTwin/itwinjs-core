@@ -191,7 +191,6 @@ export abstract class IModelDb extends IModel {
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
   private _relationships?: Relationships;
-  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;

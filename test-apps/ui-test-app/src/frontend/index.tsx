@@ -10,7 +10,7 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
-import { ProgressInfo } from "@bentley/itwin-client";
+import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
@@ -61,7 +61,7 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
-  SaveContentLayoutTool, UiProviderTool,
+  SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
 } from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
@@ -180,7 +180,7 @@ export class SampleAppIModelApp {
 
     const iModelAppOpts = {
       ...opts.iModelApp,
-      localization: new ITwinLocalization( { urlTemplate: "locales/en/{{ns}}.json" }),
+      localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
@@ -210,7 +210,7 @@ export class SampleAppIModelApp {
         redirectUri,
         scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
         responseType: "code",
-        authority: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
+        authority: await new ImsAuthorizationClient().getUrl(),
       });
       try {
         await auth.signInSilent();
@@ -277,6 +277,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
+    TestExtensionUiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
     OpenCustomPopoutTool.register(this.sampleAppNamespace);
