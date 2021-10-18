@@ -5,13 +5,14 @@
 import { assert } from "chai";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
-import { DevTools, IModelApp, PingTestResult } from "@itwin/core-frontend";
+import { DevTools, PingTestResult } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
-describe("DevTools", () => {
+describe.skip("DevTools", () => {
   let devTools: DevTools;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
 
     const iModelRpcProps: IModelRpcProps = {
       iModelId: "test",
@@ -22,7 +23,7 @@ describe("DevTools", () => {
   });
 
   after(async () => {
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("can fetch stats from backend", async () => {

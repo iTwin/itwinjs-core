@@ -62,6 +62,9 @@ export function getJson(url: string): Promise<any>;
 // @beta (undocumented)
 export class ImsAuthorizationClient extends Client {
     constructor();
+    // (undocumented)
+    protected baseUrl: string;
+    getUrl(): Promise<string>;
 }
 
 // @beta
@@ -85,9 +88,6 @@ export interface ProgressInfo {
     // (undocumented)
     total?: number;
 }
-
-// @internal
-export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined;
 
 // @internal
 export function request(url: string, options: RequestOptions): Promise<Response>;

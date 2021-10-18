@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger } from "@itwin/core-bentley";
 import { ResponseError } from "@bentley/itwin-client";
 import { WsgError, WSStatus } from "../wsg/WsgClient";
