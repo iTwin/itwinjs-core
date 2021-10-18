@@ -429,7 +429,7 @@ export class BriefcaseManager {
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
-          await IModelHost.hubAccess.releaseAllLocks(db);
+          await db.locks.releaseAllLocks();
 
         return;
       } catch (err: any) {

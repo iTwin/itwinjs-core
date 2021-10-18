@@ -89,8 +89,7 @@
       }
 
       >.nz-target {
-        margin-top: -$nz-footer-indicator-vertical-padding;
-        height: calc(100% + #{$nz-footer-indicator-vertical-padding * 2});
+        height: 100%;
         width: 100%;
         top: 0;
         left: 0;
