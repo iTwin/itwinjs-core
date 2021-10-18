@@ -7,8 +7,7 @@ import * as path from "path";
 import { IModelHostConfiguration } from "@itwin/core-backend";
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Presentation } from "@itwin/presentation-backend";
-import { IModelHubClient } from "@bentley/imodelhub-client";
-import { AzureFileHandler, IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
@@ -28,7 +27,6 @@ import { getSupportedRpcs } from "../common/rpcs";
     initializeLogging();
 
     const iModelHost = new IModelHostConfiguration();
-    IModelHubBackend.setIModelClient(new IModelHubClient(new AzureFileHandler()));
     iModelHost.hubAccess = IModelHubBackend;
 
     // invoke platform-specific initialization

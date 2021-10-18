@@ -7,8 +7,8 @@ import * as path from "path";
 import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinAccessClient } from "@bentley/itwin-registry-client";
-import { IModelHubClient, Version } from "@bentley/imodelhub-client";
-import { AzureFileHandler, IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { Version } from "@bentley/imodelhub-client";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "@itwin/core-transformer";
@@ -104,7 +104,6 @@ void (async () => {
     IModelHubUtils.setHubEnvironment(args.hub);
 
     const iModelHost = new IModelHostConfiguration();
-    IModelHubBackend.setIModelClient(new IModelHubClient(new AzureFileHandler()));
     iModelHost.hubAccess = IModelHubBackend;
 
     await IModelHost.startup();

@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
-import { IModelHost, IModelJsFs } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, V1CheckpointManager } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -99,7 +99,7 @@ export class HubUtility {
     const changesets: ChangesetProps[] = await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
     if (changesets.length === 0)
       return changesets;
-    const latestIndex = changesets.length - 1;
+    const latestIndex = changesets.length;
     let earliestIndex = 0; // Earliest index that doesn't exist
     while (earliestIndex <= latestIndex) {
       const pathname = path.join(changesetsPath, changesets[earliestIndex].id);
@@ -110,11 +110,11 @@ export class HubUtility {
     if (earliestIndex > latestIndex) // All change sets have already been downloaded
       return changesets;
 
-    const earliestChangeSetId = earliestIndex > 0 ? earliestIndex - 1 : undefined; // Query results exclude earliest specified change set
-    const latestChangeSetId = latestIndex; // Query results include latest specified change set
+    const earliestChangesetIndex = earliestIndex > 0 ? earliestIndex - 1 : 0; // Query results exclude earliest specified changeset
+    const latestChangesetIndex = latestIndex; // Query results include latest specified change set
 
-    const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download ChangeSets");
-    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangeSetId!, end: latestChangeSetId }, targetDir: changesetsPath });
+    const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download Changesets");
+    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangesetIndex, end: latestChangesetIndex }, targetDir: changesetsPath });
     perfLogger.dispose();
     return changesets;
   }
@@ -134,10 +134,10 @@ export class HubUtility {
     const seedPathname = path.join(downloadDir, "seed", iModelId.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
       const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-      await IModelHost.hubAccess.downloadV1Checkpoint({
-        accessToken,
+      await V1CheckpointManager.downloadCheckpoint({
         localFile: seedPathname,
         checkpoint: {
+          accessToken,
           iTwinId,
           iModelId,
           changeset: {
@@ -199,9 +199,9 @@ export class HubUtility {
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const changeSets = HubUtility.readChangesets(iModelDir);
-    const endNum: number = endCS ? endCS : changeSets.length;
-    const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
+    const changesets = HubUtility.readChangesets(iModelDir);
+    const endNum: number = endCS ? endCS : changesets.length;
+    const filteredCS = changesets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     const perfLogger = new PerfLogger(`Applying change sets }`);
@@ -247,7 +247,7 @@ export class HubUtility {
   public static readChangesets(iModelDir: string): ChangesetFileProps[] {
     const props: ChangesetFileProps[] = [];
 
-    const changeSetJsonPathname = path.join(iModelDir, "changeSets.json");
+    const changeSetJsonPathname = path.join(iModelDir, "changesets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
       return props;
 
@@ -256,7 +256,7 @@ export class HubUtility {
 
     for (const changeset of changesets) {
       changeset.index = parseInt(changeset.index, 10); // it's a string from iModelHub
-      const pathname = path.join(iModelDir, "changeSets", changeset.fileName);
+      const pathname = path.join(iModelDir, "changesets", `${changeset.id}.cs`);
       if (!IModelJsFs.existsSync(pathname))
         throw new Error(`Cannot find the ChangeSet file: ${pathname}`);
       props.push({ ...changeset, pathname });

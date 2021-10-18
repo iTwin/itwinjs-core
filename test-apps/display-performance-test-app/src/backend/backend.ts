@@ -7,8 +7,7 @@ import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
-import { IModelHubClient } from "@bentley/imodelhub-client";
-import { AzureFileHandler, IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
@@ -33,7 +32,6 @@ export async function initializeBackend() {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   const iModelHost = new IModelHostConfiguration();
-  IModelHubBackend.setIModelClient(new IModelHubClient(new AzureFileHandler()));
   iModelHost.hubAccess = IModelHubBackend;
 
   if (ProcessDetector.isElectronAppBackend) {

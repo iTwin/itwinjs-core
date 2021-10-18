@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-describe.skip("ViewState attached to Viewport", async () => {
+describe("ViewState attached to Viewport", async () => {
   let imodel: SnapshotConnection;
   let vp: ScreenViewport;
 

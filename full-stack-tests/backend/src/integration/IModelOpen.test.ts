@@ -11,8 +11,7 @@ import { BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
-describe("IModelOpen (#integration)", () => {
-
+describe("IModelOpen", () => {
   let accessToken: AccessToken;
   let testIModelId: GuidString;
   let testITwinId: GuidString;
@@ -25,7 +24,7 @@ describe("IModelOpen (#integration)", () => {
   });
 
   const deleteTestIModelCache = () => {
-    const path = (BriefcaseManager as any).getIModelPath(testIModelId);
+    const path = BriefcaseManager.getIModelPath(testIModelId);
     (BriefcaseManager as any).deleteFolderAndContents(path);
   };
 
@@ -33,7 +32,6 @@ describe("IModelOpen (#integration)", () => {
     // Try the bad request context
     await expect(HubWrappers.downloadAndOpenCheckpoint({ accessToken: "bad", iTwinId: testITwinId, iModelId: testIModelId }))
       .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
-
   });
 
   it("should be able to handle simultaneous open calls", async () => {

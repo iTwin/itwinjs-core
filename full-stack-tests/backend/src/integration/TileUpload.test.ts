@@ -5,13 +5,13 @@
 import { assert } from "chai";
 import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
-import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { GeometricModel3d, IModelDb, IModelHost, IModelHostConfiguration, RpcTrace } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, TestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, TestUtils } from "@itwin/core-backend/lib/cjs/test";
 import { HubUtility } from "../HubUtility";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 
@@ -58,10 +58,9 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
   return undefined;
 }
 
-describe("TileUpload (#integration)", () => {
-  let accessToken: AccessToken = "fake token";
-  let testITwinId: GuidString = Guid.createValue();
-  const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
+describe("TileUpload", () => {
+  let accessToken: AccessToken;
+  let testITwinId: GuidString;
   let testIModelId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
   let blobService: Azure.BlobServiceClient;
@@ -80,7 +79,6 @@ describe("TileUpload (#integration)", () => {
     };
 
     await TestUtils.startBackend(config);
-    testIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId: testITwinId, iModelName: "TileUpload", revision0 });
 
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";

@@ -98,7 +98,7 @@ export class IModelHubBackend {
       blank.saveChanges();
       blank.close();
     } else {
-      IModelJsFs.copySync(revision0, arg.revision0);
+      IModelJsFs.copySync(arg.revision0, revision0);
     }
 
     const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
@@ -287,7 +287,7 @@ export class IModelHubBackend {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
     checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
-    const accessToken = await this.getAccessToken(arg);
+    const accessToken = await this.getAccessToken(checkpoint);
     const checkpoints = await this.iModelClient.checkpoints.get(accessToken, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");

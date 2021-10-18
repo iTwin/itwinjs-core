@@ -258,7 +258,6 @@ describe("IModelTransformerHub", () => {
         // eslint-disable-next-line no-console
         console.log("can't destroy", err);
       }
-
     }
   });
 
