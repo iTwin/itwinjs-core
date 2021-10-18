@@ -60,7 +60,7 @@
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "prerelease-monorepo-lockStep",
     },
     {
       "packageName": "@bentley/itwin-client",
@@ -150,13 +150,6 @@
       "packageName": "@itwin/editor-frontend",
       "projectFolder": "editor/frontend",
       "reviewCategory": "edit",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/backend-itwin-client",
-      "projectFolder": "core/backend-itwin-client",
-      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -524,14 +517,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "core-full-stack-tests",
-      "projectFolder": "full-stack-tests/core",
+      "packageName": "backend-integration-tests",
+      "projectFolder": "full-stack-tests/backend",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "native-app-full-stack-tests",
-      "projectFolder": "full-stack-tests/native-app",
+      "packageName": "core-full-stack-tests",
+      "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -552,7 +545,6 @@
       "packageName": "@itwin/imodelhub-client-tests",
       "projectFolder": "full-stack-tests/imodelhub-client",
       "reviewCategory": "integration-testing",
-      "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     }
   ]

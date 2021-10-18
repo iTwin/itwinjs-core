@@ -52,7 +52,6 @@
     ],
     "packageAliases": {
       "analytical-backend": "analytical-backend",
-      "backend-itwin-client": "backend-itwin-client",
       "backend": "core-backend",
       "transformer": "core-transformer",
       "bentley": "core-bentley",
@@ -61,7 +60,6 @@
       "ecschema-metadata": "ecschema-metadata",
       "core-electron": "core-electron",
       "core-mobile": "core-mobile",
-      "frontend-authorization-client": "frontend-authorization-client",
       "frontend-devtools": "frontend-devtools",
       "frontend": "core-frontend",
       "geometry": "core-geometry",

@@ -5,10 +5,9 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
-import {
-  HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-} from "@itwin/core-frontend";
-import { FeatureOverrides, Target } from "@itwin/core-frontend/lib/cjs/webgl";
+import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
+import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUtility } from "../TestUtility";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -29,7 +28,7 @@ describe("FeatureOverrides", () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -37,7 +36,7 @@ describe("FeatureOverrides", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should create a uniform feature overrides object", () => {
