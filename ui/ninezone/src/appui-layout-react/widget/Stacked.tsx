@@ -102,7 +102,7 @@ export class VerticalAnchorHelpers {
 }
 
 /** Properties of [[Stacked]] component.
- * @alpha
+ * @internal
  */
 export interface StackedProps extends CommonProps, NoChildrenProps {
   /** Content of this widget. I.e. [[WidgetContent]] */
@@ -139,7 +139,7 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
 
 /** Stacked widget is used to display multiple tabs and some content.
  * @note Should be placed in [[Zone]] component.
- * @alpha
+ * @internal
  */
 export class Stacked extends React.PureComponent<StackedProps> {
   private _widget = React.createRef<HTMLDivElement>();
