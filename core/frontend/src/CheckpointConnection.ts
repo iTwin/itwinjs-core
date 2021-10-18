@@ -121,7 +121,7 @@ export class CheckpointConnection extends IModelConnection {
 
     try {
       const openResponse = await CheckpointConnection.callOpen(iModelRpcProps, this.routingContext);
-      // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
+      // The new/reopened connection may have a new rpcKey and/or changesetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
       this.changeset = openResponse.changeset!;
 

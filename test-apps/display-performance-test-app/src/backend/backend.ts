@@ -8,6 +8,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
@@ -31,6 +32,9 @@ export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
+  const iModelHost = new IModelHostConfiguration();
+  iModelHost.hubAccess = IModelHubBackend;
+
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     const iModelHost = new IModelHostConfiguration();
@@ -49,5 +53,5 @@ export async function initializeBackend() {
     await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
 
   } else
-    await IModelHost.startup();
+    await IModelHost.startup(iModelHost);
 }

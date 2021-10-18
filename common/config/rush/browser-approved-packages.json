@@ -11,16 +11,8 @@
     {
       "name": "@azure/storage-blob",
       "allowedCategories": [
-        "backend"
-      ]
-    },
-    {
-      "name": "@bentley/backend-itwin-client",
-      "allowedCategories": [
         "backend",
-        "integration-testing",
-        "internal",
-        "tools"
+        "internal"
       ]
     },
     {
@@ -40,7 +32,6 @@
     {
       "name": "@bentley/imodelhub-client",
       "allowedCategories": [
-        "backend",
         "integration-testing",
         "internal"
       ]
@@ -66,7 +57,6 @@
     {
       "name": "@bentley/itwin-registry-client",
       "allowedCategories": [
-        "backend",
         "common",
         "integration-testing",
         "internal"
@@ -97,7 +87,8 @@
       "allowedCategories": [
         "backend",
         "frontend",
-        "integration-testing"
+        "integration-testing",
+        "internal"
       ]
     },
     {
@@ -182,6 +173,7 @@
       "name": "@itwin/core-backend",
       "allowedCategories": [
         "backend",
+        "common",
         "edit",
         "integration-testing",
         "internal",
@@ -322,6 +314,7 @@
         "backend",
         "common",
         "integration-testing",
+        "internal",
         "tools"
       ]
     },
@@ -428,7 +421,6 @@
     {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [
-        "backend",
         "common",
         "integration-testing",
         "internal"
@@ -437,7 +429,6 @@
     {
       "name": "@itwin/perf-tools",
       "allowedCategories": [
-        "backend",
         "internal"
       ]
     },
@@ -493,7 +484,9 @@
     },
     {
       "name": "@itwin/ui-test-extension",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -584,7 +577,7 @@
     {
       "name": "agentkeepalive",
       "allowedCategories": [
-        "backend"
+        "common"
       ]
     },
     {
@@ -592,12 +585,6 @@
       "allowedCategories": [
         "backend",
         "common"
-      ]
-    },
-    {
-      "name": "applicationinsights",
-      "allowedCategories": [
-        "backend"
       ]
     },
     {
@@ -609,7 +596,7 @@
     {
       "name": "azurite",
       "allowedCategories": [
-        "backend"
+        "internal"
       ]
     },
     {
@@ -785,7 +772,6 @@
     {
       "name": "deep-assign",
       "allowedCategories": [
-        "backend",
         "common",
         "integration-testing"
       ]
@@ -928,12 +914,6 @@
       ]
     },
     {
-      "name": "event-stream",
-      "allowedCategories": [
-        "backend"
-      ]
-    },
-    {
       "name": "eventemitter2",
       "allowedCategories": [
         "frontend"
@@ -1009,6 +989,7 @@
       "name": "fs-extra",
       "allowedCategories": [
         "backend",
+        "common",
         "integration-testing",
         "internal",
         "tools"
@@ -1017,7 +998,7 @@
     {
       "name": "fs-write-stream-atomic",
       "allowedCategories": [
-        "backend"
+        "common"
       ]
     },
     {
@@ -1040,27 +1021,19 @@
     {
       "name": "got",
       "allowedCategories": [
-        "backend"
-      ]
-    },
-    {
-      "name": "https-proxy-agent",
-      "allowedCategories": [
-        "backend"
+        "common"
       ]
     },
     {
       "name": "i18next",
       "allowedCategories": [
-        "frontend",
-        "internal"
+        "frontend"
       ]
     },
     {
       "name": "i18next-browser-languagedetector",
       "allowedCategories": [
-        "frontend",
-        "internal"
+        "frontend"
       ]
     },
     {
@@ -1130,7 +1103,6 @@
     {
       "name": "jsdom",
       "allowedCategories": [
-        "backend",
         "extensions",
         "frontend"
       ]
@@ -1138,7 +1110,6 @@
     {
       "name": "jsdom-global",
       "allowedCategories": [
-        "backend",
         "extensions",
         "frontend",
         "internal",
@@ -1161,18 +1132,6 @@
       "name": "jsonpath",
       "allowedCategories": [
         "common"
-      ]
-    },
-    {
-      "name": "jsonwebtoken",
-      "allowedCategories": [
-        "backend"
-      ]
-    },
-    {
-      "name": "keytar",
-      "allowedCategories": [
-        "internal"
       ]
     },
     {
@@ -1222,7 +1181,7 @@
     {
       "name": "mkdirp",
       "allowedCategories": [
-        "backend"
+        "internal"
       ]
     },
     {
@@ -1253,7 +1212,6 @@
     {
       "name": "nock",
       "allowedCategories": [
-        "backend",
         "common",
         "integration-testing",
         "internal"
@@ -1277,7 +1235,6 @@
     {
       "name": "null-loader",
       "allowedCategories": [
-        "backend",
         "integration-testing",
         "internal",
         "tools"
@@ -1311,7 +1268,6 @@
     {
       "name": "openid-client",
       "allowedCategories": [
-        "backend",
         "integration-testing",
         "tools"
       ]
@@ -1331,7 +1287,7 @@
     {
       "name": "proper-lockfile",
       "allowedCategories": [
-        "backend"
+        "common"
       ]
     },
     {
@@ -1592,7 +1548,6 @@
     {
       "name": "source-map-loader",
       "allowedCategories": [
-        "backend",
         "common",
         "edit",
         "frontend",
@@ -1617,12 +1572,6 @@
       ]
     },
     {
-      "name": "stream-buffers",
-      "allowedCategories": [
-        "backend"
-      ]
-    },
-    {
       "name": "superagent",
       "allowedCategories": [
         "common"
@@ -1632,13 +1581,6 @@
       "name": "supertest",
       "allowedCategories": [
         "backend"
-      ]
-    },
-    {
-      "name": "svg-sprite-loader",
-      "allowedCategories": [
-        "extensions",
-        "internal"
       ]
     },
     {
@@ -1737,7 +1679,6 @@
     {
       "name": "webpack",
       "allowedCategories": [
-        "backend",
         "common",
         "frontend",
         "integration-testing",
@@ -1791,11 +1732,8 @@
     {
       "name": "xmlhttprequest",
       "allowedCategories": [
-        "backend",
         "common",
-        "extensions",
-        "frontend",
-        "internal"
+        "frontend"
       ]
     },
     {

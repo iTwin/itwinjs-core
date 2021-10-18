@@ -6,6 +6,7 @@ import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken } from "@itwin/core-bentley";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -27,7 +28,7 @@ export async function signIn(): Promise<boolean> {
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
     responseType: "code",
-    authority: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
+    authority: await new ImsAuthorizationClient().getUrl(),
   });
   try {
     await browserAuth.signInSilent();

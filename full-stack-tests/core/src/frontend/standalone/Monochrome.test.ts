@@ -2,24 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
-import {
-  FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, Viewport,
-} from "@itwin/core-frontend";
 import { expect } from "chai";
+import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
+import { FeatureSymbology, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
 
 describe("Monochrome", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should always apply to surfaces and to edges only in wireframe", async () => {

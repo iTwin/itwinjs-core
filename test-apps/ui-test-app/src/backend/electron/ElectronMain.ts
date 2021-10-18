@@ -14,15 +14,7 @@ import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 const mainWindowName = "mainWindow";
 
 /** Initializes Electron backend */
-export async function initializeElectron() {
-  const imodelConfig = new IModelHostConfiguration();
-  const authClient = new ElectronAuthorizationBackend({
-    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-  });
-  imodelConfig.authorizationClient = authClient;
-
+export async function initializeElectron(opts?: IModelHostConfiguration) {
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
@@ -37,8 +29,15 @@ export async function initializeElectron() {
     nativeHost: {
       applicationName: "ui-test-app",
     },
-    iModelHost: imodelConfig,
+    iModelHost: opts,
   };
+
+  const authClient = new ElectronAuthorizationBackend({
+    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+  });
+  opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
   await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();

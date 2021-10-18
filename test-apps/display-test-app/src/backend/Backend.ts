@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
+import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
@@ -130,7 +130,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   iModelHost.logTileSizeThreshold = 500000;
 
   if (dtaConfig.customOrchestratorUri)
-    iModelHost.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
+    IModelHubBackend.setIModelClient(new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler()));
+
+  iModelHost.hubAccess = IModelHubBackend;
 
   if (dtaConfig.useFakeCloudStorageTileCache)
     iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
