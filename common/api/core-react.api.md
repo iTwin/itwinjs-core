@@ -939,7 +939,7 @@ export enum HorizontalAlignment {
 export function HorizontalTabs(props: TabsProps): JSX.Element;
 
 // @public
-export function Icon(props: IconProps): JSX.Element | null;
+export function Icon(props: IconProps): JSX.Element;
 
 // @public
 export class IconHelper {
@@ -962,7 +962,7 @@ export interface IconInputProps extends Omit<InputProps, "size"> {
 
 // @public
 export interface IconProps extends CommonProps {
-    iconSpec?: IconSpec;
+    iconSpec: IconSpec;
 }
 
 // @public

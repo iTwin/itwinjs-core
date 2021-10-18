@@ -25,5 +25,3 @@ exports[`IconComponent should render correctly with icon svg string 1`] = `
   />
 </i>
 `;
-
-exports[`IconComponent should render correctly with no iconSpec 1`] = `""`;
