@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// TEMPORARILY setting line endings to crlf, should be set to lf before merging with master
 /** @packageDocumentation
  * @module IModelApp
  */
