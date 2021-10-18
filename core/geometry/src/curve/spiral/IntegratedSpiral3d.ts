@@ -314,7 +314,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const n = this.computeStrokeCountForOptions(options);
     dest.startParentCurvePrimitive(this);
     const activeStrokes = this.activeStrokes;
-    const preferPrimary = dest.needPrimaryGeometryForStrokes === undefined ? true : dest.needPrimaryGeometryForStrokes();
+    const preferPrimary = dest.needPrimaryGeometryForStrokes === undefined ? false : dest.needPrimaryGeometryForStrokes();
     if (!preferPrimary && n <= activeStrokes.numPoints()) {
       this.activeStrokes.emitStrokableParts(dest, options);
     } else {
