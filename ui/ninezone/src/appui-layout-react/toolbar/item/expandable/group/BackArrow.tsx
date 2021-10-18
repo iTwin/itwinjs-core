@@ -12,7 +12,6 @@ import * as React from "react";
 import { CommonProps, NoChildrenProps, useTargeted } from "@itwin/core-react";
 
 /** Properties of [[BackArrow]] component.
- * @deprecated
  * @internal
  */
 export interface BackArrowProps extends CommonProps, NoChildrenProps {
@@ -44,7 +43,6 @@ function BackArrowComponent(props: BackArrowProps) {
 }
 
 /** Back arrow used in [[NestedGroup]] component.
- * @deprecated
  * @internal
  */
 export class BackArrow extends React.PureComponent<BackArrowProps> {
