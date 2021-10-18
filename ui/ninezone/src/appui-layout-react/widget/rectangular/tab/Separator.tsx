@@ -12,14 +12,14 @@ import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 
 /** Properties of [[TabSeparator]] component.
- * @alpha
+ * @internal
  */
 export interface TabSeparatorProps extends CommonProps, NoChildrenProps {
   readonly isHorizontal?: boolean;
 }
 
 /** Rectangular widget tab separator. Used in [[Stacked]] component.
- * @alpha
+ * @internal
  */
 export class TabSeparator extends React.PureComponent<TabSeparatorProps> {
   public override render() {
