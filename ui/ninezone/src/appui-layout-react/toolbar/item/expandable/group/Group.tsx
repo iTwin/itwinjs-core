@@ -14,6 +14,7 @@ import { Panel } from "./Panel";
 import { Title } from "./Title";
 
 /** Properties of [[Group]] component.
+ * @deprecated
  * @alpha
  */
 export interface GroupProps extends CommonProps, NoChildrenProps {
@@ -24,6 +25,7 @@ export interface GroupProps extends CommonProps, NoChildrenProps {
 }
 
 /** Tool group component. Used in [[ExpandableItem]] component.
+ * @deprecated
  * @alpha
  */
 export class Group extends React.PureComponent<GroupProps> {
