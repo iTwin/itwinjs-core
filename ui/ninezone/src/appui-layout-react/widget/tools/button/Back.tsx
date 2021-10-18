@@ -13,14 +13,14 @@ import { NoChildrenProps, OmitChildrenProp } from "@itwin/core-react";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 
 /** Properties of [[BackButton]] component.
- * @alpha
+ * @internal
  */
 export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
 }
 
 /** Back button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
- * @alpha
+ * @internal
  */
 export class BackButton extends React.PureComponent<BackButtonProps> {
   public override render() {
