@@ -14,6 +14,7 @@ import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHe
 import { Items } from "./Items";
 
 /** Available alignment modes of [[Toolbar]] panels.
+ * @deprecated Use [ToolbarPanelAlignment]($components-react) instead
  * @beta
  */
 export enum ToolbarPanelAlignment {
@@ -22,7 +23,7 @@ export enum ToolbarPanelAlignment {
 }
 
 /** Helpers for [[ToolbarPanelAlignment]].
- * @alpha
+ * @internal
  */
 export class ToolbarPanelAlignmentHelpers {
   /** Class name of [[ToolbarPanelAlignment.Start]] */
