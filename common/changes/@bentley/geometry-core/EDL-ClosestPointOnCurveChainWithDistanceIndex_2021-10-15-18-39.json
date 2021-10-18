@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core"
+}
