@@ -1212,7 +1212,6 @@ export class ClipVector implements Clipper {
     pointInside(point: Point3d, onTolerance?: number): boolean;
     setInvisible(invisible: boolean): void;
     sumSizes(intervals: Segment1d[], begin: number, end: number): number;
-    // @alpha
     toCompactString(): string;
     toJSON(): ClipVectorProps;
     transformInPlace(transform: Transform): boolean;
