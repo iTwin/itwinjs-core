@@ -192,7 +192,11 @@ describe("Server-based locks", () => {
     bc1.elements.deleteElement(child1); // make sure delete now works
     bc1.abandonChanges();
 
+    assert.isTrue(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
+
     await bc1.pushChanges({ accessToken: accessToken1, description: "my changes" });
+
+    assert.isFalse(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
 
     assert.throws(() => bc2.elements.deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
     await expect(bc2Locks.acquireExclusiveLock(child1)).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
