@@ -362,7 +362,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [handleOk, readyToSave]);
 
   return (
-    <div ref={dialogContainer} id="map-layer-url-dialog-container">
+    <div ref={dialogContainer}>
       <Dialog
         className="map-layer-url-dialog"
         title={dialogTitle}
