@@ -106,7 +106,7 @@ void (async () => {
     const iModelHost = new IModelHostConfiguration();
     iModelHost.hubAccess = IModelHubBackend;
 
-    await IModelHost.startup();
+    await IModelHost.startup(iModelHost);
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel(loggerCategory, LogLevel.Info);
