@@ -217,6 +217,86 @@ describe("Editor tests", () => {
     });
 
     describe("Schema Version Tests", () => {
+      it("setVersion, version updated successfully", async () => {
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+        };
+
+        context = new SchemaContext();
+        testSchema = await Schema.fromJson(schemaJson, context);
+        testEditor = new SchemaContextEditor(context);
+
+        const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, 4);
+
+        expect(result).to.eql({});
+        expect(testSchema.readVersion).to.equal(2);
+        expect(testSchema.writeVersion).to.equal(3);
+        expect(testSchema.minorVersion).to.equal(4);
+      });
+
+      it("setVersion, read version not specified, version updated successfully", async () => {
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+        };
+
+        context = new SchemaContext();
+        testSchema = await Schema.fromJson(schemaJson, context);
+        testEditor = new SchemaContextEditor(context);
+
+        const result = await testEditor.setVersion(testSchema.schemaKey, undefined, 3, 4);
+
+        expect(result).to.eql({});
+        expect(testSchema.readVersion).to.equal(1);
+        expect(testSchema.writeVersion).to.equal(3);
+        expect(testSchema.minorVersion).to.equal(4);
+      });
+
+      it("setVersion, write version not specified, version updated successfully", async () => {
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+        };
+
+        context = new SchemaContext();
+        testSchema = await Schema.fromJson(schemaJson, context);
+        testEditor = new SchemaContextEditor(context);
+
+        const result = await testEditor.setVersion(testSchema.schemaKey, 2, undefined, 4);
+
+        expect(result).to.eql({});
+        expect(testSchema.readVersion).to.equal(2);
+        expect(testSchema.writeVersion).to.equal(2);
+        expect(testSchema.minorVersion).to.equal(4);
+      });
+
+      it("setVersion, read version not specified, version updated successfully", async () => {
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+        };
+
+        context = new SchemaContext();
+        testSchema = await Schema.fromJson(schemaJson, context);
+        testEditor = new SchemaContextEditor(context);
+
+        const result = await testEditor.setVersion(testSchema.schemaKey, 2, 3, undefined);
+
+        expect(result).to.eql({});
+        expect(testSchema.readVersion).to.equal(2);
+        expect(testSchema.writeVersion).to.equal(3);
+        expect(testSchema.minorVersion).to.equal(3);
+      });
+
       it("incrementMinorVersion, version incremented successfully", async () => {
         const schemaJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

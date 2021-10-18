@@ -11,7 +11,6 @@ packageClassification:  [
          "core-markup",
          "core-i18n",
          "core-quantity",
-         "backend-itwin-client",
          "core-bentley",
          "ecschema-metadata",
          "ecschema-editing",

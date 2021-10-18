@@ -11,7 +11,6 @@ beta;ImsAuthorizationClient
 beta;ITwinClientLoggerCategory
 beta;ProgressCallback = (progress: ProgressInfo) => void
 beta;ProgressInfo
-internal;removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined
 internal;request(url: string, options: RequestOptions): Promise
 beta;RequestBasicCredentials
 beta;RequestGlobalOptions
