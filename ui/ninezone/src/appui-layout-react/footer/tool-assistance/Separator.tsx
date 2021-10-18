@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[ToolAssistanceSeparator]] component.
- * @beta
+ * @internal
  */
 export interface ToolAssistanceSeparatorProps extends CommonProps {
   /** Separator label. */
@@ -20,7 +20,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
 }
 
 /** Tool assistance item separator used in [[ToolAssistanceDialog]] component.
- * @beta
+ * @internal
  */
 export class ToolAssistanceSeparator extends React.PureComponent<ToolAssistanceSeparatorProps> {
   public override render() {
