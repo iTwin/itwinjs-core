@@ -41,7 +41,7 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the X direction at the given level.
    */
   public getNumberOfXTilesAtLevel(level: number) {
-    return this.numberOfLevelZeroTilesX << level;
+    return level < 0 ? 1 : this.numberOfLevelZeroTilesX << level;
   }
 
   /**
@@ -52,7 +52,7 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the Y direction at the given level.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return  this.numberOfLevelZeroTilesY << level;
+    return  level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
   }
 
   public get rootLevel() {
