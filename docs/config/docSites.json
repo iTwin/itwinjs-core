@@ -56,7 +56,6 @@
       "transformer": "core-transformer",
       "bentley": "core-bentley",
       "common": "core-common",
-      "itwin-registry-client": "itwin-registry-client",
       "ecschema-metadata": "ecschema-metadata",
       "core-electron": "core-electron",
       "core-mobile": "core-mobile",
