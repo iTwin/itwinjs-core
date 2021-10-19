@@ -158,7 +158,7 @@ export abstract class VariedTechnique implements Technique {
     const descr = `${this._debugDescription}: ${flags.buildDescription()}`;
     builder.setDebugDescription(descr);
 
-    if (System.instance.supportsLogZBuffer) {
+    if (System.instance.supportsLogZBuffer && !flags.isHilite) {
       addLogDepth(builder);
 
       assert(!builder.frag.requiresEarlyZWorkaround);
