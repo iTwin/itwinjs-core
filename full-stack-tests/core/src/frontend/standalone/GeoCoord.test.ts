@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Geometry, Point3d, XYZProps } from "@bentley/geometry-core";
-import { GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesResponseProps, PointWithStatus } from "@bentley/imodeljs-common";
+import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@bentley/imodeljs-common";
 import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 // spell-checker: disable
@@ -178,12 +178,10 @@ describe("GeoCoord", () => {
           latitudeOfOrigin: 33.0,
           scaleFactor: 0.9999,
           falseEasting: 0.0,
-          falseNorthing: 0.0
-        },
+          falseNorthing: 0.0},
       },
       verticalCRS: {
-        id: "GEOID"
-      }
+        id: "GEOID"},
     });
 
     const testPoint: XYZProps[] = [];
