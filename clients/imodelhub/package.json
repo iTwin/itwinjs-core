@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "iModel.js iModelHub Client",
   "main": "lib/cjs/imodelhub-client.js",
   "modules": "lib/esm/imodelhub-client.js",
@@ -20,7 +20,7 @@
     "extract-api": "betools extract-api --entry=imodelhub-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "",
+    "test": "mocha",
     "cover": ""
   },
   "keywords": [
@@ -36,27 +36,46 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "agentkeepalive": "^4.1.4",
     "deep-assign": "^2.0.0",
+    "fs-write-stream-atomic": "^1.0.10",
+    "got": "~11.8.2",
     "js-base64": "^3.6.1",
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "proper-lockfile": "^4.1.2",
+    "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.90"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.91",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.91"
   },
   "devDependencies": {
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
+    "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
-    "@types/node": "14.14.31",
+    "@types/fs-extra": "^4.0.7",
+    "@types/jsonwebtoken": "^8.5.0",
+    "@types/semver": "^5.5.0",
+    "@types/sinon": "^9.0.0",
+    "@types/stream-buffers": "~3.0.2",
+    "@types/proper-lockfile": "^4.1.1",
     "@types/lodash": "^4.14.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "14.14.31",
+    "chai": "^4.1.2",
     "eslint": "^7.11.0",
+    "fs-extra": "^8.1.0",
+    "mocha": "^8.3.2",
+    "nock": "^12.0.3",
     "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
     "typescript": "~4.4.0"
   },
   "eslintConfig": {

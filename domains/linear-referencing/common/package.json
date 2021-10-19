@@ -1,11 +1,11 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "main": "lib/cjs/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run -s build",
@@ -32,8 +32,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
-    "@itwin/core-common": "workspace:^3.0.0-dev.90"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.91",
+    "@itwin/core-common": "workspace:^3.0.0-dev.91"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
