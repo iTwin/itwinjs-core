@@ -11,7 +11,7 @@ import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
@@ -487,10 +487,10 @@ export class SampleAppIModelApp {
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const accessToken = await IModelApp.getAccessToken();
-      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
+      const iTwinList: ITwin[] = await (new ProjectsAccessClient()).getAll(accessToken, {
         search: {
           searchString: iTwinName,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
           exactMatch: true,
         },
       });

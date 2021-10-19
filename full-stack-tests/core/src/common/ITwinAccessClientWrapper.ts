@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { ITwinManagerClient } from "@bentley/imodelhub-client";
 import { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin project */
-export class ITwinRegistryClientWrapper implements ITwinManagerClient {
+export class ITwinAccessClientWrapper implements ITwinManagerClient {
   public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
-    const client = new ITwinAccessClient();
+    const client = new ProjectsAccessClient();
     const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
-        propertyName: ITwinSearchableProperty.Name,
+        propertyName: ProjectsSearchableProperty.Name,
         exactMatch: true,
       },
     });

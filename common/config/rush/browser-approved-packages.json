@@ -231,6 +231,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@itwin/projects-client",
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
