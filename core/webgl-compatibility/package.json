@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -8,8 +8,8 @@
   "typings": "lib/cjs/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.90"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.91"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

@@ -9,8 +9,8 @@
   },
   "private": true,
   "scripts": {
-    "compile": "npm run -s build",
     "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "npm run -s extract",

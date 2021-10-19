@@ -5,8 +5,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run -s build",
     "build": "tsc 1>&2 --outDir lib/cjs",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:config": "internal-tools copy-config",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

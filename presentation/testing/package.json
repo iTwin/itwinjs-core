@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-testing",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -21,8 +21,8 @@
   "module": "lib/esm/presentation-testing.js",
   "typings": "lib/cjs/presentation-testing",
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:watch": "npm run -s build:cjs -- -w",

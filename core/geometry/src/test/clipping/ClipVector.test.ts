@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector, StringifiedClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -17,6 +18,7 @@ import { Checker } from "../Checker";
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
 import { Angle, GeometryQuery, GrowableXYZArray, LineString3d, Loop, PolygonOps, Sample } from "../../core-geometry";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
 const enum PointAdjustment { // eslint-disable-line no-restricted-syntax
@@ -493,6 +495,156 @@ describe("StringifiedClipVector", () => {
       x0 += 200.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMaskLargeCoordinateAndTransform");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("OuterAndMask", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const outer = [[-10, -10], [10, 0], [10, 10], [-10, 10], [-10, -10]];
+    const triangle = [[-2, -5], [8, 2], [0, 6], [-2, -5]];
+    const innerNonConvex = [[2, 6], [5, 6], [5, 1], [4, 4], [2, 6]];
+    // const innerCircle = Sample.createArcStrokes(2, Point3d.create(5, 4), 12.0, Angle.createDegrees(12), Angle.createDegrees(372));
+    const innerCircle = Sample.createArcStrokes(2, Point3d.create(0, 0), 5.0, Angle.createDegrees(0), Angle.createDegrees(360));
+    const innerU = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1], [9, 8], [3, 7], [2, 1]];
+    const twoInletsWithWhisker = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1],
+      [10, 8], [5, 8], [5, 9], [9, 9], [9, 12],
+      [10,13],[12,13],[10,13],[9,12],
+      [7, 11], [3, 12], [2, 1]];
+    const innerDart = [
+        [0, 0],
+        [-6, -8],
+        [10, 0],
+        [-6,8],
+//        [5, 0],
+      ];
+      const innerDart1 = [
+        [7, 0],
+        [9, -2],
+        [5, 0],
+        [9, 2],
+//        [9, 0],
+      ];
+
+    let x0 = 0;
+    const shiftAndRotateJson = [
+      [-0.704754, 0.709452, 0, 2],
+      [-0.709452, -0.704754, 0, 4],
+      [0, 0, 1, 0],
+    ];
+    for (const isMask of [true, false]){
+      const jsonTriangle = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
+      const jsonOutsideCircle = [{ shape: { points: innerCircle, mask: isMask}}];
+      const jsonCircle = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask}}];
+      const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask}}];
+      const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
+      const jsonDart = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask}}];
+      const jsonDart1 = [{ shape: { points: outer } }, { shape: { points: innerDart1, mask: isMask}}];
+      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker, mask: isMask}}];
+      const jsonTwoInletsReversed = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker.slice().reverse(), mask: isMask } }];
+      const jsonDart1Trans = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask, trans: shiftAndRotateJson } }];
+      const jsonTriangleTrans =  [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask, trans: shiftAndRotateJson } }];
+      // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));
+      const polygonToClip = Sample.createRectangleXY(-10, -10, 30, 30);
+      const y0 = 0;
+      for (const json of [jsonOutsideCircle, jsonCircle, jsonTriangle, jsonTriangleTrans, jsonDart1Trans, jsonTwoInlets, jsonTwoInletsReversed, jsonDart, jsonDart1, jsonDart, jsonTriangle, jsonC, jsonCircle, jsonD, jsonDart]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, GrowableXYZArray.create (outer), x0, y0);
+        const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
+        const clipVector = ClipVector.fromJSON(json);
+        if (primitive) {
+          exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
+          if (ck.testType(clipVector, ClipVector)) {
+            const y1 = y0 + 200;
+            exerciseClipVector(ck, allGeometry, clipVector, polygonToClip, 0, x0, y1);
+          }
+        }
+        x0 += 200.0;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ClipperInterfaces", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const a = 10;
+    const b = 1.5;
+    ck.testLT(2 * b, a, "Confirm diamonds will fit well within outer rectangle -- needed for test conditions.");
+    const outerPoints = Sample.createCenteredRectangleXY(0, 0, 2 * a, a);
+    const outerRange = Range3d.createArray(outerPoints);
+    const leftHolePoints = Sample.createArcStrokes(1, Point3d.create(-a, 0, 0), 2 * b,
+      Angle.createDegrees(0), Angle.createDegrees(360), true, 0);
+    const rightHolePoints = Sample.createArcStrokes(1, Point3d.create(a, 0, 0), b,
+      Angle.createDegrees(0), Angle.createDegrees(360), true, 0);
+    const leftRange = Range3d.createArray(leftHolePoints);
+    const rightRange = Range3d.createArray(rightHolePoints);
+    const outerPrimitive = ClipShape.createShape(outerPoints, undefined, undefined, undefined, false)!;
+    const leftHolePrimitive = ClipShape.createShape (leftHolePoints,undefined, undefined, undefined, true)!;
+    const rightHolePrimitive = ClipShape.createShape(rightHolePoints, undefined, undefined, undefined, true)!;
+    const clipVector = ClipVector.createCapture([outerPrimitive, leftHolePrimitive, rightHolePrimitive]);
+    const x0 = 0;
+    const y0 = 0;
+
+    const e0 = 0.1;
+    const e1 = 1.2;
+    const inPoints = [Point3d.create(0, 0), leftRange.fractionToPoint (e0, e0, 0), rightRange.fractionToPoint (e1,e1, 0)];
+    const outPoints = [
+      Point3d.create(-a, 0),
+      Point3d.create(a, 0),
+      outerRange.fractionToPoint (e0, e1)];
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 2, inPoints, 0.4, x0, y0);
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, outPoints, 0.4, x0, y0);
+    for (const point of inPoints)
+      ck.testTrue(clipVector.isPointOnOrInside(point), prettyPrint({expectIn: point}));
+    for (const point of outPoints)
+      ck.testFalse(clipVector.isPointOnOrInside(point), prettyPrint({ expectOut: point }));
+    const drawTheBoundaries = (x0A: number, y0A: number) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerPoints, x0A, y0A);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, leftHolePoints, x0A, y0A);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, rightHolePoints, x0A, y0A);
+    };
+    const y1 = y0 + 3 * a;
+    const y2 = y1 + 5 * a;
+    drawTheBoundaries(x0, y0);
+    drawTheBoundaries(x0, y1);
+    drawTheBoundaries(x0, y2);
+
+    for (const testCase of [
+      { range: outerRange, isHole: false },
+      { range: leftRange, isHole: true },
+      { range: rightRange, isHole: true }]) {
+      // do some clips for display ...
+      const fractionYA = 0.5;
+      const fractionYC = 1.4;
+      const pointA = testCase.range.fractionToPoint(0.5, fractionYA);
+      const pointB = testCase.range.fractionToPoint(0.55, 0.6);
+      const fractionInRange = (1.0 - fractionYA) / (fractionYC - fractionYA);
+      const pointC = testCase.range.fractionToPoint(0.5, fractionYC);    // One half of this is in the range
+      const lengthAC = pointA.distance(pointC);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointA, pointB, pointC, pointA], x0, y1);
+      ClipUtilities.announcePolylineClip(clipVector, [pointA, pointB, pointC, pointA],
+        (clippedPoint0: Point3d, clippedPoint1: Point3d) => {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [clippedPoint0, clippedPoint1], x0, y2);
+        });
+      // Test some clipped lengths ..
+      // We know the holes are symmetric in their ranges and deeply buried, strokes from center have predictable clip lengths ..
+      const clippedLength = ClipUtilities.sumPolylineClipLength(clipVector, [pointA, pointC]);
+      const expectedClipFraction = testCase.isHole ? 1.0 - fractionInRange : fractionInRange;
+      ck.testCoordinate(clippedLength, expectedClipFraction * lengthAC, "Length of clippedStroke");
+      }
+/*
+    // Apply clip to rectangles with clear relationship to the holes at   x+=a:
+    const h = 1.5 * a;
+    const w = 2 * b;
+    const pointsQ0 = Sample.createCenteredRectangleXY(0, 0, w, h, 0);
+    const pointsQLeft = Sample.createCenteredRectangleXY(-a, 0, w, h, 0);
+    const pointsQRight = Sample.createCenteredRectangleXY(a, 0, w, h, 0);
+    for (const testCase of [
+      { points: pointsQ0, excludedArea: 0 },
+      { points: pointsQLeft, excludedArea: PolygonOps.areaXY (leftHolePoints) },
+      { points: pointsQRight, excludedArea: PolygonOps.areaXY (rightHolePoints) }]) {
+    }
+  */
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "ClipperInterfaces");
     expect(ck.getNumErrors()).equals(0);
   });
 });

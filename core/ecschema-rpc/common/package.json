@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-common",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "Schema RPC Interface common interface",
   "main": "lib/cjs/ecschema-rpc-interface.js",
   "typings": "lib/cjs/ecschema-rpc-interface",
@@ -10,8 +10,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-rpc/common"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
