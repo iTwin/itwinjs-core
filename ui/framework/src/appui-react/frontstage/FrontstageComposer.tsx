@@ -125,6 +125,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 ];
 
 /** FrontstageComposer React component.
+ * @deprecated
  * @public
  */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
