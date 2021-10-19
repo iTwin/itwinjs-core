@@ -11,13 +11,12 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
 .map-layer-url-dialog {
   z-Index: 21000;
-
-  .core-dialog-content {
-    padding-right: 11px !important;
-    padding-left: 11px !important;
-  }
 }
 
+.map-layer-url-dialog-content {
+  padding-right: 5px;
+  padding-left: 5px;
+}
 .map-layer-source-url {
 
   height: 100%;
@@ -26,6 +25,10 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   grid-template-columns: auto 1fr;
   grid-column-gap: 10px;
   align-items: center;
+
+  .map-layer-source-select, .map-layer-source-input {
+    margin-bottom: 0.5rem;
+    }
 
   .map-layer-source-label {
     font-size: $iui-font-size;

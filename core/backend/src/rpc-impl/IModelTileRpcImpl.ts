@@ -31,7 +31,7 @@ function generateTileRequestKey(props: TileRequestProps): string {
     key: token.key,
     iTwinId: token.iTwinId,
     iModelId: token.iModelId,
-    changeSetId: token.changeset?.id,
+    changesetId: token.changeset?.id,
   })}:${props.treeId}`;
 }
 

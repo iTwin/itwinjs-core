@@ -5,8 +5,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run -s build",
     "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
     "copy:assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
@@ -24,7 +24,6 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/service-authorization": "^0.2.0",

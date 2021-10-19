@@ -6,6 +6,7 @@
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
 import * as path from "path";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
@@ -37,6 +38,7 @@ const settings = new Settings(process.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
+  hostConfig.hubAccess = IModelHubBackend;
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

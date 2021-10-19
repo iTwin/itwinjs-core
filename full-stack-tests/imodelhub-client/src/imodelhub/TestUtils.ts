@@ -6,7 +6,6 @@ import * as chai from "chai";
 import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import { AccessToken, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { ITwin } from "@bentley/itwin-registry-client";
 import {
@@ -929,8 +928,6 @@ export function getCloudEnv(): IModelCloudEnvironment {
 // iModel server to finish starting up.
 
 before(async () => {
-  await HttpRequestHost.initialize();
-
   if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
     cloudEnv = new TestIModelHubCloudEnv();
   } else {
