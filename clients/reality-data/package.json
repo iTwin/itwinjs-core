@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "iModel.js Reality Data Client",
   "main": "lib/cjs/reality-data-client.js",
   "module": "lib/esm/reality-data-client.js",
@@ -44,10 +44,10 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.90",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.90",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.90",
-    "@itwin/core-common": "workspace:^3.0.0-dev.90"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.91",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.91",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.91",
+    "@itwin/core-common": "workspace:^3.0.0-dev.91"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
