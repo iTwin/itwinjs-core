@@ -42,7 +42,6 @@
     "@itwin/core-geometry": "workspace:^3.0.0-dev.91",
     "@itwin/core-common": "workspace:^3.0.0-dev.91",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.91",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.91",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.91"
   },
   "devDependencies": {
@@ -53,7 +52,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",

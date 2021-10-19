@@ -46,7 +46,6 @@
     "@bentley/itwin-client": "workspace:^3.0.0-dev.91",
     "@itwin/core-orbitgt": "workspace:^3.0.0-dev.91",
     "@bentley/product-settings-client": "workspace:^3.0.0-dev.91",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.91",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.91",
     "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.91"
   },
@@ -65,7 +64,6 @@
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
-    "@bentley/telemetry-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "^4.1.4",
@@ -92,6 +90,7 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
+    "@bentley/telemetry-client": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",

@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@bentley/units-schema",
@@ -112,7 +112,7 @@
     },
     {
       "name": "@itwin/core-i18n",
-      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/core-markup",
@@ -825,10 +825,6 @@
     {
       "name": "semver",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
-      "name": "serve-handler",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "shortid",

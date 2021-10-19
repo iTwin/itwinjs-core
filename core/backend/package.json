@@ -39,7 +39,6 @@
   },
   "peerDependencies": {
     "@bentley/itwin-client": "workspace:^3.0.0-dev.91",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.91",
     "@itwin/core-bentley": "workspace:^3.0.0-dev.91",
     "@itwin/core-common": "workspace:^3.0.0-dev.91",
     "@itwin/core-geometry": "workspace:^3.0.0-dev.91",
@@ -51,7 +50,6 @@
   ],
   "devDependencies": {
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/telemetry-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -83,6 +81,7 @@
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
     "@bentley/imodeljs-native": "3.0.14",
+    "@bentley/telemetry-client": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "js-base64": "^3.6.1",
