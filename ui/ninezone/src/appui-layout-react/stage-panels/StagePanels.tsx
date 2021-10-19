@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[StagePanels]] component.
- * @beta
+ * @internal
  */
 export interface StagePanelsProps extends CommonProps {
   /** Bottom panel. I.e. [[StagePanel]] */
@@ -28,7 +28,7 @@ export interface StagePanelsProps extends CommonProps {
 }
 
 /** Stage panels component of 9-Zone UI app.
- * @beta
+ * @internal
  */
 export class StagePanels extends React.PureComponent<StagePanelsProps> {
   public override render() {
