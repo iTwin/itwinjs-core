@@ -1408,3 +1408,13 @@ In previous versions, the [Tool.register]($frontend) method took an optional arg
 ## Improve/Enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
+## Buildology
+
+`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
+
+All packages will continue to build a CommonJS variant, but will now deliver it to `lib/cjs`. All frontend and shared ("common") packages will now build an ESModules variant, and deliver it to `lib/esm`. This change is intended to improve the bundle sizes of applications and allow for dynamic imports in order to tree-shake unused code.
+
+If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
+
+This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).

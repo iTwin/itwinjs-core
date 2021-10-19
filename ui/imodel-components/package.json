@@ -12,14 +12,14 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/imodel-components"
   },
   "scripts": {
-    "compile": "npm run -s build",
+    "build": "npm run -s copy:locale && npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run -s copy:esm",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
     "copy:cjs": "cpx \"./src/**/*.*css\" ./lib/cjs",
     "copy:esm": "cpx \"./src/**/*.*css\" ./lib/esm",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
-    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:locale",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run -s copy:esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/imodel-components-react/file.json --tsIndexFile=./imodel-components-react.ts --onlyJson",
