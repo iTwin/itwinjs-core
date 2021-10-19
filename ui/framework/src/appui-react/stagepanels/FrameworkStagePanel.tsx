@@ -29,8 +29,8 @@ import { WidgetDef } from "../widgets/WidgetDef";
 export interface FrameworkStagePanelProps {
   allowedZones?: ZoneLocation[];
   changeHandler: StagePanelChangeHandler;
-  draggedWidgetId: WidgetZoneId | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  draggedWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   header?: React.ReactNode;
   initialSize?: number;
   isInFooterMode: boolean;

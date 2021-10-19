@@ -33,7 +33,7 @@ export function ToastMessage(props: ToastMessageProps) {
   const category = getToastCategory(severity);
 
   return (
-    <Toast
+    <Toast // eslint-disable-line deprecation/deprecation
       animateOutTo={toastTarget}
       onAnimatedOut={() => closeMessage(id)}
       timeout={messageDetails.displayTime.milliseconds}

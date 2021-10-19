@@ -23,7 +23,7 @@ import { ZoneTargets } from "../dragdrop/ZoneTargets";
  * @internal
  */
 export interface StatusBarZoneProps extends CommonProps {
-  dropTarget: ZoneTargetType | undefined;
+  dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
   isInFooterMode: boolean;
   targetChangeHandler: TargetChangeHandler;

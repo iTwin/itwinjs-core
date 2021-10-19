@@ -141,7 +141,7 @@ export function BackstageComposer(props: BackstageComposerProps) {
   const groups = useGroupedItems(combinedBackstageItems);
 
   return (
-    <NZ_Backstage
+    <NZ_Backstage // eslint-disable-line deprecation/deprecation
       className={props.className}
       header={props.header}
       isOpen={isOpen}
@@ -160,6 +160,7 @@ export function BackstageComposer(props: BackstageComposerProps) {
           );
           return itemIndex === 0 && groupIndex > 0 ? (
             <React.Fragment key={groupIndex}>
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <BackstageSeparator />
               {composerItem}
             </React.Fragment>

@@ -30,9 +30,9 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Logging and debugging Id */
   toolbarId?: string;
   /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
-  expandsTo?: Direction;
+  expandsTo?: Direction; // eslint-disable-line deprecation/deprecation
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
-  panelAlignment?: ToolbarPanelAlignment;
+  panelAlignment?: ToolbarPanelAlignment; // eslint-disable-line deprecation/deprecation
   /** initial size */
   initialSize?: Size;
 }
@@ -288,7 +288,7 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     Logger.logTrace(UiFramework.loggerCategory(this), `---> render ${this._toolbarId} `);
     return (
       <ResizableContainerObserver onResize={this._onResize}>
-        <NZ_Toolbar
+        <NZ_Toolbar // eslint-disable-line deprecation/deprecation
           style={this.props.style}
           className={this.props.className}
           expandsTo={this.props.expandsTo}

@@ -43,8 +43,8 @@ interface ToolSettingsZoneState {
  * @internal
  */
 export interface ToolSettingsZoneProps extends CommonProps {
-  dropTarget: ZoneTargetType | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
   isClosed: boolean;
   lastPosition: PointProps | undefined;

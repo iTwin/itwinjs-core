@@ -37,8 +37,8 @@ describe("ToolWidget", () => {
 
       // Set in the before() after UiFramework.i18n is initialized
       horizontalToolbar =
-        <Toolbar
-          expandsTo={Direction.Bottom}
+        <Toolbar // eslint-disable-line deprecation/deprecation
+          expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           items={
             <>
               <ActionItemButton actionItem={CoreTools.selectElementCommand} />
@@ -47,7 +47,7 @@ describe("ToolWidget", () => {
               <GroupButton
                 iconSpec="icon-placeholder"
                 items={[tool1, tool2]}
-                direction={Direction.Bottom}
+                direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
                 itemsInColumn={7}
               />
             </>
@@ -55,8 +55,8 @@ describe("ToolWidget", () => {
         />;
 
       verticalToolbar =
-        <Toolbar
-          expandsTo={Direction.Right}
+        <Toolbar // eslint-disable-line deprecation/deprecation
+          expandsTo={Direction.Right} // eslint-disable-line deprecation/deprecation
           items={
             <>
               <ToolButton toolId="tool1b" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
@@ -95,8 +95,8 @@ describe("ToolWidget", () => {
       isFreeform: true,
       iconSpec: "icon-home",
       appButton: backstageToggleCommand,
-      horizontalDirection: Direction.Top,
-      verticalDirection: Direction.Left,
+      horizontalDirection: Direction.Top, // eslint-disable-line deprecation/deprecation
+      verticalDirection: Direction.Left, // eslint-disable-line deprecation/deprecation
     };
 
     it("ToolWidgetDef from WidgetProps", () => {

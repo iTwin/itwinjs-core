@@ -116,8 +116,8 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
  * @internal
  */
 export interface StagePanelRuntimeProps {
-  draggedWidgetId: WidgetZoneId | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  draggedWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   isInFooterMode: boolean;
   isTargeted: boolean;
   panel: NineZoneStagePanelManagerProps;

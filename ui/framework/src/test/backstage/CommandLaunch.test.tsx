@@ -42,7 +42,7 @@ describe("Backstage", () => {
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFuncRun).to.be.true;
 
-      const backstageItem = wrapper.find(NZ_BackstageItem);
+      const backstageItem = wrapper.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
     });
@@ -58,7 +58,7 @@ describe("Backstage", () => {
       );
 
       expect(argsPassed).to.be.false;
-      const backstageItem = wrapper.find(NZ_BackstageItem);
+      const backstageItem = wrapper.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(argsPassed).to.be.true;
     });
@@ -70,7 +70,7 @@ describe("Backstage", () => {
           iconSpec="icon-placeholder" />,
       );
 
-      const backstageItem = wrapper.find(NZ_BackstageItem);
+      const backstageItem = wrapper.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
       backstageItem.find(".nz-backstage-item").simulate("click");
       spyMethod.calledOnce.should.true;
     });

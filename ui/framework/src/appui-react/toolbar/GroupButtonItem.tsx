@@ -26,11 +26,11 @@ import { ToolbarHelper } from "./ToolbarHelper";
 
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, false);
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ItemWithDragInteraction = withDragInteraction(Item);
 
 // -----------------------------------------------------------------------------
@@ -203,7 +203,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
         {(direction) => (
           <ToolbarDragInteractionContext.Consumer>
             {(dragInteraction) => (
-              <ExpandableItem
+              <ExpandableItem // eslint-disable-line deprecation/deprecation
                 {...props}
                 className={classNames}
                 key={this.state.groupItem.id}
@@ -227,7 +227,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                   ) :
                   (
                     <div ref={this._ref}>
-                      <Item
+                      <Item // eslint-disable-line deprecation/deprecation
                         badge={badge}
                         icon={ToolbarHelper.getIconReactNode(groupItem)}
                         isDisabled={!this.state.isEnabled}
@@ -367,7 +367,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
             ];
           }, []);
           const columns = (columnToItems.map((columnItems, columnIndex) =>
-            <GroupColumn key={columnIndex}>
+            <GroupColumn key={columnIndex}> {/* eslint-disable-line deprecation/deprecation */}
               {columnItems.map((itemKey) => {
                 const tgItem = tray.items.get(itemKey)!;
                 const item = tgItem.item;

@@ -13,7 +13,8 @@ import { CommonProps } from "@itwin/core-react";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 
 /** Properties of [[UserProfile]] component.
- * @internal
+ * @deprecated
+ * @beta
  */
 export interface UserProfileProps extends CommonProps {
   /** User name. */
@@ -29,8 +30,8 @@ export interface UserProfileProps extends CommonProps {
 }
 
 /** User profile component used in [[Backstage]] header.
- * @deprecated Use [UserProfileBackstageItem]($appui-react) instead
- * @internal
+ * @deprecated
+ * @beta
  */
 export class UserProfile extends React.PureComponent<UserProfileProps> {
   public override render() {

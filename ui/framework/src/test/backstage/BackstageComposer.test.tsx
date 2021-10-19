@@ -56,7 +56,7 @@ describe("BackstageComposer", () => {
     const spy = sinon.spy(backstageManager, "close");
     sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
     const sut = shallow(<BackstageComposer items={[]} />);
-    const backstage = sut.find(NZ_Backstage);
+    const backstage = sut.find(NZ_Backstage); // eslint-disable-line deprecation/deprecation
 
     backstage.prop("onClose")!();
     spy.calledOnceWithExactly().should.true;

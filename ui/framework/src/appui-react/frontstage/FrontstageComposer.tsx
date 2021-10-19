@@ -29,11 +29,15 @@ import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
  * @public
  */
 export interface WidgetChangeHandler {
+  // eslint-disable-next-line deprecation/deprecation
   handleResize(zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number): void;
+  // eslint-disable-next-line deprecation/deprecation
   handleTabClick(widgetId: WidgetZoneId, tabIndex: number): void;
+  // eslint-disable-next-line deprecation/deprecation
   handleTabDragStart(widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps): void;
   handleTabDragEnd(): void;
   handleTabDrag(dragged: PointProps): void;
+  // eslint-disable-next-line deprecation/deprecation
   handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void;
 }
 
@@ -57,7 +61,7 @@ export interface StagePanelChangeHandler {
  * @public
  */
 export interface TargetChangeHandler {
-  handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
+  handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void; // eslint-disable-line deprecation/deprecation
 }
 
 /** Interface defining callbacks for nine zone changes
@@ -263,7 +267,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).minSize = 20;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).collapseOffset = 0;
 
-    widgetZoneIds.forEach((zoneId: WidgetZoneId) => {
+    widgetZoneIds.forEach((zoneId) => {
       const zoneDef = this.getZoneDef(zoneId);
       if (!zoneDef || zoneDef.zoneState === ZoneState.Off)
         return;
@@ -401,7 +405,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   };
 
   // istanbul ignore next
-  public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
+  public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => { // eslint-disable-line deprecation/deprecation
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetResize({ zoneId, resizeBy, handle, filledHeightDiff }, prevState.nineZone.zones);
@@ -416,7 +420,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   };
 
-  public handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
+  public handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
@@ -455,6 +459,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   };
 
   // istanbul ignore next
+  // eslint-disable-next-line deprecation/deprecation
   public handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => {
     if (this._isMounted)
       this.setState((prevState) => {
@@ -497,7 +502,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   };
 
   // istanbul ignore next
-  public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void {
+  public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void { // eslint-disable-line deprecation/deprecation
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = isTargeted ? FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged({ zoneId, type }, prevState.nineZone.zones) :
@@ -627,6 +632,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   public handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void {
     // istanbul ignore else
     if (this._isMounted)
@@ -660,12 +666,12 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   // istanbul ignore next
-  public getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined {
+  public getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined { // eslint-disable-line deprecation/deprecation
     const manager = FrontstageManager.NineZoneManager.getZonesManager();
     return manager.getGhostOutlineBounds(zoneId, this.state.nineZone.zones);
   }
 
-  public setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void {
+  public setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
@@ -681,7 +687,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
-  public mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void {
+  public mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void { // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
