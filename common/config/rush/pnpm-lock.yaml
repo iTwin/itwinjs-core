@@ -6425,12 +6425,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.90_@itwin+core-bentley@3.0.0-dev.90:
-    resolution: {integrity: sha512-nCXig9aniWOZxg1bRQ7K6DuuIVmmUTGuLABP31FPH5wfHXH1uy+huxa3YURQF/NakOIYB+AZC4Goq3MohSzUhQ==}
+  /@bentley/itwin-client/3.0.0-dev.91_@itwin+core-bentley@3.0.0-dev.91:
+    resolution: {integrity: sha512-uoaRWIDCl93WAyQiVa2H0zOCc2WUSSnDIEJo6xmLZxZQfAqgAaLPks15VPiwlvQOtY1YFJxU9nrrrzF96edOiQ==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.90
+      '@itwin/core-bentley': ^3.0.0-dev.91
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.90
+      '@itwin/core-bentley': 3.0.0-dev.91
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -6865,15 +6865,15 @@ packages:
   /@itwin/browser-authorization/0.2.0:
     resolution: {integrity: sha512-mds+oVFelKQ/u2jWzLUxHQUHLu5PwnzGA98PE2Nwlti3LVEMq1R9BGPyXobFAA6sXmgdHJ0VkaZLTBjvaicgZw==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.90_@itwin+core-bentley@3.0.0-dev.90
-      '@itwin/core-bentley': 3.0.0-dev.90
+      '@bentley/itwin-client': 3.0.0-dev.91_@itwin+core-bentley@3.0.0-dev.91
+      '@itwin/core-bentley': 3.0.0-dev.91
       oidc-client: 1.11.5
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@itwin/core-bentley/3.0.0-dev.90:
-    resolution: {integrity: sha512-PX6CGFSYCYJFenCbwgPl4VQw1RN9l8//AFP7vOvoeyhNNCZQ8N11RA27m++jMTU6cWEi26nSlRJ4/CLMUw4lnw==}
+  /@itwin/core-bentley/3.0.0-dev.91:
+    resolution: {integrity: sha512-qOcNDWRGU+yuOyGKhvsp8MZLvni1LUEeDE7IHT4EtrJHrQVNtcPu1+Lq+omX7ZMbQs94pw0VV1vlqMTePCu/vA==}
     dev: false
 
   /@itwin/itwinui-css/0.27.3:
@@ -6958,8 +6958,8 @@ packages:
   /@itwin/service-authorization/0.2.0:
     resolution: {integrity: sha512-4YGRLZAcMbwDJoQhx19Uqfztmp87X4BnWQf/8lE9Y9ZhjywdIy86gQ0jWqzN/Pgv08RsCZI3tTqmV19heaQ2hQ==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.90_@itwin+core-bentley@3.0.0-dev.90
-      '@itwin/core-bentley': 3.0.0-dev.90
+      '@bentley/itwin-client': 3.0.0-dev.91_@itwin+core-bentley@3.0.0-dev.91
+      '@itwin/core-bentley': 3.0.0-dev.91
       openid-client: 4.9.1
     transitivePeerDependencies:
       - supports-color
@@ -7526,7 +7526,7 @@ packages:
       chalk: 4.1.2
       dom-accessibility-api: 0.5.9
       lz-string: 1.4.4
-      pretty-format: 27.3.0
+      pretty-format: 27.3.1
     dev: true
 
   /@testing-library/react-hooks/3.7.0_509016fd322278d497c1e58f6164ce1d:
@@ -9888,7 +9888,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001269
-      electron-to-chromium: 1.3.871
+      electron-to-chromium: 1.3.872
     dev: true
 
   /browserslist/4.14.2:
@@ -9897,7 +9897,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001269
-      electron-to-chromium: 1.3.871
+      electron-to-chromium: 1.3.872
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -9908,7 +9908,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001269
-      electron-to-chromium: 1.3.871
+      electron-to-chromium: 1.3.872
       escalade: 3.1.1
       node-releases: 2.0.0
       picocolors: 1.0.0
@@ -11710,8 +11710,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.871:
-    resolution: {integrity: sha512-qcLvDUPf8DSIMWarHT2ptgcqrYg62n3vPA7vhrOF24d8UNzbUBaHu2CySiENR3nEDzYgaN60071t0F6KLYMQ7Q==}
+  /electron-to-chromium/1.3.872:
+    resolution: {integrity: sha512-qG96atLFY0agKyEETiBFNhpRLSXGSXOBuhXWpbkYqrLKKASpRyRBUtfkn0ZjIf/yXfA7FA4nScVOMpXSHFlUCQ==}
 
   /electron/14.1.1:
     resolution: {integrity: sha512-eaqaxMq/auE5VDIzYYqDUgZg+68Uiv+8jAQUXqLh8G58kOxqRL9Jw4TJ/w2/KXwWGaVPaUStbvO9BtqVZant+A==}
@@ -18178,8 +18178,8 @@ packages:
       react-is: 17.0.2
     dev: true
 
-  /pretty-format/27.3.0:
-    resolution: {integrity: sha512-Nkdd0xmxZdjCe6GoJomHnrLcCYGYzZKI/fRnUX0sCwDai2mmCHJfC9Ecx33lYgaxAFS/pJCAqhfxmWlm1wNVag==}
+  /pretty-format/27.3.1:
+    resolution: {integrity: sha512-DR/c+pvFc52nLimLROYjnXPtolawm+uWDxr4FjuLDLUn+ktWnSN851KoHwHzzqq6rfCOjkzN8FLgDrSub6UDuA==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       '@jest/types': 27.2.5
