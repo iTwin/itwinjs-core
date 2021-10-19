@@ -6,6 +6,8 @@
  * @module UiSettings
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { IModelApp } from "@itwin/core-frontend";
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/core-react";
 
@@ -20,6 +22,9 @@ export class UserSettingsStorage implements UiSettingsStorage {
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
+
+    if (!IModelApp.userPreferences)
+      return { status: UiSettingsStatus.Uninitialized };
     const result = await IModelApp.userPreferences.get({ accessToken, key: `${namespace}.${name}` });
     return {
       status: UiSettingsStatus.Success,
@@ -28,9 +33,13 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
+    if (!IModelApp.userPreferences)
+      return { status: UiSettingsStatus.Uninitialized };
+
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
+
     const result = await IModelApp.userPreferences.save({ accessToken, content: setting, key: `${namespace}.${name}` });
     return {
       status: UiSettingsStatus.Success,
@@ -39,6 +48,9 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
+    if (!IModelApp.userPreferences)
+      return { status: UiSettingsStatus.Uninitialized };
+
     const accessToken = await IModelApp.getAccessToken();
     if (accessToken === "")
       return { status: UiSettingsStatus.AuthorizationError };
