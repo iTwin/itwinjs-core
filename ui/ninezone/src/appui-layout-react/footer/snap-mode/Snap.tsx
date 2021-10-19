@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[Snap]] component.
- * @beta
+ * @internal
  */
 export interface SnapProps extends CommonProps {
   /** Label of snap row. */
@@ -26,7 +26,7 @@ export interface SnapProps extends CommonProps {
 }
 
 /** Snap row used in [[SnapModePanel]] component.
- * @beta
+ * @internal
  */
 export class Snap extends React.PureComponent<SnapProps> {
   public override render() {
