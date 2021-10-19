@@ -48,9 +48,9 @@ export interface ToolSettingsZoneProps extends CommonProps {
   isHidden: boolean;
   isClosed: boolean;
   lastPosition: PointProps | undefined;
-  targetChangeHandler: TargetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   targetedBounds: RectangleProps | undefined;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   zone: ZoneManagerProps;
 }
 

@@ -123,7 +123,7 @@ export interface StagePanelRuntimeProps {
   panel: NineZoneStagePanelManagerProps;
   panelDef: StagePanelDef;
   stagePanelChangeHandler: StagePanelChangeHandler;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgets: ZonesManagerWidgetsProps;
   widgetTabs: WidgetTabs;
   zoneDefProvider: ZoneDefProvider;

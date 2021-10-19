@@ -42,7 +42,7 @@ export interface FrameworkStagePanelProps {
   panelState: StagePanelState;
   renderPane: (widgetDefId: WidgetDef["id"]) => React.ReactNode;
   resizable: boolean;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   stagePanelWidgets: ReadonlyArray<WidgetDef["id"]>; // widgets defined in StagePanel
   widgets: ZonesManagerWidgetsProps; // zone widgets
   widgetTabs: WidgetTabs;

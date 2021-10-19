@@ -89,8 +89,8 @@ export interface FrontstageRuntimeProps {
   nineZone: NineZoneManagerProps;
   nineZoneChangeHandler: NineZoneChangeHandler;
   stagePanelChangeHandler: StagePanelChangeHandler;
-  targetChangeHandler: TargetChangeHandler;
-  widgetChangeHandler: WidgetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
   zoneDefProvider: ZoneDefProvider;
 }
@@ -130,7 +130,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
  * @public
  */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
-  implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
+  implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler { // eslint-disable-line deprecation/deprecation
 
   private _frontstageDef: FrontstageDef | undefined;
   private _isMounted = false;

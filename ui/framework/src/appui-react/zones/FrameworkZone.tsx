@@ -30,11 +30,11 @@ export interface FrameworkZoneProps extends CommonProps {
   isHidden: boolean;
   isInFooterMode: boolean;
   openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
-  targetChangeHandler: TargetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   targetedBounds?: RectangleProps;
   widget: WidgetManagerProps | undefined;
   widgetElement: React.ReactNode;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
   zone: ZoneManagerProps;
 }

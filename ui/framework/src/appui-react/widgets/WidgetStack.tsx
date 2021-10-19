@@ -47,7 +47,7 @@ export interface WidgetStackProps extends CommonProps {
   isInStagePanel: boolean;
   openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
   verticalAnchor: VerticalAnchor;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgets: ReadonlyArray<WidgetZoneId>; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
 }

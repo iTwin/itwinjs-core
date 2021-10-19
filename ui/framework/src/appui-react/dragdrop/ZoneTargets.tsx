@@ -17,7 +17,7 @@ import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 export interface ZoneTargetsProps extends CommonProps {
   zoneId: WidgetZoneId; // eslint-disable-line deprecation/deprecation
   dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
-  targetChangeHandler: TargetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
 }
 
 /** Zone Targets React component.

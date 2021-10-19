@@ -26,9 +26,9 @@ export interface StatusBarZoneProps extends CommonProps {
   dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
   isInFooterMode: boolean;
-  targetChangeHandler: TargetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   targetedBounds: RectangleProps | undefined;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   widgetControl?: StatusBarWidgetControl;
   zoneProps: ZoneManagerProps;
 }

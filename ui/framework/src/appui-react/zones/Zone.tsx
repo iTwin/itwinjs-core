@@ -77,10 +77,10 @@ export interface ZoneRuntimeProps {
   isHidden: boolean;
   isInFooterMode: boolean;
   openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
-  targetChangeHandler: TargetChangeHandler;
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   widget: WidgetManagerProps | undefined;
   widgetTabs: WidgetTabs;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   zoneDefProvider: ZoneDefProvider;
   zoneDef: ZoneDef;
   zone: ZoneManagerProps;
