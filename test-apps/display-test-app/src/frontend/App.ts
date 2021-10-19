@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
@@ -122,7 +122,7 @@ class PullChangesTool extends Tool {
 
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args) ;
+    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
   }
 }
 
