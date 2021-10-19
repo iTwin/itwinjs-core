@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodelhub-client-tests",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -14,9 +14,8 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/assets/**/*\" ./lib/assets",
-    "cover": "npm run -s cover:imodelhub-client && npm run -s cover:backend-itwin-client && npm run -s cover:itwin-client",
+    "cover": "npm run -s cover:imodelhub-client && npm run -s cover:itwin-client",
     "cover:imodelhub-client": "nyc --nycrc-path=imodelhub-client.nycrc npm -s test",
-    "cover:backend-itwin-client": "nyc --nycrc-path=backend-itwin-client.nycrc npm -s test",
     "cover:itwin-client": "nyc --nycrc-path=itwin-client.nycrc npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
@@ -36,7 +35,6 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

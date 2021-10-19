@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-testing",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "",
   "license": "MIT",
   "repository": {
@@ -41,7 +41,6 @@
     "ignore-styles": "^5.0.1"
   },
   "dependencies": {
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",

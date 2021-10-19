@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { AccessToken, BentleyError, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";

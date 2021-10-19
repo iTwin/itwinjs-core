@@ -8,6 +8,7 @@ import { expect } from "chai";
 import { BSplineSurface3dH, BSplineSurface3dQuery } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
@@ -189,6 +190,24 @@ describe("BSplineSurface", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("PseudoTorusExample", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const orderU = 4;
+    const orderV = 4;
+    const surfaceA = Sample.createPseudoTorusBsplineSurface(
+      4.0, 1.0, // radii
+      12, 6, orderU, orderV)!;
+      const surfaceB = Sample.createPseudoTorusBsplineSurface(
+        4.0, 1.0, // radii
+        12, 6, orderU, orderV)!;
+    surfaceB.tryTranslateInPlace(10, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceA, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceB, 0, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "PseudoTorusExample");
+    ck.checkpoint("BSplineSurface.Wrapped");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("Cones", () => {
     const ck = new Checker();
     const allGeometry = [];
