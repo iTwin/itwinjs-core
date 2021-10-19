@@ -59,6 +59,7 @@ export interface StagePanelChangeHandler {
 }
 
 /** Interface defining callbacks for ZoneDropTarget changes
+ * @deprecated
  * @public
  */
 export interface TargetChangeHandler {
