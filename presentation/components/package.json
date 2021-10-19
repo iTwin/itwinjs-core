@@ -25,8 +25,8 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s copy:locale && npm run -s pseudolocalize && npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s copy:locale && npm run -s pseudolocalize && npm run -s build:cjs ",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "npm run -s copy:cjs && tsc -p tsconfig.cjs.json",
     "build:esm": "npm run -s copy:esm && tsc -p tsconfig.esm.json",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",

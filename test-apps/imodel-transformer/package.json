@@ -4,11 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "compile": "npm run -s build",
     "cover": "",
     "docs": "",
     "lint": "eslint --max-warnings 0 \"./src/**/*.ts\" 1>&2",
