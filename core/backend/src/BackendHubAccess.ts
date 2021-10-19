@@ -159,10 +159,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
  * @beta
  */
 export interface BackendHubAccess {
-  /** Download all the changesets in the specified range.
-   * @param arg The arg
-   * @returns The thing
-   */
+  /** Download all the changesets in the specified range. */
   downloadChangesets: (arg: ChangesetRangeArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
   downloadChangeset: (arg: ChangesetArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps>;
