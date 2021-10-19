@@ -119,6 +119,7 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 }
 
 /** Properties of [[Toolbar]] component.
+ * @deprecated
  * @beta
  */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
@@ -141,6 +142,7 @@ interface ToolbarState {
 }
 
 /** A toolbar that contains toolbar items.
+ * @deprecated Use [ToolbarComposer]($appui-react) instead
  * @beta
  */
 export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
