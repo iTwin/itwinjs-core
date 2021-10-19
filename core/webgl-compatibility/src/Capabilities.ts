@@ -265,7 +265,7 @@ export class Capabilities {
     }
 
     // Determine the maximum color-renderable attachment type.
-    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
+    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float") && !ProcessDetector.isIOSBrowser;
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {
