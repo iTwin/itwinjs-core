@@ -620,6 +620,25 @@ describe("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("NonConvexClipShapeClipPolygon", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const delta = 200.0;
+    const y0 = 0;
+    for (const isMask of [false, true]) {
+      const clipShape = ClipShape.createShape(clipPointsA, undefined, undefined, undefined, isMask)!;
+      for (const polygon of [polygonA, polygonB]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipPointsA, x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygon, x0, y0);
+        const clippedPolygons = ClipUtilities.clipPolygonToClipShape(polygonB, clipShape);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPolygons, x0, y0 + delta);
+      }
+      x0 += delta;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "NonConvexClipShapeClipPolygon");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("jsonFragment", () => {
     const ck = new Checker();
     const json = [{
