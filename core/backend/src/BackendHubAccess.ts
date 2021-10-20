@@ -160,73 +160,73 @@ export interface CreateNewIModelProps extends IModelNameArg {
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
-  downloadChangesets(arg: ChangesetRangeArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps[]>;
+  downloadChangesets: (arg: ChangesetRangeArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
-  downloadChangeset(arg: ChangesetArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps>;
+  downloadChangeset: (arg: ChangesetArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetIndex  */
-  queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
+  queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
-  queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
+  queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
   /** Push a changeset to iModelHub. Returns the newly pushed changeset's index */
-  pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex>;
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps }) => Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
-  getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
+  getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
   /** Get the ChangesetProps for an IModelVersion */
-  getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetProps>;
+  getChangesetFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetProps>;
   /** Get the ChangesetProps for a named version */
-  getChangesetFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetProps>;
+  getChangesetFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetProps>;
 
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
-  acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
+  acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
-  releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+  releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 
   /** get an array of the briefcases assigned to a user. */
-  getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
+  getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
 
   /**
    * download a v1 checkpoint
    * @internal
    */
-  downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId>;
+  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
    * @internal
    */
-  queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+  queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
   /**
    * download a v2 checkpoint
    * @internal
    */
-  downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId>;
+  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
    * @internal
    */
-  acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
+  acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
   /**
    * Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests.
    * @internal
    */
-  queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
+  queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /**
    * Release all currently held locks
    * @internal
    */
-  releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
+  releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
-  queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+  queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
 
   /** create a new iModel. Returns the Guid of the newly created iModel */
-  createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
+  createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
 
   /** delete an iModel */
-  deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
+  deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
 }
