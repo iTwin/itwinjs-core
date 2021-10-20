@@ -21,7 +21,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter } from "./IModelImporter";
+import { IModelFilterer, IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -123,6 +123,8 @@ export class IModelTransformer extends IModelExportHandler {
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
 
+  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelFilterer, options: IModelTransformOptions & { preserveIdsInPureFilterTransform: true });
+  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions & { preserveIdsInPureFilterTransform: false });
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
    * @param target Specifies the target IModelImporter or the target IModelDb that will be used to construct the target IModelImporter.
@@ -158,8 +160,19 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
-      this.importer = new IModelImporter(target);
+      if (options?.preserveIdsInPureFilterTransform) {
+        this.importer = new IModelFilterer(target);
+      } else {
+        this.importer = new IModelImporter(target);
+      }
     } else {
+      // if we don't require them to extend it, we may have to inject it into the prototype chain ourselves which is imo uglier
+      if (options?.preserveIdsInPureFilterTransform) {
+        throw new IModelError(
+          IModelStatus.BadArg,
+          "if the target is an IModelImporter instance, and preserveIdsInPureFilterTransform is true, the instance must extend IModelFilterer"
+        );
+      }
       this.importer = target;
     }
     this.targetDb = this.importer.targetDb;
@@ -882,35 +895,6 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
-  }
-}
-
-/** an IModelTransformer that allows "filtering" an iModel, keeping ids of remaining elements in the
- * target as matching with the source.
- * Due to the inability to create an element with a specific id, we treat inserts as preventing
- * deletion of elements, then delete all filtered (not-inserted) elements at the end of the transformation
- * to keep just the unfiltered elements intact. All other updates apply normally.
- *
- * An instance of this subclass of [[IModelTransformer]] is used when the options for the transformer have
- * [[IModelTransformOptions.preserveIdsInPureFilterTransform]] as `true`.
- * @internal
- */
-class IModelFilterer extends IModelTransformer {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  public static Importer = class IModelFiltererImporter extends IModelImporter {
-
-  };
-
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  public static Exporter = class IModelFiltererExporter extends IModelExporter {
-
-  };
-
-  public constructor(...[source, target, options]: ConstructorParameters<typeof IModelTransformer>) {
-    if (source instanceof IModelImporter) {
-      // Object.setPrototypeOf(Object.getPrototypeOf(source))
-    }
-    super(new IModelFilterer.Exporter(source), new IModelFilterer.Importer(target), options);
   }
 }
 

@@ -439,6 +439,9 @@ export class IModelImporter implements Required<IModelImportOptions> {
  * @internal
  */
 export class IModelFilterer extends IModelImporter {
+  public override importElement(_elementProps: ElementProps): Id64String {
+    return Id64.invalid;
+  }
 }
 
 /** Returns true if a change within an Entity is detected.
