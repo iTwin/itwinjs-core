@@ -285,10 +285,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   if (options.headers)
     sareq = sareq.set(options.headers);
 
-  // Add an x-correlation-id header with a new GUID if one doesn't already exist if it has not been disabled.
-  // if (!options.disableCorrelationHeader && (!options.headers || !options.headers.hasOwnProperty(requestIdHeaderName)))
-  //   sareq = sareq.set(requestIdHeaderName, Guid.createValue());
-
   let queryStr: string = "";
   let fullUrl: string = "";
   if (options.qs && Object.keys(options.qs).length > 0) {
