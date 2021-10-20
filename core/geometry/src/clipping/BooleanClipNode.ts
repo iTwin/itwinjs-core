@@ -228,6 +228,17 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
   public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
     return Range1dArray.unionSorted(operandA, operandB);
   }
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+    ClipUtilities.doPolygonClipSequence(xyz, this._clippers,
+      this._keepInside ? insideFragments : outsideFragments,
+      this._keepInside ? outsideFragments : insideFragments,
+      undefined,
+      ClipStepAction.acceptIn, ClipStepAction.passToNextStep, ClipStepAction.acceptOut, arrayCache);
+    }
 }
 
 /**
@@ -251,6 +262,16 @@ export class BooleanClipNodeParity extends BooleanClipNode {
   public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
     return Range1dArray.paritySorted(operandA, operandB);
   }
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+    ClipUtilities.doPolygonClipParitySequence(xyz, this._clippers,
+      this._keepInside ? insideFragments : outsideFragments,
+      this._keepInside ? outsideFragments : insideFragments,
+    arrayCache);
+    }
 }
 /**
  * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
@@ -277,7 +298,11 @@ export class BooleanClipNodeIntersection extends BooleanClipNode implements Poly
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache) {
-    ClipUtilities.doPolygonClipSequence(xyz, this._clippers, insideFragments, outsideFragments, undefined,
+
+    ClipUtilities.doPolygonClipSequence(xyz, this._clippers,
+      this._keepInside ? insideFragments : outsideFragments,
+      this._keepInside ? outsideFragments : insideFragments,
+      undefined,
       ClipStepAction.passToNextStep, ClipStepAction.acceptOut, ClipStepAction.acceptIn, arrayCache);
     }
 

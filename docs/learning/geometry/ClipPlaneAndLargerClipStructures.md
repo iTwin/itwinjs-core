@@ -94,21 +94,26 @@ The snip below shows
 
   ![>](./figs/ClipStructures/DisplayClipping.png)
 
-  The display subsystem uses clipping that is a somewhat restricted tree of boolean operations:
+  The display subsystem uses clipping that is a limit tree of boolean operations:
 
   * The overall clipper (root of boolean tree) is a `ClipVector` instance.
   * The root `ClipVector` is an array of `ClipPrimitive`.
     * The boolean in the root `ClipVector` is an _intersection_ among the `ClipPrimitives` in the array
-  * Each `ClipPrimitive` is (just) one `UnionOfConvexClipPlaneSets`.
+  * Each `ClipPrimitive` has (just) one `UnionOfConvexCipPlaneSets`. A `ClipVector` requests the
+          `UnionOfCovexClipPlaneSets` from the `ClipPrimitive`.
     * The clipping abilities of each `ClipPrimitive` are thus no more complex than its `UnionOfComplexClipPlaneSets`.
-      * Some `ClipPrimitives` are "nothing but"
-    * However, a `ClipPrimitive` is t
+      * Some `ClipPrimitives` are "nothing but" carriers for their `UnionOfComplexClipPlaneSets`
+      * A `ClipShape` carries a defining polygon to be swept and optionally capped by front and back planes.
 
 (As noted in a previous paragraph, the ConvexClipPlaneSets cannot be directly "drawn".   The displayed shapes are the result of using the clipper to clip a larger polygon.)
 
-## Interfaces for clip methods
+## `Clipper` interfaces for clip requests
 
-Interfaces `Clipper` and `PolygonClipper` define methods for clip operations.   Note that these are fairly low-level.  The are expected to be called by intermediate API methods that fit their detail operations into larger scale API.
+The `Clipper` interface defines methods for clip operations.   Note that these are fairly low-level.  The are expected to be called by intermediate API methods that fit their detail operations into larger scale API.
+
+The _point_, _line_, and _arc_ methods are required.
+
+The _polygon_ method is optional.
 
 | Interface | method | Remarks |
 |---|---|---|
@@ -117,3 +122,15 @@ Interfaces `Clipper` and `PolygonClipper` define methods for clip operations.   
 | Clipper |   `announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;` | compare an arc to the clipper.  Announce intervals that are in. |
 | PolygonClipper |   `appendPolygonClip(xyz: GrowableXYZArray,  insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[],  arrayCache: GrowableXYZArrayCache): void;` | Clip a single polygon, emitting inside and outside pieces into indicated arrays. |
 
+# `BooleanClipNode`
+
+Clipping with a `ClipVector` is tree structure with 3 operational steps -- intersection of planes in a convex region, union of the convex regions, and then intersection of the union results.   This rigid structure has evolved for needs of  display processes.
+
+More general trees can constructed (strictly within typescript, apart from the limited display system clipping) by arbitrary trees of the abstract class `BooleanClipNode`.
+
+A `BooleanClipNode` contains an array of objects that implement the `Clipper` interface, and implements the `Clipper` interface itself.   Hence arbitrary trees of booleans can be described.
+
+There are 3 concrete classes:
+ * BooleanClipNodeUnion -- union (boolean OR) operation among its members, with optional inversion of the result (boolean NOR)
+ * BooleanClipNodeIntersection -- intersection (boolean AND) operation among its members, with optional inversin of the result (boolean NAND)
+ * BooleanClipNodeParity -- parity (boolean XOR) among its members, with optional inversion of the result.
