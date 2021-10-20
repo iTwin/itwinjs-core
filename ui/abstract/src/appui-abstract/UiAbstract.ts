@@ -20,7 +20,7 @@ export class UiAbstract {
   /** @internal */
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
-    const category = `"appui-abstract"${(className ? `.${className}` : "")}`;
+    const category = `appui-abstract${(className ? `.${className}` : "")}`;
     return category;
   }
 
