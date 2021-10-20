@@ -8,12 +8,12 @@ import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
+import { IModelHostConfiguration } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 
 /** Initializes Electron backend */
-export async function initializeElectron() {
-
+export async function initializeElectron(opts?: IModelHostConfiguration) {
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
@@ -28,6 +28,7 @@ export async function initializeElectron() {
     nativeHost: {
       applicationName: "ui-test-app",
     },
+    iModelHost: opts,
   };
 
   await ElectronHost.startup(opt);
