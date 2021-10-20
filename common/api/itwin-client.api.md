@@ -40,7 +40,7 @@ export class DownloadFailed extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
-// @beta
+// @internal
 export interface FileHandler {
     // (undocumented)
     agent?: https.Agent;

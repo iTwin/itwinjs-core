@@ -4,7 +4,7 @@ beta;CancelRequest
 beta;class Client
 internal;DefaultRequestOptionsProvider
 internal;DownloadFailed 
-beta;FileHandler
+internal;FileHandler
 internal;getJson(url: string): Promise
 beta;ImsAuthorizationClient 
 beta;ITwinClientLoggerCategory
