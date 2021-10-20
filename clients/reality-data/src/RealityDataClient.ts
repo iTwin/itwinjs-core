@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
-import { request, RequestOptions, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
