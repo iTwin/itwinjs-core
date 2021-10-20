@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "iModel.js Reality Data Client",
   "main": "lib/cjs/reality-data-client.js",
   "module": "lib/esm/reality-data-client.js",
@@ -12,8 +12,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/reality-data"
   },
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -44,21 +44,21 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.90",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.90",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.90",
-    "@itwin/core-common": "workspace:^3.0.0-dev.90"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.91",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.91",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.91",
+    "@itwin/core-common": "workspace:^3.0.0-dev.91"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/jsonpath": "^0.2.0",

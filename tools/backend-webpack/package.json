@@ -1,6 +1,6 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "Configuration and scripts for iModel.js agents and backends.",
   "license": "MIT",
   "repository": {
@@ -12,8 +12,8 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "",
+    "build:ci": "",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "",

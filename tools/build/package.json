@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -11,8 +11,8 @@
     "betools": "bin/betools.js"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",

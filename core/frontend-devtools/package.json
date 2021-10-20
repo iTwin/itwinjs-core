@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-devtools",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
@@ -8,8 +8,8 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:public",
+    "build": "npm run -s copy:public && npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "copy:public": "cpx \"./public/**/*\" ./lib/public",
@@ -40,7 +40,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "file-saver": "^2.0.2"
   },

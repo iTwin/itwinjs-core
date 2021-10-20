@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -11,8 +11,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "tsc 1>&2 && npm run -s webpack:frontend",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",
@@ -35,7 +35,6 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
@@ -53,7 +52,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
+    "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",

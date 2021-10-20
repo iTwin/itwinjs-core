@@ -1,6 +1,6 @@
 {
   "name": "@itwin/oidc-signin-tool",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "OIDC Signin Helper",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
@@ -10,8 +10,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/oidc-signin-tool"
   },
   "scripts": {
-    "compile": "npm run -s build",
     "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

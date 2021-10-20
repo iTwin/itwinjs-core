@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-components",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "React components based on iModel.js Presentation library",
   "main": "lib/cjs/presentation-components.js",
   "module": "lib/esm/presentation-components.js",
@@ -25,8 +25,8 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s copy:locale && npm run -s pseudolocalize && npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s copy:locale && npm run -s pseudolocalize && npm run -s build:cjs ",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "npm run -s copy:cjs && tsc -p tsconfig.cjs.json",
     "build:esm": "npm run -s copy:esm && tsc -p tsconfig.esm.json",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
@@ -52,16 +52,15 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.90",
-    "@itwin/core-common": "workspace:^3.0.0-dev.90",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.90",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.90",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.90",
-    "@itwin/presentation-frontend": "workspace:^3.0.0-dev.90",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.90",
-    "@itwin/components-react": "workspace:^3.0.0-dev.90",
-    "@itwin/core-react": "workspace:^3.0.0-dev.90",
-    "@itwin/imodel-components-react": "workspace:^3.0.0-dev.90",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.91",
+    "@itwin/core-common": "workspace:^3.0.0-dev.91",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.91",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.91",
+    "@itwin/presentation-frontend": "workspace:^3.0.0-dev.91",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.91",
+    "@itwin/components-react": "workspace:^3.0.0-dev.91",
+    "@itwin/core-react": "workspace:^3.0.0-dev.91",
+    "@itwin/imodel-components-react": "workspace:^3.0.0-dev.91",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "3.0.0-dev.90",
+  "version": "3.0.0-dev.91",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
@@ -12,8 +12,8 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
   },
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
@@ -53,7 +53,7 @@
     "typescript": "~4.4.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.90"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.91"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

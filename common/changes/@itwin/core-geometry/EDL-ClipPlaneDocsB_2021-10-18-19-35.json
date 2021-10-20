@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Documentation file for ClipPlane structures",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
