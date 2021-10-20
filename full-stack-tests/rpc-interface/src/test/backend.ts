@@ -38,7 +38,7 @@ const settings = new Settings(process.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.hubAccess = IModelHubBackend;
+  hostConfig.hubAccess = new IModelHubBackend();
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();
