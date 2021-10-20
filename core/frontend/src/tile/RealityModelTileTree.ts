@@ -903,7 +903,7 @@ export class RealityModelTileClient {
   private async _doRequest(url: string, responseType: string): Promise<any> {
     let options: RequestOptions = {
       method: "GET",
-      responseType
+      responseType,
     };
 
     const authToken = this._requestAuthorization ?? (await IModelApp.getAccessToken());
@@ -911,8 +911,8 @@ export class RealityModelTileClient {
       options = {
         ...options,
         headers: {
-          authorization: authToken
-        }
+          authorization: authToken,
+        },
       };
     }
 
