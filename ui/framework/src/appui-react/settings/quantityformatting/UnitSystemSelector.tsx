@@ -64,6 +64,7 @@ export function UnitSystemSelector(props: UnitSystemSelectorProps) { // eslint-d
       <Select data-testid="unitSystemSelector"
         value={unitSystemKey}
         options={displayUnitSystems} onChange={handleUnitSystemSelected}
+        size="small"
       />
     </div>
   );

@@ -37,6 +37,6 @@ export function SignOptionSelector(props: SignOptionSelectorProps) {
   }, [onChange]);
 
   return (
-    <Select options={options.current} value={signOption} onChange={handleOnChange} {...otherProps} />
+    <Select options={options.current} value={signOption} onChange={handleOnChange} size="small" {...otherProps} />
   );
 }

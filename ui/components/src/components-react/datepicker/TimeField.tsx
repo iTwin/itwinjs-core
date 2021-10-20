@@ -238,17 +238,17 @@ export function TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFie
   const showSeconds = -1 !== (timeDisplay as string).search(":ss");
 
   return <div data-testid="components-time-input" className="components-time">
-    <Input className="components-time-input" onKeyDown={handleHoursOnKeyDown} onBlur={handleHoursOnBlur} onChange={handleHoursChange} value={hoursText} disabled={readOnly} />
+    <Input className="components-time-input" onKeyDown={handleHoursOnKeyDown} onBlur={handleHoursOnBlur} onChange={handleHoursChange} value={hoursText} disabled={readOnly} size="small" />
     <span className="component-time-separator">:</span>
-    <Input className="components-time-input" onKeyDown={handleMinutesOnKeyDown} onBlur={handleMinutesOnBlur} onChange={handleMinutesChange} value={minutesText} disabled={readOnly} />
+    <Input className="components-time-input" onKeyDown={handleMinutesOnKeyDown} onBlur={handleMinutesOnBlur} onChange={handleMinutesChange} value={minutesText} disabled={readOnly} size="small" />
     {showSeconds &&
       <>
         <span className="component-time-separator">:</span>
-        <Input className="components-time-input" onKeyDown={handleSecondsOnKeyDown} onBlur={handleSecondsOnBlur} onChange={handleSecondsChange} value={secondsText} disabled={readOnly} />
+        <Input className="components-time-input" onKeyDown={handleSecondsOnKeyDown} onBlur={handleSecondsOnBlur} onChange={handleSecondsChange} value={secondsText} disabled={readOnly} size="small" />
       </>
     }
     {dayPeriodText &&
-      <Input className="components-time-period-input" onKeyDown={handleDayPeriodOnKeyDown} onBlur={handleDayPeriodOnBlur} onChange={handleDayPeriodChange} value={dayPeriodText} disabled={readOnly} />
+      <Input className="components-time-period-input" onKeyDown={handleDayPeriodOnKeyDown} onBlur={handleDayPeriodOnBlur} onChange={handleDayPeriodChange} value={dayPeriodText} disabled={readOnly} size="small" />
     }
   </div>;
 }

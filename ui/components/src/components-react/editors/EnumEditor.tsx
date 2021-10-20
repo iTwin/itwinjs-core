@@ -178,7 +178,8 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
           data-testid="components-select-editor"
           options={this.state.options}
           setFocus={this.props.setFocus}
-          aria-label={this._ariaLabel} />
+          aria-label={this._ariaLabel}
+          size="small" />
       </div>
     );
   }

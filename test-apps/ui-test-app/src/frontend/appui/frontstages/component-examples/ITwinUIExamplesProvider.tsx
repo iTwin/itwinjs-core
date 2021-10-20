@@ -30,7 +30,7 @@ export class ITwinUIExamplesProvider {
     return {
       title: "iTwinUI-react",
       examples: [
-        createComponentExample("Input", "iTwinUI Input component", <Input placeholder="Type..." className="uicore-full-width" />),
+        createComponentExample("Input", "iTwinUI Input component", <Input placeholder="Type..." className="uicore-full-width" size="small" />),
         createComponentExample("Check Box", undefined, <Checkbox label="Basic Check Box" />),
         createComponentExample("Radio Button", "Basic Radio Buttons",
           <div>
@@ -55,17 +55,18 @@ export class ITwinUIExamplesProvider {
               { label: "Option 2", value: "option2" },
               { label: "Option 3", value: "option3" },
               { label: "Option 4", value: "option4" },
-            ]} />),
+            ]}
+            size="small" />),
 
         createComponentExample("ProgressRadial", "at 50%", <ProgressRadial value={50} />),
         createComponentExample("Indeterminate ProgressRadial", "indeterminate prop", <ProgressRadial indeterminate />),
         createComponentExample("ProgressRadial with value", "display value of 63", <ProgressRadial size="large" value={63}>63</ProgressRadial>),
         createComponentExample("ProgressLinear", "at 50%", <ProgressLinear value={50} className="uicore-full-width" />),
         createComponentExample("Indeterminate ProgressLinear", "indeterminate prop", <ProgressLinear indeterminate className="uicore-full-width" />),
-        createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
-        createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status="positive" message="Positive message text" />),
-        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status="warning" message="Warning message text" />),
-        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status="negative" message="Error message text" />),
+        createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" size="small" />),
+        createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status="positive" message="Positive message text" size="small" />),
+        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status="warning" message="Warning message text" size="small" />),
+        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status="negative" message="Error message text" size="small" />),
       ],
     };
   }

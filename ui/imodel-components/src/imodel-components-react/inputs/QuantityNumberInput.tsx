@@ -293,7 +293,7 @@ const ForwardRefQuantityNumberInput = React.forwardRef<HTMLInputElement, Quantit
       <div className={containerClasses} >
         <div className="component-quantity-number-input-value-and-buttons-container">
           <Input ref={ref} value={formattedValue} onChange={handleDisplayValueChange} onKeyDown={handleKeyDown}
-            onBlur={handleBlur} onFocus={handleFocus} {...otherProps} />
+            onBlur={handleBlur} onFocus={handleFocus} size="small" {...otherProps} />
           <div className={classnames("component-quantity-number-input-buttons-container", showTouchButtons && "component-number-buttons-for-touch")}>
             { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
             <div className="component-quantity-number-input-button component-quantity-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>

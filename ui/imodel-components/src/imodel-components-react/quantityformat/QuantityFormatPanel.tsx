@@ -25,6 +25,7 @@ function createTextInputFormatPropEditor(key: string, label: string, inProps: Fo
       <span key={`${key}-label`} className={"uicore-label"}>{label}</span>
       <Input data-testid={`${key}-editor`} key={`${key}-editor`}
         value={value}
+        size="small"
         onChange={(e) => {
           const newProps = setString(inProps, e.currentTarget.value);
           fireFormatChange(newProps);

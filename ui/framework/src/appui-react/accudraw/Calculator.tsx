@@ -132,7 +132,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
     const topSection = this.props.resultIcon ?
       <IconInput containerClassName="uifw-calculator-top-input"
         value={this.state.displayValue} readOnly={true} icon={this.props.resultIcon} /> :
-      <Input value={this.state.displayValue} readOnly={true} />;
+      <Input value={this.state.displayValue} readOnly={true} size="small" />;
 
     return (
       // The event handler is only being used to capture bubbled events

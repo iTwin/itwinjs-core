@@ -46,6 +46,6 @@ export function DecimalPrecisionSelector(props: DecimalPrecisionSelectorProps) {
   }, [onChange]);
 
   return (
-    <Select options={options.current} value={precision} onChange={handleOnChange} {...otherProps} />
+    <Select options={options.current} value={precision} onChange={handleOnChange} size="small" {...otherProps} />
   );
 }

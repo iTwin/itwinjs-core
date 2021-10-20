@@ -385,23 +385,24 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               options={mapTypes}
               value={mapType}
               disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined}
-              onChange={handleMapTypeSelection} />
+              onChange={handleMapTypeSelection}
+              size="small"/>
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined} />
+            <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined} size="small" />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined} value={mapUrl} />
+            <Input placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined} value={mapUrl} size="small" />
             {isAuthSupported() && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
                 <LabeledInput placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
                   status={!userName && serverRequireCredentials ? InputStatus.Warning : undefined}
-                  onChange={onUsernameChange} />
+                  onChange={onUsernameChange} size="small" />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
                 <LabeledInput type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
                   status={!password && serverRequireCredentials ? InputStatus.Warning : undefined}
                   onChange={onPasswordChange}
-                  onKeyPress={handleOnKeyDown} />
+                  onKeyPress={handleOnKeyDown} size="small" />
               </>
             }
 

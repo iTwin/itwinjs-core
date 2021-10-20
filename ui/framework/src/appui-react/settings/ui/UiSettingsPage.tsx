@@ -137,6 +137,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
               onChange={onThemeChange}
               options={themeOptions}
               data-testid="select-theme"
+              size="small"
             />
           </div>
         }

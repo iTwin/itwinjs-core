@@ -70,7 +70,8 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
           options={scopeOptions}
           onChange={this._updateSelectValue}
           data-testid="components-selectionScope-selector"
-          title={this._toolTip} />
+          title={this._toolTip}
+          size="small" />
       </FooterIndicator >
     );
   }

@@ -45,6 +45,6 @@ export function ThousandsSelector(props: ThousandsSelectorProps) {
   }, [separator]);
 
   return (
-    <Select options={separatorOptions} disabled={disabled} value={separator} onChange={handleOnChange} {...otherProps} />
+    <Select options={separatorOptions} disabled={disabled} value={separator} onChange={handleOnChange} size="small" {...otherProps} />
   );
 }

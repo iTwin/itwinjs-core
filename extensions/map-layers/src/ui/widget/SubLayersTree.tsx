@@ -145,7 +145,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           <Input type="text" className="map-manager-source-list-filter"
             placeholder={placeholderLabel}
             value={layerFilterString}
-            onChange={handleFilterTextChanged} />
+            onChange={handleFilterTextChanged}
+            size="small" />
         }
       >
         {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [

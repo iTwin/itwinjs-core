@@ -61,6 +61,7 @@ export class Field extends React.Component<FieldProps> {
                 value={context!.values[this.props.id]}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
                 className="core-form-input"
+                size="small"
               />
             )}
             {this.props.editor!.toLowerCase() === "checkbox" && (
@@ -87,6 +88,7 @@ export class Field extends React.Component<FieldProps> {
                 onChange={(newValue: any) => context!.setValues({ [this.props.id]: newValue })}
                 options={selectOptions}
                 className="core-form-select"
+                size="small"
               />
             )}
           </div>
