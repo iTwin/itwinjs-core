@@ -144,7 +144,7 @@ importers:
       '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -164,7 +164,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@types/chai': 4.2.22
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -189,7 +189,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -224,7 +224,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -1501,7 +1501,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': ^0.2.0
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
@@ -1542,7 +1542,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91_electron@14.1.1
       '@itwin/projects-client': 0.2.0
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
@@ -1568,7 +1568,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': ^0.2.0
       '@itwin/service-authorization': ^0.2.0
       '@types/body-parser': ^1.17.0
@@ -1613,7 +1613,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91_electron@14.1.1
       '@itwin/projects-client': 0.2.0
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
@@ -1781,7 +1781,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
@@ -1812,7 +1812,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.2.0
       azurite: 3.14.2
@@ -1859,7 +1859,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -1910,7 +1910,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91_electron@14.1.1
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -1949,7 +1949,7 @@ importers:
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.2.0
@@ -1987,7 +1987,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
@@ -2026,7 +2026,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
@@ -2060,7 +2060,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
@@ -2091,7 +2091,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2151,7 +2151,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -2280,7 +2280,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2318,7 +2318,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/oidc-signin-tool': 3.0.0-dev.91
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/service-authorization': 0.2.0
@@ -3732,55 +3732,6 @@ importers:
       yargs: ^16.0.0
     dependencies:
       yargs: 16.2.0
-
-  ../../tools/oidc-signin-tool:
-    specifiers:
-      '@bentley/itwin-client': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/certa': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/chai-as-promised': ^7
-      '@types/mocha': ^8.2.2
-      '@types/node': 14.14.31
-      '@types/puppeteer': 2.0.1
-      chai: ^4.1.2
-      chai-as-promised: ^7
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      openid-client: ^4.7.4
-      puppeteer: chrome-86
-      rimraf: ^3.0.2
-      typescript: ~4.4.0
-    dependencies:
-      '@bentley/itwin-client': link:../../clients/itwin
-      '@itwin/certa': link:../certa
-      '@itwin/core-bentley': link:../../core/bentley
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      openid-client: 4.9.1
-      puppeteer: 5.3.1
-    devDependencies:
-      '@itwin/build-tools': link:../build
-      '@itwin/core-common': link:../../core/common
-      '@itwin/eslint-plugin': link:../eslint-plugin
-      '@types/chai': 4.2.22
-      '@types/chai-as-promised': 7.1.4
-      '@types/mocha': 8.2.3
-      '@types/node': 14.14.31
-      '@types/puppeteer': 2.0.1
-      chai: 4.3.4
-      chai-as-promised: 7.1.1_chai@4.3.4
-      eslint: 7.32.0
-      internal-tools: link:../internal
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
 
   ../../tools/perf-tools:
     specifiers:
@@ -6820,6 +6771,54 @@ packages:
       - supports-color
     dev: false
 
+  /@itwin/certa/3.0.0-dev.91:
+    resolution: {integrity: sha512-cnqRvcx7jEvEMFZX7sUPzbUGqWUgFRseA2a0BsaHTBAxdEYXcX/qC1YzX+Os6famE0r0TlE/5OadI04PxazU/Q==}
+    hasBin: true
+    peerDependencies:
+      electron: ^14.0.0
+    peerDependenciesMeta:
+      electron:
+        optional: true
+    dependencies:
+      detect-port: 1.3.0
+      express: 4.17.1
+      jsonc-parser: 2.0.3
+      lodash: 4.17.21
+      mocha: 8.4.0
+      puppeteer: 5.3.1
+      source-map-support: 0.5.20
+      uuid: 7.0.3
+      yargs: 16.2.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  /@itwin/certa/3.0.0-dev.91_electron@14.1.1:
+    resolution: {integrity: sha512-cnqRvcx7jEvEMFZX7sUPzbUGqWUgFRseA2a0BsaHTBAxdEYXcX/qC1YzX+Os6famE0r0TlE/5OadI04PxazU/Q==}
+    hasBin: true
+    peerDependencies:
+      electron: ^14.0.0
+    peerDependenciesMeta:
+      electron:
+        optional: true
+    dependencies:
+      detect-port: 1.3.0
+      electron: 14.1.1
+      express: 4.17.1
+      jsonc-parser: 2.0.3
+      lodash: 4.17.21
+      mocha: 8.4.0
+      puppeteer: 5.3.1
+      source-map-support: 0.5.20
+      uuid: 7.0.3
+      yargs: 16.2.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: true
+
   /@itwin/core-bentley/3.0.0-dev.91:
     resolution: {integrity: sha512-qOcNDWRGU+yuOyGKhvsp8MZLvni1LUEeDE7IHT4EtrJHrQVNtcPu1+Lq+omX7ZMbQs94pw0VV1vlqMTePCu/vA==}
 
@@ -6900,6 +6899,39 @@ packages:
       react: 17.0.2
       react-table: 7.7.0_react@17.0.2
       react-transition-group: 4.4.2_react@17.0.2
+    dev: true
+
+  /@itwin/oidc-signin-tool/3.0.0-dev.91:
+    resolution: {integrity: sha512-7EzVJK4J/tiHfXm763tIrOZZbwzvrdVXGNxMIoKBH24x4/1i+VdqcCvwIX04mS2rFmntsYrj+MhhLJ6CojSOvQ==}
+    dependencies:
+      '@bentley/itwin-client': 3.0.0-dev.91_@itwin+core-bentley@3.0.0-dev.91
+      '@itwin/certa': 3.0.0-dev.91
+      '@itwin/core-bentley': 3.0.0-dev.91
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      openid-client: 4.9.1
+      puppeteer: 5.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - electron
+      - supports-color
+      - utf-8-validate
+
+  /@itwin/oidc-signin-tool/3.0.0-dev.91_electron@14.1.1:
+    resolution: {integrity: sha512-7EzVJK4J/tiHfXm763tIrOZZbwzvrdVXGNxMIoKBH24x4/1i+VdqcCvwIX04mS2rFmntsYrj+MhhLJ6CojSOvQ==}
+    dependencies:
+      '@bentley/itwin-client': 3.0.0-dev.91_@itwin+core-bentley@3.0.0-dev.91
+      '@itwin/certa': 3.0.0-dev.91_electron@14.1.1
+      '@itwin/core-bentley': 3.0.0-dev.91
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      openid-client: 4.9.1
+      puppeteer: 5.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - electron
+      - supports-color
+      - utf-8-validate
     dev: true
 
   /@itwin/projects-client/0.2.0:
@@ -7220,7 +7252,6 @@ packages:
   /@panva/asn1.js/1.0.0:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
     engines: {node: '>=10.13.0'}
-    dev: false
 
   /@pmmmwh/react-refresh-webpack-plugin/0.4.3_9f0995138d24e525eb86c097d82409c0:
     resolution: {integrity: sha512-br5Qwvh8D2OQqSXpd1g/xqXKnK0r+Jz6qVKBbWmpUcrbGOxUrf39V5oZ1876084CGn18uMdR5uvPqBv9UqtBjQ==}
@@ -7315,7 +7346,6 @@ packages:
   /@sindresorhus/is/4.2.0:
     resolution: {integrity: sha512-VkE3KLBmJwcCaVARtQpfuKcKv8gcBmUubrfHGF84dXuuW6jgsRYxPtzcIhPyK9WAPpRt2/xY6zkD9MnRaJzSyw==}
     engines: {node: '>=10'}
-    dev: false
 
   /@sinonjs/commons/1.8.3:
     resolution: {integrity: sha512-xkNcLAn/wZaX14RPlwizcKicDk9G3F8m2nU3L7Ukm5zBgTwiT0wsoFAHx9Jq56fJA1z/7uKGtCRu16sOUCLIHQ==}
@@ -7468,7 +7498,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       defer-to-connect: 2.0.1
-    dev: false
 
   /@testing-library/dom/8.10.1:
     resolution: {integrity: sha512-rab7vpf1uGig5efWwsCOn9j4/doy+W3VBoUyzX7C4y77u0wAckwc7R8nyH6e2rw0rRzKJR+gWPiAg8zhiFbxWQ==}
@@ -7634,7 +7663,6 @@ packages:
       '@types/keyv': 3.1.3
       '@types/node': 14.14.31
       '@types/responselike': 1.0.0
-    dev: false
 
   /@types/chai-as-promised/7.1.4:
     resolution: {integrity: sha512-1y3L1cHePcIm5vXkh1DSGf/zQq5n5xDKG1fpCvf18+uOkpce0Z1ozNFPkyWsVswK7ntN1sZBw3oU6gmN+pDUcA==}
@@ -7801,7 +7829,6 @@ packages:
 
   /@types/http-cache-semantics/4.0.1:
     resolution: {integrity: sha512-SZs7ekbP8CN0txVG2xVRH6EgKmEm31BOxA07vkFaETzZz1xh+cbt8BcI0slpymvwhx5dlFnQG2rTlPVQn+iRPQ==}
-    dev: false
 
   /@types/i18next-browser-languagedetector/2.0.2:
     resolution: {integrity: sha512-5KhnWbUIfncsFQvZO2/k0P4qqvWpI8Isd3wa/56zVqORl9db3J+aPFgoeO0FN8oKozaT+s0U9RoQnSlqI5YRhw==}
@@ -7861,7 +7888,6 @@ packages:
     resolution: {integrity: sha512-FXCJgyyN3ivVgRoml4h94G/p3kY+u/B86La+QptcqJaWtBWtmc6TtkNfS40n9bIvyLteHh7zXOtgbobORKPbDg==}
     dependencies:
       '@types/node': 14.14.31
-    dev: false
 
   /@types/linkify-it/2.1.0:
     resolution: {integrity: sha512-Q7DYAOi9O/+cLLhdaSvKdaumWyHbm7HAk/bFwwyTuU0arR5yyCeW5GOoqt4tJTpDRxhpx9Q8kQL6vMpuw9hDSw==}
@@ -8051,7 +8077,6 @@ packages:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
     dependencies:
       '@types/node': 14.14.31
-    dev: false
 
   /@types/retry/0.12.1:
     resolution: {integrity: sha512-xoDlM2S4ortawSWORYqsdU+2rxdh4LRW9ytc3zmT37RIKQh6IHyKwwtKhKis9ah8ol07DCkZxPt8BBvPjC6v4g==}
@@ -8226,7 +8251,6 @@ packages:
     resolution: {integrity: sha512-8uALY5LTvSuHgloDVUvWP3pIauILm+8/0pDMokuDYIoNsOkSwd5AiHBTSEJjKTDcZr5z8UpgOWZkxBF4iJftoA==}
     dependencies:
       '@types/node': 14.14.31
-    dev: false
     optional: true
 
   /@typescript-eslint/eslint-plugin/4.31.2_8f0416aa8ec58a469909c5c0f73069bc:
@@ -8827,7 +8851,6 @@ packages:
   /agent-base/5.1.1:
     resolution: {integrity: sha512-TMeqbNl2fMW0nMjTEPOwe3J/PRFP4vqeoNuQMG0HlMrtm5QxKqdvAkZ1pRBQ/ulIyDD5Yq0nJ7YbdD8ey0TO3g==}
     engines: {node: '>= 6.0.0'}
-    dev: false
 
   /agent-base/6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
@@ -9677,7 +9700,6 @@ packages:
       buffer: 5.7.1
       inherits: 2.0.4
       readable-stream: 3.6.0
-    dev: false
 
   /bl/5.0.0:
     resolution: {integrity: sha512-8vxFNZ0pflFfi0WXA3WQXlj6CaMEwsmh63I1CNp0q+wWv8sD0ARx1KovSQd0l2GkwrMIOyedq0EF1FxI+RCZLQ==}
@@ -9910,7 +9932,6 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
-    dev: false
 
   /buffer/6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
@@ -9999,7 +10020,6 @@ packages:
   /cacheable-lookup/5.0.4:
     resolution: {integrity: sha512-2/kNscPhpcxrOigMZzbiWF7dz8ilhb/nIHU3EyZiXWXpeq/au8qJ8VhdftMkty3n7Gj6HIGalQG8oiBNB3AJgA==}
     engines: {node: '>=10.6.0'}
-    dev: false
 
   /cacheable-request/6.1.0:
     resolution: {integrity: sha512-Oj3cAGPCqOZX7Rz64Uny2GYAZNliQSqfbePrgAQ1wKAihYmCUnraBtJtKcGR4xz7wF+LoJC+ssFZvv5BgF9Igg==}
@@ -10024,7 +10044,6 @@ packages:
       lowercase-keys: 2.0.0
       normalize-url: 6.1.0
       responselike: 2.0.0
-    dev: false
 
   /caching-transform/4.0.0:
     resolution: {integrity: sha512-kpqOvwXnjjN44D89K5ccQC+RUrsy7jB/XLlRrx0D7/2HNcTPqzsb6XgYoErwko6QsV184CA2YgS1fxDiiDZMWA==}
@@ -11258,7 +11277,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       mimic-response: 3.1.0
-    dev: false
 
   /dedent/0.7.0:
     resolution: {integrity: sha1-JJXduvbrh0q7Dhvp3yLS5aVEMmw=}
@@ -11324,7 +11342,6 @@ packages:
   /defer-to-connect/2.0.1:
     resolution: {integrity: sha512-4tvttepXG1VaYGrRibk5EwJd1t4udunSOVMdLSAL6mId1ix438oPwPZMALY41FCijukO1L0twNcGsdzS7dHgDg==}
     engines: {node: '>=10'}
-    dev: false
 
   /define-properties/1.1.3:
     resolution: {integrity: sha512-3MqfYKj2lLzdMSf8ZIZE/V+Zuy+BgD6f164e8K2w7dgnpKArBDerGYpM46IYYcjnkdPNMjPk9A6VFB8+3SKlXQ==}
@@ -11439,11 +11456,9 @@ packages:
     dependencies:
       address: 1.1.2
       debug: 2.6.9
-    dev: false
 
   /devtools-protocol/0.0.799653:
     resolution: {integrity: sha512-t1CcaZbvm8pOlikqrsIM9GOa7Ipp07+4h/q9u0JXBWjPCjHdBl9KkddX87Vv9vBHoBGtwV79sYQNGnQM6iS5gg==}
-    dev: false
 
   /diff-sequences/26.6.2:
     resolution: {integrity: sha512-Mv/TDa3nZ9sbc5soK+OoA74BsS3mL37yixCvUAQkiuA4Wz6YtwP/K47n2rv2ovzHZvoiQeA5FTQOschKkEwB0Q==}
@@ -12560,7 +12575,6 @@ packages:
       '@types/yauzl': 2.9.2
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
   /faker/4.1.0:
     resolution: {integrity: sha1-HkW7vsxndLPBlfrSg1EJxtdIzD8=}
@@ -12949,7 +12963,6 @@ packages:
 
   /fs-constants/1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
-    dev: false
 
   /fs-extra/3.0.1:
     resolution: {integrity: sha1-N5TzeMWLNC6n27sjCVEJxLO2IpE=}
@@ -13320,7 +13333,6 @@ packages:
       lowercase-keys: 2.0.0
       p-cancelable: 2.1.1
       responselike: 2.0.0
-    dev: false
 
   /got/9.6.0:
     resolution: {integrity: sha512-R7eWptXuGYxwijs0eV+v3o6+XH1IqVK8dJOEecQfTmkncw9AV4dcw/Dhxi8MdlqPthxxpZyizMzyg8RTmEsG+Q==}
@@ -13728,7 +13740,6 @@ packages:
     dependencies:
       quick-lru: 5.1.1
       resolve-alpn: 1.2.1
-    dev: false
 
   /https-browserify/1.0.0:
     resolution: {integrity: sha1-7AbBDgo0wPL68Zn3/X/Hj//QPHM=}
@@ -13741,7 +13752,6 @@ packages:
       debug: 4.3.2
     transitivePeerDependencies:
       - supports-color
-    dev: false
 
   /https-proxy-agent/5.0.0:
     resolution: {integrity: sha512-EkYm5BcKUGiduxzSt3Eppko+PiNWNEpa4ySk9vTC6wDsQJW9rHSa+UhGNJoRYp7bz6Ht1eaRIa6QaJqO5rCFbA==}
@@ -15051,7 +15061,6 @@ packages:
     engines: {node: '>=10.13.0 < 13 || >=13.7.0'}
     dependencies:
       '@panva/asn1.js': 1.0.0
-    dev: false
 
   /jquery/3.6.0:
     resolution: {integrity: sha512-JVzAR/AjBvVt2BmYhxRCSYysDsPcssdmTFnzyLEts9qNwmjmu4JTAMYubEfwVOSwpQ1I1sKKFcxhZCI2buerfw==}
@@ -15215,7 +15224,6 @@ packages:
 
   /json-buffer/3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
-    dev: false
 
   /json-parse-better-errors/1.0.2:
     resolution: {integrity: sha512-mrqyZKfX5EhL7hvqcV6WG1yYjnjeuYDzDhhcAAUrq8Po85NBQBJP+ZDUT75qZQ98IkUoBqdkExkukOU7Ts2wrw==}
@@ -15286,7 +15294,6 @@ packages:
 
   /jsonc-parser/2.0.3:
     resolution: {integrity: sha512-WJi9y9ABL01C8CxTKxRRQkkSpY/x2bo4Gy0WuiZGrInxQqgxQpvkBCLNcDYcHOSdhx4ODgbFcgAvfL49C+PHgQ==}
-    dev: false
 
   /jsonfile/3.0.1:
     resolution: {integrity: sha1-pezG9l9T9mLEQVx2daAzHQmS7GY=}
@@ -15393,7 +15400,6 @@ packages:
     resolution: {integrity: sha512-zdGa2TOpSZPq5mU6iowDARnMBZgtCqJ11dJROFi6tg6kTn4nuUdU09lFyLFSaHrWqpIJ+EBq4E8/Dc0Vx5vLdA==}
     dependencies:
       json-buffer: 3.0.1
-    dev: false
 
   /killable/1.0.1:
     resolution: {integrity: sha512-LzqtLKlUwirEUyl/nicirVmNiPvYs7l5n8wOPP7fyJVpUPkvCnW/vuiXGpylGUlnPDnB7311rARzAt3Mhswpjg==}
@@ -16037,7 +16043,6 @@ packages:
   /mimic-response/3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
     engines: {node: '>=10'}
-    dev: false
 
   /mingo/1.3.3:
     resolution: {integrity: sha1-aSLE0Ufvx3GgFCWixMj3eER4xUY=}
@@ -16133,7 +16138,6 @@ packages:
 
   /mkdirp-classic/0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
-    dev: false
 
   /mkdirp/0.5.1:
     resolution: {integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=}
@@ -16580,7 +16584,6 @@ packages:
   /normalize-url/6.1.0:
     resolution: {integrity: sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==}
     engines: {node: '>=10'}
-    dev: false
 
   /npm-conf/1.1.3:
     resolution: {integrity: sha512-Yic4bZHJOt9RCFbRP3GgpqhScOY4HH3V2P8yBj6CeYq118Qr+BLXqT2JvpJ00mryLESpgOxf5XlFv4ZjXxLScw==}
@@ -16718,7 +16721,6 @@ packages:
   /object-hash/2.2.0:
     resolution: {integrity: sha512-gScRMn0bS5fH+IuwyIFgnh9zBdo4DV+6GhygmWM9HyNJSgS0hScp1f5vjtm7oIIOiT9trXrShAkLFSc2IqKNgw==}
     engines: {node: '>= 6'}
-    dev: false
 
   /object-inspect/1.11.0:
     resolution: {integrity: sha512-jp7ikS6Sd3GxQfZJPyH3cjcbJF6GZPClgdV+EFygjFLQ5FmW/dRUnTd9PQ9k0JhoNDabWFbpF1yCdSWCC6gexg==}
@@ -16816,7 +16818,6 @@ packages:
   /oidc-token-hash/5.0.1:
     resolution: {integrity: sha512-EvoOtz6FIEBzE+9q253HsLCVRiK/0doEJ2HCvvqMQb3dHZrP3WlJKYtJ55CRTw4jmYomzH4wkPuCj/I3ZvpKxQ==}
     engines: {node: ^10.13.0 || >=12.0.0}
-    dev: false
 
   /on-finished/2.3.0:
     resolution: {integrity: sha1-IPEzZIGwg811M3mSoWlxqi2QaUc=}
@@ -16875,7 +16876,6 @@ packages:
       make-error: 1.3.6
       object-hash: 2.2.0
       oidc-token-hash: 5.0.1
-    dev: false
 
   /opn/5.5.0:
     resolution: {integrity: sha512-PqHpggC9bLV0VeWcdKhkpxY+3JTzetLSqTCWL/z/tFIbI6G8JCjondXklT1JinczLz2Xib62sSp0T/gKT4KksA==}
@@ -16933,7 +16933,6 @@ packages:
   /p-cancelable/2.1.1:
     resolution: {integrity: sha512-BZOr3nRQHOntUjTrH8+Lh54smKHoHyur8We1V8DSMVrl5A2malOOwuJRnKRDjSnkoeBh4at6BwEnb5I7Jl31wg==}
     engines: {node: '>=8'}
-    dev: false
 
   /p-defer/1.0.0:
     resolution: {integrity: sha1-n26xgvbJqozXQwBKfU+WsZaw+ww=}
@@ -18207,7 +18206,6 @@ packages:
 
   /proxy-from-env/1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
-    dev: false
 
   /prr/1.0.1:
     resolution: {integrity: sha1-0/wRS6BplaRexok/SEzrHXj19HY=}
@@ -18289,7 +18287,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: false
 
   /q/1.5.1:
     resolution: {integrity: sha1-fjL3W0E4EpHQRhHxvxQQmsAGUdc=}
@@ -18339,7 +18336,6 @@ packages:
   /quick-lru/5.1.1:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
     engines: {node: '>=10'}
-    dev: false
 
   /raf-schd/4.0.3:
     resolution: {integrity: sha512-tQkJl2GRWh83ui2DiPTJz9wEiMN20syf+5oKfB03yYP7ioZcJwsIK8FjrtLwH1m7C7e+Tt2yYBlrOpdT+dyeIQ==}
@@ -19105,7 +19101,6 @@ packages:
 
   /resolve-alpn/1.2.1:
     resolution: {integrity: sha512-0a1F4l73/ZFZOakJnQ3FvkJ2+gSTQWz/r2KE5OdDY0TxPm5h4GkqkWWfM47T7HsbnOtcJVEF4epCVy6u7Q3K+g==}
-    dev: false
 
   /resolve-cwd/2.0.0:
     resolution: {integrity: sha1-AKn3OHVW4nA46uIyyqNypqWbZlo=}
@@ -19202,7 +19197,6 @@ packages:
     resolution: {integrity: sha512-xH48u3FTB9VsZw7R+vvgaKeLKzT6jOogbQhEe/jewwnZgzPcnyWui2Av6JpoYZF/91uueC+lqhWqeURw5/qhCw==}
     dependencies:
       lowercase-keys: 2.0.0
-    dev: false
 
   /ret/0.1.15:
     resolution: {integrity: sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==}
@@ -20538,7 +20532,6 @@ packages:
       mkdirp-classic: 0.5.3
       pump: 3.0.0
       tar-stream: 2.2.0
-    dev: false
 
   /tar-stream/2.2.0:
     resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
@@ -20549,7 +20542,6 @@ packages:
       fs-constants: 1.0.0
       inherits: 2.0.4
       readable-stream: 3.6.0
-    dev: false
 
   /tar/6.1.11:
     resolution: {integrity: sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==}
@@ -20699,7 +20691,6 @@ packages:
 
   /through/2.3.8:
     resolution: {integrity: sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=}
-    dev: false
 
   /through2/2.0.5:
     resolution: {integrity: sha512-/mrRod8xqpA+IHSLyGCQ2s8SPHiCDEeQJSep1jqLYeEUClOFG2Qsh+4FU6G9VeqpZnGW/Su8LQGc4YKni5rYSQ==}
@@ -21150,7 +21141,6 @@ packages:
     dependencies:
       buffer: 5.7.1
       through: 2.3.8
-    dev: false
 
   /undefsafe/2.0.5:
     resolution: {integrity: sha512-WxONCrssBM8TSPRqN5EmsjVrsv4A8X12J4ArBiiayv3DyyG3ZlIg6yysuuSYdZsVz3TKcTg2fd//Ujd4CHV1iA==}
@@ -21405,7 +21395,6 @@ packages:
   /uuid/7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
     hasBin: true
-    dev: false
 
   /uuid/8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}

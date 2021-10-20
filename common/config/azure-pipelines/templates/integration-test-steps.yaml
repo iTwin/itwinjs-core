@@ -68,11 +68,6 @@ steps:
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: "npm run test:integration"
-    workingDirectory: "tools/oidc-signin-tool"
-    displayName: "Run OIDC Sign-in Tool Tests"
-    condition: succeededOrFailed()
-
   - task: PublishTestResults@2
     displayName: "Publish Reality Data Clients Test Results"
     inputs:
@@ -115,11 +110,4 @@ steps:
     inputs:
       testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
       testRunTitle: "Presentation - Integration Tests - ${{ parameters.Node_Version }}"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Oidc Signin Tool Test Results"
-    inputs:
-      testResultsFiles: "tools/oidc-signin-tool/lib/test/junit_results.xml"
-      testRunTitle: "Tools - Oidc Signin Tool Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
