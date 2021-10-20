@@ -238,6 +238,7 @@ import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterial } from '@itwin/core-common';
+import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
@@ -7416,6 +7417,10 @@ export class RealityDataSource {
     protected constructor(props: RealityDataSourceProps);
     // (undocumented)
     static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // (undocumented)
     static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     static fromProps(props: RealityDataSourceProps): RealityDataSource;

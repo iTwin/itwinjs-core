@@ -12,8 +12,10 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 
 The following dependencies of iTwin.js have been updated;
 
-- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
-- `electron` updated to from `^11.1.0` -> `^14.0.0`,
+- `openid-client` updated from to `^3.15.3` -> `^4.7.4`,
+- `electron` updated from to `^11.1.0` -> `^14.0.0`,
+- `react` updated from to `^16.8.9` -> `^17.0.0`,
+- `react-dom` updated from to `^16.8.9` -> `^17.0.0`,
 
 ## Package name changes
 
@@ -78,6 +80,7 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
 - Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Dropped support for ESLint 6.x.
 
 ## BentleyError constructor no longer logs
 
@@ -804,6 +807,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed                       | Replacement  |
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | *eliminated* |
+| `UiItemsArbiter`              | *eliminated* |
 
 ### @itwin/core-react
 
@@ -1043,6 +1047,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
+### @bentley/appui-react
+
+| Removed                            | Replacement                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+
 ### @bentley/frontend-authorization-client
 
 | Removed                                          | Replacement                    |
@@ -1069,7 +1079,7 @@ A new @itwin/imodel-components-react package has been added and contains items r
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
-For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
 ### New options for defining Frontstages
 
@@ -1237,7 +1247,7 @@ Some have replacements within the @itwin/core-react package.
 
 A new @itwin/imodel-components-react package has been added, and some items were moved from @itwin/core-react and @itwin/components-react into this new package.
 The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
-Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
+Dependencies on these other iTwin.js packages have been removed from core-react and components-react.
 The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
@@ -1372,6 +1382,7 @@ The `ninezone-test-app` was used to test and demonstrate the now deprecated "nin
 In previous versions, localization was provided via the I18N class. iTwin.js has been updated to instead use the [Localization]($common) interface. The initialization of [IModelApp]($frontend) now takes an optional object that implements [Localization]($common). The [ITwinLocalization]($i18n) class supplies the default implementation, and may be customized with [LocalizationOptions]($i18n) in the constructor and supplied via [IModelAppOptions.localization]($frontend).
 
 The previous way to provide localization options:
+
 ```ts
 const i18nOptions: I18NOptions = {
   urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
@@ -1379,7 +1390,9 @@ const i18nOptions: I18NOptions = {
 
 await IModelApp.startup({ i18n: i18nOptions });
 ```
+
 Now becomes:
+
 ```ts
 const localizationOptions: LocalizationOptions = {
   urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json`
@@ -1395,3 +1408,13 @@ In previous versions, the [Tool.register]($frontend) method took an optional arg
 ## Improve/Enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
+## Buildology
+
+`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
+
+All packages will continue to build a CommonJS variant, but will now deliver it to `lib/cjs`. All frontend and shared ("common") packages will now build an ESModules variant, and deliver it to `lib/esm`. This change is intended to improve the bundle sizes of applications and allow for dynamic imports in order to tree-shake unused code.
+
+If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
+
+This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).

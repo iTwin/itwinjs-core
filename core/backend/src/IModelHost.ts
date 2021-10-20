@@ -6,15 +6,13 @@
  * @module IModelHost
  */
 
-import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { IModelClient } from "@bentley/imodelhub-client";
-import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
-import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { TelemetryManager } from "@bentley/telemetry-client";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
+import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { TelemetryManager } from "@bentley/telemetry-client";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -22,7 +20,6 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, AzureBlobStorageCredentials, CloudStorageService, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -92,8 +89,10 @@ export class IModelHostConfiguration {
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
-  /** The kind of iModel server to use. Defaults to iModelHubClient */
-  public imodelClient?: IModelClient;
+  /** The kind of iModel hub server to use.
+   * @beta
+   */
+  public hubAccess?: BackendHubAccess;
 
   /** The Azure blob storage credentials to use for the tile cache service. If omitted and no external service implementation is provided, a local cache will be used.
    * @beta
@@ -287,8 +286,6 @@ export class IModelHost {
 
     this.logStartup();
 
-    await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
-
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
@@ -326,7 +323,6 @@ export class IModelHost {
     }
 
     this.setupCacheDirs(configuration);
-    IModelHubBackend.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     [
@@ -343,7 +339,8 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    IModelHost._hubAccess = IModelHubBackend;
+    if (undefined !== configuration.hubAccess)
+      IModelHost._hubAccess = configuration.hubAccess;
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
@@ -370,7 +367,7 @@ export class IModelHost {
           ...startupInfo,
           iTwinId: serviceNameComponents[4],
           iModelId: serviceNameComponents[5],
-          changeSetId: serviceNameComponents[6],
+          changesetId: serviceNameComponents[6],
         };
       }
     }

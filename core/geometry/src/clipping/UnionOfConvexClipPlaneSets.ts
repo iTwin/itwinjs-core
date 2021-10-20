@@ -98,8 +98,11 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
       result._convexSets.push(convexSet.clone());
     return result;
   }
-  /** Append `toAdd` to the array of `ConvexClipPlaneSet` */
-  public addConvexSet(toAdd: ConvexClipPlaneSet) {
+  /** Append `toAdd` to the array of `ConvexClipPlaneSet`.
+   * * undefined toAdd is ignored.
+   */
+  public addConvexSet(toAdd: ConvexClipPlaneSet | undefined) {
+    if (toAdd)
     this._convexSets.push(toAdd);
   }
 

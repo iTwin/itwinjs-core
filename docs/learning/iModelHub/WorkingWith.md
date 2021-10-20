@@ -13,7 +13,6 @@ iModelHub API covers basic calls to iModelHub that are part of larger workflows.
 ## Before you start
 
 - [Obtaining an AccessToken]($docs/learning/common/AccessToken.md)
-- [Creating iModelHub client](./Client)
 - [Permissions](./Permissions)
 
 ## Working through backend classes

@@ -11,7 +11,6 @@ packageClassification:  [
          "core-markup",
          "core-i18n",
          "core-quantity",
-         "backend-itwin-client",
          "core-bentley",
          "ecschema-metadata",
          "ecschema-editing",
@@ -25,7 +24,6 @@ packageClassification:  [
      "order":"2",
      "header": "Client Packages",
      "packages": [
-       "itwin-registry-client",
        "extension-client",
        "imodelhub-client",
        "itwin-client",

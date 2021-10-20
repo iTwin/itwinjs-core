@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "added UnexpectedErrors class",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

@@ -362,7 +362,6 @@ export class EventSubscriptionHandler {
   }
 
   /** Create an [[EventSubscription]].
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param events Array of IModelHubEventTypes to subscribe to.
    * @return Created EventSubscription instance.
@@ -371,7 +370,6 @@ export class EventSubscriptionHandler {
   public async create(accessToken: AccessToken, iModelId: GuidString, events: IModelHubEventType[]): Promise<EventSubscription>;
   /**
    * Create an [[EventSubscription]].
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param events Array of EventTypes to subscribe to.
    * @return Created EventSubscription instance.
@@ -393,7 +391,6 @@ export class EventSubscriptionHandler {
   }
 
   /** Update an [[EventSubscription]]. Can change the [[EventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[EventSubscriptionHandler.create]] that hasn't expired.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param subscription Updated EventSubscription.
    * @return EventSubscription instance from iModelHub after update.
@@ -413,7 +410,6 @@ export class EventSubscriptionHandler {
   }
 
   /** Delete an [[EventSubscription]].
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param eventSubscriptionId Id of the EventSubscription.
    * @returns Resolves if the EventSubscription has been successfully deleted.
@@ -462,7 +458,6 @@ export class EventHandler extends EventBaseHandler {
   }
 
   /** Get event SAS Token. Used to authenticate for [[EventHandler.getEvent]].
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @return SAS Token to connect to the topic.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
