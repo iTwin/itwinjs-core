@@ -9,7 +9,6 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { Localization } from '@itwin/core-common';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -1969,21 +1968,11 @@ export enum ToolbarUsage {
 
 // @public
 export class UiAbstract {
-    static initialize(localization: Localization): Promise<void>;
-    static get initialized(): boolean;
-    // @internal
-    static get localization(): Localization;
-    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     static get messagePresenter(): MessagePresenter;
     static set messagePresenter(mp: MessagePresenter);
-    // @internal (undocumented)
-    static get packageName(): string;
-    static terminate(): void;
-    // @internal
-    static translate(key: string | string[]): string;
-}
+    }
 
 // @public
 export class UiAdmin {
