@@ -7,7 +7,7 @@
 import { Version } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { BriefcaseDb, BriefcaseManager, IModelHost, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 
@@ -68,7 +68,8 @@ export namespace IModelHubUtils {
 
   /** Call the specified function for each (named) Version of the specified iModel. */
   export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
-    const namedVersions = await IModelHubBackend.iModelClient.versions.get(accessToken, iModelId);
+    assert(IModelHost.hubAccess instanceof IModelHubBackend);
+    const namedVersions = await IModelHost.hubAccess.iModelClient.versions.get(accessToken, iModelId);
     for (const namedVersion of namedVersions) {
       func(namedVersion);
     }

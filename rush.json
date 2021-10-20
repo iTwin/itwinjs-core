@@ -53,7 +53,7 @@
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep",
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/itwin-client",
