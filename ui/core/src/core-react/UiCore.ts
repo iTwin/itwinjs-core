@@ -14,7 +14,7 @@ import "./classes.scss";
 
 import { Logger } from "@itwin/core-bentley";
 import { Localization } from "@itwin/core-common";
-import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
+import { getClassName, UiError } from "@itwin/appui-abstract";
 
 // cSpell:ignore colorthemes colorvariables
 
@@ -27,7 +27,7 @@ export class UiCore {
   private static _localization?: Localization;
 
   /**
-   * Registers the Localization service namespace for UiCore. Also initializes UiAbstract.
+   * Registers the Localization service namespace for UiCore.
    * @param localization The internationalization service created by the host application.
    */
   public static async initialize(localization: Localization): Promise<void> {
