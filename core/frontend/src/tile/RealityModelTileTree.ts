@@ -6,8 +6,9 @@
  * @module Utils
  */
 
-import { request, RequestOptions } from "@bentley/itwin-client";
+import { getArrayBuffer, getJson, request, RequestOptions } from "@bentley/itwin-client";
 import {
+  AccessToken,
   assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
@@ -914,17 +915,18 @@ export class RealityModelTileClient {
     return data.body;
   }
 
-  // Get blob URL information from RDS
-  public async getBlobAccessData(): Promise<URL | undefined> {
-    const token = await IModelApp.getAccessToken();
-    if (this.rdsProps && token) {
-      this.initializeRDSRealityData();
-      return this._realityData!.getBlobUrl(token);
-    }
+  /**
+   * Gets a tileset's app data json
+   * @param name name or path of tile
+   * @returns app data json object
+   * @internal
+   */
+  public async getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
+    const url = await realityData.getBlobUrl(accessToken, name);
 
-    return undefined;
+    const data = await getJson(url.toString());
+    return data;
   }
-
   // ### TODO. Technically the url should not be required. If the reality data encapsulated is stored on PW Context Share then
   // the relative path to root document is extracted from the reality data. Otherwise the full url to root document should have been provided at
   // the construction of the instance.
@@ -940,7 +942,7 @@ export class RealityModelTileClient {
       if (!realityData.rootDocument)
         throw new Error(`Root document not defined for reality data: ${realityData.id}`);
 
-      return realityData.getTileJson(token, realityData.rootDocument);
+      return this.getRealityDataTileJson(token, realityData.rootDocument, realityData);
     }
 
     // The following is only if the reality data is not stored on PW Context Share.
@@ -957,7 +959,17 @@ export class RealityModelTileClient {
     this.setBaseUrl(url);
     return this._doRequest(url, "json");
   }
+  /**
+   * Gets tile content
+   * @param name name or path of tile
+   * @returns array buffer of tile content
+   */
+  public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
+    const url = await realityData.getBlobUrl(accessToken, name);
 
+    const data = await getArrayBuffer(url.toString());
+    return data;
+  }
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
@@ -970,8 +982,8 @@ export class RealityModelTileClient {
     }
 
     const tileUrl = this._baseUrl + url;
-    if (useRds)
-      return this._realityData!.getTileContent(token, tileUrl);
+    if (useRds && this._realityData)
+      return this.getRealityDataTileContent(token, tileUrl, this._realityData);
 
     return this._doRequest(tileUrl, "arraybuffer");
   }
@@ -989,8 +1001,8 @@ export class RealityModelTileClient {
 
     const tileUrl = this._baseUrl + url;
 
-    if (undefined !== this.rdsProps && undefined !== token)
-      return this._realityData!.getTileJson(token, tileUrl);
+    if (undefined !== this.rdsProps && undefined !== token && this._realityData)
+      return this.getRealityDataTileJson(token, tileUrl, this._realityData);
 
     return this._doRequest(tileUrl, "json");
   }

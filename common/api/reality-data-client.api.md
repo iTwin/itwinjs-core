@@ -84,11 +84,11 @@ export class RealityData extends WsgInstance {
     description?: string;
     // (undocumented)
     footprint?: string;
-    getBlobStringUrl(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
-    getBlobUrl(accessToken: AccessToken, writeAccess?: boolean): Promise<URL>;
+    getBlobUrl(accessToken: AccessToken, blobPath?: string): Promise<URL>;
+    getContainerUrl(accessToken: AccessToken, writeAccess?: boolean): Promise<URL>;
     getRootDocumentJson(accessToken: AccessToken): Promise<any>;
-    getTileContent(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
-    getTileJson(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+    getTileContent(accessToken: AccessToken, name: string): Promise<any>;
+    getTileJson(accessToken: AccessToken, name: string): Promise<any>;
     // (undocumented)
     group?: string;
     // (undocumented)
