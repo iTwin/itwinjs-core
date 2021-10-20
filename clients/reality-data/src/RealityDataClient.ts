@@ -257,7 +257,7 @@ export class RealityData extends WsgInstance {
       responseType: "arraybuffer",
     };
     const data = await request(stringUrl, options);
-    return data;
+    return data.body;
   }
 
   /**
