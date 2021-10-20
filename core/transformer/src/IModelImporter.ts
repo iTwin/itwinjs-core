@@ -25,9 +25,6 @@ export interface IModelImportOptions {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
-
-  /** @see [IModelTransformerOptions.preserveIdsInPureFilterTransform]($transformer) */
-  preserveIdsInPureFilterTransform?: boolean;
 }
 
 /** Base class for importing data into an iModel.
@@ -45,8 +42,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
-  /** @see [[IModelImportOptions.preserveIdsInPureFilterTransform]] */
-  public preserveIdsInPureFilterTransform: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
@@ -69,7 +64,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
     this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
-    this.preserveIdsInPureFilterTransform = options?.preserveIdsInPureFilterTransform ?? false;
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);
@@ -432,6 +426,19 @@ export class IModelImporter implements Required<IModelImportOptions> {
       }
     }
   }
+}
+
+/** an [[IModelImporter]] that allows "filtering" an iModel, keeping ids of remaining elements in the
+ * target as matching with the source.
+ * Due to the inability to create an element with a specific id, we treat inserts as preventing
+ * deletion of elements, then delete all filtered (not-inserted) elements at the end of the transformation
+ * to keep just the unfiltered elements intact. All other updates apply normally.
+ *
+ * An instance of this subclass of [IModelTransformer]($transformer) is used when the options for the transformer have
+ * [IModelTransformOptions.preserveIdsInPureFilterTransform]($transformer) as `true`.
+ * @internal
+ */
+export class IModelFilterer extends IModelImporter {
 }
 
 /** Returns true if a change within an Entity is detected.

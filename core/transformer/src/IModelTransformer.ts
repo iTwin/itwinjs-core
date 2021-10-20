@@ -81,7 +81,8 @@ export interface IModelTransformOptions {
    * and source.
    * A "pure filter" transform takes an empty target and will not insert any elements into the target that aren't directly in the source.
    * When this flag is active, the transformer will assert on attempts to add elements to the source that aren't in the target.
-   * This safety checking can be disabled with the [[IModelTransformerOptions.disablePureFilterSafetyChecks]] option.
+   * This safety checking can be disabled with the [[IModelTransformOptions.disablePureFilterSafetyChecks]] option.
+   * Setting this to true is the only way to do a pure-filter transform, which always preserves Ids right now.
    * @default false
    */
   preserveIdsInPureFilterTransform?: boolean;
@@ -881,6 +882,35 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
+  }
+}
+
+/** an IModelTransformer that allows "filtering" an iModel, keeping ids of remaining elements in the
+ * target as matching with the source.
+ * Due to the inability to create an element with a specific id, we treat inserts as preventing
+ * deletion of elements, then delete all filtered (not-inserted) elements at the end of the transformation
+ * to keep just the unfiltered elements intact. All other updates apply normally.
+ *
+ * An instance of this subclass of [[IModelTransformer]] is used when the options for the transformer have
+ * [[IModelTransformOptions.preserveIdsInPureFilterTransform]] as `true`.
+ * @internal
+ */
+class IModelFilterer extends IModelTransformer {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public static Importer = class IModelFiltererImporter extends IModelImporter {
+
+  };
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public static Exporter = class IModelFiltererExporter extends IModelExporter {
+
+  };
+
+  public constructor(...[source, target, options]: ConstructorParameters<typeof IModelTransformer>) {
+    if (source instanceof IModelImporter) {
+      // Object.setPrototypeOf(Object.getPrototypeOf(source))
+    }
+    super(new IModelFilterer.Exporter(source), new IModelFilterer.Importer(target), options);
   }
 }
 
