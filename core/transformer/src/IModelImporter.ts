@@ -25,6 +25,9 @@ export interface IModelImportOptions {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
+
+  /** @see [IModelTransformerOptions.preserveIdsInPureFilterTransform]($transformer) */
+  preserveIdsInPureFilterTransform?: boolean;
 }
 
 /** Base class for importing data into an iModel.
@@ -33,7 +36,7 @@ export interface IModelImportOptions {
  * @see [IModelTransformer]($transformer)
  * @beta
  */
-export class IModelImporter {
+export class IModelImporter implements Required<IModelImportOptions> {
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
@@ -42,6 +45,8 @@ export class IModelImporter {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
+  /** @see [[IModelImportOptions.preserveIdsInPureFilterTransform]] */
+  public preserveIdsInPureFilterTransform: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
@@ -64,6 +69,7 @@ export class IModelImporter {
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
     this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
+    this.preserveIdsInPureFilterTransform = options?.preserveIdsInPureFilterTransform ?? false;
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);

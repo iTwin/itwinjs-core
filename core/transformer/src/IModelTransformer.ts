@@ -73,9 +73,18 @@ export interface IModelTransformOptions {
 
   /** Flag that indicates whether or not the transformation process should clone using binary geometry.
    * Only transformations that need to manipulate geometry should consider setting this flag as it impacts performance.
-   * @note The default is `true`.
+   * @default true
    */
   cloneUsingBinaryGeometry?: boolean;
+
+  /** Flag that indicates that the transform will be a "pure filter" and the transformer should enforce matching ids in the target
+   * and source.
+   * A "pure filter" transform takes an empty target and will not insert any elements into the target that aren't directly in the source.
+   * When this flag is active, the transformer will assert on attempts to add elements to the source that aren't in the target.
+   * This safety checking can be disabled with the [[IModelTransformerOptions.disablePureFilterSafetyChecks]] option.
+   * @default false
+   */
+  preserveIdsInPureFilterTransform?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
