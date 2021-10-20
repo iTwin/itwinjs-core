@@ -38,7 +38,6 @@ export class UiCore {
 
     UiCore._localization = localization;
     await UiCore._localization.registerNamespace(UiCore.localizationNamespace);
-    await UiAbstract.initialize(localization);
     UiCore._initialized = true;
   }
 
@@ -48,7 +47,6 @@ export class UiCore {
       UiCore._localization.unregisterNamespace(UiCore.localizationNamespace);
     UiCore._localization = undefined;
 
-    UiAbstract.terminate();
     UiCore._initialized = false;
   }
 
