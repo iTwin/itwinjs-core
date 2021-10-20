@@ -49,13 +49,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/itwin-registry-client",
-      "projectFolder": "clients/itwin-registry",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodelhub-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",

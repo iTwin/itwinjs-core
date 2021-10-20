@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.91",
+  "version": "3.0.0-dev.92",
   "description": "iModel.js iModelHub Client",
   "main": "lib/cjs/imodelhub-client.js",
   "modules": "lib/esm/imodelhub-client.js",
@@ -46,18 +46,18 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.91",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.91"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.92",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.92"
   },
   "devDependencies": {
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/itwin-registry-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",

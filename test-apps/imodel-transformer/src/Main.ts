@@ -6,7 +6,7 @@
 import * as path from "path";
 import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { ITwinAccessClient } from "@bentley/itwin-registry-client";
+import { ProjectsAccessClient } from "@itwin/projects-client";
 import { Version } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
@@ -117,14 +117,14 @@ void (async () => {
       Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
-    let iTwinAccessClient: ITwinAccessClient | undefined;
+    let iTwinAccessClient: ProjectsAccessClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
     const accessToken = await IModelHubUtils.getAccessToken();
     if (args.sourceITwinId || args.targetITwinId) {
-      iTwinAccessClient = new ITwinAccessClient();
+      iTwinAccessClient = new ProjectsAccessClient();
     }
 
     if (args.sourceITwinId) {

@@ -38,7 +38,6 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
