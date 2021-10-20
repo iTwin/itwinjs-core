@@ -1375,6 +1375,10 @@ The behavior of this method has not changed, but the parameters must be provided
 
 The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
 
+## Removed oidc-signin-tool
+
+The `oidc-signin-tool` contained various authorization testing tools. It has been relocated to the [@itwin/auth-clients](https://github.com/iTwin/auth-clients) repository.
+
 ## Localization Changes
 
 ### IModelApp.startup
