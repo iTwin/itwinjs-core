@@ -211,7 +211,7 @@ export class RealityData extends WsgInstance {
       if (fileAccess.length !== 1)
         throw new Error(`Could not obtain blob file access key for reality data: ${this.id}`);
       const urlString = fileAccess[0].url!;
-      this._blobUrl = new URL(urlString);
+      this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
       this._blobTimeStamp = new Date(Date.now());
     }
 
