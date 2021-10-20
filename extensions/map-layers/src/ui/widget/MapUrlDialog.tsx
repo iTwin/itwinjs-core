@@ -401,7 +401,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                   displayStyle="inline"
                   placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
                   status={!userName && serverRequireCredentials ? InputStatus.Warning : undefined}
-                  onChange={onUsernameChange} size="small" />
+                  onChange={onUsernameChange}
+                  size="small" />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
                 <LabeledInput
