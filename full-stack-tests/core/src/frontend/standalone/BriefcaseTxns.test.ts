@@ -7,20 +7,20 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
-describe("BriefcaseTxns", () => {
+describe.skip("BriefcaseTxns", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection;
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend();
       await initializeEditTools();
     });
 
     after(async () => {
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     beforeEach(async () => {
@@ -86,7 +86,6 @@ describe("BriefcaseTxns", () => {
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
-      // eslint-disable-next-line deprecation/deprecation
       await deleteElements(imodel, [elem1]);
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");

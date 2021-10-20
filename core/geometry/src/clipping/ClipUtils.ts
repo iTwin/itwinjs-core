@@ -665,4 +665,32 @@ export class ClipUtilities {
       this.clipSegmentBelowPlaneXY(planes[i], segment0, segment1, interval, signedAltitude);
     }
   }
+  /**
+   * Pass line segments from a polyline to the clipper.  Resolve the fractional clips to simple points for announcement.
+   * @param clipper clipper to call
+   * @param points polyline whose segments are passed to the clipper
+   * @param announce caller's handler for simple point pairs.
+   */
+  public static announcePolylineClip(clipper: Clipper, points: Point3d[], announce: (point0: Point3d, point1: Point3d) => void) {
+    for (let i = 0; i + 1 < points.length; i++){
+      clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1],
+        (f0: number, f1: number) => {
+          announce(points[i].interpolate(f0, points[i + 1]), points[i].interpolate(f1, points[i + 1]));
+        });
+    }
+  }
+  /**
+   * Pass line segments from a polyline to the clipper.  Sum the lengths of the clipped pieces.  Return the sum.
+   * @param clipper clipper to call
+   * @param points polyline whose segments are passed to the clipper
+   */
+  public static sumPolylineClipLength(clipper: Clipper, points: Point3d[]) {
+    let s = 0;
+    for (let i = 0; i + 1 < points.length; i++){
+      const a = points[i].distance(points[i + 1]);
+      clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1],
+        (f0: number, f1: number) => {s += Math.abs(f1 - f0) * a;});
+    }
+    return s;
+  }
 }

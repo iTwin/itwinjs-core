@@ -480,11 +480,13 @@ button.map-manager-item-visibility {
   }
 
   .map-manager-sources {
+    margin-top: 4px;
     height: 250px;
     min-height: 60px;
 
     .map-source-list-entry {
       button.map-source-list-entry-button {
+        height: auto;
         padding: 0 4px 0 4px;
         margin: 0;
         background-color: transparent;

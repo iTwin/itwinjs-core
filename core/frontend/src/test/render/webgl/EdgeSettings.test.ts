@@ -113,16 +113,12 @@ describe("EdgeSettings", () => {
     const es = EdgeSettings.create(undefined);
     for (const renderMode of [ RenderMode.HiddenLine, RenderMode.SolidFill ])
       for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ]) {
-        let flags = OvrFlags.Alpha;
         const vf = ViewFlags.fromJSON({ renderMode });
 
-        // If color is not explicitly overridden in solid fill mode, edges always draw white.
-        if (RenderMode.SolidFill === renderMode) {
-          flags |= OvrFlags.Rgb;
-          expect(es.getColor(vf)?.tbgr).to.equal(ColorDef.white.tbgr);
-        }
+        // If color is not explicitly overridden in solid fill mode, the shader will compute a contrasting shade of grey for each element.
+        expect(es.wantContrastingColor(renderMode)).to.equal(RenderMode.SolidFill === renderMode);
 
-        expect(es.computeOvrFlags(pass, vf)).to.equal(flags);
+        expect(es.computeOvrFlags(pass, vf)).to.equal(OvrFlags.Alpha);
       }
   });
 

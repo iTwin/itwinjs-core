@@ -394,9 +394,7 @@ You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Getting Starte
 The node packages you'll need can be installed using
 
 ```Shell
-$npm install  @bentley/backend-itwin-client
 $npm install  @itwin/core-bentley
-$npm install  @bentley/itwin-registry-client
 $npm install  @itwin/ecschema-metadata
 $npm install  @itwin/core-geometry
 $npm install  @bentley/imodelhub-client

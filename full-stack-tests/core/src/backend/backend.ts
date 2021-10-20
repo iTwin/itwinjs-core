@@ -7,17 +7,16 @@ import "./RpcImpl";
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { IModelJsExpressServer } from "@itwin/express-server";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import {
-  BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance,
-} from "@itwin/core-common";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
+import { IModelJsExpressServer } from "@itwin/express-server";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -78,8 +77,10 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
+  IModelHubBackend.setIModelClient(CloudEnv.cloudEnv.imodelClient);
+
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  iModelHost.hubAccess = IModelHubBackend;
 
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
@@ -105,7 +106,6 @@ async function init() {
     await IModelHost.startup(iModelHost);
   }
 
-  // Start the backend
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();

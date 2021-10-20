@@ -34,14 +34,6 @@ steps:
       testRunTitle: "Core - Bentley Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Backend iTwin Client Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Backend iTwin Client Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  #   enabled: false
   - task: PublishTestResults@2
     displayName: "Publish Common Backend Test Results"
     inputs:
@@ -169,13 +161,6 @@ steps:
     displayName: "Publish Core Full Stack Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
-      testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Native App Full Stack Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
       testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
