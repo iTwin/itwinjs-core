@@ -787,11 +787,6 @@ export class IModelTransformer extends IModelExportHandler {
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
-  // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
-  // to work in try/catch syntax in functions that contain a nested function
-  // until that merges and we upgrade our dependency, the callback cannot be defined inside the method it is used
-  private makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
-
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
@@ -804,7 +799,7 @@ export class IModelTransformer extends IModelExportHandler {
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
-      const schemaFullPaths = exportedSchemaFiles.map(this.makeAbsolute);
+      const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
       return await this.targetDb.importSchemas(schemaFullPaths);
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);
