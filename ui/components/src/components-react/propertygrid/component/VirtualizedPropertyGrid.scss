@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/expandable/list";
 @import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
-@import "~@itwin/core-react/lib/cjs/core-react/style/itwinui-overrides";
 
 .components-virtualized-property-grid-loader {
   height: 100%;
@@ -15,8 +14,6 @@
 
 .components-virtualized-property-grid {
   user-select: none;
-
-  @include small-itwinui-expandable-block;
 }
 
 .components-property-grid-wrapper {

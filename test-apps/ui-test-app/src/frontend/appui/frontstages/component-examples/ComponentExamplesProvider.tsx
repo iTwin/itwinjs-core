@@ -670,25 +670,25 @@ export class ComponentExamplesProvider {
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),

@@ -18,38 +18,8 @@
 
 }
 
-@mixin small-itwinui-expandable-block {
-
-  $small-space: 5px;
-
-  .iui-expandable-block {
-    >.iui-header {
-      padding: $small-space $small-space !important;
-
-      >.iui-icon {
-        width: $uicore-icons-x-small !important;
-        height: $uicore-icons-x-small !important;
-
-        margin-left: $iui-xs !important;
-      }
-
-      >.iui-expandable-block-label {
-        margin-left: 8px;
-      }
-    }
-
-    &.iui-expanded {
-      >.iui-content {
-        padding: 0 !important;
-      }
-    }
-  }
-
-}
-
 @mixin itwinui-style-overrides {
 
   @include small-itwinui-toggle-switch;
-  @include small-itwinui-expandable-block;
 
 }
