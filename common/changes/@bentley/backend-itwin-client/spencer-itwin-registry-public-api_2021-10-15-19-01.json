@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "Switching to consume new Projects-Client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client"
+}

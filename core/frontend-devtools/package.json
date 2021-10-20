@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-devtools",
-  "version": "3.0.0-dev.91",
+  "version": "3.0.0-dev.92",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
@@ -40,7 +40,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "file-saver": "^2.0.2"
   },

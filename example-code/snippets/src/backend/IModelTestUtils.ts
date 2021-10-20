@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { OpenMode } from "@itwin/core-bentley";
-import { ITwinAccessClient } from "@bentley/itwin-registry-client";
+import { ProjectsAccessClient } from "@itwin/projects-client";
 import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
@@ -32,10 +32,10 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-  private static _iTwinAccessClient: ITwinAccessClient | undefined;
-  public static get iTwinAccessClient(): ITwinAccessClient {
+  private static _iTwinAccessClient: ProjectsAccessClient | undefined;
+  public static get iTwinAccessClient(): ProjectsAccessClient {
     if (!IModelTestUtils._iTwinAccessClient)
-      IModelTestUtils._iTwinAccessClient = new ITwinAccessClient();
+      IModelTestUtils._iTwinAccessClient = new ProjectsAccessClient();
     return IModelTestUtils._iTwinAccessClient;
   }
 

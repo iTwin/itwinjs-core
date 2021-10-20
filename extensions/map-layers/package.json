@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.91",
+  "version": "3.0.0-dev.92",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -42,7 +42,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
@@ -98,7 +97,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",

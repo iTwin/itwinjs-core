@@ -1676,8 +1676,7 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
-        "product-settings",
-        "itwin-registry"
+        "product-settings"
       ]
     }
   ]
