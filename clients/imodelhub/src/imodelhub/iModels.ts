@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { AccessToken, BentleyError, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
@@ -33,7 +33,7 @@ export class HubIModel extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
 
-  /** Name of the iModel. iModels must have unique names per iTwin ([[ITwin]]). */
+  /** Name of the iModel. iModels must have unique names per iTwin. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
@@ -400,7 +400,7 @@ export class IModelsHandler {
 
   /** Get iModels that belong to the specified iTwin.
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param query Optional query object to filter the queried iModels or select different data from them.
     * @returns [[HubIModel]] instances that match the query.
     * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
@@ -418,7 +418,7 @@ export class IModelsHandler {
 
   /** Delete an iModel with specified id from its parent iTwin. This method is not supported in iModelBank.
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
@@ -525,7 +525,7 @@ export class IModelsHandler {
   }
 
   /** Wait until the iModel is initialized.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param imodel iModel instance that will be returned if initialization is successful.
     * @param timeOutInMilliseconds Maximum time to wait for the initialization.
     */
@@ -590,7 +590,7 @@ export class IModelsHandler {
   /** Create an iModel from given seed file. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
     * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param name Name of the iModel on the Hub.
     * @param createOptions Optional arguments for iModel creation.
     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -642,7 +642,7 @@ export class IModelsHandler {
 
   /** Update iModel's name and/or description
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param imodel iModel to update. See [[HubIModel]].
     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -710,7 +710,7 @@ export class IModelHandler {
   /**
     * Get iModel that belong to the specified iTwin.
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @returns [[HubIModel]] instances that match the query.
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -730,7 +730,7 @@ export class IModelHandler {
   /**
     * Delete an iModel from its parent iTwin. This method is not supported in iModelBank.
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -743,7 +743,7 @@ export class IModelHandler {
   /**
     * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @returns State of the seed file initialization.
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
     * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
@@ -760,7 +760,7 @@ export class IModelHandler {
     *
     * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param name Name of the iModel on the Hub.
     * @param createOptions Optional arguments for iModel creation.
     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -788,7 +788,7 @@ export class IModelHandler {
   /**
     * Update iModel's name and/or description
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param imodel iModel to update. See [[HubIModel]].
     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -803,7 +803,7 @@ export class IModelHandler {
   /**
     * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
     * @param accessToken A valid access token string.
-    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
     * @param path Path where seed file should be downloaded, including filename.
     * @param progressCallback Callback for tracking progress.
     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.

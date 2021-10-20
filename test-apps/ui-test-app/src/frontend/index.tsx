@@ -11,7 +11,7 @@ import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
@@ -29,7 +29,6 @@ import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
@@ -180,7 +179,6 @@ export class SampleAppIModelApp {
 
     const iModelAppOpts = {
       ...opts.iModelApp,
-      localization: new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" }),
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
@@ -489,10 +487,10 @@ export class SampleAppIModelApp {
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const accessToken = await IModelApp.getAccessToken();
-      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
+      const iTwinList: ITwin[] = await (new ProjectsAccessClient()).getAll(accessToken, {
         search: {
           searchString: iTwinName,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
           exactMatch: true,
         },
       });
