@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Backport from PR#2451 enable reprojection and merge",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "73677355+AlainRobertAtBentley@users.noreply.github.com"
+}
