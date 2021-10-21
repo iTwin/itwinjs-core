@@ -7,7 +7,7 @@
  * @module RealityData
  */
 
-import { getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
@@ -239,8 +239,12 @@ export class RealityData extends WsgInstance {
   public async getTileContent(accessToken: AccessToken, name: string): Promise<any> {
     const url = await this.getBlobUrl(accessToken, name);
 
-    const data = await getArrayBuffer(url.toString());
-    return data;
+    const options: RequestOptions = {
+      method: "GET",
+      responseType: "arraybuffer",
+    };
+    const data = await request(url.toString(), options);
+    return data.body;
   }
 
   /**

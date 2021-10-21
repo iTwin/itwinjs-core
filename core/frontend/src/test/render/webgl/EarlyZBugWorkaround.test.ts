@@ -35,6 +35,10 @@ function containsWorkaround(program: ShaderProgram): boolean {
   return -1 !== program.fragSource.indexOf(workaround);
 }
 
+function isHiliteShader(program: ShaderProgram): boolean {
+  return -1 !== program.fragSource.indexOf("-Hilite");
+}
+
 describe("Early Z driver bug workaround", () => {
   after(async () => {
     await IModelApp.shutdown();
@@ -47,7 +51,7 @@ describe("Early Z driver bug workaround", () => {
     let index = 0;
     TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
       expect(containsWorkaround(program)).to.be.false;
-      if (!containsDiscardStatement(program))
+      if (!containsDiscardStatement(program) && !isHiliteShader(program))
         indicesOfShadersLackingDiscard.push(index);
 
       ++index;
@@ -60,7 +64,8 @@ describe("Early Z driver bug workaround", () => {
     await TestSystem.startIModelApp(true);
     index = 0;
     TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
-      expect(containsDiscardStatement(program)).to.be.true;
+      if (!isHiliteShader(program))
+        expect(containsDiscardStatement(program)).to.be.true;
       const needsWorkaround = -1 !== indicesOfShadersLackingDiscard.indexOf(index);
       expect(containsWorkaround(program)).to.equal(needsWorkaround);
       if (needsWorkaround)
