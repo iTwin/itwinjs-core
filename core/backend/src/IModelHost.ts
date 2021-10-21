@@ -101,8 +101,8 @@ export class IModelHostConfiguration {
 
   /**
    * @beta
-   * @note A reference implementation is set for [AzureBlobStorage] if [IModelHostConfiguration.tileCacheAzureCredentials] property is set. To supply a different implementation for any service provider (such as AWS),
-   *       set this property with a custom [CloudStorageService].
+   * @note A reference implementation is set for [[AzureBlobStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom [[CloudStorageService]].
    */
   public tileCacheService?: CloudStorageService;
 
@@ -253,11 +253,14 @@ export class IModelHost {
     throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
-  /** @beta */
-  public static tileCacheService: CloudStorageService;
+  /**
+   * @internal
+   * @note Use [[IModelHostConfiguration.tileCacheService]] to set the service provider.
+   */
+  public static tileCacheService?: CloudStorageService;
 
   /** @internal */
-  public static tileUploader: CloudStorageTileUploader;
+  public static tileUploader?: CloudStorageTileUploader;
 
   private static _hubAccess: BackendHubAccess;
   /** @internal */
@@ -344,7 +347,7 @@ export class IModelHost {
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
-    this.platform.setUseTileCache(configuration.tileCacheService ? false : true);
+    this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
 
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
@@ -390,6 +393,8 @@ export class IModelHost {
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+    IModelHost.tileCacheService = undefined;
+    IModelHost.tileUploader = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
@@ -476,7 +481,7 @@ export class IModelHost {
     } else if (!credentials && service) {
       IModelHost.tileCacheService = service;
     } else {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom tile cache service providers.");
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
     }
   }
 }

@@ -133,7 +133,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
   if (IModelHost.usingExternalTileCache) {
-    await IModelHost.tileUploader.cacheTile(props.tokenProps, props.treeId, props.contentId, tile.content, props.guid, {
+    await IModelHost.tileUploader?.cacheTile(props.tokenProps, props.treeId, props.contentId, tile.content, props.guid, {
       backendName: IModelHost.applicationId,
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
@@ -211,7 +211,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
-    return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+    return IModelHost.tileCacheService!.obtainContainerUrl(id, expiry, clientIp);
   }
 
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
