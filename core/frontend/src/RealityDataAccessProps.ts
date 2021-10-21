@@ -35,7 +35,7 @@ export interface RealityData {
   rootDocument?: string;
   type?: string;
 
-  getBlobUrl(accessToken: AccessToken, blobPath?: string): Promise<URL>;
+  getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL>;
 }
 
 /**

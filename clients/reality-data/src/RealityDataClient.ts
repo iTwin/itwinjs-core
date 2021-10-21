@@ -12,7 +12,6 @@ import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
-import { URL } from "url";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
@@ -176,7 +175,7 @@ export class RealityData extends WsgInstance {
    * @param blobPath name or path of tile
    * @returns string url for blob data
    */
-  public async getBlobUrl(accessToken: AccessToken, blobPath?: string): Promise<URL> {
+  public async getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL> {
     const url = await this.getContainerUrl(accessToken);
     if (blobPath === undefined)
       return url;
@@ -211,7 +210,7 @@ export class RealityData extends WsgInstance {
       if (fileAccess.length !== 1)
         throw new Error(`Could not obtain blob file access key for reality data: ${this.id}`);
       const urlString = fileAccess[0].url!;
-      this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
+      this._blobUrl = new URL(urlString);
       this._blobTimeStamp = new Date(Date.now());
     }
 
