@@ -57,7 +57,7 @@ export interface HttpServerRequest extends Readable {
   rawHeaders: string[];
   trailers: { [key: string]: string | undefined };
   rawTrailers: string[];
-  setTimeout(msecs: number, callback: : () => void) => this;
+  setTimeout: (msecs: number, callback: () => void) => this;
   url?: string;
   statusCode?: number;
   statusMessage?: string;

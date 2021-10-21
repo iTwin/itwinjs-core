@@ -13,7 +13,8 @@ import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
 /** @internal */
 export interface FormDataCommon {
-  append: (name: string, value: string | Blob | Buffer, fileName?: string) => void;
+  // ###TODO_INTFC_FUNC Buffer not supported by FormData.append
+  append(name: string, value: string | Blob | Buffer, fileName?: string): void;
 }
 
 /** @internal */
