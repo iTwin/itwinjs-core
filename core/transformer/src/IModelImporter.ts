@@ -426,21 +426,89 @@ export class IModelImporter implements Required<IModelImportOptions> {
       }
     }
   }
+
+  /** called after all other importing work.
+   * a subclass may perform arbitrary work after all other importing is done by overriding this method
+   */
+  public onFinalizeImport() {}
 }
 
+// TODO?: rename to IdPreservingFilterer
 /** an [[IModelImporter]] that allows "filtering" an iModel, keeping ids of remaining elements in the
  * target as matching with the source.
  * Due to the inability to create an element with a specific id, we treat inserts as preventing
  * deletion of elements, then delete all filtered (not-inserted) elements at the end of the transformation
  * to keep just the unfiltered elements intact. All other updates apply normally.
  *
+ * When subclassing this, you must pass an id in all props passed to
+ *
  * An instance of this subclass of [IModelTransformer]($transformer) is used when the options for the transformer have
  * [IModelTransformOptions.preserveIdsInPureFilterTransform]($transformer) as `true`.
  * @internal
  */
 export class IModelFilterer extends IModelImporter {
-  public override importElement(_elementProps: ElementProps): Id64String {
-    return Id64.invalid;
+  private _insertionOrder = new Array<{id: Id64String, deleter: Function}>();
+
+  public override importModel(modelProps: ModelProps): Id64String {
+    if (modelProps.id === undefined)
+      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
+    this._insertionOrder.push({ id: modelProps.id, deleter: super.onDelete});
+    return modelProps.id;
+  }
+
+  public override importElement(elementProps: ElementProps): Id64String {
+    if (elementProps.id === undefined)
+      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
+    this._insertionOrder.push({id: elementProps.id, deleter: super.onDeleteElement});
+    return elementProps.id;
+  }
+
+  protected override onInsertElement(_elementProps: ElementProps): Id64String {
+    throw new IModelError(IModelStatus.BadRequest, "not allowed during a filter transform");
+  }
+
+  protected override onDeleteElement(_elementId: Id64String): void {}
+
+  public override importElementUniqueAspect(aspectProps: ElementAspectProps) {
+    if (aspectProps.id === undefined)
+      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
+    this._insertionOrder.push(aspectProps.id);
+    return aspectProps.id;
+  }
+
+  public override importElementMultiAspects(aspectsProps: ElementAspectProps[], _filterFunc?: (a: ElementMultiAspect) => boolean): void {
+    aspectsProps.forEach((aspectProps) => {
+      if (aspectProps.id === undefined)
+        throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
+      this._insertionOrder.push(aspectProps.id);
+    });
+  }
+
+  protected override onInsertElementAspect(_aspectProps: ElementAspectProps): void {
+    throw new IModelError(IModelStatus.BadRequest, "not allowed during a pure filter transform");
+  }
+
+  protected override onDeleteElementAspect(_aspectProps: ElementAspectProps): void {}
+
+  public override importRelationship(relationshipProps: RelationshipProps): Id64String {
+    if (relationshipProps.id === undefined)
+      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
+    this._insertionOrder.push(relationshipProps.id);
+    return relationshipProps.id;
+  }
+
+  protected override onInsertRelationship(_relationshipProps: RelationshipProps): Id64String {
+    throw new IModelError(IModelStatus.BadRequest, "not allowed during a pure filter transform");
+  }
+
+  protected override onDeleteRelationship(_relationshipProps: RelationshipProps) {}
+
+  public override onFinalizeImport() {
+    // TODO: abstract array reverse iteration to a generator if v8 performance matches raw loop
+    for (let i = this._insertionOrder.length - 1; i >= 0; --i) {
+      const item = this._insertionOrder[i];
+      super.deleteElement(item);
+    }
   }
 }
 

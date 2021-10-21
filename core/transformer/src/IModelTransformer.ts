@@ -77,15 +77,16 @@ export interface IModelTransformOptions {
    */
   cloneUsingBinaryGeometry?: boolean;
 
-  /** Flag that indicates that the transform will be a "pure filter" and the transformer should enforce matching ids in the target
-   * and source.
-   * A "pure filter" transform takes an empty target and will not insert any elements into the target that aren't directly in the source.
-   * When this flag is active, the transformer will assert on attempts to add elements to the source that aren't in the target.
-   * This safety checking can be disabled with the [[IModelTransformOptions.disablePureFilterSafetyChecks]] option.
-   * Setting this to true is the only way to do a pure-filter transform, which always preserves Ids right now.
+  /** Flag that indicates that the transform will be a filter transform.
+   * The transformer will ignore the target's contents, and only allow insertions of elements from the source into the target.
+   * It will also preserve the ids from the source in the target. Attempts to insert anything that isn't in the source
+   * will fail, although updates can be made.
+   * Setting this option to `true` is the only way to do a filter transform, which preserves ids and
+   * cannot insert additional elements.
+   * @beta
    * @default false
    */
-  preserveIdsInPureFilterTransform?: boolean;
+  preserveIdsInFilterTransform?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -124,7 +125,7 @@ export class IModelTransformer extends IModelExportHandler {
   private _isFirstSynchronization?: boolean;
 
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelFilterer, options: IModelTransformOptions & { preserveIdsInPureFilterTransform: true });
-  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions & { preserveIdsInPureFilterTransform: false });
+  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions & { preserveIdsInPureFilterTransform?: false });
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
    * @param target Specifies the target IModelImporter or the target IModelDb that will be used to construct the target IModelImporter.
@@ -160,14 +161,14 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
-      if (options?.preserveIdsInPureFilterTransform) {
+      if (options?.preserveIdsInFilterTransform) {
         this.importer = new IModelFilterer(target);
       } else {
         this.importer = new IModelImporter(target);
       }
     } else {
       // if we don't require them to extend it, we may have to inject it into the prototype chain ourselves which is imo uglier
-      if (options?.preserveIdsInPureFilterTransform) {
+      if (options?.preserveIdsInFilterTransform) {
         throw new IModelError(
           IModelStatus.BadArg,
           "if the target is an IModelImporter instance, and preserveIdsInPureFilterTransform is true, the instance must extend IModelFilterer"
@@ -873,6 +874,7 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectRelationshipDeletes();
     }
     this.importer.computeProjectExtents();
+    this.importer.onFinalizeImport();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -890,6 +892,7 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
+    this.importer.onFinalizeImport();
   }
 }
 
