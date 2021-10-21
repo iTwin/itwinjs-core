@@ -77,8 +77,8 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   public get hasFocus(): boolean {
     let containsFocus = false;
     // istanbul ignore else
-    if (this._divElement.current)
-      containsFocus = this._divElement.current.contains(document.activeElement);
+    if (this.htmlElement)
+      containsFocus = this.htmlElement.contains(document.activeElement);
     return containsFocus;
   }
 

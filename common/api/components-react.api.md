@@ -891,13 +891,9 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 
 // @public
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface EditorContainerProps extends CommonProps {

@@ -41,11 +41,11 @@ export enum LockType {
  */
 export enum LockLevel {
   /** Lock is not owned. */
-  None,
+  None = 0,
   /** Lock can be owned by multiple [[Briefcase]]s. Shared Lock is usually acquired together with Locks for lower level objects that depend on this object. */
-  Shared,
+  Shared = 1,
   /** Lock can only be owned by a single briefcase. Exclusive Lock is required to modify model or element when using pessimistic concurrency. */
-  Exclusive,
+  Exclusive = 2,
 }
 
 /**

@@ -51,7 +51,6 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",
