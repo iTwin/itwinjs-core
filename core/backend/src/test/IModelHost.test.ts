@@ -15,10 +15,12 @@ import { AzureBlobStorage } from "../CloudStorageBackend";
 
 describe("IModelHost", () => {
 
+  beforeEach(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   afterEach(async () => {
     sinon.restore();
-    // Restore the backend to the initial state.
-    await TestUtils.shutdownBackend();
   });
 
   it("valid default configuration", async () => {
@@ -163,6 +165,21 @@ describe("IModelHost", () => {
     assert.isTrue(platformGetterStub.calledOnce);
     const setUseTileCacheStub = platformGetterStub.getCall(0)?.returnValue.setUseTileCache as sinon.SinonStub;
     assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(true));
+  });
+
+  it("should cleanup tileCacheService and tileUploader on shutdown", async () => {
+    const config = new IModelHostConfiguration();
+    config.tileCacheService = {} as AzureBlobStorage;
+
+    await IModelHost.startup(config);
+
+    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
+    assert.isDefined(IModelHost.tileUploader);
+
+    await IModelHost.shutdown();
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileUploader);
   });
 
   // TODO:
