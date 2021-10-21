@@ -32,7 +32,7 @@ export async function initializeBackend() {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = IModelHubBackend;
+  iModelHost.hubAccess = new IModelHubBackend();
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];

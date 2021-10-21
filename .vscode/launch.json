@@ -1670,14 +1670,6 @@
         "electron",
         "direct"
       ]
-    },
-    {
-      "id": "client-lib",
-      "description": "Select client library to debug",
-      "type": "pickString",
-      "options": [
-        "itwin-registry"
-      ]
     }
   ]
 }

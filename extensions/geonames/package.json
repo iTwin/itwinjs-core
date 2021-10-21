@@ -1,6 +1,6 @@
 {
   "name": "@itwin/geonames-extension",
-  "version": "3.0.0-dev.91",
+  "version": "3.0.0-dev.92",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
@@ -38,7 +38,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*"
   },
