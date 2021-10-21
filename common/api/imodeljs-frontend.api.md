@@ -11725,7 +11725,7 @@ export interface ViewCreator2dOptions {
 // @public
 export class ViewCreator3d {
     constructor(_imodel: IModelConnection);
-    createDefaultView(options?: ViewCreator3dOptions, modelIds?: string[]): Promise<ViewState>;
+    createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState>;
     }
 
 // @public
