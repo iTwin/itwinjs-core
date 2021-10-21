@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.19.18",
+      "tag": "@bentley/imodeljs-frontend_v2.19.18",
+      "date": "Thu, 21 Oct 2021 20:59:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix failure to find any 3d models in ViewCreator3d."
+          },
+          {
+            "comment": "Backport from PR#2451 enable reprojection and merge"
+          },
+          {
+            "comment": "Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.17",
       "tag": "@bentley/imodeljs-frontend_v2.19.17",
       "date": "Thu, 14 Oct 2021 21:19:43 GMT",

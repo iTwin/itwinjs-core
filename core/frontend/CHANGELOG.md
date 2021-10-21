@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 14 Oct 2021 21:19:43 GMT and should not be manually modified.
+This log was last generated on Thu, 21 Oct 2021 20:59:44 GMT and should not be manually modified.
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+### Updates
+
+- Fix failure to find any 3d models in ViewCreator3d.
+- Backport from PR#2451 enable reprojection and merge
+- Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders.
 
 ## 2.19.17
 Thu, 14 Oct 2021 21:19:43 GMT

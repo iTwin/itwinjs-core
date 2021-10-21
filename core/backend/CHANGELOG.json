@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.19.18",
+      "tag": "@bentley/imodeljs-backend_v2.19.18",
+      "date": "Thu, 21 Oct 2021 20:59:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Backport from PR#2451 enable reprojection and merge"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.17",
       "tag": "@bentley/imodeljs-backend_v2.19.17",
       "date": "Thu, 14 Oct 2021 21:19:43 GMT",

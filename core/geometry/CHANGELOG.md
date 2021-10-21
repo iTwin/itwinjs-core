@@ -1,6 +1,13 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Thu, 14 Oct 2021 21:19:43 GMT and should not be manually modified.
+This log was last generated on Thu, 21 Oct 2021 20:59:44 GMT and should not be manually modified.
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+### Updates
+
+- When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces.
 
 ## 2.19.17
 Thu, 14 Oct 2021 21:19:43 GMT
