@@ -430,7 +430,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   /** called after all other importing work.
    * a subclass may perform arbitrary work after all other importing is done by overriding this method
    */
-  public onFinalizeImport() {}
+  public async onFinalizeImport(): Promise<void> {}
 }
 
 // TODO?: rename to IdPreservingFilterer
@@ -449,19 +449,19 @@ export class IModelImporter implements Required<IModelImportOptions> {
 export class IModelFilterer extends IModelImporter {
   // this class uses several unbound super methods that it later invokes with the correct `this`
   /* eslint-disable @typescript-eslint/unbound-method */
-  private _insertionOrder = new Array<Id64String>();
-
+  private _modelsToKeep = new Set<Id64String>();
   public override importModel(modelProps: ModelProps): Id64String {
     if (modelProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push(modelProps.id);
+    this._modelsToKeep.add(modelProps.id);
     return modelProps.id;
   }
 
+  private _elemsToKeep = new Set<Id64String>();
   public override importElement(elementProps: ElementProps): Id64String {
     if (elementProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push(elementProps.id);
+    this._elemsToKeep.add(elementProps.id);
     return elementProps.id;
   }
 
@@ -471,10 +471,11 @@ export class IModelFilterer extends IModelImporter {
 
   protected override onDeleteElement(_elementId: Id64String): void {}
 
+  private _aspectsToKeep = new Set<Id64String>();
   public override importElementUniqueAspect(aspectProps: ElementAspectProps) {
     if (aspectProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push(aspectProps.id);
+    this._aspectsToKeep.add(aspectProps.id);
     return aspectProps.id;
   }
 
@@ -482,7 +483,7 @@ export class IModelFilterer extends IModelImporter {
     aspectsProps.forEach((aspectProps) => {
       if (aspectProps.id === undefined)
         throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-      this._insertionOrder.push(aspectProps.id);
+      this._aspectsToKeep.add(aspectProps.id);
     });
   }
 
@@ -492,10 +493,11 @@ export class IModelFilterer extends IModelImporter {
 
   protected override onDeleteElementAspect(_aspectProps: ElementAspectProps): void {}
 
+  private _relationsToKeep = new Set<Id64String>();
   public override importRelationship(relationshipProps: RelationshipProps): Id64String {
     if (relationshipProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push(relationshipProps.id);
+    this._relationsToKeep.add(relationshipProps.id);
     return relationshipProps.id;
   }
 
@@ -505,22 +507,29 @@ export class IModelFilterer extends IModelImporter {
 
   protected override onDeleteRelationship(_relationshipProps: RelationshipProps) {}
 
-  private static neverDeleteIds = [
-    "0x1", // root subject
-    "0xe", // partition
-  ];
-
   public override async onFinalizeImport() {
-    for await (const row of this.targetDb.query(`SELECT ECInstanceId FROM bis.Element WHERE ECInstanceId NOT IN (${this._insertionOrder.join(",")})`)) {
-      try {
-        row;
-      } catch (e) {
-
-      }
+    const ids = [...this._modelsToKeep].join(",");
+    if (/[^0-9a-fA-Fx,]/.test(ids)) {
+      throw new IModelError(IModelStatus.InvalidId, "dynamic sql component contained disallowed characters");
     }
-    for (let i = this._insertionOrder.length - 1; i >= 0; --i) {
-      deleter.call(this, id);
-    }
+    `SELECT count(*) FROM meta.ECClassDEf c JOIN meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE s.Name='BisCore'`;
+    const bisClasses = [
+      "bis.Element",
+      "bis.ElementAspect",
+      "bis.ElementOwnsElements",
+      "bis.ElementOwnsAspect",
+      "bis.CodeSpecSpecifiesCode",
+    ];
+    for await (const _ of this.targetDb.query(`
+        DELETE
+        FROM bis.Element
+        JOIN bis.ElementAspect ON ECInstanceId
+        FROM ${bisClasses[0]}
+        ${bisClasses.slice(1).map((c) => `JOIN ${c} ON ECInstanceId`).join("\n")}
+        ${/* due to the potential for query building, I whitelist id characater */ ""}
+        WHERE ECInstanceId NOT IN (${ids})
+        `,
+    )) {}
   }
   /* eslint-enable @typescript-eslint/unbound-method */
 }
