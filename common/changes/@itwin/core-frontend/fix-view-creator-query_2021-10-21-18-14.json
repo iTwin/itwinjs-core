@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix ViewCreator3d spatial criterion to account for NULL.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
