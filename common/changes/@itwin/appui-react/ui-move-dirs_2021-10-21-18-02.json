@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Rename ui directories to match new package names.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
