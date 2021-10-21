@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Icon } from "../../core-react/icons/IconComponent";
 
-describe.only("IconComponent", () => {
+describe("IconComponent", () => {
 
   it("should render with ReactNode", () => {
     mount(<Icon iconSpec={<span>Test</span>} />);
