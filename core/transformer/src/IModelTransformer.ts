@@ -176,6 +176,7 @@ export class IModelTransformer extends IModelExportHandler {
       }
       this.importer = target;
     }
+    this.importer.preserveIdsInFilterTransform = options?.preserveIdsInFilterTransform ?? false;
     this.targetDb = this.importer.targetDb;
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);

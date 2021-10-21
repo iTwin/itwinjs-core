@@ -25,6 +25,8 @@ export interface IModelImportOptions {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
+  /** @see [IModelTransformOptions]($transformer) */
+  preserveIdsInFilterTransform?: boolean;
 }
 
 /** Base class for importing data into an iModel.
@@ -42,6 +44,8 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
+  /** @see [IModelTransformOptions]($transformer) */
+  preserveIdsInFilterTransform: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
@@ -64,6 +68,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
     this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
+    this.preserveIdsInFilterTransform  = options?.preserveIdsInFilterTransform ?? false;
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);
@@ -142,13 +147,22 @@ export class IModelImporter implements Required<IModelImportOptions> {
     return elementProps.id!;
   }
 
+  private insertElement(elProps: ElementProps): Id64String {
+    const insertionMethod = this.preserveIdsInFilterTransform ? "insertElementForceUseId" : "insertElement";
+    try {
+      return elProps.id = (this.targetDb.nativeDb)[insertionMethod](elProps);
+    } catch (err: any) {
+      throw new IModelError(err.errorNumber, `${insertionMethod} with class=${elProps.classFullName}: ${err.message}`,);
+    }
+  }
+
   /** Create a new Element from the specified ElementProps and insert it into the target iModel.
    * @returns The Id of the newly inserted Element.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElement`.
    */
   protected onInsertElement(elementProps: ElementProps): Id64String {
     try {
-      const elementId: Id64String = this.targetDb.elements.insertElement(elementProps);
+      const elementId: Id64String = this.insertElement(elementProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
       if (this.simplifyElementGeometry) {
