@@ -14,7 +14,7 @@ import { RealityDataSource, realityDataSourceKeyToString } from "./RealityDataSo
  * @internal
  */
 export interface RealityDataConnection {
-  /** Metatdata on the reality data source */
+  /** Metadata on the reality data source */
   readonly realityData: RealityData | undefined;
   /** The reality data type (e.g.: "RealityMesh3DTiles", OPC, Terrain3DTiles, Cesium3DTiles, ... )*/
   readonly realityDataType: string | undefined;
@@ -31,7 +31,7 @@ export interface RealityDataConnection {
 /** @internal */
 export namespace RealityDataConnection {
   /** Return an instance of a RealityDataConnection from a source key.
-   * There will aways be only one reality data connection for a corresponding reality data source key.
+   * There will always be only one reality data connection for a corresponding reality data source key.
    * @internal
    */
   export async function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined> {
@@ -58,7 +58,7 @@ class RealityDataConnectionImpl implements RealityDataConnection {
     let rdConnection = RealityDataConnectionImpl._realityDataConnections.get(rdSourceKeyString);
     if (rdConnection)
       return rdConnection;
-    // If not already in our list, create and add it to our list before returing it.
+    // If not already in our list, create and add it to our list before returning it.
     rdConnection = await RealityDataConnectionImpl.createFromSourceKey(rdSourceKey,  iTwinId);
     if (rdConnection)
       RealityDataConnectionImpl._realityDataConnections.set(rdSourceKeyString,rdConnection);
