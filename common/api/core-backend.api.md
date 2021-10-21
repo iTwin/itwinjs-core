@@ -2386,14 +2386,14 @@ export class IModelHost {
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @beta (undocumented)
-    static tileCacheService: CloudStorageService;
+    // @internal
+    static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal
     static get tileTreeRequestTimeout(): number;
     // @internal (undocumented)
-    static tileUploader: CloudStorageTileUploader;
+    static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
     }
