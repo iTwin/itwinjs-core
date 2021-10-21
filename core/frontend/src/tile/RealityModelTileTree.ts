@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { getArrayBuffer, getJson, request, RequestOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions } from "@bentley/itwin-client";
 import {
   AccessToken,
   assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
@@ -972,9 +972,12 @@ export class RealityModelTileClient {
    */
   public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
     const url = await realityData.getBlobUrl(accessToken, name);
-
-    const data = await getArrayBuffer(url.toString());
-    return data;
+    const options: RequestOptions = {
+      method: "GET",
+      responseType: "arraybuffer",
+    };
+    const data = await request(url.toString(), options);
+    return data.body;
   }
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
