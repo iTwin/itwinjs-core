@@ -34,8 +34,6 @@ steps:
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
 
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
-
-      node ./common/scripts/install-run-rush build -v --to oidc-signin-tool
     displayName: "Rush build"
 
   - script: "npm run test:integration"
