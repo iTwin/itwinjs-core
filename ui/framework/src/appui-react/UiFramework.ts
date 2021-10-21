@@ -216,6 +216,7 @@ export class UiFramework {
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
     UiIModelComponents.terminate();
+    UiShowHideManager.terminate();
     UiFramework._initialized = false;
   }
 
