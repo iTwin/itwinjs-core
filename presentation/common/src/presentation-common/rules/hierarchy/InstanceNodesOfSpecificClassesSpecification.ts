@@ -25,6 +25,11 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
+   * Specifications of ECClasses whose instances should be excluded.
+   */
+  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
    * Should all [[classes]] be handled polymorphically.
    */
   arePolymorphic?: boolean;

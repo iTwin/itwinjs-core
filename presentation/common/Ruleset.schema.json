@@ -236,6 +236,20 @@
           ],
           "description": "List of ECClass specifications whose ECInstances should be selected."
         },
+        "excludedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of ECClass specifications whose ECInstances should be excluded."
+        },
         "handleInstancesPolymorphically": {
           "description": "Whether to get content from instances of derived `classes`.",
           "type": "boolean"
@@ -1280,6 +1294,20 @@
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
         },
+        "excludedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of ECClasses whose instances should be excluded."
+        },
         "groupByClass": {
           "description": "Group instances by ECClass. Defaults to `true`.",
           "type": "boolean"
@@ -1399,8 +1427,12 @@
       "additionalProperties": false,
       "description": "Specification for multiple ECClasses that belong to\nthe same ECSchema.",
       "properties": {
+        "arePolymorphic": {
+          "description": "Should all `classes` be handled polymorphically.",
+          "type": "boolean"
+        },
         "classNames": {
-          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its sublasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
+          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its subclasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
           "items": {
             "type": "string"
           },
