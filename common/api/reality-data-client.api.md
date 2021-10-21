@@ -13,7 +13,6 @@ import { IModelConnection } from '@itwin/core-frontend';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
-import { URL } from 'url';
 
 // @internal
 export class DataLocation extends WsgInstance {
@@ -84,7 +83,7 @@ export class RealityData extends WsgInstance {
     description?: string;
     // (undocumented)
     footprint?: string;
-    getBlobUrl(accessToken: AccessToken, blobPath?: string): Promise<URL>;
+    getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL>;
     getContainerUrl(accessToken: AccessToken, writeAccess?: boolean): Promise<URL>;
     getRootDocumentJson(accessToken: AccessToken): Promise<any>;
     getTileContent(accessToken: AccessToken, name: string): Promise<any>;
