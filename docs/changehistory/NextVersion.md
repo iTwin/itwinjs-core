@@ -1418,3 +1418,61 @@ All packages will continue to build a CommonJS variant, but will now deliver it 
 If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
 
 This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).
+
+## Simplification of CloudStorageService setup in iModelHost
+
+`IModelHostConfiguration.tileCacheCredentials` is changed to `IModelHostConfiguration.tileCacheAzureCredentials` and used for setting Azure cloud storage for tile cache.
+`IModelHost.tileCacheService` is moved to `IModelHostConfiguration.tileCacheService` and is used to supply a different implementation for any service provider by setting this property with a custom `CloudStorageService`.
+If both `tileCacheAzureCredentials` and `tileCacheService` omitted - local cache will be used, if both set - error will be thrown.
+
+To use Azure cloud storage for tile cache set `IModelHostConfiguration.tileCacheAzureCredentials` property:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "azure",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheAzureCredentials = {
+    account: "account",
+    accessKey: "accessKey",
+  };
+```
+
+To use AliCloud storage set `IModelHostConfiguration.tileCacheService` property with provided `AliCloudStorageService` implementation:
+
+```ts
+  import { AliCloudStorageService } from "@itwin/core-backend";
+
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "alicloud",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheService = new AliCloudStorageService({
+    region: "region",
+    accessKeyId: "accessKeyId",
+    accessKeySecret: "accessKeySecret",
+  });
+```
+
+To use any other external storage set `IModelHostConfiguration.tileCacheService` with a custom `CloudStorageService` implementation:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "external",
+    account: "",
+    accessKey: "",
+  };
+  IModelHost.tileCacheService = new CustomCloudStorageService();
+  // With this:
+  config.tileCacheService = new CustomCloudStorageService();
+```
