@@ -220,7 +220,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     this.setState({ inputValue: initialDisplayValue });
   }
 
-  private _onKeyPress = (e: KeyboardEvent) => {
+  private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       const initialDisplayValue = this._getInitialDisplayValue();
@@ -272,7 +272,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       onBlur: this.props.onBlur,
       onFocus: this._onFocus,
       setFocus: this.shouldSetFocus(),
-      nativeKeyHandler: this._onKeyPress,
+      onKeyDown: this._onKeyPress,
     };
 
     let reactNode: React.ReactNode;

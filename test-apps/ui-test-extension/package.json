@@ -44,7 +44,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
