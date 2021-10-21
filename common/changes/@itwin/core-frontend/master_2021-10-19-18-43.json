@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.0.0-dev.92",
+  "version": "3.0.0-dev.93",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -44,6 +44,7 @@
     "typedoc-plugin-external-module-name": "3.0.0",
     "typedoc-plugin-internal-external": "2.1.1",
     "typescript": "~4.4.0",
+    "wtfnode": "^0.9.1",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
