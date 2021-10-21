@@ -433,6 +433,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public onFinalizeImport() {}
 }
 
+declare namespace IModelFilterer {
+  export interface Insertion<T> {
+    id: T;
+    deleter(this: IModelImporter, id: T): void;
+  }
+}
+
 // TODO?: rename to IdPreservingFilterer
 /** an [[IModelImporter]] that allows "filtering" an iModel, keeping ids of remaining elements in the
  * target as matching with the source.
@@ -447,12 +454,14 @@ export class IModelImporter implements Required<IModelImportOptions> {
  * @internal
  */
 export class IModelFilterer extends IModelImporter {
-  private _insertionOrder = new Array<{id: Id64String, deleter: Function}>();
+  // this class uses several unbound super methods that it later invokes with the correct `this`
+  /* eslint-disable @typescript-eslint/unbound-method */
+  private _insertionOrder = new Array<IModelFilterer.Insertion<Id64String | ElementAspectProps>>();
 
   public override importModel(modelProps: ModelProps): Id64String {
     if (modelProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push({ id: modelProps.id, deleter: super.onDelete});
+    this._insertionOrder.push({ id: modelProps.id, deleter: super.onDeleteElement});
     return modelProps.id;
   }
 
@@ -472,7 +481,7 @@ export class IModelFilterer extends IModelImporter {
   public override importElementUniqueAspect(aspectProps: ElementAspectProps) {
     if (aspectProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push(aspectProps.id);
+    this._insertionOrder.push({ id: aspectProps.id, deleter: super.onDeleteElementAspect });
     return aspectProps.id;
   }
 
@@ -480,7 +489,7 @@ export class IModelFilterer extends IModelImporter {
     aspectsProps.forEach((aspectProps) => {
       if (aspectProps.id === undefined)
         throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-      this._insertionOrder.push(aspectProps.id);
+      this._insertionOrder.push({id: aspectProps.id, deleter: super.onDeleteElementAspect});
     });
   }
 
@@ -493,7 +502,7 @@ export class IModelFilterer extends IModelImporter {
   public override importRelationship(relationshipProps: RelationshipProps): Id64String {
     if (relationshipProps.id === undefined)
       throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._insertionOrder.push(relationshipProps.id);
+    this._insertionOrder.push({id: relationshipProps.id, deleter: super.onDeleteElementAspect });
     return relationshipProps.id;
   }
 
@@ -504,12 +513,12 @@ export class IModelFilterer extends IModelImporter {
   protected override onDeleteRelationship(_relationshipProps: RelationshipProps) {}
 
   public override onFinalizeImport() {
-    // TODO: abstract array reverse iteration to a generator if v8 performance matches raw loop
     for (let i = this._insertionOrder.length - 1; i >= 0; --i) {
-      const item = this._insertionOrder[i];
-      super.deleteElement(item);
+      const {id, deleter} = this._insertionOrder[i];
+      deleter.call(this, id);
     }
   }
+  /* eslint-enable @typescript-eslint/unbound-method */
 }
 
 /** Returns true if a change within an Entity is detected.
