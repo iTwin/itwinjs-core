@@ -44,7 +44,7 @@ export interface Localization {
    * @note IModelApp.startup calls this internally, so you should not call this method directly
    * except for Localization instances outside of IModelApp (e.g., for tests.)
    */
-  initialize(namespaces: string[]): Promise<void>;
+  initialize: (namespaces: string[]) => Promise<void>;
 
   /** Return the translated value of a key.
    * @param key - the key that matches a property in the JSON localization file.
@@ -58,16 +58,16 @@ export interface Localization {
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
    */
-  getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
+  getLocalizedString: (key: string | string[], options?: LocalizationOptions) => string;
   /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
    */
-  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+  getLocalizedStringWithNamespace: (namespace: string, key: string | string[], options?: LocalizationOptions) => string;
   /** get the English string for a key. */
-  getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+  getEnglishString: (namespace: string, key: string | string[], options?: LocalizationOptions) => string;
   /** Replace all instances of `%{key}` within a string with the translations of those keys.
    * For example:
    * ``` ts
@@ -81,7 +81,7 @@ export interface Localization {
    * getLocalizedKeys("string with %{MyKeys.Key1} followed by %{MyKeys.Key2}!"") // returns "string with First Value followed by Second Value!"
    * ```
    */
-  getLocalizedKeys(inputString: string): string;
+  getLocalizedKeys: (inputString: string) => string;
 
   /** Register a new Namespace and return a Promise that is fulfilled when the content is loaded.
    * If the namespace is already registered, its Promise will be returned.
@@ -91,15 +91,15 @@ export interface Localization {
    * fulfillment of returned Promise.
    * @see [Localization in iTwin.js]($docs/learning/frontend/Localization.md)
    */
-  registerNamespace(namespace: string): Promise<void>;
+  registerNamespace: (namespace: string) => Promise<void>;
   /** @internal */
-  unregisterNamespace(namespace: string): void;
+  unregisterNamespace: (namespace: string) => void;
   /** @internal */
-  getNamespacePromise(name: string): Promise<void> | undefined;
+  getNamespacePromise: (name: string) => Promise<void> | undefined;
   /** Get the list of available languages for translations */
-  getLanguageList(): readonly string[];
+  getLanguageList: () => readonly string[];
   /** Change the language for translations. This overrides the language from the browser, for tests. */
-  changeLanguage(language: string): Promise<void>;
+  changeLanguage: (language: string) => Promise<void>;
 }
 
 /** An empty [[Localization]] used if one is not provided to [IModelApp]($frontend). Does not perform localizations (merely returns the key.)

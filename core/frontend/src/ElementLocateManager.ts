@@ -112,7 +112,7 @@ export class LocateResponse {
 
 /** @public */
 export interface HitListHolder {
-  setHitList(list: HitList<HitDetail> | undefined): void;
+  setHitList: (list: HitList<HitDetail> | undefined) => void;
 }
 
 /** @public */

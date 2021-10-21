@@ -22,7 +22,7 @@ export interface CanvasDecoration {
    * and it is [restored](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore) when this method returns. Therefore,
    * it is *not* necessary for implementers to save/restore themselves.
    */
-  drawDecoration(ctx: CanvasRenderingContext2D): void;
+  drawDecoration: (ctx: CanvasRenderingContext2D) => void;
   /**
    * Optional view coordinates position of this overlay decoration. If present, [ctx.translate](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/translate) is called
    * with this point before [[drawDecoration]] is called.
@@ -33,25 +33,25 @@ export interface CanvasDecoration {
    * @return true if the mouse is inside this decoration.
    * @note If this method is not present, no mouse events are directed to this decoration.
    */
-  pick?(pt: XAndY): boolean;
+  pick?: (pt: XAndY) => boolean;
   /** Optional method to be called whenever this decorator is picked and the mouse first enters this decoration. */
-  onMouseEnter?(ev: BeButtonEvent): void;
+  onMouseEnter?: (ev: BeButtonEvent) => void;
   /** Optional method to be called whenever when the mouse leaves this decoration. */
-  onMouseLeave?(): void;
+  onMouseLeave?: () => void;
   /** Optional method to be called whenever when the mouse moves inside this decoration. */
-  onMouseMove?(ev: BeButtonEvent): void;
+  onMouseMove?: (ev: BeButtonEvent) => void;
   /**
    * Optional method to be called whenever this decorator is picked and a mouse button is pressed or released inside this decoration.
    * @return true if the event was handled by this decoration and should *not* be forwarded to the active tool.
    * @note This method is called for both mouse up and down events. If it returns `true` for a down event, it should also return `true` for the
    * corresponding up event.
    */
-  onMouseButton?(ev: BeButtonEvent): boolean;
+  onMouseButton?: (ev: BeButtonEvent) => boolean;
   /**
    * Optional method to be called when the mouse wheel is rolled with the pointer over this decoration.
    * @return true to indicate that the event has been handled and should not be propagated to default handler
    */
-  onWheel?(ev: BeWheelEvent): boolean;
+  onWheel?: (ev: BeWheelEvent) => boolean;
   /** Cursor to use when mouse is inside this decoration. Default is "pointer". */
   decorationCursor?: string;
 }

@@ -114,16 +114,16 @@ export class FuzzySearch<T> {
  */
 export interface FuzzySearchResult<T> {
   /** Return the current result object */
-  getResult(): T;
+  getResult: () => T;
 
   /** Return the key found in this result object */
-  getMatchedKey(): string;
+  getMatchedKey: () => string;
 
   /** Return the value matched in this result object */
-  getMatchedValue(): string;
+  getMatchedValue: () => string;
 
   /** Return a boolean array that contains true for each letter in the matched value that was matched part of the search pattern */
-  getBoldMask(): boolean[];
+  getBoldMask: () => boolean[];
 }
 
 /** Added to each result to support the FuzzySearchResult interface. */

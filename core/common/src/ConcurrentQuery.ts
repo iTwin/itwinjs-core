@@ -415,5 +415,5 @@ export class DbQueryError extends BentleyError {
 }
 /** @internal */
 export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends DbResponse> {
-  execute(request: TRequest): Promise<TResponse>;
+  execute: (request: TRequest) => Promise<TResponse>;
 }

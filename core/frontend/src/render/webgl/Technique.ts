@@ -55,12 +55,12 @@ import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
  * @internal
  */
 export interface Technique extends WebGLDisposable {
-  getShader(flags: TechniqueFlags): ShaderProgram;
-  getShaderByIndex(index: number): ShaderProgram;
-  getShaderCount(): number;
+  getShader: (flags: TechniqueFlags) => ShaderProgram;
+  getShaderByIndex: (index: number) => ShaderProgram;
+  getShaderCount: () => number;
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
-  compileShaders(): boolean;
+  compileShaders: () => boolean;
 }
 
 /** A rendering technique implemented using a single shader program, typically for some specialized purpose.

@@ -13,5 +13,5 @@ import { AccessToken } from "@itwin/core-bentley";
  */
 export interface AuthorizationClient {
   /** Get the AccessToken of the currently authorized user, or blank string if no token is available. */
-  getAccessToken(): Promise<AccessToken>;
+  getAccessToken: () => Promise<AccessToken>;
 }

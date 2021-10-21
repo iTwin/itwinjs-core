@@ -109,7 +109,7 @@ export namespace Pixel {
    */
   export interface Buffer {
     /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
-    getPixel(x: number, y: number): Data;
+    getPixel: (x: number, y: number) => Data;
   }
 
   /** A function which receives the results of a call to [[Viewport.readPixels]].

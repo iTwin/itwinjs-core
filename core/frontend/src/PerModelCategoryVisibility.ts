@@ -44,15 +44,15 @@ export namespace PerModelCategoryVisibility {
    */
   export interface Overrides {
     /** Returns the override state of the specified category within the specified model. */
-    getOverride(modelId: Id64String, categoryId: Id64String): Override;
+    getOverride: (modelId: Id64String, categoryId: Id64String) => Override;
     /** Changes the override state of one or more categories for one or more models. */
-    setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    setOverride: (modelIds: Id64Arg, categoryIds: Id64Arg, override: Override) => void;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
-    clearOverrides(modelIds?: Id64Arg): void;
+    clearOverrides: (modelIds?: Id64Arg) => void;
     /** An iterator over all of the visibility overrides. */
     [Symbol.iterator]: () => Iterator<OverrideEntry>;
     /** Populate the symbology overrides based on the per-model category visibility. */
-    addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
+    addOverrides: (fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>) => void;
   }
 
   export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {

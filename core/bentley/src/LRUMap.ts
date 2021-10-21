@@ -73,11 +73,11 @@ class ValueIterator<K, V> implements Iterator<V | undefined> {
  */
 export interface EntryContainer<K, V> {
   readonly size: number;
-  clear(): void;
-  get(key: K): Entry<K, V> | undefined;
-  set(key: K, value: Entry<K, V>): void;
-  has(key: K): boolean;
-  delete(key: K): void;
+  clear: () => void;
+  get: (key: K) => Entry<K, V> | undefined;
+  set: (key: K, value: Entry<K, V>) => void;
+  has: (key: K) => boolean;
+  delete: (key: K) => void;
 }
 
 /**

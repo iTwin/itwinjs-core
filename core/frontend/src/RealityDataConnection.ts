@@ -25,7 +25,7 @@ export interface RealityDataConnection {
    * @param iTwinId id of associated iTwin project
    * @returns string containing the URL to reality data.
    */
-  getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+  getServiceUrl: (iTwinId: GuidString | undefined) => Promise<string | undefined>;
 }
 
 /** @internal */

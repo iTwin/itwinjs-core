@@ -25,7 +25,7 @@ export interface IDisposable {
   /** Disposes of any resources owned by this object.
    * @note The object is generally considered unusable after it has been disposed of.
    */
-  dispose(): void;
+  dispose: () => void;
 }
 
 /**

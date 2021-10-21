@@ -58,10 +58,10 @@ export type QueryValueType = any;
 
 /** @beta */
 export interface QueryRowProxy {
-  toJsRow(): any;
-  toRow(): any;
-  toArray(): QueryValueType[];
-  getMetaData(): QueryPropertyMetaData[];
+  toJsRow: () => any;
+  toRow: () => any;
+  toArray: () => QueryValueType[];
+  getMetaData: () => QueryPropertyMetaData[];
   [propertyName: string]: QueryValueType;
   [propertyIndex: number]: QueryValueType;
 }

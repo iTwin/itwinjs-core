@@ -13,12 +13,12 @@ import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
 /** @internal */
 export interface FormDataCommon {
-  append(name: string, value: string | Blob | Buffer, fileName?: string): void;
+  append: (name: string, value: string | Blob | Buffer, fileName?: string) => void;
 }
 
 /** @internal */
 export interface ReadableFormData extends Readable {
-  getHeaders(): { [key: string]: any };
+  getHeaders: () => { [key: string]: any };
 }
 
 /** Support for transporting RPC values using the HTTP multipart content type.

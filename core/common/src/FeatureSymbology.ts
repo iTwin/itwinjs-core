@@ -250,7 +250,7 @@ export interface FeatureAppearanceSource {
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
-  getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+  getAppearance: (elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => FeatureAppearance | undefined;
 }
 
 /** Specifies how to customize the appearance of individual [[Feature]]s, typically within the context of a [Viewport]($frontend).

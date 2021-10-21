@@ -19,7 +19,7 @@ export interface SubCategoriesRequest {
    */
   readonly promise: Promise<boolean>;
   /** Cancels the request. */
-  cancel(): void;
+  cancel: () => void;
 }
 
 const invalidCategoryIdEntry = new Set<string>();

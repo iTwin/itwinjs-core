@@ -671,44 +671,44 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
    */
-  getType(): ECSqlValueType;
+  getType: () => ECSqlValueType;
 
   /** Gets the name of the property backing the column.
    * > If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * > the access string consists of the name of the generated property.
    */
-  getPropertyName(): string;
+  getPropertyName: () => string;
 
   /** Gets the full access string to the corresponding ECSqlValue starting from the root class.
    * > If this column is backed by a generated property, i.e. it represents ECSQL expression,
    * > the access string consists of the ECSQL expression.
    */
-  getAccessString(): string;
+  getAccessString: () => string;
 
   /** Indicates whether the column refers to an ECEnumeration property. */
-  isEnum(): boolean;
+  isEnum: () => boolean;
 
   /** Indicates whether the column refers to a system property (e.g. id, className). */
-  isSystemProperty(): boolean;
+  isSystemProperty: () => boolean;
 
   /** Indicates whether the column is backed by a generated property or not. For SELECT clause items that are expressions other
    * than simply a reference to an ECProperty, a property is generated containing the expression name.
    */
-  isGeneratedProperty(): boolean;
+  isGeneratedProperty: () => boolean;
 
   /** Gets the table space in which this root class is persisted.
    * > For classes in the primary file the table space is MAIN. For classes in attached
    * > files, the table space is the name by which the file was attached. For generated properties the table space is empty.
    */
-  getRootClassTableSpace(): string;
+  getRootClassTableSpace: () => string;
 
   /** Gets the fully qualified name of the ECClass of the top-level ECProperty backing this column. */
-  getRootClassName(): string;
+  getRootClassName: () => string;
 
   /** Gets the class alias of the root class to which the column refers to.
    * > Returns an empty string if no class alias was specified in the select clause.
    */
-  getRootClassAlias(): string;
+  getRootClassAlias: () => string;
 }
 
 class ECSqlBindingHelper {

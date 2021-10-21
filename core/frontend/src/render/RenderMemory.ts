@@ -164,6 +164,6 @@ export namespace RenderMemory {
 
   /** @internal */
   export interface Consumer {
-    collectStatistics(stats: Statistics): void;
+    collectStatistics: (stats: Statistics) => void;
   }
 }

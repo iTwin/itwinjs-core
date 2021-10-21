@@ -57,12 +57,12 @@ export interface HttpServerRequest extends Readable {
   rawHeaders: string[];
   trailers: { [key: string]: string | undefined };
   rawTrailers: string[];
-  setTimeout(msecs: number, callback: () => void): this;
+  setTimeout(msecs: number, callback: : () => void) => this;
   url?: string;
   statusCode?: number;
   statusMessage?: string;
   socket: any;
-  destroy(error?: Error): void;
+  destroy: (error?: Error) => void;
   body: string | Buffer;
   path: string;
   method: string;
@@ -74,9 +74,9 @@ export interface HttpServerRequest extends Readable {
  * @public
  */
 export interface HttpServerResponse extends Writable {
-  send(body?: any): HttpServerResponse;
-  status(code: number): HttpServerResponse;
-  set(field: string, value: string): void;
+  send: (body?: any) => HttpServerResponse;
+  status: (code: number) => HttpServerResponse;
+  set: (field: string, value: string) => void;
 }
 
 /** The HTTP application protocol.

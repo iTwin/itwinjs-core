@@ -95,51 +95,51 @@ export interface LockControl {
    * Close the local lock control database
    * @internal
    */
-  close(): void;
+  close: () => void;
   /**
    * Notification that a new element was just created. Called by [[Element.onInserted]]
    * @internal
    */
-  elementWasCreated(id: Id64String): void;
+  elementWasCreated: (id: Id64String) => void;
   /**
    * Throw if locks are required and the exclusive lock is not held on the supplied element.
    * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
    * Called by [[Element.onUpdate]], [[Element.onDelete]], etc.
    * @internal
    */
-  checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+  checkExclusiveLock: (id: Id64String, type: string, operation: string) => void;
   /**
    * Throw if locks are required and a shared lock is not held on the supplied element.
    * Called by [[Element.onInsert]] to ensure shared lock is held on model and parent.
    * @internal
    */
-  checkSharedLock(id: Id64String, type: string, operation: string): void;
+  checkSharedLock: (id: Id64String, type: string, operation: string) => void;
   /**
    * Determine whether the supplied element currently holds the exclusive lock
    */
-  holdsExclusiveLock(id: Id64String): boolean;
+  holdsExclusiveLock: (id: Id64String) => boolean;
   /**
    * Determine whether the supplied element currently holds a shared lock
    */
-  holdsSharedLock(id: Id64String): boolean;
+  holdsSharedLock: (id: Id64String) => boolean;
   /**
    * Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
    * attempt to acquire all necessary locks for the set of input ids.
    */
-  acquireExclusiveLock(ids: Id64Arg): Promise<void>;
+  acquireExclusiveLock: (ids: Id64Arg) => Promise<void>;
   /**
    * Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the shared lock on an element requires also obtaining a shared lock on all its owner elements. This method will
    * attempt to acquire all necessary locks for the set of input ids.
    */
-  acquireSharedLock(ids: Id64Arg): Promise<void>;
+  acquireSharedLock: (ids: Id64Arg) => Promise<void>;
   /**
    * Release all locks currently held by this Briefcase from the lock server.
    */
-  releaseAllLocks(): Promise<void>;
+  releaseAllLocks: () => Promise<void>;
 }
 
 /** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */

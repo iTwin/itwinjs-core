@@ -261,22 +261,22 @@ export interface QuantityFormatOverridesChangedArgs {
  */
 export interface UnitFormattingSettingsProvider {
   /** serializes JSON object containing format overrides for a specific quantity type. */
-  store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
+  store: (quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry) => Promise<boolean>;
   /** retrieves serialized JSON object containing format overrides for a specific quantity type. */
-  retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
+  retrieve: (quantityTypeKey: QuantityTypeKey) => Promise<OverrideFormatEntry | undefined>;
   /** removes the override formats for a specific quantity type. */
-  remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
+  remove: (quantityTypeKey: QuantityTypeKey) => Promise<boolean>;
   /** retrieves the active unit system typically based on the "active" iModelConnection */
-  retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+  retrieveUnitSystem: (defaultKey: UnitSystemKey) => Promise<UnitSystemKey>;
   /** store the active unit system typically for the "active" iModelConnection */
-  storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+  storeUnitSystemKey: (unitSystemKey: UnitSystemKey) => Promise<boolean>;
   /** Function to load overrides for a specific IModelConnection. Typically this is not called often since typical
    * implementations monitor for IModelConnection changes and call this method internally. */
-  loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
+  loadOverrides: (imodel: IModelConnection | undefined) => Promise<void>;
   /** function called to save changes to Presentation Unit System */
-  storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
+  storeUnitSystemSetting: (args: FormattingUnitSystemChangedArgs) => Promise<void>;
   /** function called to save format overrides */
-  storeFormatOverrides(args: QuantityFormatOverridesChangedArgs): Promise<void>;
+  storeFormatOverrides: (args: QuantityFormatOverridesChangedArgs) => Promise<void>;
   /** property that is set by the implementation to inform the BaseUnitFormattingSettingsProvider if the provider
    *  should trigger reloading of the overrides when the "active" imodel changes. */
   readonly maintainOverridesPerIModel: boolean;
