@@ -53,6 +53,7 @@ export class BackendDefaultsPlugin {
         "got",
         "keyv",
         "ws",
+        "node-fetch",
       ]),
       new RequireMagicCommentsPlugin([
         {
