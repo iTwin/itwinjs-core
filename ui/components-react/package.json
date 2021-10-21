@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components-react"
   },
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",

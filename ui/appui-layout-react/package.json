@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/appui-layout-react"
   },
   "scripts": {
     "build": "npm run -s build:cjs",

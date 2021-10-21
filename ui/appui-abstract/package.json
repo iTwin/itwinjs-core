@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/abstract"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/appui-abstract"
   },
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",
