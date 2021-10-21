@@ -42,7 +42,7 @@ export interface SerializedRpcActivity {
   applicationId: string;
   applicationVersion: string;
   sessionId: string;
-  authorization: string;
+  authorization?: string;
   csrfToken?: { headerName: string, headerValue: string };
 }
 
@@ -146,7 +146,7 @@ export class RpcInvocation {
       applicationId: request.applicationId,
       applicationVersion: request.applicationVersion,
       sessionId: request.sessionId,
-      accessToken: request.authorization,
+      accessToken: request.authorization ?? "",
       rpcMethod: request.operation.operationName,
     };
 
