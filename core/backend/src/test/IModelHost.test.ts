@@ -106,19 +106,16 @@ describe("IModelHost", () => {
       accessKey: "testAccessKey",
     };
 
-    const platformGetterStub = sinon.stub().returns({
-      setUseTileCache: sinon.stub(),
-    });
-    sinon.stub(IModelHost, "platform").get(platformGetterStub);
+    const setUseTileCacheStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setUseTileCache: setUseTileCacheStub,
+    }));
 
     await IModelHost.startup(config);
 
     assert.isTrue(IModelHost.tileCacheService instanceof AzureBlobStorage);
     const credential = (IModelHost.tileCacheService as any)._credential;
     assert.equal(credential.accountName, "testAccount");
-
-    assert.isTrue(platformGetterStub.calledOnce);
-    const setUseTileCacheStub = platformGetterStub.getCall(0)?.returnValue.setUseTileCache as sinon.SinonStub;
     assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(false));
   });
 
@@ -126,17 +123,14 @@ describe("IModelHost", () => {
     const config = new IModelHostConfiguration();
     config.tileCacheService = {} as AzureBlobStorage;
 
-    const platformGetterStub = sinon.stub().returns({
-      setUseTileCache: sinon.stub(),
-    });
-    sinon.stub(IModelHost, "platform").get(platformGetterStub);
+    const setUseTileCacheStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setUseTileCache: setUseTileCacheStub,
+    }));
 
     await IModelHost.startup(config);
 
     assert.equal(IModelHost.tileCacheService, config.tileCacheService);
-
-    assert.isTrue(platformGetterStub.calledOnce);
-    const setUseTileCacheStub = platformGetterStub.getCall(0)?.returnValue.setUseTileCache as sinon.SinonStub;
     assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(false));
   });
 
@@ -152,18 +146,15 @@ describe("IModelHost", () => {
   });
 
   it("should use local cache if cloud storage provider for tile cache is not set", async () => {
-    const platformGetterStub = sinon.stub().returns({
-      setUseTileCache: sinon.stub(),
-    });
-    sinon.stub(IModelHost, "platform").get(platformGetterStub);
+    const setUseTileCacheStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setUseTileCache: setUseTileCacheStub,
+    }));
 
     await IModelHost.startup();
 
     assert.isUndefined(IModelHost.tileCacheService);
     assert.isUndefined(IModelHost.tileUploader);
-
-    assert.isTrue(platformGetterStub.calledOnce);
-    const setUseTileCacheStub = platformGetterStub.getCall(0)?.returnValue.setUseTileCache as sinon.SinonStub;
     assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(true));
   });
 
