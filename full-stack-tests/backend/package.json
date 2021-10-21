@@ -1,0 +1,73 @@
+{
+  "name": "backend-integration-tests",
+  "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc 1>&2 --outDir lib/cjs",
+    "build:ci": "npm run -s build",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:config": "internal-tools copy-config",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite --silent --loose --location ./lib/cjs/test/azuriteStorage",
+    "test": "",
+    "cover": "",
+    "docs": "",
+    "test:integration": "run-s test:integration:azurite",
+    "test:integration:azurite": "run-p -r azurite:setup test:integration:core",
+    "test:integration:core": "mocha \"./lib/cjs/integration/**/*.test.js\"",
+    "perftest:pre": "cpx \"./src/perftest/*.json\" ./lib/cjs/perftest",
+    "perftest": "npm run -s perftest:crud && npm run -s perftest:cs && npm run -s perftest:elAspect && npm run -s perftest:schema",
+    "perftest:crud": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementsTests \"./lib/cjs/perftest/**/*.test.js\"",
+    "perftest:cs": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ImodelChangesetPerformance \"./lib/cjs/perftest/**/*.test.js\"",
+    "perftest:elAspect": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ElementAspectPerformance \"./lib/cjs/perftest/**/*.test.js\"",
+    "perftest:schema": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/cjs/perftest/**/*.test.js\"",
+    "perftest:tile": "npm run -s perftest:pre && mocha --timeout=999999999 --grep TilesGenerationPerformance \"./lib/cjs/perftest/**/*.test.js\""
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.7.0",
+    "@bentley/imodelhub-client": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/perf-tools": "workspace:*",
+    "@itwin/projects-client": "^0.2.0",
+    "azurite": "^3.14.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "cpx": "^1.5.0",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
+    "eslint": "^7.11.0",
+    "fs-extra": "^8.1.0",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2"
+  },
+  "devDependencies": {
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/fs-extra": "^4.0.7",
+    "@types/mocha": "^8.2.2",
+    "internal-tools": "workspace:*",
+    "mkdirp": "^1.0.4",
+    "npm-run-all": "^4.1.5",
+    "typescript": "~4.4.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@itwin"
+    ],
+    "extends": "plugin:@itwin/itwinjs-recommended"
+  }
+}

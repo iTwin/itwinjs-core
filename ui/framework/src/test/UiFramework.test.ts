@@ -18,6 +18,7 @@ import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserS
 import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
+import { ITwinLocalization } from "@itwin/core-i18n";
 
 describe("UiFramework localStorage Wrapper", () => {
 
@@ -32,6 +33,18 @@ describe("UiFramework localStorage Wrapper", () => {
 
   after(() => {
     Object.defineProperty(window, "localStorage", localStorageToRestore);
+  });
+
+  describe("UiFramework basic Initialization", () => {
+    it("should initialize default StateManager", async () => {
+      const localization = new ITwinLocalization();
+      await localization.initialize(["IModelJs"]);
+      await UiFramework.initialize(undefined, localization);
+      const uiVersion = "2";
+      UiFramework.setUiVersion(uiVersion);
+      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      UiFramework.terminate();
+    });
   });
 
   describe("UiFramework", () => {

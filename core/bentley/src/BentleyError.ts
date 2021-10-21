@@ -749,3 +749,4 @@ export class BentleyError extends Error {
     return serialized;
   }
 }
+

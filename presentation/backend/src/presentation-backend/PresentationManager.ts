@@ -589,7 +589,6 @@ export class PresentationManager {
 
   /**
    * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param requestContext      The client request context
    * @param requestOptions      Options for the request
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @public

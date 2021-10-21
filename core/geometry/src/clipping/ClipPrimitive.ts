@@ -18,12 +18,14 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { Triangulator } from "../topology/Triangulation";
 import { ClipPlane } from "./ClipPlane";
-import { ClipPlaneContainment } from "./ClipUtils";
+import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolylineOps } from "../geometry3d/PolylineOps";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -109,7 +111,7 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *         * This seems like an confused overloading of the meaning.
  * @public
  */
-export class ClipPrimitive {
+export class ClipPrimitive implements Clipper{
   /** The (union of) convex regions. */
   protected _clipPlanes?: UnionOfConvexClipPlaneSets;
   /** If true, pointInside inverts the sense of the pointInside for the _clipPlanes */
@@ -182,6 +184,37 @@ export class ClipPrimitive {
     if (this._clipPlanes)
       inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
     return inside;
+  }
+
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+   public isPointOnOrInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
+    this.ensurePlaneSets();
+    let inside = true;
+    if (this._clipPlanes)
+      inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
+    return inside;
+  }
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
+    this.ensurePlaneSets();
+    let hasInsideParts = false;
+    if (this._clipPlanes)
+      hasInsideParts = this._clipPlanes.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announce);
+    return hasInsideParts;
+  }
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensurePlaneSets();
+    let hasInsideParts = false;
+    if (this._clipPlanes)
+      hasInsideParts = this._clipPlanes.announceClippedArcIntervals(arc, announce);
+    return hasInsideParts;
   }
 
   /**
@@ -293,7 +326,7 @@ class PolyEdge {
   }
   // Assume both normals are unit length.
   // old logic: use difference of (previously computed) normals as perpendicular to bisector.
-  public static makeUnitPerpendicularToBisector(edgeA: PolyEdge, edgeB: PolyEdge, reverse: boolean): Vector3d | undefined {
+  public static makeUnitPerpendicularToBisector(edgeA: PolyEdge, edgeB: PolyEdge, reverse: boolean): Vector3d | undefined{
     let candidate = edgeB.normal.minus(edgeA.normal);
     if (candidate.normalize(candidate) === undefined) {
       candidate = Vector3d.createStartEnd(edgeA.pointA, edgeB.pointB);
@@ -563,7 +596,7 @@ export class ClipShape extends ClipPrimitive {
     const reverse = direction < 0;
     for (let i = 0; i < polygon.length - 1; i++) {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
-      const dir = Vector3d.createStartEnd(polygon[i], polygon[i + 1]);
+      const dir = Vector3d.createStartEnd (polygon[i], polygon[i + 1]);
       const magnitude = dir.magnitude();
       dir.normalize(dir);
       if (magnitude > samePointTolerance) {

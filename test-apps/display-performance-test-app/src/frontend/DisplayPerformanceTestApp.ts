@@ -10,7 +10,6 @@ import {
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@itwin/browser-authorization";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -24,7 +23,6 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.localization = new ITwinLocalization({ urlTemplate: "locales/en/{{ns}}.json" });
     iModelApp.tileAdmin = {
       minimumSpatialTolerance: 0,
       cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
@@ -62,10 +60,7 @@ async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAu
   const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
+    const desktopClient = new NativeAppAuthorization();
     await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
