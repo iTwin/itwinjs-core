@@ -31,7 +31,7 @@ before(async () => {
 
   const cfg = new IModelHostConfiguration();
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  cfg.hubAccess = IModelHubBackend;
+  cfg.hubAccess = new IModelHubBackend();
 
   await TestUtils.startBackend(cfg);
 });

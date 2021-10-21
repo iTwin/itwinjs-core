@@ -79,7 +79,6 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _editorRef: TypeEditor | undefined;
   private _propertyEditor: PropertyEditorBase | undefined;
-  private _spanRef = React.createRef<HTMLSpanElement>();
 
   private createEditor(): React.ReactNode {
     const editorRef = (ref: TypeEditor | undefined) => this._editorRef = ref;
@@ -109,14 +108,6 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
     return clonedNode;
   }
-  public override componentDidMount() {
-    this._spanRef.current?.addEventListener("keydown", this._handleKeyDown, true);
-  }
-  public override componentWillUnmount() {
-    // istanbul ignore next
-    if (this._spanRef.current)
-      this._spanRef.current.removeEventListener("keydown", this._handleKeyDown, true);
-  }
 
   private _handleEditorBlur = (_e: React.FocusEvent) => {
     // istanbul ignore else
@@ -132,7 +123,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     e.stopPropagation();
   };
 
-  private _handleKeyDown = (e: KeyboardEvent) => {
+  private _handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case SpecialKey.Escape:
         this.onPressEscape(e);
@@ -153,14 +144,14 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     e.stopPropagation();
   };
 
-  private onPressEscape(_e: KeyboardEvent): void {
+  private onPressEscape(_e: React.KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor && this._propertyEditor.containerHandlesEscape) {
       this._commitCancel();
     }
   }
 
-  private onPressEnter(e: KeyboardEvent): void {
+  private onPressEnter(e: React.KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor && this._propertyEditor.containerHandlesEnter) {
       // istanbul ignore else
@@ -170,7 +161,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     }
   }
 
-  private onPressTab(e: KeyboardEvent): void {
+  private onPressTab(e: React.KeyboardEvent): void {
     // istanbul ignore else
     if (this._propertyEditor && this._propertyEditor.containerHandlesTab) {
       e.stopPropagation();
@@ -253,12 +244,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     return (
       <span className="components-editor-container"
         onBlur={this._handleContainerBlur}
+        onKeyDown={this._handleKeyDown}
         onClick={this._handleClick}
         onContextMenu={this._handleRightClick}
         title={this.props.title}
         data-testid="editor-container"
         role="presentation"
-        ref={this._spanRef}
       >
         {this.createEditor()}
       </span>
