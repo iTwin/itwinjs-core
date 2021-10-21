@@ -3541,7 +3541,6 @@ importers:
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      tsconfig-paths: ^3.3.2
       typedoc: ^0.16.8
       typedoc-plugin-external-module-name: 3.0.0
       typedoc-plugin-internal-external: 2.1.1
@@ -3559,7 +3558,6 @@ importers:
       recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      tsconfig-paths: 3.11.0
       typedoc: 0.16.11
       typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
       typedoc-plugin-internal-external: 2.1.1_typedoc@0.16.11
@@ -3904,7 +3902,6 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
     dependencies:
@@ -3939,7 +3936,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
@@ -4022,7 +4018,6 @@ importers:
       sinon-chai: ^3.2.0
       ts-key-enum: ^2.0.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4105,7 +4100,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4169,7 +4163,6 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4232,7 +4225,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4314,7 +4306,6 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4395,7 +4386,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4462,7 +4452,6 @@ importers:
       sinon-chai: ^3.2.0
       ts-key-enum: ^2.0.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4528,7 +4517,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0

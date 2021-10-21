@@ -8,7 +8,7 @@
 import * as path from "path";
 
 const fs = require("fs-extra");
-const { logBuildWarning, logBuildError, failBuild } = require("../scripts/rush/utils");
+const { logBuildWarning, logBuildError, failBuild } = require("../scripts/utils/utils");
 
 const Base = require("mocha/lib/reporters/base");
 const Spec = require("mocha/lib/reporters/spec");

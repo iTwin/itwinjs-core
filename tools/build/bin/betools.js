@@ -14,8 +14,6 @@ yargs.strict(true)
   .wrap(Math.min(150, yargs.terminalWidth()))
   .version("2.0.0")
   .usage("Bentley Scripts Utility\n\n These scripts consist of several standard npm tasks an app may want to make use of.")
-  .command("test", false, {}, () => { testCommand() })
-  .command("test-tsnode", false, {}, () => { testCommand() })
   .command("docs", "Generate TypeDoc documentation by using the provided parameters to pass to TypeDoc.  Supports generating html TypeScript documentation as well as a json representation of the documentation.",
     function (yargs) {
       return yargs.options({
