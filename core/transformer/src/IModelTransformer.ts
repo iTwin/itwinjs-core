@@ -21,7 +21,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelFilterer, IModelImporter } from "./IModelImporter";
+import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -77,14 +77,16 @@ export interface IModelTransformOptions {
    */
   cloneUsingBinaryGeometry?: boolean;
 
+  // TODO: throw on different briefcase ids
   /** Flag that indicates that the transform will be a filter transform.
-   * The transformer will ignore the target's contents, and only allow insertions of elements from the source into the target.
+   * The transformer will delete the target's contents, and only allow insertions of elements from the source into the target.
    * It will also preserve the ids from the source in the target. Attempts to insert anything that isn't in the source
    * will fail, although updates can be made.
    * Setting this option to `true` is the only way to do a filter transform, which preserves ids and
    * cannot insert additional elements.
-   * @beta
+   * @note the briefcase Ids used must be the same or this will assert, since the briefcase Id is the top 24 bits of elementIds
    * @default false
+   * @beta
    */
   preserveIdsInFilterTransform?: boolean;
 }
@@ -124,8 +126,6 @@ export class IModelTransformer extends IModelExportHandler {
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
 
-  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelFilterer, options: IModelTransformOptions & { preserveIdsInPureFilterTransform: true });
-  public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions & { preserveIdsInPureFilterTransform?: false });
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
    * @param target Specifies the target IModelImporter or the target IModelDb that will be used to construct the target IModelImporter.
@@ -161,23 +161,12 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
-      if (options?.preserveIdsInFilterTransform) {
-        this.importer = new IModelFilterer(target);
-      } else {
-        this.importer = new IModelImporter(target);
-      }
+      this.importer = new IModelImporter(target);
     } else {
-      // if we don't require them to extend it, we may have to inject it into the prototype chain ourselves which is imo uglier
-      if (options?.preserveIdsInFilterTransform) {
-        throw new IModelError(
-          IModelStatus.BadArg,
-          "if the target is an IModelImporter instance, and preserveIdsInPureFilterTransform is true, the instance must extend IModelFilterer"
-        );
-      }
       this.importer = target;
     }
-    this.importer.preserveIdsInFilterTransform = options?.preserveIdsInFilterTransform ?? false;
     this.targetDb = this.importer.targetDb;
+    this.importer.preserveIdsInFilterTransform = options?.preserveIdsInFilterTransform ?? false;
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }

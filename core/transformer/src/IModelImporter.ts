@@ -147,22 +147,15 @@ export class IModelImporter implements Required<IModelImportOptions> {
     return elementProps.id!;
   }
 
-  private insertElement(elProps: ElementProps): Id64String {
-    const insertionMethod = this.preserveIdsInFilterTransform ? "insertElementForceUseId" : "insertElement";
-    try {
-      return elProps.id = (this.targetDb.nativeDb)[insertionMethod](elProps);
-    } catch (err: any) {
-      throw new IModelError(err.errorNumber, `${insertionMethod} with class=${elProps.classFullName}: ${err.message}`,);
-    }
-  }
-
   /** Create a new Element from the specified ElementProps and insert it into the target iModel.
    * @returns The Id of the newly inserted Element.
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElement`.
    */
   protected onInsertElement(elementProps: ElementProps): Id64String {
+    // XXXXXXXXXXX: need to update the default subcategory after inserting any [spatial?] category
     try {
-      const elementId: Id64String = this.insertElement(elementProps);
+      const insertionMethod = this.preserveIdsInFilterTransform ? "insertElementForceUseId" : "insertElement";
+      const elementId: Id64String = this.targetDb.elements[insertionMethod](elementProps);
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
       if (this.simplifyElementGeometry) {
@@ -445,107 +438,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * a subclass may perform arbitrary work after all other importing is done by overriding this method
    */
   public async onFinalizeImport(): Promise<void> {}
-}
-
-// TODO?: rename to IdPreservingFilterer
-/** an [[IModelImporter]] that allows "filtering" an iModel, keeping ids of remaining elements in the
- * target as matching with the source.
- * Due to the inability to create an element with a specific id, we treat inserts as preventing
- * deletion of elements, then delete all filtered (not-inserted) elements at the end of the transformation
- * to keep just the unfiltered elements intact. All other updates apply normally.
- *
- * When subclassing this, you must pass an id in all props passed to
- *
- * An instance of this subclass of [IModelTransformer]($transformer) is used when the options for the transformer have
- * [IModelTransformOptions.preserveIdsInPureFilterTransform]($transformer) as `true`.
- * @internal
- */
-export class IModelFilterer extends IModelImporter {
-  // this class uses several unbound super methods that it later invokes with the correct `this`
-  /* eslint-disable @typescript-eslint/unbound-method */
-  private _modelsToKeep = new Set<Id64String>();
-  public override importModel(modelProps: ModelProps): Id64String {
-    if (modelProps.id === undefined)
-      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._modelsToKeep.add(modelProps.id);
-    return modelProps.id;
-  }
-
-  private _elemsToKeep = new Set<Id64String>();
-  public override importElement(elementProps: ElementProps): Id64String {
-    if (elementProps.id === undefined)
-      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._elemsToKeep.add(elementProps.id);
-    return elementProps.id;
-  }
-
-  protected override onInsertElement(_elementProps: ElementProps): Id64String {
-    throw new IModelError(IModelStatus.BadRequest, "not allowed during a filter transform");
-  }
-
-  protected override onDeleteElement(_elementId: Id64String): void {}
-
-  private _aspectsToKeep = new Set<Id64String>();
-  public override importElementUniqueAspect(aspectProps: ElementAspectProps) {
-    if (aspectProps.id === undefined)
-      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._aspectsToKeep.add(aspectProps.id);
-    return aspectProps.id;
-  }
-
-  public override importElementMultiAspects(aspectsProps: ElementAspectProps[], _filterFunc?: (a: ElementMultiAspect) => boolean): void {
-    aspectsProps.forEach((aspectProps) => {
-      if (aspectProps.id === undefined)
-        throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-      this._aspectsToKeep.add(aspectProps.id);
-    });
-  }
-
-  protected override onInsertElementAspect(_aspectProps: ElementAspectProps): void {
-    throw new IModelError(IModelStatus.BadRequest, "not allowed during a pure filter transform");
-  }
-
-  protected override onDeleteElementAspect(_aspectProps: ElementAspectProps): void {}
-
-  private _relationsToKeep = new Set<Id64String>();
-  public override importRelationship(relationshipProps: RelationshipProps): Id64String {
-    if (relationshipProps.id === undefined)
-      throw new IModelError(IModelStatus.InvalidId, "an id must be provided");
-    this._relationsToKeep.add(relationshipProps.id);
-    return relationshipProps.id;
-  }
-
-  protected override onInsertRelationship(_relationshipProps: RelationshipProps): Id64String {
-    throw new IModelError(IModelStatus.BadRequest, "not allowed during a pure filter transform");
-  }
-
-  protected override onDeleteRelationship(_relationshipProps: RelationshipProps) {}
-
-  public override async onFinalizeImport() {
-    const ids = [...this._modelsToKeep].join(",");
-    if (/[^0-9a-fA-Fx,]/.test(ids)) {
-      throw new IModelError(IModelStatus.InvalidId, "dynamic sql component contained disallowed characters");
-    }
-    `SELECT count(*) FROM meta.ECClassDEf c JOIN meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE s.Name='BisCore'`;
-    const bisClasses = [
-      "bis.Element",
-      "bis.ElementAspect",
-      "bis.ElementOwnsElements",
-      "bis.ElementOwnsAspect",
-      "bis.CodeSpecSpecifiesCode",
-    ];
-    for await (const _ of this.targetDb.query(`
-        DELETE
-        FROM bis.Element
-        JOIN bis.ElementAspect ON ECInstanceId
-        FROM ${bisClasses[0]}
-        ${bisClasses.slice(1).map((c) => `JOIN ${c} ON ECInstanceId`).join("\n")}
-        ${/* due to the potential for query building, I whitelist id characater */ ""}
-        WHERE ECInstanceId NOT IN (${ids})
-        `,
-    )) {}
-  }
-  /* eslint-enable @typescript-eslint/unbound-method */
 }
 
 /** Returns true if a change within an Entity is detected.

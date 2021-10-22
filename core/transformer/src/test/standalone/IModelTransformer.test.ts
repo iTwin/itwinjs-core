@@ -1177,4 +1177,41 @@ describe("IModelTransformer", () => {
     sourceDb.close();
     targetDb.close();
   });
+
+  it("filter preserves Ids", async () => {
+
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdateSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BisCoreUpdate" } });
+
+    // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
+    // will cause an update to the old biscore in this target
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdateTarget.bim");
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const targetDbTestCopy = SnapshotDb.createFrom(seedDb, targetDbPath);
+    targetDbTestCopy.close();
+    seedDb.close();
+    setToStandalone(targetDbPath);
+    const targetDb = StandaloneDb.openFile(targetDbPath);
+
+    assert(
+      Semver.lt(
+        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
+      "The targetDb must have a less up-to-date version of the BisCore schema than the source"
+    );
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    targetDb.saveChanges();
+
+    assert(
+      Semver.eq(
+        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
+      "The targetDb must now have an equivalent BisCore schema because it was updated"
+    );
+
+    sourceDb.close();
+    targetDb.close();
+  });
 });
