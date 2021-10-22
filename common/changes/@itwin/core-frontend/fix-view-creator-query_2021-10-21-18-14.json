@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders.",
+      "comment": "Fix ViewCreator3d spatial criterion to account for NULL.",
       "type": "none"
     }
   ],
