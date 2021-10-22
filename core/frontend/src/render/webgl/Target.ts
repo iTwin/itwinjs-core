@@ -301,6 +301,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // We allocated our framebuffer's color attachment, so must dispose of it too.
     assert(undefined !== tx);
     dispose(tx);
+    // We allocated our framebuffer's depth attachment, so must dispose of it too.
+    assert(undefined !== db);
     dispose(db);
   }
 
