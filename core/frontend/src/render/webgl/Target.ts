@@ -273,9 +273,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined === color)
       return undefined;
 
-    this._fbo = FrameBuffer.create([color]);
+    const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
+    if (undefined === depth) {
+      color.dispose();
+      return undefined;
+    }
+
+    this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
       color.dispose();
+      depth.dispose();
       return undefined;
     }
 
@@ -287,12 +294,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     const tx = this._fbo.getColor(0);
+    const db = this._fbo.depthBuffer;
     this._fbo = dispose(this._fbo);
     this._dcAssigned = false;
 
     // We allocated our framebuffer's color attachment, so must dispose of it too.
     assert(undefined !== tx);
     dispose(tx);
+    // We allocated our framebuffer's depth attachment, so must dispose of it too.
+    assert(undefined !== db);
+    dispose(db);
   }
 
   public override dispose() {
