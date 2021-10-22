@@ -1,0 +1,44 @@
+{
+  "name": "@itwin/extension-api",
+  "version": "3.0.0-dev.86",
+  "description": "",
+  "typings": "itwin-extension",
+  "license": "MIT",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "cover": "",
+    "docs": "",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": ""
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "iTwin",
+    "Extension"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "eslint": "^7.11.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.4.0"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}

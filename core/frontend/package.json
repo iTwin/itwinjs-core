@@ -92,6 +92,7 @@
   "dependencies": {
     "@bentley/telemetry-client": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
+    "@itwin/extension-api": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",

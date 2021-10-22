@@ -20,20 +20,23 @@
       "extensions",
       "integration-testing"
     ],
-    "ignoredNpmScopes": [
-      "@types"
-    ]
+    "ignoredNpmScopes": ["@types"]
   },
   "gitPolicy": {
-    "allowedEmailRegExps": [
-      "[^@]+@users\\.noreply\\.github\\.com"
-    ],
+    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com"],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "projects": [
+    {
+      "packageName": "@itwin/extension-api",
+      "projectFolder": "core/itwin-extension",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
     {
       "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",

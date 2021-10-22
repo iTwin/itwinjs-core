@@ -31,6 +31,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/itwin-registry-client",
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
+    },
+    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -171,6 +175,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/extension-api",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/frontend-devtools",
       "allowedCategories": [ "internal" ]
     },
@@ -228,7 +236,7 @@
     },
     {
       "name": "@itwin/projects-client",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
