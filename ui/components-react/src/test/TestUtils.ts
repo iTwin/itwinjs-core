@@ -7,7 +7,7 @@ import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
+  StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
 } from "@itwin/appui-abstract";
 import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../components-react";
 import { TableFilterDescriptorCollection } from "../components-react/table/columnfiltering/TableFilterDescriptorCollection";
@@ -36,7 +36,7 @@ export class TestUtils {
         displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
         closeInputFieldMessage: (): void => { },
       };
-      UiAbstract.messagePresenter = mp;
+      UiAdmin.messagePresenter = mp;
     }
   }
 

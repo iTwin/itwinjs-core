@@ -14,7 +14,6 @@ import { HSVColor } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InputProps } from '@itwin/itwinui-react';
-import { Localization } from '@itwin/core-common';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -1043,9 +1042,8 @@ export enum TimelineScale {
 
 // @public
 export class UiIModelComponents {
-    static initialize(localization?: Localization): Promise<void>;
+    static initialize(): Promise<void>;
     static get initialized(): boolean;
-    static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;

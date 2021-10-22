@@ -22,7 +22,9 @@ export type IconSpec = string | ConditionalStringValue | React.ReactNode;
  * @public
  */
 export interface IconProps extends CommonProps {
-  /** CSS class name or SvgSprite/SvgPath for icon */
+  /** CSS class name or SvgSprite/SvgPath for icon. This is optional because it is improperly
+   * used to extend other interfaces and changing it would break existing API.
+   */
   iconSpec?: IconSpec;
 }
 
@@ -32,6 +34,7 @@ export interface IconProps extends CommonProps {
 export function Icon(props: IconProps) {
   if (!props.iconSpec)
     return null;
+
   const iconString = (typeof props.iconSpec === "string" || props.iconSpec instanceof ConditionalStringValue) ?
     ConditionalStringValue.getValue(props.iconSpec) : undefined;
 

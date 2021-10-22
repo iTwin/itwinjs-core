@@ -805,10 +805,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/appui-abstract
 
-| Removed                       | Replacement  |
-| ----------------------------- | ------------ |
-| `ContentLayoutProps.priority` | *eliminated* |
-| `UiItemsArbiter`              | *eliminated* |
+| Removed                       | Replacement                  |
+| ----------------------------- | ---------------------------- |
+| `ContentLayoutProps.priority` | *eliminated*                 |
+| `UiItemsArbiter`              | *eliminated*                 |
+| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter`   |
 
 ### @itwin/core-react
 
