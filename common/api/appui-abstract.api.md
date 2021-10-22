@@ -1292,6 +1292,9 @@ export interface LinkElementsInfo {
 }
 
 // @internal
+export const loggerCategory: (obj: any) => string;
+
+// @internal
 export function matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null;
 
 // @internal (undocumented)
@@ -1967,14 +1970,6 @@ export enum ToolbarUsage {
 }
 
 // @public
-export class UiAbstract {
-    // @internal (undocumented)
-    static loggerCategory(obj: any): string;
-    static get messagePresenter(): MessagePresenter;
-    static set messagePresenter(mp: MessagePresenter);
-    }
-
-// @public
 export class UiAdmin {
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
@@ -1990,6 +1985,8 @@ export class UiAdmin {
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
     get isFocusOnHome(): boolean;
+    static get messagePresenter(): MessagePresenter;
+    static set messagePresenter(mp: MessagePresenter);
     static readonly onGenericUiEvent: GenericUiEvent;
     // @internal (undocumented)
     onInitialized(): void;

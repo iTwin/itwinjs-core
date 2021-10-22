@@ -8,7 +8,7 @@
 
 import "./EditorContainer.scss";
 import * as React from "react";
-import { PropertyRecord, PropertyValue, SpecialKey, UiAbstract } from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValue, SpecialKey, UiAdmin } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
 import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
@@ -175,9 +175,9 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       const htmlElement = this._editorRef && this._editorRef.htmlElement;
       // istanbul ignore else
       if (htmlElement)
-        UiAbstract.messagePresenter.displayInputFieldMessage(htmlElement, errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage);
+        UiAdmin.messagePresenter.displayInputFieldMessage(htmlElement, errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage);
       else
-        UiAbstract.messagePresenter.displayMessage(errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.messageType);
+        UiAdmin.messagePresenter.displayMessage(errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.messageType);
     }
   }
 

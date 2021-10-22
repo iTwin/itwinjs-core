@@ -14,7 +14,7 @@ import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
+import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
@@ -129,7 +129,7 @@ export class UiFramework {
   public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
 
   /**
-   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
@@ -138,7 +138,7 @@ export class UiFramework {
   }
 
   /**
-   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    *
@@ -182,8 +182,8 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
 
-    // Initialize the MessagePresenter interface in UiAbstract for Editor notifications
-    UiAbstract.messagePresenter = IModelApp.notifications;
+    // Initialize the MessagePresenter interface in UiAdmin for Editor notifications
+    UiAdmin.messagePresenter = IModelApp.notifications;
 
     UiFramework._initialized = true;
 

@@ -24,3 +24,13 @@ export const getClassName = (obj: any): string => {
 
   return className;
 };
+
+/** Gets category to use for adding Log entries
+ *  @internal
+ */
+export const loggerCategory = (obj: any): string => {
+  const className = getClassName(obj);
+  const category = `appui-abstract${(className ? `.${className}` : "")}`;
+  return category;
+};
+
