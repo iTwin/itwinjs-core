@@ -1072,6 +1072,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       Math.floor(rect.right * ratio),
       Math.floor(rect.bottom * ratio));
   }
+
+  public getRenderCommands(): Array<{ name: string, count: number }> {
+    return this._renderCommands.dump();
+  }
 }
 
 class CanvasState {

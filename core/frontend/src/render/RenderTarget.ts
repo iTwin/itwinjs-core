@@ -60,6 +60,10 @@ export interface RenderTargetDebugControl {
   displayRealityTileRanges: boolean;
   logRealityTiles: boolean;
   freezeRealityTiles: boolean;
+  /** Obtain a summary of the render commands required to draw the scene currently displayed.
+   * Each entry specifies  the type of command and the number of such commands required by the current scene.
+   */
+  getRenderCommands(): Array<{ name: string, count: number }>;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.

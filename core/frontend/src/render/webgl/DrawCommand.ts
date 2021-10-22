@@ -129,8 +129,6 @@ export class PushStateCommand {
 export class PushBranchCommand {
   public readonly opcode = "pushBranch";
 
-  private static _viewFlagOverrides?: ViewFlagOverrides;
-
   public constructor(public readonly branch: Branch) { }
 
   public execute(exec: ShaderProgramExecutor): void {

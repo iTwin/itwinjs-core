@@ -713,4 +713,28 @@ export class RenderCommands implements Iterable<DrawCommands> {
       }
     }
   }
+
+  public dump(): Array<{ name: string, count: number }> {
+    const dump = [
+      { name: "Primitives", count: 0 },
+      { name: "Batches", count: 0 },
+      { name: "Branches", count: 0 },
+    ];
+
+    for (const cmds of this._commands) {
+      for (const cmd of cmds) {
+        let index;
+        switch (cmd.opcode) {
+          case "drawPrimitive": index = 0; break;
+          case "pushBatch": index = 1; break;
+          case "pushBranch": index = 2; break;
+          default: continue;
+        }
+
+        dump[index].count++;
+      }
+    }
+
+    return dump;
+  }
 }
