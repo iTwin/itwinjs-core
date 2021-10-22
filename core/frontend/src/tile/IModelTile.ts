@@ -135,7 +135,7 @@ export class IModelTile extends Tile {
     // this tile is too coarse for view based on its size in pixels.
     // That is different than an "undisplayable" tile (maximumSize=0) whose children should be loaded immediately.
     if (undefined !== content.graphic && 0 === this.maximumSize)
-      this._maximumSize = 512;
+      this._maximumSize = 2048;
 
     const sizeMult = content.sizeMultiplier;
     if (undefined !== sizeMult && (undefined === this._sizeMultiplier || sizeMult > this._sizeMultiplier)) {

@@ -81,7 +81,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       isLeaf: false,
       contentId: "dynamic",
       range: Range3d.createNull(),
-      maximumSize: 512,
+      maximumSize: 2048,
     };
 
     super(params, parent.tree);

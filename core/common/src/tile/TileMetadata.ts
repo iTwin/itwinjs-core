@@ -19,7 +19,7 @@ import { TileReadError, TileReadStatus } from "./TileIO";
 
 // NB: These constants correspond to those defined in Tile.cpp.
 namespace Constants {
-  export const tileScreenSize = 512;
+  export const tileScreenSize = 2048;
   export const minToleranceRatioMultiplier = 2;
   export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
   export const untransformedNodeValue = 0xffffffff;
