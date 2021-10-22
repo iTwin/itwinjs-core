@@ -38,7 +38,7 @@ describe("useWidgetDirection", () => {
       wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <NineZoneContext.Provider value={nineZone}>
           <TabIdContext.Provider value="t1">
-            <FrameworkVersion version="2">
+            <FrameworkVersion>
               {children}
             </FrameworkVersion>
           </TabIdContext.Provider>
@@ -56,7 +56,7 @@ describe("useWidgetDirection", () => {
       wrapper: ({ children }) => ( // eslint-disable-line react/display-name
         <NineZoneContext.Provider value={nineZone}>
           <TabIdContext.Provider value="t1">
-            <FrameworkVersion version="2">
+            <FrameworkVersion>
               {children}
             </FrameworkVersion>
           </TabIdContext.Provider>

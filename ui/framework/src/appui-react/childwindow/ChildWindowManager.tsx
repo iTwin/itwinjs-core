@@ -105,7 +105,7 @@ export class ChildWindowManager {
             <Provider store={StateManager.store} >
               <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
                 <ThemeManager>
-                  <FrameworkVersion version="2">
+                  <FrameworkVersion>
                     <div className="uifw-child-window-container-host">
                       <PopupRenderer />
                       <ModalDialogRenderer />

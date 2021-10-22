@@ -224,10 +224,10 @@ public;FrameworkState
 alpha;FrameworkToolAdmin 
 public;FrameworkUiAdmin 
 alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
-alpha;FrameworkVersion = "1" | "2"
 internal;FrameworkVersionChangedEvent 
 internal;FrameworkVersionChangedEventArgs
 internal;FrameworkVersionContext: React.Context
+public;FrameworkVersionId = "1" | "2"
 alpha;FrameworkVersionProps
 internal;FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element
 internal;FrameworkVersionSwitchProps
@@ -659,7 +659,7 @@ public;useBackstageManager: () => BackstageManager
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
-internal;useFrameworkVersion(): FrameworkVersion
+internal;useFrameworkVersion(): FrameworkVersionId
 internal;useFrontstageManager(frontstageDef: FrontstageDef): void
 internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined

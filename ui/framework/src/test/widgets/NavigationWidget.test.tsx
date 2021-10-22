@@ -12,6 +12,7 @@ import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import {
   AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
+  UiFramework,
 } from "../../appui-react";
 import { ConfigurableUiManager } from "../../appui-react/configurableui/ConfigurableUiManager";
 import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
@@ -19,8 +20,9 @@ import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
 import { NavigationAidControl } from "../../appui-react/navigationaids/NavigationAidControl";
 import TestUtils, { storageMock } from "../TestUtils";
 import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";
+import { Provider } from "react-redux";
 
-describe("NavigationWidget localStorage Wrapper", () => {
+describe.only("NavigationWidget localStorage Wrapper", () => {
 
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   const localStorageMock = storageMock();
@@ -93,34 +95,54 @@ describe("NavigationWidget localStorage Wrapper", () => {
         }
       />;
 
-    it("NavigationWidget should render", () => {
+    it("NavigationWidget should render", async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+
       mount(
-        <NavigationWidget // eslint-disable-line deprecation/deprecation
-          horizontalToolbar={horizontalToolbar}
-          verticalToolbar={verticalToolbar}
-        />,
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <NavigationWidget // eslint-disable-line deprecation/deprecation
+              horizontalToolbar={horizontalToolbar}
+              verticalToolbar={verticalToolbar}
+            />
+          </FrameworkVersion>
+        </Provider>
       );
     });
 
-    it("NavigationWidget should render correctly", () => {
+    it("NavigationWidget should render correctly", async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+
       shallow(
-        <NavigationWidget // eslint-disable-line deprecation/deprecation
-          id="navigationWidget"
-          horizontalToolbar={horizontalToolbar}
-          verticalToolbar={verticalToolbar}
-        />,
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <NavigationWidget // eslint-disable-line deprecation/deprecation
+              id="navigationWidget"
+              horizontalToolbar={horizontalToolbar}
+              verticalToolbar={verticalToolbar}
+            />
+          </FrameworkVersion>
+        </Provider>,
       ).should.matchSnapshot();
     });
 
-    it("NavigationWidget should render with an item list", () => {
+    it("NavigationWidget should render with an item list", async () => {
+      UiFramework.setUiVersion("1");
+      await TestUtils.flushAsyncOperations();
+
       const hItemList = new ItemList([CoreTools.selectElementCommand]);
       const vItemList = new ItemList([CoreTools.fitViewCommand]);
-
       mount(
-        <NavigationWidget // eslint-disable-line deprecation/deprecation
-          horizontalItems={hItemList}
-          verticalItems={vItemList}
-        />,
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <NavigationWidget // eslint-disable-line deprecation/deprecation
+              horizontalItems={hItemList}
+              verticalItems={vItemList}
+            />
+          </FrameworkVersion>
+        </Provider>
       );
     });
 
@@ -182,19 +204,26 @@ describe("NavigationWidget localStorage Wrapper", () => {
       ConfigurableUiManager.unregisterControl("Aid1");
     });
 
-    it("NavigationAidHost should render in 2.0 mode", () => {
+    it("NavigationAidHost should render in 2.0 mode",  async () => {
+      UiFramework.setUiVersion("2");
+      await TestUtils.flushAsyncOperations();
+
       mount(
-        <FrameworkVersion version="2">
-          <NavigationAidHost />
-        </FrameworkVersion>);
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <NavigationAidHost />
+          </FrameworkVersion>
+        </Provider>);
     });
 
-    it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", () => {
+    it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", async () => {
       UiShowHideManager.snapWidgetOpacity = true;
       mount(
-        <FrameworkVersion version="2">
-          <NavigationAidHost />
-        </FrameworkVersion>);
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <NavigationAidHost />
+          </FrameworkVersion>
+        </Provider>);
       UiShowHideManager.snapWidgetOpacity = false;
     });
   });
