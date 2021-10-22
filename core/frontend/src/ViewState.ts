@@ -1092,9 +1092,13 @@ export abstract class ViewState extends ElementState {
    * false if the viewed area do does not include more than one percent of the project.
    */
   public getIsViewingProject(): boolean {
+    if (!this.isSpatialView())
+      return false;
+
     const worldToNpc = this.computeWorldToNpc();
     if (!worldToNpc || !worldToNpc.map)
       return false;
+
     const expandedRange = this.iModel.projectExtents.clone();
     expandedRange.expandInPlace(10E3);
     const corners = expandedRange.corners(scratchCorners);

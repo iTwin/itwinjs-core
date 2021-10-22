@@ -797,11 +797,10 @@ export abstract class ViewManip extends ViewTool {
   public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
     const range = this.computeFitRange(viewport);
 
-    if (animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
-      const view3d = viewport.view as ViewState3d;
-      const cartographicCenter = view3d.rootToCartographic(range.center);
+    if (viewport.view.isSpatialView() && animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
+      const cartographicCenter = viewport.view.rootToCartographic(range.center);
       if (undefined !== cartographicCenter) {
-        const cartographicArea = rangeToCartographicArea(view3d, range);
+        const cartographicArea = rangeToCartographicArea(viewport.view, range);
         (async () => {
           await viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
           viewport.viewCmdTargetCenter = undefined;
