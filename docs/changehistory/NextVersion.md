@@ -771,6 +771,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
 | `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
 | `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                               |
 | `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
 | `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
 | `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
