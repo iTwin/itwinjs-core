@@ -263,14 +263,16 @@ export class ViewCreator3d {
    * Get all PhysicalModel ids in the connection
    */
   private async _getAllModels(): Promise<Id64Array> {
-    let query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
+    // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
+    // If the iModel has an earlier version, the statement will throw because the property does not exist.
+    // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
+    const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+    const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
     let models = [];
     try {
-      models = await this._executeQuery(query);
+      models = await this._executeQuery(`${select} ${spatialCriterion}`);
     } catch {
-      // possible that the isNotSpatiallyLocated property is not available in the iModel's schema
-      query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
-      models = await this._executeQuery(query);
+      models = await this._executeQuery(select);
     }
 
     return models;

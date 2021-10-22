@@ -770,7 +770,7 @@ importers:
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
@@ -893,7 +893,7 @@ importers:
       typescript: ~4.4.0
       webpack: 4.42.0
     devDependencies:
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
@@ -1465,7 +1465,7 @@ importers:
       source-map-loader: ^1.0.0
       typescript: ~4.4.0
     dependencies:
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/editor-common': link:../common
@@ -1721,19 +1721,19 @@ importers:
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
-      '@itwin/appui-abstract': link:../../ui/abstract
-      '@itwin/appui-layout-react': link:../../ui/ninezone
-      '@itwin/appui-react': link:../../ui/framework
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/appui-layout-react': link:../../ui/appui-layout-react
+      '@itwin/appui-react': link:../../ui/appui-react
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core
+      '@itwin/core-react': link:../../ui/core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/imodel-components-react': link:../../ui/imodel-components
+      '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.22.0_react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
@@ -2141,8 +2141,8 @@ importers:
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
-      '@itwin/appui-abstract': link:../../ui/abstract
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2150,7 +2150,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core
+      '@itwin/core-react': link:../../ui/core-react
       '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
@@ -2567,16 +2567,16 @@ importers:
       micro-memoize: 4.0.9
       rxjs: 6.6.7
     devDependencies:
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-i18n': link:../../core/i18n
-      '@itwin/core-react': link:../../ui/core
+      '@itwin/core-react': link:../../ui/core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/imodel-components-react': link:../../ui/imodel-components
+      '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/presentation-common': link:../common
       '@itwin/presentation-frontend': link:../frontend
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
@@ -2739,9 +2739,9 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2822,7 +2822,7 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/browser-authorization': 0.2.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -2914,7 +2914,7 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
-      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/browser-authorization': 0.2.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3237,8 +3237,8 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/appui-abstract': link:../../ui/abstract
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3246,9 +3246,9 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core
+      '@itwin/core-react': link:../../ui/core-react
       '@itwin/express-server': link:../../core/express-server
-      '@itwin/imodel-components-react': link:../../ui/imodel-components
+      '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.22.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
@@ -3363,11 +3363,11 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
-      '@itwin/appui-abstract': link:../../ui/abstract
-      '@itwin/appui-layout-react': link:../../ui/ninezone
-      '@itwin/appui-react': link:../../ui/framework
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/appui-layout-react': link:../../ui/appui-layout-react
+      '@itwin/appui-react': link:../../ui/appui-react
       '@itwin/browser-authorization': 0.2.0
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3377,14 +3377,14 @@ importers:
       '@itwin/core-markup': link:../../core/markup
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core
+      '@itwin/core-react': link:../../ui/core-react
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
       '@itwin/express-server': link:../../core/express-server
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodel-components-react': link:../../ui/imodel-components
+      '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.22.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
@@ -3464,16 +3464,16 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@itwin/appui-abstract': link:../../ui/abstract
-      '@itwin/appui-layout-react': link:../../ui/ninezone
-      '@itwin/appui-react': link:../../ui/framework
-      '@itwin/components-react': link:../../ui/components
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/appui-layout-react': link:../../ui/appui-layout-react
+      '@itwin/appui-react': link:../../ui/appui-react
+      '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../../ui/core
+      '@itwin/core-react': link:../../ui/core-react
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -3874,7 +3874,7 @@ importers:
       typescript: 4.4.4
       webpack: 4.42.0
 
-  ../../ui/abstract:
+  ../../ui/appui-abstract:
     specifiers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@itwin/build-tools': workspace:*
@@ -3945,7 +3945,265 @@ importers:
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
-  ../../ui/components:
+  ../../ui/appui-layout-react:
+    specifiers:
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-react': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
+      '@testing-library/react': ^12.0.0
+      '@testing-library/react-hooks': ^3.2.1
+      '@types/chai': ^4.1.4
+      '@types/chai-as-promised': ^7
+      '@types/chai-jest-snapshot': ^1.3.0
+      '@types/chai-spies': ^1.0.0
+      '@types/enzyme': 3.9.3
+      '@types/mocha': ^8.2.2
+      '@types/react': ^17.0.0
+      '@types/react-dom': ^17.0.0
+      '@types/sinon': ^9.0.0
+      '@types/testing-library__react-hooks': ^3.1.0
+      '@types/uuid': ^7.0.2
+      '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
+      chai: ^4.1.2
+      chai-as-promised: ^7
+      chai-jest-snapshot: ^2.0.0
+      chai-spies: 1.0.0
+      classnames: ^2.3.1
+      cpx: ^1.5.0
+      enzyme: ^3.4.0
+      enzyme-to-json: ^3.3.4
+      eslint: ^7.11.0
+      ignore-styles: ^5.0.1
+      immer: 9.0.2
+      jsdom-global: 3.0.2
+      mocha: ^8.3.2
+      nyc: ^15.1.0
+      raf: ^3.4.0
+      react: ^17.0.0
+      react-dom: ^17.0.0
+      rimraf: ^3.0.2
+      sinon: ^9.0.2
+      sinon-chai: ^3.2.0
+      ts-node: ^7.0.1
+      typemoq: ^2.1.0
+      typescript: ~4.4.0
+      uuid: ^7.0.3
+    dependencies:
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.22.0_react-dom@17.0.2+react@17.0.2
+      classnames: 2.3.1
+      immer: 9.0.2
+      uuid: 7.0.3
+    devDependencies:
+      '@itwin/appui-abstract': link:../appui-abstract
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-react': link:../core-react
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
+      '@testing-library/react-hooks': 3.7.0_react@17.0.2
+      '@types/chai': 4.2.22
+      '@types/chai-as-promised': 7.1.4
+      '@types/chai-jest-snapshot': 1.3.6
+      '@types/chai-spies': 1.0.3
+      '@types/enzyme': 3.9.3
+      '@types/mocha': 8.2.3
+      '@types/react': 17.0.30
+      '@types/react-dom': 17.0.10
+      '@types/sinon': 9.0.11
+      '@types/testing-library__react-hooks': 3.4.1
+      '@types/uuid': 7.0.5
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.3_fae758709a8810ba97b4c03852dde4d0
+      chai: 4.3.4
+      chai-as-promised: 7.1.1_chai@4.3.4
+      chai-jest-snapshot: 2.0.0_chai@4.3.4
+      chai-spies: 1.0.0_chai@4.3.4
+      cpx: 1.5.0
+      enzyme: 3.11.0
+      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      eslint: 7.32.0
+      ignore-styles: 5.0.1
+      jsdom-global: 3.0.2
+      mocha: 8.4.0
+      nyc: 15.1.0
+      raf: 3.4.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      rimraf: 3.0.2
+      sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
+      ts-node: 7.0.1
+      typemoq: 2.1.0
+      typescript: 4.4.4
+
+  ../../ui/appui-react:
+    specifiers:
+      '@bentley/icons-generic': ^1.0.15
+      '@bentley/icons-generic-webfont': ^1.0.15
+      '@bentley/product-settings-client': workspace:*
+      '@bentley/telemetry-client': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/browser-authorization': ^0.2.0
+      '@itwin/build-tools': workspace:*
+      '@itwin/components-react': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/core-i18n': workspace:*
+      '@itwin/core-markup': workspace:*
+      '@itwin/core-quantity': workspace:*
+      '@itwin/core-react': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      '@itwin/imodel-components-react': workspace:*
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
+      '@itwin/presentation-testing': workspace:*
+      '@testing-library/react': ^12.0.0
+      '@testing-library/react-hooks': ^3.2.1
+      '@types/chai': ^4.1.4
+      '@types/chai-as-promised': ^7
+      '@types/chai-jest-snapshot': ^1.3.0
+      '@types/chai-spies': ^1.0.0
+      '@types/enzyme': 3.9.3
+      '@types/faker': ^4.1.0
+      '@types/lodash': ^4.14.0
+      '@types/mocha': ^8.2.2
+      '@types/node': 14.14.31
+      '@types/react': ^17.0.0
+      '@types/react-dom': ^17.0.0
+      '@types/react-redux': ^7.1.18
+      '@types/rimraf': ^2.0.2
+      '@types/sinon': ^9.0.0
+      '@types/sinon-chai': ^3.2.0
+      '@types/testing-library__react-hooks': ^3.1.0
+      '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
+      chai: ^4.1.2
+      chai-as-promised: ^7
+      chai-jest-snapshot: ^2.0.0
+      chai-spies: 1.0.0
+      classnames: ^2.3.1
+      cpx: ^1.5.0
+      enzyme: ^3.4.0
+      enzyme-to-json: ^3.3.4
+      eslint: ^7.11.0
+      faker: ^4.1.0
+      ignore-styles: ^5.0.1
+      immer: 9.0.2
+      jsdom-global: 3.0.2
+      lodash: ^4.17.10
+      mocha: ^8.3.2
+      npm-run-all: ^4.1.5
+      nyc: ^15.1.0
+      raf: ^3.4.0
+      react: ^17.0.0
+      react-dnd: ^11.1.3
+      react-dnd-html5-backend: ^11.1.3
+      react-dom: ^17.0.0
+      react-redux: ^7.2.2
+      react-split-pane: 0.1.92
+      react-test-renderer: ^17.0.0
+      redux: ^4.0.3
+      rimraf: ^3.0.2
+      rxjs: ^6.6.2
+      sinon: ^9.0.2
+      sinon-chai: ^3.2.0
+      ts-node: ^7.0.1
+      tsconfig-paths: ^3.3.2
+      typemoq: ^2.1.0
+      typescript: ~4.4.0
+      xmlhttprequest: ^1.8.0
+    dependencies:
+      '@bentley/icons-generic': 1.0.34
+      '@bentley/icons-generic-webfont': 1.0.34
+      '@bentley/telemetry-client': link:../../clients/telemetry
+      '@itwin/browser-authorization': 0.2.0
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.22.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/presentation-components': link:../../presentation/components
+      classnames: 2.3.1
+      immer: 9.0.2
+      lodash: 4.17.21
+      react-dnd: 11.1.3_react-dom@17.0.2+react@17.0.2
+      react-dnd-html5-backend: 11.1.3
+      react-split-pane: 0.1.92_react-dom@17.0.2+react@17.0.2
+      rxjs: 6.6.7
+    devDependencies:
+      '@bentley/product-settings-client': link:../../clients/product-settings
+      '@itwin/appui-abstract': link:../appui-abstract
+      '@itwin/appui-layout-react': link:../appui-layout-react
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/components-react': link:../components-react
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/core-i18n': link:../../core/i18n
+      '@itwin/core-markup': link:../../core/markup
+      '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/core-react': link:../core-react
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@itwin/imodel-components-react': link:../imodel-components-react
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/presentation-testing': link:../../presentation/testing
+      '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
+      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
+      '@types/chai': 4.2.22
+      '@types/chai-as-promised': 7.1.4
+      '@types/chai-jest-snapshot': 1.3.6
+      '@types/chai-spies': 1.0.3
+      '@types/enzyme': 3.9.3
+      '@types/faker': 4.1.12
+      '@types/lodash': 4.14.175
+      '@types/mocha': 8.2.3
+      '@types/node': 14.14.31
+      '@types/react': 17.0.30
+      '@types/react-dom': 17.0.10
+      '@types/react-redux': 7.1.19
+      '@types/rimraf': 2.0.5
+      '@types/sinon': 9.0.11
+      '@types/sinon-chai': 3.2.5
+      '@types/testing-library__react-hooks': 3.4.1
+      '@wojtekmaj/enzyme-adapter-react-17': 0.6.3_fae758709a8810ba97b4c03852dde4d0
+      chai: 4.3.4
+      chai-as-promised: 7.1.1_chai@4.3.4
+      chai-jest-snapshot: 2.0.0_chai@4.3.4
+      chai-spies: 1.0.0_chai@4.3.4
+      cpx: 1.5.0
+      enzyme: 3.11.0
+      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      eslint: 7.32.0
+      faker: 4.1.0
+      ignore-styles: 5.0.1
+      jsdom-global: 3.0.2
+      mocha: 8.4.0
+      npm-run-all: 4.1.5
+      nyc: 15.1.0
+      raf: 3.4.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-redux: 7.2.5_react-dom@17.0.2+react@17.0.2
+      react-test-renderer: 17.0.2_react@17.0.2
+      redux: 4.1.1
+      rimraf: 3.0.2
+      sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
+      ts-node: 7.0.1
+      tsconfig-paths: 3.11.0
+      typemoq: 2.1.0
+      typescript: 4.4.4
+      xmlhttprequest: 1.8.0
+
+  ../../ui/components-react:
     specifiers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@itwin/appui-abstract': workspace:*
@@ -4052,12 +4310,12 @@ importers:
       shortid: 2.2.16
       ts-key-enum: 2.0.8
     devDependencies:
-      '@itwin/appui-abstract': link:../abstract
+      '@itwin/appui-abstract': link:../appui-abstract
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-i18n': link:../../core/i18n
-      '@itwin/core-react': link:../core
+      '@itwin/core-react': link:../core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
@@ -4112,7 +4370,7 @@ importers:
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
-  ../../ui/core:
+  ../../ui/core-react:
     specifiers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@itwin/appui-abstract': workspace:*
@@ -4186,7 +4444,7 @@ importers:
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
       resize-observer-polyfill: 1.5.1
     devDependencies:
-      '@itwin/appui-abstract': link:../abstract
+      '@itwin/appui-abstract': link:../appui-abstract
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -4239,170 +4497,7 @@ importers:
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
-  ../../ui/framework:
-    specifiers:
-      '@bentley/icons-generic': ^1.0.15
-      '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/product-settings-client': workspace:*
-      '@bentley/telemetry-client': workspace:*
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/appui-layout-react': workspace:*
-      '@itwin/browser-authorization': ^0.2.0
-      '@itwin/build-tools': workspace:*
-      '@itwin/components-react': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-i18n': workspace:*
-      '@itwin/core-markup': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodel-components-react': workspace:*
-      '@itwin/itwinui-css': ^0.27.0
-      '@itwin/itwinui-react': ^1.16.2
-      '@itwin/presentation-common': workspace:*
-      '@itwin/presentation-components': workspace:*
-      '@itwin/presentation-frontend': workspace:*
-      '@itwin/presentation-testing': workspace:*
-      '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
-      '@types/chai': ^4.1.4
-      '@types/chai-as-promised': ^7
-      '@types/chai-jest-snapshot': ^1.3.0
-      '@types/chai-spies': ^1.0.0
-      '@types/enzyme': 3.9.3
-      '@types/faker': ^4.1.0
-      '@types/lodash': ^4.14.0
-      '@types/mocha': ^8.2.2
-      '@types/node': 14.14.31
-      '@types/react': ^17.0.0
-      '@types/react-dom': ^17.0.0
-      '@types/react-redux': ^7.1.18
-      '@types/rimraf': ^2.0.2
-      '@types/sinon': ^9.0.0
-      '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
-      '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
-      chai: ^4.1.2
-      chai-as-promised: ^7
-      chai-jest-snapshot: ^2.0.0
-      chai-spies: 1.0.0
-      classnames: ^2.3.1
-      cpx: ^1.5.0
-      enzyme: ^3.4.0
-      enzyme-to-json: ^3.3.4
-      eslint: ^7.11.0
-      faker: ^4.1.0
-      ignore-styles: ^5.0.1
-      immer: 9.0.2
-      jsdom-global: 3.0.2
-      lodash: ^4.17.10
-      mocha: ^8.3.2
-      npm-run-all: ^4.1.5
-      nyc: ^15.1.0
-      raf: ^3.4.0
-      react: ^17.0.0
-      react-dnd: ^11.1.3
-      react-dnd-html5-backend: ^11.1.3
-      react-dom: ^17.0.0
-      react-redux: ^7.2.2
-      react-split-pane: 0.1.92
-      react-test-renderer: ^17.0.0
-      redux: ^4.0.3
-      rimraf: ^3.0.2
-      rxjs: ^6.6.2
-      sinon: ^9.0.2
-      sinon-chai: ^3.2.0
-      ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
-      typemoq: ^2.1.0
-      typescript: ~4.4.0
-      xmlhttprequest: ^1.8.0
-    dependencies:
-      '@bentley/icons-generic': 1.0.34
-      '@bentley/icons-generic-webfont': 1.0.34
-      '@bentley/telemetry-client': link:../../clients/telemetry
-      '@itwin/browser-authorization': 0.2.0
-      '@itwin/itwinui-css': 0.27.3
-      '@itwin/itwinui-react': 1.22.0_react-dom@17.0.2+react@17.0.2
-      '@itwin/presentation-components': link:../../presentation/components
-      classnames: 2.3.1
-      immer: 9.0.2
-      lodash: 4.17.21
-      react-dnd: 11.1.3_react-dom@17.0.2+react@17.0.2
-      react-dnd-html5-backend: 11.1.3
-      react-split-pane: 0.1.92_react-dom@17.0.2+react@17.0.2
-      rxjs: 6.6.7
-    devDependencies:
-      '@bentley/product-settings-client': link:../../clients/product-settings
-      '@itwin/appui-abstract': link:../abstract
-      '@itwin/appui-layout-react': link:../ninezone
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/components-react': link:../components
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': link:../../core/common
-      '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-i18n': link:../../core/i18n
-      '@itwin/core-markup': link:../../core/markup
-      '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../core
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/imodel-components-react': link:../imodel-components
-      '@itwin/presentation-common': link:../../presentation/common
-      '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/presentation-testing': link:../../presentation/testing
-      '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
-      '@types/chai': 4.2.22
-      '@types/chai-as-promised': 7.1.4
-      '@types/chai-jest-snapshot': 1.3.6
-      '@types/chai-spies': 1.0.3
-      '@types/enzyme': 3.9.3
-      '@types/faker': 4.1.12
-      '@types/lodash': 4.14.175
-      '@types/mocha': 8.2.3
-      '@types/node': 14.14.31
-      '@types/react': 17.0.30
-      '@types/react-dom': 17.0.10
-      '@types/react-redux': 7.1.19
-      '@types/rimraf': 2.0.5
-      '@types/sinon': 9.0.11
-      '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.3_fae758709a8810ba97b4c03852dde4d0
-      chai: 4.3.4
-      chai-as-promised: 7.1.1_chai@4.3.4
-      chai-jest-snapshot: 2.0.0_chai@4.3.4
-      chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
-      eslint: 7.32.0
-      faker: 4.1.0
-      ignore-styles: 5.0.1
-      jsdom-global: 3.0.2
-      mocha: 8.4.0
-      npm-run-all: 4.1.5
-      nyc: 15.1.0
-      raf: 3.4.1
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.5_react-dom@17.0.2+react@17.0.2
-      react-test-renderer: 17.0.2_react@17.0.2
-      redux: 4.1.1
-      rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
-      ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
-      typemoq: 2.1.0
-      typescript: 4.4.4
-      xmlhttprequest: 1.8.0
-
-  ../../ui/imodel-components:
+  ../../ui/imodel-components-react:
     specifiers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@itwin/appui-abstract': workspace:*
@@ -4479,16 +4574,16 @@ importers:
       immutable: 3.8.2
       ts-key-enum: 2.0.8
     devDependencies:
-      '@itwin/appui-abstract': link:../abstract
+      '@itwin/appui-abstract': link:../appui-abstract
       '@itwin/build-tools': link:../../tools/build
-      '@itwin/components-react': link:../components
+      '@itwin/components-react': link:../components-react
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/core-react': link:../core
+      '@itwin/core-react': link:../core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
@@ -4534,101 +4629,6 @@ importers:
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
-
-  ../../ui/ninezone:
-    specifiers:
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-react': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/itwinui-css': ^0.27.0
-      '@itwin/itwinui-react': ^1.16.2
-      '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
-      '@types/chai': ^4.1.4
-      '@types/chai-as-promised': ^7
-      '@types/chai-jest-snapshot': ^1.3.0
-      '@types/chai-spies': ^1.0.0
-      '@types/enzyme': 3.9.3
-      '@types/mocha': ^8.2.2
-      '@types/react': ^17.0.0
-      '@types/react-dom': ^17.0.0
-      '@types/sinon': ^9.0.0
-      '@types/testing-library__react-hooks': ^3.1.0
-      '@types/uuid': ^7.0.2
-      '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
-      chai: ^4.1.2
-      chai-as-promised: ^7
-      chai-jest-snapshot: ^2.0.0
-      chai-spies: 1.0.0
-      classnames: ^2.3.1
-      cpx: ^1.5.0
-      enzyme: ^3.4.0
-      enzyme-to-json: ^3.3.4
-      eslint: ^7.11.0
-      ignore-styles: ^5.0.1
-      immer: 9.0.2
-      jsdom-global: 3.0.2
-      mocha: ^8.3.2
-      nyc: ^15.1.0
-      raf: ^3.4.0
-      react: ^17.0.0
-      react-dom: ^17.0.0
-      rimraf: ^3.0.2
-      sinon: ^9.0.2
-      sinon-chai: ^3.2.0
-      ts-node: ^7.0.1
-      typemoq: ^2.1.0
-      typescript: ~4.4.0
-      uuid: ^7.0.3
-    dependencies:
-      '@itwin/itwinui-css': 0.27.3
-      '@itwin/itwinui-react': 1.22.0_react-dom@17.0.2+react@17.0.2
-      classnames: 2.3.1
-      immer: 9.0.2
-      uuid: 7.0.3
-    devDependencies:
-      '@itwin/appui-abstract': link:../abstract
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-react': link:../core
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_react@17.0.2
-      '@types/chai': 4.2.22
-      '@types/chai-as-promised': 7.1.4
-      '@types/chai-jest-snapshot': 1.3.6
-      '@types/chai-spies': 1.0.3
-      '@types/enzyme': 3.9.3
-      '@types/mocha': 8.2.3
-      '@types/react': 17.0.30
-      '@types/react-dom': 17.0.10
-      '@types/sinon': 9.0.11
-      '@types/testing-library__react-hooks': 3.4.1
-      '@types/uuid': 7.0.5
-      '@wojtekmaj/enzyme-adapter-react-17': 0.6.3_fae758709a8810ba97b4c03852dde4d0
-      chai: 4.3.4
-      chai-as-promised: 7.1.1_chai@4.3.4
-      chai-jest-snapshot: 2.0.0_chai@4.3.4
-      chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
-      enzyme: 3.11.0
-      enzyme-to-json: 3.6.2_enzyme@3.11.0
-      eslint: 7.32.0
-      ignore-styles: 5.0.1
-      jsdom-global: 3.0.2
-      mocha: 8.4.0
-      nyc: 15.1.0
-      raf: 3.4.1
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
-      rimraf: 3.0.2
-      sinon: 9.2.4
-      sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
-      ts-node: 7.0.1
-      typemoq: 2.1.0
-      typescript: 4.4.4
 
 packages:
 
@@ -6321,6 +6321,7 @@ packages:
     resolution: {integrity: sha512-J5AIf3vPj3UwXaAzb5j1xM4WAQDX3EMgemF8rjCP3SoW09LfRKAXQKt6CoVYl230P6iWdRcBbnLDDdnqWxZSCA==}
     dependencies:
       regenerator-runtime: 0.13.9
+    dev: true
 
   /@babel/runtime/7.15.4:
     resolution: {integrity: sha512-99catp6bHCaxr4sJ/DbTGgHS4+Rs2RVd2g7iOap6SLGPDknRK9ztKNsE/Fg6QhSeh1FGE5f6gHGQmvvn3I3xhw==}
@@ -9425,7 +9426,7 @@ packages:
   /babel-plugin-macros/2.8.0:
     resolution: {integrity: sha512-SEP5kJpfGYqYKpBrj5XU3ahw5p5GOHJ0U5ssOSQ/WBVdwkD2Dzlce95exQTs3jOVWPPKLBN2rlEWkCK7dSmLvg==}
     dependencies:
-      '@babel/runtime': 7.12.1
+      '@babel/runtime': 7.15.4
       cosmiconfig: 6.0.0
       resolve: 1.19.0
 
