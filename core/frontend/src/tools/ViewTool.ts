@@ -176,7 +176,7 @@ export abstract class ViewingToolHandle {
   protected changeFocusFromDepthPoint() {
     if (undefined !== this._depthPoint) {
       const view = this.viewTool.viewport!.view;
-      if (view.isCameraEnabled())
+      if (view.is3d() && view.isCameraOn)
         view.changeFocusFromPoint(this._depthPoint); // set the focus distance to the depth point
     }
   }
@@ -1589,7 +1589,7 @@ class ViewZoom extends ViewingToolHandle {
     vp.viewToWorld(this._anchorPtView, this._anchorPtWorld);
     this._startFrust = vp.getWorldFrustum();
 
-    if (vp.view.isCameraEnabled())
+    if (vp.view.is3d() && vp.view.isCameraOn)
       this._startEyePoint.setFrom(vp.view.getEyePoint());
 
     this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
@@ -1630,7 +1630,7 @@ class ViewZoom extends ViewingToolHandle {
     const frustum = this._startFrust.clone();
     const transform = Transform.createFixedPointAndMatrix(this._anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, view.is3d() ? zoomRatio : 1.0));
 
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const oldEyePoint = this._startEyePoint;
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = Vector3d.createStartEnd(oldEyePoint, newEyePoint);
@@ -1640,8 +1640,10 @@ class ViewZoom extends ViewingToolHandle {
     frustum.transformBy(transform, frustum);
     if (ViewStatus.Success !== view.setupFromFrustum(frustum))
       return false;
-    if (view.isCameraEnabled())
+
+    if (view.is3d() && view.isCameraOn)
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+
     return ViewStatus.Success === viewport.setupFromView();
   }
 
@@ -3628,7 +3630,7 @@ export class WindowAreaTool extends ViewTool {
     };
 
     let globalAlignment;
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 
