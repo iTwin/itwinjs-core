@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Fix iOS>=15 missing hilite outlines by ensuring we do not write depth for hilite shaders.",
+      "comment": "Fix display issues with transparency, shadows, hilite, and overlay decorations on iOS 15.",
       "type": "none"
     }
   ],

@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 14 Oct 2021 21:19:43 GMT and should not be manually modified.
+This log was last generated on Thu, 21 Oct 2021 20:59:44 GMT and should not be manually modified.
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+### Updates
+
+- Backport from PR#2451 enable reprojection and merge
 
 ## 2.19.17
 Thu, 14 Oct 2021 21:19:43 GMT
