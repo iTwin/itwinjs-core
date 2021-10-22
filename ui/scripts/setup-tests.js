@@ -38,9 +38,7 @@ global.DOMRect.fromRect = function (rect) {
   return new DOMRect(rect.x, rect.y, rect.width, rect.height);
 };
 
-const {
-  JSDOM
-} = require('jsdom');
+const { JSDOM } = require('jsdom');
 global.DOMParser = new JSDOM().window.DOMParser;
 
 /** Enzyme mount with automatic unmount after the test. */
