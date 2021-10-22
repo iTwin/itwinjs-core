@@ -60,7 +60,7 @@ describe("Early Z driver bug workaround", () => {
     await TestSystem.startIModelApp(true);
     index = 0;
     TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
-        expect(containsDiscardStatement(program)).to.be.true;
+      expect(containsDiscardStatement(program)).to.be.true;
       const needsWorkaround = -1 !== indicesOfShadersLackingDiscard.indexOf(index);
       expect(containsWorkaround(program)).to.equal(needsWorkaround);
       if (needsWorkaround)
