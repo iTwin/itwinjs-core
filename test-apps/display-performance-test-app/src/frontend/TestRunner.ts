@@ -50,10 +50,23 @@ interface TestViewState {
 
 /** The result of TestRunner.runTest. */
 interface TestResult {
+  /** An ordered listing of all the tiles selected for display. */
   selectedTileIds: string;
+  /** The number of tiles selected for display. */
   numSelectedTiles: number;
+  /** Approximate time in milliseconds before all tiles were ready for display. */
   tileLoadingTime: number;
-  tileGpuBytes: number;
+  /** Amount of memory requested from the GPU for the graphics of the tiles selected for display. */
+  selectedTileGpuBytes: number;
+  /** Amount of memory requested from the GPU for the graphics of all tiles in the tile trees viewed by this test.
+   * This is always at least as large as selectedTileGpuBytes and may be much larger as recently-used tiles are kept in memory
+   * for a period of time, and parent tiles' graphics are typically kept in memory for as long as their child tiles are.
+   * Therefore this may be expected to grow over time as successive tests exercise different views of the same tile trees.
+   */
+  viewedTileTreeGpuBytes: number;
+  /** Total amount of memory requested (and not yet relinquished) from the GPU by the render system, including frame buffers,
+   * textures, graphics, etc.
+   */
   totalGpuBytes: number;
 }
 
@@ -516,12 +529,13 @@ export class TestRunner {
     viewport.renderFrame();
     timer.stop();
 
-    const selectedTiles = getSelectedTileIds(viewport);
+    const selectedTiles = getSelectedTileStats(viewport);
     return {
       tileLoadingTime: timer.current.milliseconds,
       selectedTileIds: selectedTiles.ids,
       numSelectedTiles: selectedTiles.count,
-      tileGpuBytes: calcGpuBytes((stats) => viewport.collectStatistics(stats)),
+      selectedTileGpuBytes: selectedTiles.gpuBytes,
+      viewedTileTreeGpuBytes: calcGpuBytes((stats) => viewport.collectStatistics(stats)),
       totalGpuBytes: calcGpuBytes((stats) => {
         viewport.target.renderSystem.collectStatistics(stats);
         viewport.target.collectStatistics(stats);
@@ -817,8 +831,13 @@ export class TestRunner {
 
     rowData.set("Test Name", this.getTestName(test));
     rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
-    if (!this._minimizeOutput)
+    if (!this._minimizeOutput) {
       rowData.set("Tile Loading Time", test.tileLoadingTime);
+      rowData.set("Num Selected Tiles", test.numSelectedTiles);
+      rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
+      rowData.set("Tile Tree GPU MB", test.viewedTileTreeGpuBytes / (1024 * 1024));
+      rowData.set("Total GPU MB", test.totalGpuBytes / (1024 * 1024));
+    }
 
     const setGpuData = (name: string) => {
       if (name === "CPU Total Time")
@@ -1255,16 +1274,25 @@ function matchRule(strToTest: string, rule: string) {
   return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(strToTest);
 }
 
-/* A formatted string containing the Ids of all the tiles that were selected for display by the last call to waitForTilesToLoad(), of the format:
- *  Selected Tiles:
- *    TreeId1: tileId1,tileId2,...
- *    TreeId2: tileId1,tileId2,...
- *    ...
- * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
- */
-function getSelectedTileIds(vp: ScreenViewport): { ids: string, count: number } {
+interface SelectedTileStats {
+  /* A formatted string containing the Ids of all the tiles that were selected for display by the last call to waitForTilesToLoad(), of the format:
+   *  Selected Tiles:
+   *    TreeId1: tileId1,tileId2,...
+   *    TreeId2: tileId1,tileId2,...
+   *    ...
+   * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
+   */
+  ids: string;
+  /** The number of selected tiles. */
+  count: number;
+  /** The number of bytes of memory allocated to the GPU for the selected tiles' graphics. */
+  gpuBytes: number;
+}
+
+function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
   let formattedSelectedTileIds = "Selected tiles:\n";
   let count = 0;
+  const mem = new RenderMemory.Statistics();
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
@@ -1279,6 +1307,7 @@ function getSelectedTileIds(vp: ScreenViewport): { ids: string, count: number } 
         dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
 
       tileIds.insert(tile.contentId);
+      tile.collectStatistics(mem);
     }
   }
 
@@ -1288,7 +1317,11 @@ function getSelectedTileIds(vp: ScreenViewport): { ids: string, count: number } 
     formattedSelectedTileIds = `${formattedSelectedTileIds}${line}\n`;
   }
 
-  return { ids: formattedSelectedTileIds, count };
+  return {
+    ids: formattedSelectedTileIds,
+    count,
+    gpuBytes: mem.totalBytes,
+  };
 }
 
 function calcGpuBytes(func: (stats: RenderMemory.Statistics) => void): number {
