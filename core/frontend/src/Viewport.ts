@@ -1405,7 +1405,9 @@ export abstract class Viewport implements IDisposable {
   public markSelectionSetDirty() { this._selectionSetDirty = true; }
 
   /** True if this is a 3d view with the camera turned on. */
-  public get isCameraOn(): boolean { return this.view.isCameraEnabled(); }
+  public get isCameraOn(): boolean {
+    return this.view.is3d() && this.view.isCameraOn;
+  }
 
   /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined): void {
@@ -1784,7 +1786,7 @@ export abstract class Viewport implements IDisposable {
       return;
 
     const distXYZ = new Point3d(screenDist.x, screenDist.y, 0);
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const frust = this.getFrustum(CoordSystem.View, false)!;
       frust.translate(distXYZ);
       this.viewToWorldArray(frust.points);
@@ -1810,7 +1812,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined === view)
       return ViewStatus.InvalidViewport;
 
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
       const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
 
@@ -2047,7 +2049,7 @@ export abstract class Viewport implements IDisposable {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
-    if (this.view.isCameraEnabled())
+    if (this.view.is3d() && this.view.isCameraOn)
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
       eyeVec = this._viewingSpace.rotation.getRow(2);
@@ -2228,7 +2230,6 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._timePointValid) {
       isRedrawNeeded = true;
-      this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleState;
       if (scheduleScript) {
         target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
@@ -2238,6 +2239,8 @@ export abstract class Viewport implements IDisposable {
         if (scheduleScript.script.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
+
+      this._timePointValid = true;
     }
 
     if (overridesNeeded) {

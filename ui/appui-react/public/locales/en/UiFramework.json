@@ -1,0 +1,357 @@
+{
+  "iModelPanelHeader": {
+    "projects": "Projects"
+  },
+  "iModelPanel": {
+    "noIModels": "There are no IModels in Project {{projectName}}"
+  },
+  "keyinbrowser": {
+    "label": "Keyin Browser",
+    "keyin": "Key-in",
+    "args": "Arguments",
+    "argsTip": "'|' separated arguments",
+    "execute": "Execute",
+    "placeholder": "Enter key-in",
+    "incorrectArgs": "Incorrect number of key-in arguments",
+    "failedToRun": "Key-in failed to run",
+    "exceptionOccurred": "Key-in caused the following exception to occur",
+    "couldNotFindTool": "Could not find a tool with the given key-in",
+    "couldNotSaveHistory": "Could not save key-in in history"
+  },
+  "general": {
+    "sheet": "Sheet",
+    "alert": "Alert",
+    "settings": "Settings",
+    "minimize": "Minimize",
+    "overflow": "Overflow",
+    "no-content": "No data for this content view"
+  },
+  "rotations": {
+    "top": "Top",
+    "bottom": "Bottom",
+    "left": "Left",
+    "right": "Right",
+    "front": "Front",
+    "rear": "Rear",
+    "isoLeft": "Iso Left",
+    "isoRight": "Iso Right"
+  },
+  "messageCenter": {
+    "messages": "Messages",
+    "all": "All",
+    "errors": "Errors",
+    "prompt": "No messages.",
+    "export": "Export"
+  },
+  "activityCenter": {
+    "percentComplete": "% complete",
+    "moreDetails": "Click or tap for more details."
+  },
+  "snapModeField": {
+    "snapMode": "Snap Mode",
+    "keypoint": "Keypoint",
+    "intersection": "Intersection",
+    "center": "Center",
+    "nearest": "Nearest",
+    "origin": "Origin",
+    "midpoint": "Midpoint",
+    "bisector": "Bisector",
+    "multi": "Multiple"
+  },
+  "selectionScopeField": {
+    "label": "Scope",
+    "toolTip": "Selection Scope"
+  },
+  "tests": {
+    "singleContent": "Single Content",
+    "label": "Test Label",
+    "subtitle": "Test Subtitle"
+  },
+  "ContentLayoutDef": {
+    "SingleContent": "Single Content",
+    "TwoHalvesVertical": "Two Halves Vertical",
+    "ThreeRightStacked": "Three Right Stacked",
+    "FourQuadrants": "Four Quadrants"
+  },
+  "pickerButtons": {
+    "showAll": "Show All",
+    "hideAll": "Hide All",
+    "invert": "Invert",
+    "separator": "Separator"
+  },
+  "categoriesModels": {
+    "categories": "Categories",
+    "models": "Models",
+    "loadingMessage": "Loading...",
+    "options": "Options"
+  },
+  "realityData": {
+    "title": "Reality Data",
+    "group": "Group",
+    "size": "Size",
+    "kilobytes": "KB",
+    "notAvailable": "N/A",
+    "noneAvailable": "No reality data available.",
+    "bingMap": "Bing Map",
+    "attached": "(Attached)",
+    "settings": "Settings...",
+    "options": "Options",
+    "hybrid": "Hybrid",
+    "aerial": "Aerial",
+    "street": "Street",
+    "showAll": "Show All",
+    "hideAll": "Hide All",
+    "invertDisplay": "Invert",
+    "bingMapSettings": "Bing Map Settings",
+    "elevationOffset": "Elevation Offset:"
+  },
+  "savedViews": {
+    "views": "Views",
+    "spatialViews": "Spatial Views",
+    "drawings": "Drawings",
+    "sheets": "Sheets",
+    "others": "Others"
+  },
+  "buttons": {
+    "yes": "Yes",
+    "no": "No",
+    "clearSelection": "Clear Selection",
+    "openBackstageMenu": "Open Backstage Menu"
+  },
+  "navigationAid": {
+    "sheetsModalFrontstage": "Sheet Views"
+  },
+  "commands": {
+    "backToPreviousFrontstage": "Back to previous Frontstage"
+  },
+  "settings": {
+    "settingsStageLabel": "Settings",
+    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
+    "noSettingsAvailable": "No Settings Available",
+    "quantity-formatting": {
+      "label": "Units",
+      "subLabel": "Quantity Formatting",
+      "tooltip": "Define Active Units and Quantity Formats",
+      "formatSectionLabel": "Quantity Formats",
+      "setButtonLabel": "Set",
+      "clearButtonLabel": "Clear"
+    },
+    "uiSettingsPage": {
+      "label": "UI Settings",
+      "tooltip": "UI Settings",
+      "light": "Light",
+      "dark": "Dark",
+      "systemPreferred": "System preferred",
+      "themeTitle": "Theme",
+      "themeDescription": "Toggle the theme between light and dark",
+      "autoHideTitle": "Auto-Hide UI",
+      "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
+      "dragInteractionTitle": "Toolbar Group Buttons show child action item",
+      "dragInteractionDescription": "Requires long press to open pop-up panel. Single click executes displayed action.",
+      "newUiTitle": "Use 2.0 Ui",
+      "newUiDescription": "Use new 2.0 UI layout",
+      "useProximityOpacityTitle": "Change Toolbar Opacity",
+      "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
+      "snapWidgetOpacityTitle": "Snap Toolbar Opacity",
+      "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
+      "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+      "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
+      "widgetOpacityTitle": "Widget Opacity",
+      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+    }
+  },
+  "tools": {
+    "clearSelection": "Clear Selection",
+    "hideSelected": "Hide Elements",
+    "hide": "Hide Tools",
+    "hideCategories": "Hide Categories",
+    "hideModels": "Hide Models",
+    "isolate": "Isolate Tools",
+    "isolateSelected": "Isolate Elements",
+    "isolateCategories": "Isolate Categories",
+    "isolateModels": "Isolate Models",
+    "emphasizeSelected": "Emphasize Selected",
+    "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
+    "sectionTools": "Section Tools",
+    "sectionClear": "Clear Sections",
+    "sectionPanelLabel": "Section",
+    "sectionByPlane": "Plane",
+    "sectionByElement": "Element",
+    "sectionByRange": "Range",
+    "sectionByShape": "Shape",
+    "measureTools": "Measure Tools",
+    "sectionShowHandles": "Section Handles",
+    "viewZoomingTools": "Zooming Tools",
+    "View": {
+      "Fly": {
+        "description": "Fly in view",
+        "flyover": "Fly"
+      },
+      "ToggleCamera": {
+        "description": "Turn on/off use of camera in active view",
+        "flyover": "Toggle Camera"
+      }
+    },
+    "OpenSettings": {
+      "keyin": "open settings"
+    },
+    "RestoreFrontstageLayout": {
+      "keyin": "restore frontstage layout",
+      "description": "Restore Frontstage to Default Layout",
+      "flyover": "Restore Stage to Default Layout",
+      "noStageFound": "Specified stage not found."
+    },
+    "ClearKeyinPaletteHistory": {
+      "keyin": "clear keyin history",
+      "description": "Clear keyin palette history",
+      "flyover": "Clear keyin palette history"
+    },
+    "BumpToolSetting": {
+      "keyin": "bump toolsetting",
+      "description": "Bump a Tool Settings value",
+      "flyover": "Bump a Tool Setting"
+    },
+    "FocusToolSettings": {
+      "keyin": "focus toolsettings",
+      "description": "Focus into the Tool Settings widget",
+      "flyover": "Focus into Tool Settings"
+    }
+  },
+  "listTools": {
+    "searchViews": "Search Views...",
+    "listView": "List",
+    "thumbnailView": "Thumbnails",
+    "camera": "Camera",
+    "selectVersion": "Select Version",
+    "views": "Saved Views",
+    "viewAttributes": "View Attributes",
+    "constructions": "Constructions",
+    "acs": "ACS",
+    "grid": "Grid",
+    "visEdges": "Visible Edges",
+    "hidEdges": "Hidden Edges",
+    "monochrome": "Monochrome Display",
+    "ambientOcclusion": "Ambient Occlusion",
+    "shadows": "Shadows",
+    "backgroundMap": "Background Map"
+  },
+  "visibilityWidget": {
+    "modeltree": "Model Tree",
+    "categories": "Categories",
+    "containment": "Spatial Containment",
+    "options": "Options",
+    "visibilityTree": "Visibility Tree",
+    "noImodelConnection": "No data to display since there is no available iModel Connection."
+  },
+  "modelTree": {
+    "status": {
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "disabled": "Disabled"
+    },
+    "tooltips": {
+      "subject": {
+        "nonSpatialView": "Active view is not spatial",
+        "atLeastOneModelVisible": "At least one model is visible",
+        "allModelsHidden": "All models are hidden"
+      },
+      "model": {
+        "nonSpatialView": "Active view is not spatial"
+      },
+      "category": {
+        "modelNotDisplayed": "Can't control category display if model is not displayed",
+        "displayedThroughPerModelOverride": "Per-model category override set to 'Show'",
+        "hiddenThroughPerModelOverride": "Per-model category override set to 'Hide'",
+        "displayedThroughCategorySelector": "Category display enabled through category selector",
+        "hiddenThroughCategorySelector": "Category display disabled through category selector"
+      },
+      "element": {
+        "modelNotDisplayed": "Can't control element display if model is not displayed",
+        "hiddenThroughNeverDrawnList": "Element(s) in \"never drawn\" list",
+        "displayedThroughAlwaysDrawnList": "Element(s) in \"always drawn\" list",
+        "hiddenDueToOtherElementsExclusivelyAlwaysDrawn": "Other elements in \"exclusively always drawn\" list",
+        "hiddenThroughCategory": "Category not displayed"
+      }
+    },
+    "noModelFound": "No model found.",
+    "noMatchingModelNames": "There are no model names matching your search."
+  },
+  "categoriesTree": {
+    "noCategoryFound": "No category found.",
+    "noMatchingCategoryNames": "There are no category names matching your search."
+  },
+  "toolAssistance": {
+    "title": "Tool Assistance",
+    "promptAtCursor": "Show prompt at cursor",
+    "moreInfo": "Click for more information",
+    "mouse": "Mouse",
+    "touch": "Touch",
+    "pin": "Pin"
+  },
+  "widget": {
+    "tooltips": {
+      "dockToolSettings": "Dock to top",
+      "moreWidgets": "More widgets",
+      "moreToolSettings": "More tool settings",
+      "pinPanel": "Pin widget panel",
+      "sendHome": "Send to panel",
+      "resizeGrip": "Resize widget panel",
+      "toolSettingsHandle": "Undock tool settings",
+      "unpinPanel": "Unpin widget panel",
+      "popoutActiveTab": "Pop out active widget tab"
+    }
+  },
+  "statusBar": {
+    "overflow": "More status fields"
+  },
+  "modalFrontstage": {
+    "backButtonTitle": "Return to previous stage"
+  },
+  "standardRotationNavigationAid": {
+    "title": "Standard Rotations"
+  },
+  "accuDraw": {
+    "dialogTitle": "AccuDraw",
+    "subMenu": "AccuDraw",
+    "lockSmart": "Smart Lock",
+    "lockX": "Lock X",
+    "lockY": "Lock Y",
+    "lockZ": "Lock Z",
+    "lockAngle": "Lock Angle",
+    "lockDistance": "Lock Distance",
+    "changeCompassMode": "Toggle Mode",
+    "rotateTop": "Rotate Top",
+    "rotateFront": "Rotate Front",
+    "rotateSide": "Rotate Side",
+    "rotateView": "Rotate View",
+    "setOrigin": "Reposition Origin",
+    "rotateCycle": "Rotate Cycle",
+    "rotateAxes": "Rotate Axes",
+    "rotateToElement": "Rotate To Element",
+    "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
+    "focusToolSetting": "Focus into Tool Settings",
+    "rotateSubMenu": "AccuDraw Rotate",
+    "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
+    "rotation": {
+      "top": "top",
+      "front": "front",
+      "side": "side",
+      "view": "view",
+      "context": "context",
+      "ACS": "ACS"
+    },
+    "compassModeSet": "AccuDraw compass mode set to {{modeString}}",
+    "compassMode": {
+      "polar": "polar",
+      "rectangular": "rectangular"
+    }
+  },
+  "presentationUnitSystem": {
+    "selector-label": "Presentation Unit System",
+    "Metric": "Metric",
+    "BritishImperial": "Imperial",
+    "USCustomary": "US Customary",
+    "USSurvey": "US Survey"
+  }
+}

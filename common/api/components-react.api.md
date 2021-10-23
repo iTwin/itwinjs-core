@@ -431,7 +431,7 @@ export interface CellItem {
     style?: ItemStyle;
 }
 
-// @public
+// @public @deprecated
 export interface CellProps {
     // (undocumented)
     displayValue: string;
@@ -891,13 +891,9 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 
 // @public
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface EditorContainerProps extends CommonProps {
@@ -2746,7 +2742,7 @@ export interface PropertyViewProps extends SharedRendererProps {
     valueElementRenderer?: () => React.ReactNode;
 }
 
-// @public
+// @public @deprecated
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     // (undocumented)
     filterableColumn?: FilterableColumn;
@@ -2798,7 +2794,7 @@ export interface RowItem {
     key: string;
 }
 
-// @public
+// @public @deprecated
 export interface RowProps {
     // (undocumented)
     cells: {
@@ -3179,7 +3175,7 @@ export interface Subscription extends Unsubscribable {
     unsubscribe(): void;
 }
 
-// @public
+// @public @deprecated
 export class Table extends React.Component<TableProps, TableState> {
     // @internal
     constructor(props: TableProps);
@@ -3213,13 +3209,13 @@ export class TableArrayValueRenderer extends React.PureComponent<TableSpecificVa
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export class TableCell extends React.PureComponent<TableCellProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export class TableCellContent extends React.PureComponent<TableCellContentProps, TableCellContentState> {
     // @internal (undocumented)
     componentDidMount(): Promise<void>;
@@ -3233,7 +3229,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
     readonly state: TableCellContentState;
 }
 
-// @public
+// @public @deprecated
 export interface TableCellContentProps extends CommonProps {
     cellItem: CellItem;
     height?: number;
@@ -3242,7 +3238,7 @@ export interface TableCellContentProps extends CommonProps {
     propertyValueRendererManager: PropertyValueRendererManager;
 }
 
-// @public
+// @public @deprecated
 export interface TableCellContextMenuArgs {
     cellItem?: CellItem;
     cellKey: string;
@@ -3251,7 +3247,7 @@ export interface TableCellContextMenuArgs {
     rowIndex: number;
 }
 
-// @public
+// @public @deprecated
 export interface TableCellEditorState {
     // (undocumented)
     active: boolean;
@@ -3263,7 +3259,7 @@ export interface TableCellEditorState {
     rowIndex?: number;
 }
 
-// @public
+// @public @deprecated
 export interface TableCellProps extends CommonProps {
     cellEditingProps?: Omit<EditorContainerProps, "title">;
     children?: React.ReactNode;
@@ -3274,7 +3270,7 @@ export interface TableCellProps extends CommonProps {
     title: string;
 }
 
-// @public
+// @public @deprecated
 export interface TableCellUpdatedArgs {
     // (undocumented)
     cellKey: string;
@@ -3364,7 +3360,7 @@ export interface TableNonPrimitiveValueRendererProps extends SharedTableNonPrimi
     dialogTitle: string;
 }
 
-// @public
+// @public @deprecated
 export interface TableProps extends CommonProps {
     dataProvider: TableDataProvider;
     hideHeader?: boolean;
@@ -3422,7 +3418,7 @@ export const TableRowStyleProvider: {
     createStyle: ({ color, backgroundColor }: ItemColorOverrides) => CSSProperties;
 };
 
-// @public
+// @public @deprecated
 export enum TableSelectionTarget {
     // (undocumented)
     Cell = 1,
@@ -4147,6 +4143,7 @@ export interface TypeEditor {
 export class UiComponents {
     static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
+    // @internal
     static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)

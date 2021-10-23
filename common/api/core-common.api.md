@@ -28,7 +28,6 @@ import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
-import { GuidString as GuidString_2 } from '@itwin/core-bentley/src/Id';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
@@ -2702,7 +2701,11 @@ export interface EmphasizeElementsProps {
 // @public
 export class EmptyLocalization implements Localization {
     // (undocumented)
+    changeLanguage(): Promise<void>;
+    // (undocumented)
     getEnglishString(_namespace: string, key: string | string[]): string;
+    // (undocumented)
+    getLanguageList(): readonly string[];
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
@@ -2710,9 +2713,9 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
     // (undocumented)
-    getNamespace(): Promise<void> | undefined;
+    getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
-    languageList(): string[];
+    initialize(): Promise<void>;
     // (undocumented)
     registerNamespace(): Promise<void>;
     // (undocumented)
@@ -4621,7 +4624,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: string): IModelVersion;
+    static asOfChangeSet(changesetId: string): IModelVersion;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     getAsOfChangeSet(): ChangesetId | undefined;
@@ -5029,19 +5032,17 @@ export type LocalFileName = string;
 
 // @public
 export interface Localization {
-    // (undocumented)
+    changeLanguage(language: string): Promise<void>;
     getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
+    getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
     getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-    // (undocumented)
-    getNamespace(name: string): Promise<void> | undefined;
-    // (undocumented)
-    languageList(): string[];
-    // (undocumented)
+    // @internal (undocumented)
+    getNamespacePromise(name: string): Promise<void> | undefined;
+    initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
     unregisterNamespace(namespace: string): void;
 }
 
@@ -6554,6 +6555,7 @@ export enum RealityDataFormat {
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
+    OrbitGtBlob = "OrbitGtBlob",
     TilesetUrl = "TilesetUrl"
 }
 
@@ -7842,7 +7844,7 @@ export class ServerTimeoutError extends ServerError {
 export interface SessionProps {
     readonly applicationId: string;
     readonly applicationVersion: string;
-    readonly sessionId: GuidString_2;
+    readonly sessionId: GuidString;
 }
 
 // @beta

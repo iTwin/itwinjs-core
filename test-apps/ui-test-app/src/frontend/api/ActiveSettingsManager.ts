@@ -1,8 +1,8 @@
-import { UiFramework } from "@itwin/appui-react";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { UiFramework } from "@itwin/appui-react";
 import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelError, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";

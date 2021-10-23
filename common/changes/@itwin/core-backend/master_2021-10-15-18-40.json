@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "use db.locks to release all locks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

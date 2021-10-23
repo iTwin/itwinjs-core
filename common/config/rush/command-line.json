@@ -27,14 +27,13 @@
       "ignoreDependencyOrder": true
     },
     {
-      "name": "compile",
+      "name": "build:ci",
       "commandKind": "bulk",
-      "summary": "Run compile script for each package",
-      "description": "Runs the 'compile' script for each package in the monorepo. For most packages, 'compile' is equivalent to 'build'. For react apps, it skips webpacking etc.",
+      "summary": "Run build:ci script for each package",
+      "description": "Runs the 'build:ci' script for each package in the monorepo. Used in the ci to build both cjs and esm variants of packages, whereas build will only build cjs.",
       "enableParallelism": true,
       "ignoreMissingScript": false,
-      "ignoreDependencyOrder": false,
-      "allowWarningsInSuccessfulBuild": true
+      "ignoreDependencyOrder": false
     },
     {
       "name": "cover",

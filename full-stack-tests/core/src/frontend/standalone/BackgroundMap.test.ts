@@ -4,16 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps, TerrainHeightOriginMode,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps,
+  TerrainHeightOriginMode,
 } from "@itwin/core-common";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 describe("Background map", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup({
+    await TestUtility.startFrontend({
+      ...TestUtility.iModelAppOptions,
       renderSys: {
         // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
         dpiAwareViewports: false,
@@ -27,7 +30,7 @@ describe("Background map", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("produces a different tile tree when background map settings change", async () => {

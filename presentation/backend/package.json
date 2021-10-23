@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "3.0.0-dev.80",
+  "version": "3.0.0-dev.96",
   "description": "Backend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -21,8 +21,8 @@
   "main": "lib/cjs/presentation-backend.js",
   "typings": "lib/cjs/presentation-backend",
   "scripts": {
-    "compile": "npm run -s build",
     "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
     "build:cjs": "npm run -s copy:assets && tsc 1>&2",
     "copy:assets": "cpx \"./assets/**/*\" ./lib/cjs/assets",
     "build:watch": "npm run -s build:cjs -- -w",
@@ -38,11 +38,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.80",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.80",
-    "@itwin/core-common": "workspace:^3.0.0-dev.80",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.80",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.80"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.96",
+    "@itwin/core-common": "workspace:^3.0.0-dev.96",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.96",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.96"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
@@ -88,12 +88,7 @@
     "semver": "^5.5.0"
   },
   "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "check-coverage": true,
-    "statements": 100,
-    "functions": 100,
-    "branches": 100,
-    "lines": 100
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [
