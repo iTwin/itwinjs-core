@@ -55,7 +55,7 @@ describe("ListPicker", () => {
     listItems.push(emptyContainerItem);
   });
 
-  after(async() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
     await IModelApp.shutdown();
   });
