@@ -1,40 +1,44 @@
 {
-  "name": "caleb-test-extension",
-  "version": "3.0.0-dev.20",
-  "description": "",
-  "main": "lib/main.js",
-  "typings": "lib/main",
+  "name": "extension-prototype",
+  "description": "extension-prototype",
+  "private": true,
   "license": "MIT",
-  "repository": {
-    "type": "git",
-  },
+  "version": "0.0.0",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "",
-    "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "build": "tsc 1>&2 && npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --target=es2020 --external:os --minify",
+    "clean": "rimraf lib dist",
+    "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
+    "start": "",
     "test": ""
   },
+  "repository": {},
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel",
-    "iTwin",
-    "Extension"
+    "iModel"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "esbuild": "^0.13.8",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
+  },
+  "dependencies": {
+    "@bentley/itwin-client": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-extension": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "buffer": "^6.0.3",
+    "url": "^0.11.0"
   },
   "eslintConfig": {
     "plugins": [

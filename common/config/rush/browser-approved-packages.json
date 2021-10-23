@@ -103,6 +103,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/core-extension",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -173,10 +177,6 @@
     {
       "name": "@itwin/express-server",
       "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
-      "name": "@itwin/core-extension",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@itwin/frontend-devtools",
@@ -323,6 +323,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "buffer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -437,6 +441,10 @@
     {
       "name": "enzyme-to-json",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "esbuild",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eslint",
@@ -905,6 +913,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "url",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "username",
