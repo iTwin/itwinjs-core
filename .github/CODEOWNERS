@@ -121,6 +121,7 @@ rush.json       @imodeljs/admins
 /core/transformer               @MichaelBelousov @ColinKerr
 /core/webgl-compatibility       @imodeljs/display @Ellord207
 
+/docs   @imodeljs/core
 /docs/getting-started @imodeljs/admins @williamkbentley
 /docs/config          @imodeljs/admins @williamkbentley
 /docs/presentation    @imodeljs/presentation
