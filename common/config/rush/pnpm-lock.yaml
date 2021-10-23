@@ -737,7 +737,6 @@ importers:
       '@itwin/core-orbitgt': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/extension-api': workspace:*
       '@itwin/webgl-compatibility': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -764,7 +763,6 @@ importers:
     dependencies:
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/core-i18n': link:../i18n
-      '@itwin/extension-api': link:../itwin-extension
       fuse.js: 3.6.1
       semver: 5.7.1
       wms-capabilities: 0.4.0
@@ -952,11 +950,32 @@ importers:
 
   ../../core/itwin-extension:
     specifiers:
+      '@bentley/itwin-client': workspace:*
+      '@bentley/product-settings-client': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/core-orbitgt': workspace:*
+      '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/webgl-compatibility': workspace:*
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
+    dependencies:
+      '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/product-settings-client': link:../../clients/product-settings
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/core-bentley': link:../bentley
+      '@itwin/core-common': link:../common
+      '@itwin/core-frontend': link:../frontend
+      '@itwin/core-geometry': link:../geometry
+      '@itwin/core-orbitgt': link:../orbitgt
+      '@itwin/core-quantity': link:../quantity
+      '@itwin/webgl-compatibility': link:../webgl-compatibility
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin

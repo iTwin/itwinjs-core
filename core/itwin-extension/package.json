@@ -1,6 +1,6 @@
 {
-  "name": "@itwin/extension-api",
-  "version": "3.0.0-dev.86",
+  "name": "@itwin/core-extension",
+  "version": "3.0.0-dev.96",
   "description": "",
   "typings": "itwin-extension",
   "license": "MIT",
@@ -27,7 +27,18 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
+    "@bentley/product-settings-client": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/webgl-compatibility": "workspace:*"
+  },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",

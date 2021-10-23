@@ -47,7 +47,8 @@
     "@itwin/core-orbitgt": "workspace:^3.0.0-dev.96",
     "@bentley/product-settings-client": "workspace:^3.0.0-dev.96",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.96",
-    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.96"
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.96",
+    "@itwin/core-extension": "workspace:^3.0.0-dev.96"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -92,7 +93,6 @@
   "dependencies": {
     "@bentley/telemetry-client": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
-    "@itwin/extension-api": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",

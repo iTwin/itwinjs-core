@@ -36,7 +36,7 @@
     },
     {
       "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "@bentley/react-scripts",
@@ -56,7 +56,7 @@
     },
     {
       "name": "@itwin/appui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@itwin/appui-layout-react",
@@ -124,7 +124,7 @@
     },
     {
       "name": "@itwin/core-orbitgt",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "@itwin/core-quantity",
@@ -175,7 +175,7 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/extension-api",
+      "name": "@itwin/core-extension",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -248,7 +248,7 @@
     },
     {
       "name": "@itwin/webgl-compatibility",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "@microsoft/api-extractor",

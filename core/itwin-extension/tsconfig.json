@@ -1,9 +1,14 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "esModuleInterop": true,
-    "module": "ES2020",
-    "outDir": "lib"
+    "declaration": false,
+    "declarationMap": false,
+    "outDir": "./lib",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "allowJs": true
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["./src/**/*.js", "./src/**/*.ts"]
 }
