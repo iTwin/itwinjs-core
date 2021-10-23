@@ -1774,12 +1774,12 @@ describe("iModel", () => {
             latitudeOfOrigin: 52.30,
             scaleFactor: 1.0,
             falseEasting: 198873.0046,
-            falseNorthing: 375064.3871
+            falseNorthing: 375064.3871,
           },
         },
         verticalCRS: {
-          id: "GEOID"
-        }
+          id: "GEOID",
+        },
       }
       , { x: 473327.251, y: 257049.636, z: 0.0 }, { p: { x: 237732.58101952373, y: 364048.01548327296, z: -47.874172425966336 }, s: 0 });
 
@@ -1801,22 +1801,22 @@ describe("iModel", () => {
             standardParallel1: 39.833333333333336,
             standardParallel2: 38.333333333333334,
             falseEasting: 2000000.0,
-            falseNorthing: 500000.0
+            falseNorthing: 500000.0,
           },
           extent: {
             southWest: {
               latitude: 35,
-              longitude: -125
+              longitude: -125,
             },
             northEast: {
               latitude: 39.1,
-              longitude: -120.45
-            }
-          }
+              longitude: -120.45,
+            },
+          },
         },
         verticalCRS: {
-          id: "GEOID"
-        }
+          id: "GEOID",
+        },
       }, { x: 569024.940, y: 4386341.752, z: 0.0 }, { p: { x: 1983192.529823256, y: 717304.0311293667, z: 0.745910484422781 }, s: 0 });
   });
 
