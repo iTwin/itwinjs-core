@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -51,7 +51,10 @@ interface TestViewState {
 /** The result of TestRunner.runTest. */
 interface TestResult {
   selectedTileIds: string;
+  numSelectedTiles: number;
   tileLoadingTime: number;
+  tileGpuBytes: number;
+  totalGpuBytes: number;
 }
 
 /** A test being executed in a viewport. */
@@ -513,9 +516,17 @@ export class TestRunner {
     viewport.renderFrame();
     timer.stop();
 
+    const selectedTiles = getSelectedTileIds(viewport);
     return {
       tileLoadingTime: timer.current.milliseconds,
-      selectedTileIds: formatSelectedTileIds(viewport),
+      selectedTileIds: selectedTiles.ids,
+      numSelectedTiles: selectedTiles.count,
+      tileGpuBytes: calcGpuBytes((stats) => viewport.collectStatistics(stats)),
+      totalGpuBytes: calcGpuBytes((stats) => {
+        viewport.target.renderSystem.collectStatistics(stats);
+        viewport.target.collectStatistics(stats);
+        viewport.iModel.tiles.forEachTreeOwner((owner) => owner.tileTree?.collectStatistics(stats));
+      }),
     };
   }
 
@@ -1251,15 +1262,16 @@ function matchRule(strToTest: string, rule: string) {
  *    ...
  * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
  */
-function formatSelectedTileIds(vp: ScreenViewport): string {
+function getSelectedTileIds(vp: ScreenViewport): { ids: string, count: number } {
   let formattedSelectedTileIds = "Selected tiles:\n";
-
+  let count = 0;
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
     if (!selected)
       continue;
 
+    count += selected.size;
     for (const tile of selected) {
       const treeId = tile.tree.id;
       let tileIds = dict.get(treeId);
@@ -1276,7 +1288,13 @@ function formatSelectedTileIds(vp: ScreenViewport): string {
     formattedSelectedTileIds = `${formattedSelectedTileIds}${line}\n`;
   }
 
-  return formattedSelectedTileIds;
+  return { ids: formattedSelectedTileIds, count };
+}
+
+function calcGpuBytes(func: (stats: RenderMemory.Statistics) => void): number {
+  const stats = new RenderMemory.Statistics();
+  func(stats);
+  return stats.totalBytes;
 }
 
 async function savePng(fileName: string, canvas: HTMLCanvasElement): Promise<void> {
