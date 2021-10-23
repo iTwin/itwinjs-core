@@ -200,7 +200,6 @@ export class BriefcaseHandler {
 
   /** Acquire a [[Briefcase]] for the specified iModel. This assigns you a new briefcaseId and returns you a download link.
    * A briefcase is automatically acquired when calling [BriefcaseManager.download]($backend) or [BriefcaseDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcase Information of the Briefcase to acquire.
    * @returns The acquired Briefcase instance.
@@ -218,7 +217,6 @@ export class BriefcaseHandler {
 
   /** Update the [[Briefcase]] of an iModel. Only [[Briefcase.deviceName]] and [[Briefcase.changeSetIdOnDevice]] can be changed when updating the briefcase.
    * Briefcase expiration date is also extended with each update request for a configured period of time (default is 30 days).
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcase Briefcase to update.
    * @returns Updated Briefcase instance from iModelHub.
@@ -237,7 +235,6 @@ export class BriefcaseHandler {
   }
 
   /** Delete the [[Briefcase]] from iModelHub. This frees up the id to be reused later and allows user to acquire additional briefcases if one of the briefcase limits was reached.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the Briefcase to be deleted.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
@@ -263,7 +260,6 @@ export class BriefcaseHandler {
   }
 
   /** Get the [[Briefcase]]s.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Briefcases or select different data from them.
    * @returns Briefcases that match the query.
@@ -287,7 +283,6 @@ export class BriefcaseHandler {
 
   /** Download the latest copy of master file. This only downloads the file and does not write the [[Briefcase]] id into it. Use [IModelDb.open]($backend) instead if you want to get a Briefcase file you can work with.
    * This method does not work on the browser. Directory containing the Briefcase file is created if it does not exist. If there is an error during download, any partially downloaded file is deleted from disk.
-   * @param requestContext The client request context
    * @param briefcase Briefcase to download. This needs to include a download link. See [[BriefcaseQuery.selectDownloadUrl]].
    * @param path Path where briefcase file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.

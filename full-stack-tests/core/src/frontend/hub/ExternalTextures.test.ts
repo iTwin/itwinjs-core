@@ -7,7 +7,7 @@ import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-commo
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 describe("external texture requests (#integration)", () => {
 
@@ -35,8 +35,8 @@ describe("external texture requests (#integration)", () => {
   let totalLoadTextureCalls = 0;
 
   before(async () => {
-    await IModelApp.shutdown();
-    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
     const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(contextId, TestUtility.testIModelNames.smallTex);
@@ -47,7 +47,7 @@ describe("external texture requests (#integration)", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function onExternalTextureLoaded(req: ExternalTextureRequest) {

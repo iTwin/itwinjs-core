@@ -375,30 +375,38 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         onEscape={handleCancel}
         minHeight={120}
         maxWidth={600}
+        titleStyle={{paddingLeft: "10px"}}
+        footerStyle={{paddingBottom: "10px", paddingRight: "10px"}}
         trapFocus={false}
       >
-        <div>
+        <div className="map-layer-url-dialog-content">
           <div className="map-layer-source-url">
             <span className="map-layer-source-label">{typeLabel}</span>
             <Select
-              className="map-manager-base-select"
+              className="map-layer-source-select"
               options={mapTypes}
               value={mapType}
               disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined}
               onChange={handleMapTypeSelection} />
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined} />
+            <Input className="map-layer-source-input" placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined} value={mapUrl} />
+            <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined} value={mapUrl} />
             {isAuthSupported() && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
-                <LabeledInput placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
+                <LabeledInput
+                  className="map-layer-source-input"
+                  displayStyle="inline"
+                  placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
                   status={!userName && serverRequireCredentials ? InputStatus.Warning : undefined}
                   onChange={onUsernameChange} />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
-                <LabeledInput type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
+                <LabeledInput
+                  className="map-layer-source-input"
+                  displayStyle="inline"
+                  type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
                   status={!password && serverRequireCredentials ? InputStatus.Warning : undefined}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown} />

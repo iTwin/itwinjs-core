@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor,
@@ -14,7 +14,7 @@ import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper"
 import { Presentation } from "../presentation-frontend/Presentation";
 
 describe("LocalizationHelper", () => {
-  const i18nMock = moq.Mock.ofType<I18N>();
+  const i18nMock = moq.Mock.ofType<ITwinLocalization>();
   let localizationHelper: LocalizationHelper;
 
   beforeEach(() => {

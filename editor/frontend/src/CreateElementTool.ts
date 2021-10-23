@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
-  if (vp.view.isCameraEnabled()) {
+  if (vp.view.is3d() && vp.view.isCameraOn) {
     const nearFrontCenter = vp.getFrustum(CoordSystem.World).frontCenter;
     const toFront = Vector3d.createStartEnd(center, nearFrontCenter);
     const viewZ = vp.rotation.rowZ();

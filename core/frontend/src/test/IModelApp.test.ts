@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -47,7 +47,7 @@ class TestApp extends MockRender.App {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuDraw = new TestAccuDraw();
-    opts.localization = new I18N("iModelJs", this.supplyI18NOptions());
+    opts.localization = new ITwinLocalization(this.supplyI18NOptions());
     await MockRender.App.startup(opts);
 
     const namespace = "TestApp";
@@ -70,7 +70,7 @@ class TestApp extends MockRender.App {
 
 describe("IModelApp", () => {
   before(async () => {
-    await TestApp.startup({ localization: new I18N("iModelJs") });
+    await TestApp.startup();
     await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());

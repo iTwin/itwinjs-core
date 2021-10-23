@@ -238,6 +238,7 @@ import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterial } from '@itwin/core-common';
+import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
@@ -4319,6 +4320,7 @@ export class IModelApp {
     // @internal
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
+    static readonly onBeforeShutdown: BeEvent<() => void>;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
@@ -4896,6 +4898,7 @@ export interface LocalHostIpcAppOpts {
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
+        socketPath?: string;
     };
 }
 
@@ -7414,6 +7417,10 @@ export class RealityDataSource {
     protected constructor(props: RealityDataSourceProps);
     // (undocumented)
     static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    static createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // (undocumented)
     static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     static fromProps(props: RealityDataSourceProps): RealityDataSource;
@@ -10686,12 +10693,11 @@ export class Tool {
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
-    static localization: Localization;
     static get maxArgs(): number | undefined;
     static get minArgs(): number;
     static namespace: string;
     parseAndRun(..._args: string[]): Promise<boolean>;
-    static register(namespace?: string, localization?: Localization): void;
+    static register(namespace?: string): void;
     run(..._args: any[]): Promise<boolean>;
     static toolId: string;
     get toolId(): string;
@@ -10954,9 +10960,11 @@ export class ToolRegistry {
     getToolList(): ToolList;
     parseAndRun(keyin: string): Promise<ParseAndRunResult>;
     parseKeyin(keyin: string): ParseKeyinResult;
-    register(toolClass: ToolType, namespace?: string, localization?: Localization): void;
-    registerModule(moduleObj: any, namespace?: string, localization?: Localization): void;
+    register(toolClass: ToolType, namespace?: string): void;
+    registerModule(moduleObj: any, namespace?: string): void;
     run(toolId: string, ...args: any[]): Promise<boolean>;
+    // (undocumented)
+    shutdown(): void;
     // (undocumented)
     readonly tools: Map<string, typeof Tool>;
     unRegister(toolId: string): void;
@@ -12708,7 +12716,6 @@ export abstract class ViewState extends ElementState {
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
     get isAttachedToViewport(): boolean;
-    isCameraEnabled(): this is ViewState3d;
     abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;

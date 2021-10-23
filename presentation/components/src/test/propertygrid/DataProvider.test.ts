@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
@@ -62,9 +62,11 @@ describe("PropertyDataProvider", () => {
 
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setLocalization(new I18N("", {
+    const localize = new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    }));
+    });
+    await localize.initialize(["iModelJS"]);
+    Presentation.setLocalization(localize);
     await initializeLocalization();
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });

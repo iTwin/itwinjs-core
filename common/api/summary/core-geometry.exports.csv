@@ -63,14 +63,14 @@ public;Clipper
 public;ClipPlane 
 public;ClipPlaneContainment
 public;ClipPlaneProps
-public;ClipPrimitive
+public;ClipPrimitive 
 public;ClipPrimitivePlanesProps
 public;ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps
 public;ClipPrimitiveShapeProps
 public;ClipShape 
 public;ClipStatus
 public;ClipUtilities
-public;ClipVector
+public;ClipVector 
 public;ClipVectorProps = ClipPrimitiveProps[]
 public;Cloneable
 internal;ClusterableArray 

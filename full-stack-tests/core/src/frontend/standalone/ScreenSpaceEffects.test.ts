@@ -5,9 +5,8 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
-import {
-  IModelApp, Pixel, SnapshotConnection, VaryingType,
-} from "@itwin/core-frontend";
+import { IModelApp, Pixel, SnapshotConnection, VaryingType } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 
 describe("Screen-space effects", () => {
@@ -15,7 +14,7 @@ describe("Screen-space effects", () => {
   let disabledEffectName: string | undefined;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     registerEffects();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
@@ -24,7 +23,7 @@ describe("Screen-space effects", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {

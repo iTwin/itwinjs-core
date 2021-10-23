@@ -235,7 +235,6 @@ export class GlobalEventSubscriptionHandler {
   }
 
   /** Create a [[GlobalEventSubscription]]. You can use this to get or update the existing subscription instance, if you only have the original subscriptionId.
-   * @param requestContext The client request context
    * @param subscriptionId Guid to be used by global event subscription. It will be a part of the resulting subscription id.
    * @param globalEvents Array of GlobalEventTypes to subscribe to.
    * @return Created GlobalEventSubscription instance.
@@ -256,7 +255,6 @@ export class GlobalEventSubscriptionHandler {
   }
 
   /** Update a [[GlobalEventSubscription]]. Can change the [[GlobalEventType]]s specified in the subscription. Must be a valid subscription that was previously created with [[GlobalEventSubscriptionHandler.create]].
-   * @param requestContext The client request context.
    * @param subscription Updated GlobalEventSubscription.
    * @return GlobalEventSubscription instance from iModelHub after update.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[GlobalEventSubscription]] does not exist with the specified subscription.wsgId.
@@ -273,7 +271,6 @@ export class GlobalEventSubscriptionHandler {
   }
 
   /** Delete a [[GlobalEventSubscription]].
-   * @param requestContext The client request context.
    * @param subscriptionId WSG Id of the GlobalEventSubscription.
    * @returns Resolves if the GlobalEventSubscription has been successfully deleted.
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if GlobalEventSubscription does not exist with the specified subscription.wsgId.
@@ -329,7 +326,6 @@ export class GlobalEventHandler extends EventBaseHandler {
   }
 
   /** Get global event SAS Token. Used to authenticate for [[GlobalEventHandler.getEvent]].
-   * @param requestContext The client request context
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async getSASToken(accessToken: AccessToken): Promise<GlobalEventSAS> {
@@ -356,7 +352,6 @@ export class GlobalEventHandler extends EventBaseHandler {
   }
 
   /** Get an [[IModelHubGlobalEvent]] from the [[GlobalEventSubscription]]. You can use long polling timeout, to have requests return when events are available (or request times out), rather than returning immediately when no events are found.
-   * @param requestContext The client request context
    * @param sasToken SAS Token used to authenticate. See [[GlobalEventSAS.sasToken]].
    * @param baseAddress Address for the events. See [[GlobalEventSAS.baseAddress]].
    * @param subscriptionId Id of the subscription to the topic. See [[GlobalEventSubscription]].

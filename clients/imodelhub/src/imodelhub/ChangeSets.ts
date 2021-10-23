@@ -170,6 +170,7 @@ export class ChangeSetQuery extends StringIdQuery {
   public clone(): ChangeSetQuery {
     const changeSetQuery = new ChangeSetQuery();
     changeSetQuery._query = { ...this.getQueryOptions() };
+    changeSetQuery._byId = this.getId();
     return changeSetQuery;
   }
 
@@ -412,7 +413,6 @@ export class ChangeSetHandler {
   }
 
   /** Get the [[ChangeSet]]s for the iModel.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried ChangeSets or select different data from them.
    * @returns ChangeSets that match the query.
@@ -430,7 +430,6 @@ export class ChangeSetHandler {
   }
 
   /** Get the chunk of [[ChangeSet]]s for the iModel.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param url [[ChangeSet]]s query url.
    * @param chunkedQueryContext [[ChangeSet]]s chunked query context.
@@ -449,7 +448,6 @@ export class ChangeSetHandler {
    * Download the [[ChangeSet]]s that match provided query. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [BriefcaseDb.pullChanges]($backend) instead.
    *
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Query that defines ChangeSets to download.
    * @param path Path of directory where the ChangeSets should be downloaded.
@@ -502,7 +500,6 @@ export class ChangeSetHandler {
   }
 
   /** Download the chunk of [[ChangeSet]]s for the iModel.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSets [[ChangeSet]]s chunk to download.
    * @param path Path of directory where the ChangeSets should be downloaded.
@@ -550,7 +547,6 @@ export class ChangeSetHandler {
   }
 
   /** Download single [[ChangeSet]] with retry if SAS url expired or download failed.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSet [[ChangeSet]] to download.
    * @param downloadPath Path where the ChangeSet should be downloaded.
@@ -581,7 +577,6 @@ export class ChangeSetHandler {
   }
 
   /** Download single [[ChangeSet]].
-   * @param requestContext The client request context.
    * @param changeSet [[ChangeSet]] to download.
    * @param downloadPath Path where the ChangeSet should be downloaded.
    * @param changeSetProgress Callback for tracking progress.
@@ -627,7 +622,6 @@ export class ChangeSetHandler {
    * Upload a [[ChangeSet]] file. If you want to [push]($docs/learning/Glossary.md#push) your changes to iModelHub, use [BriefcaseDb.pushChanges]($backend) instead. This method is only a part of that workflow.
    *
    * ChangeSets have to be uploaded in a linear order. If another user is uploading, or changeSet.parentId does not point to the latest ChangeSet on iModelHub, this method will fail. User will have to download all of the newer ChangeSets, merge them into their [[Briefcase]] and calculate a new ChangeSet id.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSet Information of the ChangeSet to be uploaded.
    * @param path Path of the ChangeSet file to be uploaded.

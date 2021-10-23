@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { I18N } from "@itwin/core-i18n";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
@@ -37,7 +36,7 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
-import { signIn } from "./signIn";
+import { signIn, signOut } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
@@ -86,6 +85,14 @@ class SignInTool extends Tool {
   }
 }
 
+class SignOutTool extends Tool {
+  public static override toolId = "SignOut";
+  public override async run(): Promise<boolean> {
+    await signOut();
+    return true;
+  }
+}
+
 class PushChangesTool extends Tool {
   public static override toolId = "PushChanges";
   public static override get maxArgs() { return 1; }
@@ -123,7 +130,7 @@ class PullChangesTool extends Tool {
 
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
+    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
   }
 }
 
@@ -189,9 +196,12 @@ export class DisplayTestApp {
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
+    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl.protocol = "ws";
+    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
+
     const opts = {
       iModelApp: {
-        localization: new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" }),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
@@ -213,7 +223,7 @@ export class DisplayTestApp {
         /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPort: 3002,
+        socketPath: socketUrl.toString(),
       },
     };
 
@@ -276,6 +286,7 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SignInTool,
+      SignOutTool,
       SVTSelectionTool,
       SyncViewportsTool,
       ToggleAspectRatioSkewDecoratorTool,

@@ -1,0 +1,117 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "../variables";
+
+.nz-footer-messageCenter-indicator {
+  height: 100%;
+  color: $buic-foreground-body;
+
+  padding: {
+    top: 0;
+    bottom: 0;
+    left: $nz-footer-indicator-horizontal-padding;
+    right: $nz-footer-indicator-horizontal-padding;
+  }
+
+  box-sizing: border-box;
+
+  /* small devices */
+  @include for-phone-only {
+    padding-left: $nz-footer-indicator-horizontal-padding-small;
+    padding-right: $nz-footer-indicator-horizontal-padding-small;
+  }
+
+  /* Medium devices */
+  @include for-tablet-landscape-down {
+    padding-left: $nz-footer-indicator-horizontal-padding-medium;
+    padding-right: $nz-footer-indicator-horizontal-padding-medium;
+  }
+
+  >.nz-indicator {
+    height: 100%;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+
+    >.nz-label {
+      font-size: $text-font-size;
+
+      @include for-tablet-portrait-down {
+        font-size: $text-font-size-medium;
+      }
+
+      @include for-phone-only {
+        display: none;
+      }
+    }
+
+    >.nz-container {
+      height: 100%;
+      position: relative;
+      display: grid;
+      align-items: center;
+      margin-left: 8px;
+
+      >.nz-balloon {
+        background-color: $buic-foreground-body;
+        text-align: center;
+        min-width: $min-balloon-width;
+        min-height: $min-balloon-height;
+        border-radius: 50%;
+        padding: $balloon-padding;
+        filter: $icon-shadow;
+        position: relative;
+
+        >.nz-arrow {
+          position: absolute;
+          width: 0;
+          bottom: -3px;
+          left: 0;
+          display: block;
+          border-width: 0;
+          border-bottom-width: $balloon-arrow-height;
+          border-left-width: $balloon-arrow-width;
+          border-style: solid;
+          border-color: transparent $buic-foreground-body;
+          transform: rotate(25deg);
+        }
+
+        >.nz-content {
+          position: relative;
+          color: $buic-text-color-reverse;
+          line-height: $min-balloon-height;
+          font-size: 11px;
+        }
+      }
+
+      >.nz-target {
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+    }
+
+    &:hover {
+      color: $buic-foreground-primary;
+
+      >.nz-container>.nz-balloon {
+        background-color: $buic-foreground-primary;
+
+        >.nz-arrow {
+          border-color: transparent $buic-foreground-primary;
+        }
+      }
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+}

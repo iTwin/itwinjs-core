@@ -144,7 +144,7 @@ export class ChangeSummaryManager {
   /** Extracts change summaries from the specified iModel.
    * Change summaries are extracted from the version the iModel was opened with up through the specified start version.
    * If no start version has been specified, the first version will be used.
-   * @param requestContext The client request context
+   * @param accessToken A valid access token string
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel.
    * Note: For every version to extract a summary from, the method moves the iModel to that version before extraction. After
    * the extraction has completed, the iModel is moved back to the original version.
@@ -489,7 +489,7 @@ export class ChangeSummaryManager {
 
   /**
    * Creates a change summary for the last applied change set to the iModel
-   * @param requestContext The client request context
+   * @param accessToken A valid access token string
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel, and must have at least one change set applied to it.
    * @returns The id of the extracted change summary.
    * @beta

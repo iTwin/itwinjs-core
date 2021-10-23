@@ -151,6 +151,8 @@ export interface TestConfigProps {
   viewString?: ViewStateSpecProps;
   /** Specifies hypermodeling settings applied to the view. */
   hyperModeling?: HyperModelingProps;
+  /** Specifies if EXT_disjoint_timer_query extension is used to collect GPU data */
+  useDisjointTimer?: boolean;
   /** Describes how to react to an otherwise uncaught exception during a test.
    *  - "terminate" => log the exception and terminate immediately.
    *  - undefined => log the exception and continue to next test.
@@ -183,6 +185,7 @@ export class TestConfig {
   public readonly renderOptions: RenderSystem.Options;
   public readonly savedViewType: SavedViewType;
   public readonly iModelLocation: string;
+  public readonly useDisjointTimer: boolean;
 
   public readonly extViewName?: string;
   public readonly displayStyle?: string;
@@ -221,6 +224,7 @@ export class TestConfig {
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
+    this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
     this.onException = props.onException ?? prevConfig?.onException;
 
     if (prevConfig) {

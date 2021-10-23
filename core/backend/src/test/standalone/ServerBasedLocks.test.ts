@@ -16,7 +16,7 @@ import { IModelHost } from "../../IModelHost";
 import { ElementOwnsChildElements } from "../../NavigationRelationship";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
 import { HubMock } from "../HubMock";
-import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 
 describe("Server-based locks", () => {
   const createRev0 = async () => {
@@ -46,11 +46,9 @@ describe("Server-based locks", () => {
     };
 
     iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);
-    accessToken1 = await IModelTestUtils.getAccessToken(TestUserType.Regular);
-    accessToken2 = await IModelTestUtils.getAccessToken(TestUserType.Regular);
     const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
-    briefcase1Props = await BriefcaseManager.downloadBriefcase({ accessToken: accessToken1, ...args });
-    briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: accessToken2, ...args });
+    briefcase1Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token", ...args });
+    briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token2", ...args });
   });
 
   const assertSharedLocks = (locks: ServerBasedLocks, ids: Id64Arg) => {
@@ -192,7 +190,11 @@ describe("Server-based locks", () => {
     bc1.elements.deleteElement(child1); // make sure delete now works
     bc1.abandonChanges();
 
+    assert.isTrue(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
+
     await bc1.pushChanges({ accessToken: accessToken1, description: "my changes" });
+
+    assert.isFalse(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
 
     assert.throws(() => bc2.elements.deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
     await expect(bc2Locks.acquireExclusiveLock(child1)).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it

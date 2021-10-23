@@ -9,7 +9,6 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { Localization } from '@itwin/core-common';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -1293,6 +1292,9 @@ export interface LinkElementsInfo {
 }
 
 // @internal
+export const loggerCategory: (obj: any) => string;
+
+// @internal
 export function matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null;
 
 // @internal (undocumented)
@@ -1968,23 +1970,6 @@ export enum ToolbarUsage {
 }
 
 // @public
-export class UiAbstract {
-    static initialize(localization: Localization): Promise<void>;
-    static get initialized(): boolean;
-    static get localization(): Localization;
-    static get localizationNamespace(): string;
-    // @internal (undocumented)
-    static loggerCategory(obj: any): string;
-    static get messagePresenter(): MessagePresenter;
-    static set messagePresenter(mp: MessagePresenter);
-    // @internal (undocumented)
-    static get packageName(): string;
-    static terminate(): void;
-    // @internal
-    static translate(key: string | string[]): string;
-}
-
-// @public
 export class UiAdmin {
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
@@ -2000,6 +1985,8 @@ export class UiAdmin {
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
     get isFocusOnHome(): boolean;
+    static get messagePresenter(): MessagePresenter;
+    static set messagePresenter(mp: MessagePresenter);
     static readonly onGenericUiEvent: GenericUiEvent;
     // @internal (undocumented)
     onInitialized(): void;
@@ -2053,47 +2040,11 @@ export interface UiItemProviderRegisteredEventArgs {
     providerId: string;
 }
 
-// @beta @deprecated
-export interface UiItemsApplication {
-    validateBackstageItem?: (item: BackstageItem) => {
-        updatedItem: BackstageItem;
-        action: UiItemsApplicationAction;
-    };
-    validateStatusBarItem?: (item: CommonStatusBarItem) => {
-        updatedItem: CommonStatusBarItem;
-        action: UiItemsApplicationAction;
-    };
-    validateToolbarButtonItem?: (item: CommonToolbarItem) => {
-        updatedItem: CommonToolbarItem;
-        action: UiItemsApplicationAction;
-    };
-    validateWidget?: (widget: AbstractWidgetProps) => {
-        updatedWidget: AbstractWidgetProps;
-        action: UiItemsApplicationAction;
-    };
-}
-
 // @public
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,
     Update = 2
-}
-
-// @beta @deprecated
-export class UiItemsArbiter {
-    // @internal (undocumented)
-    static clearApplication(): void;
-    static get uiItemsApplication(): UiItemsApplication | undefined;
-    static set uiItemsApplication(app: UiItemsApplication | undefined);
-    // @internal (undocumented)
-    static updateBackstageItems(items: ReadonlyArray<BackstageItem>): ReadonlyArray<BackstageItem>;
-    // @internal (undocumented)
-    static updateStatusBarItems(items: ReadonlyArray<CommonStatusBarItem>): ReadonlyArray<CommonStatusBarItem>;
-    // @internal (undocumented)
-    static updateToolbarButtonItems(items: ReadonlyArray<CommonToolbarItem>): ReadonlyArray<CommonToolbarItem>;
-    // @internal (undocumented)
-    static updateWidgets(widgets: ReadonlyArray<AbstractWidgetProps>): ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public

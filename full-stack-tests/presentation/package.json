@@ -9,8 +9,8 @@
   },
   "private": true,
   "scripts": {
-    "compile": "npm run -s build",
     "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "npm run -s extract",
@@ -68,8 +68,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
-    "typemoq": "^2.1.0",
-    "xmlhttprequest": "^1.8.0"
+    "typemoq": "^2.1.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
