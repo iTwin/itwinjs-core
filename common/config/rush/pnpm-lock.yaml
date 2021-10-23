@@ -286,7 +286,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.0.14
+      '@bentley/imodeljs-native': 3.0.16
       '@bentley/itwin-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/build-tools': workspace:*
@@ -324,7 +324,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.0.14
+      '@bentley/imodeljs-native': 3.0.16
       '@bentley/telemetry-client': link:../../clients/telemetry
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -4970,7 +4970,7 @@ packages:
       '@babel/compat-data': 7.15.0
       '@babel/core': 7.12.3
       '@babel/helper-validator-option': 7.14.5
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       semver: 6.3.0
     dev: true
 
@@ -4983,7 +4983,7 @@ packages:
       '@babel/compat-data': 7.15.0
       '@babel/core': 7.15.8
       '@babel/helper-validator-option': 7.14.5
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       semver: 6.3.0
 
   /@babel/helper-create-class-features-plugin/7.15.4_@babel+core@7.12.3:
@@ -6373,17 +6373,17 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.0.14:
-    resolution: {integrity: sha512-uvlvJ6kxy5jAX1We37L20wnhl0Bmi7s+0jHlSZHbYOsGS/mxf9b44Kjf+++lSij7RyHC4N7HeHQeVOMCpB8Qpg==}
+  /@bentley/imodeljs-native/3.0.16:
+    resolution: {integrity: sha512-GiSLaJDp490WN/sdx+FGrQIMy9qWsdzO01baY83WyWCO19Jh3xYd4uRJnyBIIhQOEAYtkDS/t9D01Jh/Ejnkow==}
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.95_@itwin+core-bentley@3.0.0-dev.95:
-    resolution: {integrity: sha512-SqF1aLdJQ5dL3NK6ApgbQ2QAtoZbKfkBDgWgVWLitqVizVjKEjAyXtSdk8zPd5kyFuTO4sTcX5fl0mWPTbD9hg==}
+  /@bentley/itwin-client/3.0.0-dev.96_@itwin+core-bentley@3.0.0-dev.96:
+    resolution: {integrity: sha512-jgzjURVy2dwMuPDnyorMqOoR00zH2auq2TwXd7RUzsuR3J+/1rrMidB/yED+8y5az5V7oyB/f7b9nCXFDX/ZUg==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.95
+      '@itwin/core-bentley': ^3.0.0-dev.96
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.95
+      '@itwin/core-bentley': 3.0.0-dev.96
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -6817,15 +6817,15 @@ packages:
   /@itwin/browser-authorization/0.2.0:
     resolution: {integrity: sha512-mds+oVFelKQ/u2jWzLUxHQUHLu5PwnzGA98PE2Nwlti3LVEMq1R9BGPyXobFAA6sXmgdHJ0VkaZLTBjvaicgZw==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.95_@itwin+core-bentley@3.0.0-dev.95
-      '@itwin/core-bentley': 3.0.0-dev.95
+      '@bentley/itwin-client': 3.0.0-dev.96_@itwin+core-bentley@3.0.0-dev.96
+      '@itwin/core-bentley': 3.0.0-dev.96
       oidc-client: 1.11.5
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@itwin/core-bentley/3.0.0-dev.95:
-    resolution: {integrity: sha512-W9bCUpuUZCtTjpkvq/7bBWBUjXftuzUfs1mvJGUUKJzn3ZhRLOWazqg2zpouTtvwbUVCbGuARjiHF7dg4YMtXQ==}
+  /@itwin/core-bentley/3.0.0-dev.96:
+    resolution: {integrity: sha512-3lagKa1jgK+QgUCbKGf28K+WL/5iZMaQsJWGJGG166RVtG0vJ04QAWg3hni7d9jP3aLklKBHjVeUXHmFH8ex2g==}
 
   /@itwin/itwinui-css/0.27.3:
     resolution: {integrity: sha512-2kiak9/KX1QHv+aB1bcK3MjM6H2oF2QzrgRzYWfuBY/6uWWoIKLDzsCDJEplNCEbDHZTuYeojw2Ac/e9ieVVAg==}
@@ -6909,16 +6909,16 @@ packages:
   /@itwin/projects-client/0.2.0:
     resolution: {integrity: sha512-KgculN59Iu3YqgGLB9HjATyy+Nl6PJXDc8oHQfhZGB8ZUcA17SQ6QznVDbG1NGoHMPH3RaLMPhQgO0NZNh3A5Q==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.95_@itwin+core-bentley@3.0.0-dev.95
-      '@itwin/core-bentley': 3.0.0-dev.95
+      '@bentley/itwin-client': 3.0.0-dev.96_@itwin+core-bentley@3.0.0-dev.96
+      '@itwin/core-bentley': 3.0.0-dev.96
     transitivePeerDependencies:
       - supports-color
 
   /@itwin/service-authorization/0.2.0:
     resolution: {integrity: sha512-4YGRLZAcMbwDJoQhx19Uqfztmp87X4BnWQf/8lE9Y9ZhjywdIy86gQ0jWqzN/Pgv08RsCZI3tTqmV19heaQ2hQ==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.95_@itwin+core-bentley@3.0.0-dev.95
-      '@itwin/core-bentley': 3.0.0-dev.95
+      '@bentley/itwin-client': 3.0.0-dev.96_@itwin+core-bentley@3.0.0-dev.96
+      '@itwin/core-bentley': 3.0.0-dev.96
       openid-client: 4.9.1
     transitivePeerDependencies:
       - supports-color
@@ -9337,7 +9337,7 @@ packages:
     resolution: {integrity: sha512-eM9d/swFopRt5gdJ7jrpCwgvEMIayITpojhkkSMRsFHYuH5bkSQ4p/9qTEHtmNudUZh22Tehu7I6CxAW0IXTKA==}
     hasBin: true
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       caniuse-lite: 1.0.30001271
       normalize-range: 0.1.2
       num2fraction: 1.2.2
@@ -9957,7 +9957,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001271
-      electron-to-chromium: 1.3.877
+      electron-to-chromium: 1.3.878
     dev: true
 
   /browserslist/4.14.2:
@@ -9966,18 +9966,18 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001271
-      electron-to-chromium: 1.3.877
+      electron-to-chromium: 1.3.878
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
 
-  /browserslist/4.17.4:
-    resolution: {integrity: sha512-Zg7RpbZpIJRW3am9Lyckue7PLytvVxxhJj1CaJVlCWENsGEAOlnlt8X0ZxGRPp7Bt9o8tIRM5SEXy4BCPMJjLQ==}
+  /browserslist/4.17.5:
+    resolution: {integrity: sha512-I3ekeB92mmpctWBoLXe0d5wPS2cBuRvvW0JyyJHMrk9/HmP2ZjrTboNAZ8iuGqaEIlKguljbQY32OkOJIRrgoA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001271
-      electron-to-chromium: 1.3.877
+      electron-to-chromium: 1.3.878
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -10216,7 +10216,7 @@ packages:
   /caniuse-api/3.0.0:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       caniuse-lite: 1.0.30001271
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
@@ -10848,7 +10848,7 @@ packages:
   /core-js-compat/3.18.3:
     resolution: {integrity: sha512-4zP6/y0a2RTHN5bRGT7PTq9lVt3WzvffTNjqnTKsXhkAYNDTkdCLOIfAdOLcQ/7TDdyRj3c+NeHe1NmF1eDScw==}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       semver: 7.0.0
     dev: true
 
@@ -11770,8 +11770,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.877:
-    resolution: {integrity: sha512-fT5mW5Giw5iyVukeHb2XvB4joBKvzHtl8Vs3QzE7APATpFMt/T7RWyUcIKSZzYkKQgpMbu+vDBTCHfQZvh8klA==}
+  /electron-to-chromium/1.3.878:
+    resolution: {integrity: sha512-O6yxWCN9ph2AdspAIszBnd9v8s11hQx8ub9w4UGApzmNRnoKhbulOWqbO8THEQec/aEHtvy+donHZMlh6l1rbA==}
 
   /electron/14.2.0:
     resolution: {integrity: sha512-6CmAv1P0xcwK3FQOSA27fHI36/wctSFVgj46VODn56srXXQWeolkK1VzeAFNE613iAuuH9jJdHvE3gz+c7XkNA==}
@@ -14801,7 +14801,7 @@ packages:
       jest-worker: 26.6.2
       micromatch: 4.0.4
       sane: 4.1.0
-      walker: 1.0.7
+      walker: 1.0.8
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
@@ -15888,8 +15888,8 @@ packages:
   /make-error/1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
 
-  /makeerror/1.0.11:
-    resolution: {integrity: sha1-4BpckQnyr3lmDk6LlYd5AYT1qWw=}
+  /makeerror/1.0.12:
+    resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
     dependencies:
       tmpl: 1.0.5
     dev: true
@@ -17445,13 +17445,13 @@ packages:
       postcss-selector-parser: 6.0.6
     dev: true
 
-  /postcss-browser-comments/3.0.0_browserslist@4.17.4:
+  /postcss-browser-comments/3.0.0_browserslist@4.17.5:
     resolution: {integrity: sha512-qfVjLfq7HFd2e0HW4s1dvU8X080OZdG46fFbIBFjW7US7YPDcWfRvdElvwMJr2LI6hMmD+7LnH2HcmXTs+uOig==}
     engines: {node: '>=8.0.0'}
     peerDependencies:
       browserslist: ^4
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       postcss: 7.0.39
     dev: true
 
@@ -17509,7 +17509,7 @@ packages:
     resolution: {integrity: sha512-WyQFAdDZpExQh32j0U0feWisZ0dmOtPl44qYmJKkq9xFWY3p+4qnRzCHeNrkeRhwPHz9bQ3mo0/yVkaply0MNw==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       color: 3.2.1
       has: 1.0.3
       postcss: 7.0.39
@@ -17707,7 +17707,7 @@ packages:
     resolution: {integrity: sha512-U7e3r1SbvYzO0Jr3UT/zKBVgYYyhAz0aitvGIYOYK5CPmkNih+WDSsS5tvPrJ8YMQYlEMvsZIiqmn7HdFUaeEQ==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       caniuse-api: 3.0.0
       cssnano-util-same-parent: 4.0.1
       postcss: 7.0.39
@@ -17738,7 +17738,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       alphanum-sort: 1.0.2
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       cssnano-util-get-arguments: 4.0.0
       postcss: 7.0.39
       postcss-value-parser: 3.3.1
@@ -17852,7 +17852,7 @@ packages:
     resolution: {integrity: sha512-od18Uq2wCYn+vZ/qCOeutvHjB5jm57ToxRaMeNuf0nWVHaP9Hua56QyMF6fs/4FSUnVIw0CBPsU0K4LnBPwYwg==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       postcss: 7.0.39
       postcss-value-parser: 3.3.1
     dev: true
@@ -17880,9 +17880,9 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       '@csstools/normalize.css': 10.1.0
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       postcss: 7.0.39
-      postcss-browser-comments: 3.0.0_browserslist@4.17.4
+      postcss-browser-comments: 3.0.0_browserslist@4.17.5
       sanitize.css: 10.0.0
     dev: true
 
@@ -17927,7 +17927,7 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       autoprefixer: 9.8.8
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       caniuse-lite: 1.0.30001271
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
@@ -17977,7 +17977,7 @@ packages:
     resolution: {integrity: sha512-gKWmR5aUulSjbzOfD9AlJiHCGH6AEVLaM0AV+aSioxUDd16qXP1PCh8d1/BGVvpdWn8k/HiK7n6TjeoXN1F7DA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       caniuse-api: 3.0.0
       has: 1.0.3
       postcss: 7.0.39
@@ -19488,7 +19488,7 @@ packages:
       fb-watchman: 2.0.1
       micromatch: 3.1.10
       minimist: 1.2.5
-      walker: 1.0.7
+      walker: 1.0.8
     dev: true
 
   /sanitize.css/10.0.0:
@@ -20441,7 +20441,7 @@ packages:
     resolution: {integrity: sha512-7GlLk9JwlElY4Y6a/rmbH2MhVlTyVmiJd1PfTCqFaIBEGMYNsrO/v3SeGTdhBThLg4Z+NbOk/qFMwCa+J+3p/g==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      browserslist: 4.17.4
+      browserslist: 4.17.5
       postcss: 7.0.39
       postcss-selector-parser: 3.1.2
     dev: true
@@ -21573,10 +21573,10 @@ packages:
       xml-name-validator: 3.0.0
     dev: true
 
-  /walker/1.0.7:
-    resolution: {integrity: sha1-L3+bj9ENZ3JisYqITijRlhjgKPs=}
+  /walker/1.0.8:
+    resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
     dependencies:
-      makeerror: 1.0.11
+      makeerror: 1.0.12
     dev: true
 
   /watchpack-chokidar2/2.0.1:
