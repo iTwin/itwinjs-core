@@ -14,7 +14,7 @@ import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
   GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelCoordinateRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
+  IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
   TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
