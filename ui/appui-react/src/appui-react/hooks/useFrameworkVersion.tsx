@@ -11,20 +11,25 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../test/TestUtils";
 import { FrameworkVersionId, UiFramework } from "../UiFramework";
 
-/** @internal */
+/** @public */
 export function useFrameworkVersion(): FrameworkVersionId {
   return React.useContext(FrameworkVersionContext);
 }
 
-/** @internal */
+/** @public */
 export const FrameworkVersionContext = React.createContext<FrameworkVersionId>("2"); // eslint-disable-line @typescript-eslint/naming-convention
 
-/** @alpha */
+/** @public */
 export interface FrameworkVersionProps {
   children?: React.ReactNode;
 }
 
-/** @alpha */
+/** The FrameworkVersion component provides uiVersion context to react component. The
+ * component uses the property frameworkState.configurableUiState.frameworkVersion from the redux store
+ * to determine the ui version. This version will default to "2" and should only be set to "1" for older
+ * iModelApp applications.
+ * @public
+ */
 export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare
   const uiVersion = useSelector((state: RootState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];

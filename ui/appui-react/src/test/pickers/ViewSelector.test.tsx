@@ -9,6 +9,7 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { FrameworkVersion, UiFramework, ViewSelector } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { Provider } from "react-redux";
 
 // cSpell:ignore Spatials
 
@@ -31,18 +32,22 @@ describe("ViewSelector", () => {
 
   it("should render correctly", () => {
     const wrapper = shallow(
-      <FrameworkVersion>
-        <ViewSelector imodel={imodelMock.object} />
-      </FrameworkVersion>
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ViewSelector imodel={imodelMock.object} />
+        </FrameworkVersion>
+      </Provider>
     );
     wrapper.should.matchSnapshot();
   });
 
   it("should set Show settings by ViewSelector.updateShowSettings", () => {
     const wrapper = mount(
-      <FrameworkVersion>
-        <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />
-      </FrameworkVersion>
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />
+        </FrameworkVersion>
+      </Provider>
     );
     const vs = wrapper.find(ViewSelector);
     expect(vs).to.not.be.undefined;
@@ -62,9 +67,11 @@ describe("ViewSelector", () => {
 
   it("should trigger componentDidUpdate processing", async () => {
     const wrapper = mount(
-      <FrameworkVersion>
-        <ViewSelector imodel={imodelMock.object} />
-      </FrameworkVersion>
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ViewSelector imodel={imodelMock.object} />
+        </FrameworkVersion>
+      </Provider>
     );
     wrapper.setProps({ imodel: imodelMock2.object });
     await TestUtils.flushAsyncOperations();

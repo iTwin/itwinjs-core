@@ -9,6 +9,8 @@ import * as sinon from "sinon";
 import { ToolbarItemContext } from "@itwin/components-react";
 import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Group, Item } from "@itwin/appui-layout-react";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
+
 import {
   ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended, UiFramework,
 } from "../../appui-react";
@@ -19,9 +21,10 @@ const title = "Test";
 const listItems = new Array<ListItem>();
 const setEnabled = sinon.spy();
 
-describe.only("ListPicker", () => {
+describe("ListPicker", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
 
     const listItem: ListItem = {
       enabled: true,
@@ -52,8 +55,9 @@ describe.only("ListPicker", () => {
     listItems.push(emptyContainerItem);
   });
 
-  after(() => {
+  after(async() => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   describe("v2 rendering", () => {
@@ -556,7 +560,8 @@ describe.only("ListPicker", () => {
           </FrameworkVersion>
         </Provider>
       );
-      sut.closest(ListPickerBase).setState({ expanded: true });
+
+      sut.find(ListPickerBase).setState({ expanded: true });
       const containedGroup = sut.findWhere((w) => {
         return w.name() === "WithOnOutsideClick";
       }) as ReactWrapper<WithOnOutsideClickProps>;
@@ -569,7 +574,7 @@ describe.only("ListPicker", () => {
     });
   });
 
-  it.only("should not minimize on outside click", () => {
+  it("should not minimize on outside click", () => {
     const spy = sinon.spy();
     const sut = mount(
       <Provider store={TestUtils.store}>
@@ -583,7 +588,7 @@ describe.only("ListPicker", () => {
         </FrameworkVersion>
       </Provider>
     );
-    sut.closest(ListPickerBase).setState({ expanded: true });
+    sut.find(ListPickerBase).setState({ expanded: true });
     const containedGroup = sut.findWhere((w) => {
       return w.name() === "WithOnOutsideClick";
     }) as ReactWrapper<WithOnOutsideClickProps>;

@@ -200,7 +200,7 @@ export class UiFramework {
     if (StateManager.isInitialized(true))
       StateManager.clearStore();
     // istanbul ignore next
-    IModelApp?.localization.unregisterNamespace(UiFramework.localizationNamespace);
+    IModelApp.localization?.unregisterNamespace(UiFramework.localizationNamespace);
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;

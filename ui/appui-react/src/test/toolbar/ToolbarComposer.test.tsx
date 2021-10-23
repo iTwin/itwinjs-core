@@ -11,12 +11,14 @@ import {
 } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
 import {
-  CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
+  CommandItemDef, ConfigurableUiManager, CustomItemDef, FrameworkVersion, Frontstage, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupItemDef,
   SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
 } from "../../appui-react";
 import { CoreTools } from "../../appui-react/tools/CoreToolDefinitions";
 import TestUtils from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
+import { Provider } from "react-redux";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";
@@ -135,11 +137,34 @@ describe("<ToolbarComposer  />", async () => {
     isHidden: isHiddenCondition,
   });
 
+  class Frontstage1 extends FrontstageProvider {
+    public static stageId = "Test1";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
+
+    public get frontstage(): React.ReactElement<FrontstageProps> {
+      return (
+        <Frontstage
+          id={this.id}
+          defaultTool={CoreTools.selectElementCommand}
+          contentGroup={TestUtils.TestContentGroup1}
+        />
+      );
+    }
+  }
+
   before(async () => {
+    await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+    const frontstageDef = await FrontstageManager.getFrontstageDef("Test1");
+    expect(frontstageDef).to.not.be.undefined;
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   });
 
-  after(() => {
+  after(async () => {
+    await IModelApp.shutdown();
     TestUtils.terminateUiFramework();
   });
 
@@ -159,11 +184,13 @@ describe("<ToolbarComposer  />", async () => {
 
     it("should render with specified items", async () => {
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
-        </FrameworkVersion>);
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
+          </FrameworkVersion>
+        </Provider>);
 
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.container.querySelector("div.components-toolbar-overflow-sizer.components-horizontal")).to.not.be.null;
@@ -185,11 +212,13 @@ describe("<ToolbarComposer  />", async () => {
 
     it("should render with specified items", async () => {
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
-        </FrameworkVersion>);
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.container.querySelector("div.nz-toolbar-toolbar.nz-direction-bottom.nz-horizontal.nz-panel-alignment-start")).to.not.be.null;
       expect(UiFramework.uiVersion).to.eql("1");
@@ -197,56 +226,61 @@ describe("<ToolbarComposer  />", async () => {
 
     it("should render", async () => {
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2])} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent).not.to.be.undefined;
     });
 
     it("should render with specified items", async () => {
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent).not.to.be.undefined;
     });
 
     it("should render with updated items", async () => {
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.queryByTitle("Tool_2")).not.to.be.null;
       expect(renderedComponent.queryByTitle("Tool_Group")).not.to.be.null;
       renderedComponent.rerender(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, group1])} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, group1])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent.queryByTitle("Tool_2")).to.be.null;
       expect(renderedComponent.queryByTitle("Tool_Group")).not.to.be.null;
     });
 
     it("sync event should not refresh if no items updated", () => {
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2])} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent).not.to.be.undefined;
 
       expect(renderedComponent.queryByTitle("Tool_1")).to.be.null;
@@ -261,12 +295,13 @@ describe("<ToolbarComposer  />", async () => {
       const items = ToolbarHelper.createToolbarItemsFromItemDefs([tool1b, tool2b, group2, tool1c, tool1d]);
 
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={items} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={items} />
+          </FrameworkVersion>
+        </Provider>);
 
       expect(renderedComponent).not.to.be.undefined;
       expect(renderedComponent.queryByTitle("Tool_2")).not.to.be.null;
@@ -280,15 +315,16 @@ describe("<ToolbarComposer  />", async () => {
       expect(renderedComponent.queryByTitle("Tool_1D")).not.to.be.null;
     });
 
-    it.skip("should add tools from UiItemsManager", async () => {
+    it("should add tools from UiItemsManager", async () => {
       const fakeTimers = sinon.useFakeTimers();
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1])} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1])} />
+          </FrameworkVersion>
+        </Provider>);
       expect(renderedComponent).not.to.be.undefined;
 
       const testUiProvider = new TestUiProvider();
@@ -318,19 +354,20 @@ describe("<ToolbarComposer  />", async () => {
       UiItemsManager.unregister(testUiProvider.id);
     });
 
-    it.skip("should update active item to toolid is set", async () => {
+    it("should update active item to toolid is set", async () => {
       visibleState = false;
       const items = ToolbarHelper.createToolbarItemsFromItemDefs([tool1b, tool2b, group2, tool1c, tool1d]);
       const groupChildSpec = ToolbarItemUtilities.createActionButton("tool-in-group", 200, "icon-developer", "tool-added-to-group", (): void => { }, { parentToolGroupId: "test.group2" });
       items.push(groupChildSpec);
 
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={items} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={items} />
+          </FrameworkVersion>
+        </Provider>);
 
       expect(renderedComponent).not.to.be.undefined;
       let buttonElement = await waitFor(() => renderedComponent.queryByTitle("Tool_2"));
@@ -346,18 +383,19 @@ describe("<ToolbarComposer  />", async () => {
     // expect(renderedComponent.queryByTitle("tool-added-to-group")).not.to.be.null;
     });
 
-    it.skip("should update items from an external provider's visibility properly", () => {
+    it("should update items from an external provider's visibility properly", () => {
       const fakeTimers = sinon.useFakeTimers();
       const testUiProvider = new TestUiProvider();
       UiItemsManager.register(testUiProvider);
 
       const renderedComponent = render(
-        <FrameworkVersion>
-          <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
-            orientation={ToolbarOrientation.Horizontal}
-            items={[]} />
-        </FrameworkVersion>
-      );
+        <Provider store={TestUtils.store}>
+          <FrameworkVersion>
+            <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+              orientation={ToolbarOrientation.Horizontal}
+              items={[]} />
+          </FrameworkVersion>
+        </Provider>);
 
       expect(renderedComponent.queryByTitle("visibility-test-tool")).not.to.be.null;
 
