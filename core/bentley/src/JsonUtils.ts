@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Utils
+ * @module Json
  */
 
 /** Utility functions for converting from JSON objects, with default values.

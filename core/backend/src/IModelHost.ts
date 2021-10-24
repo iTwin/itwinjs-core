@@ -87,6 +87,8 @@ export class IModelHostConfiguration {
    */
   public cacheDir?: string;
 
+  public workspaceRoot?: string;
+
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
@@ -161,6 +163,7 @@ export class IModelHost {
 
   public static backendVersion = "";
   private static _cacheDir = "";
+  private static _workspaceRoot = "";
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -192,8 +195,11 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
-  /** Root of the directory holding all the files that iModel.js caches */
+  /** Root directory holding all the files that iTwin.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
+
+  /** Root directory for workspace files */
+  public static get workspaceRoot(): string { return this._workspaceRoot; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -321,7 +327,7 @@ export class IModelHost {
       }
     }
 
-    this.setupCacheDirs(configuration);
+    this.setupHostDirs(configuration);
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     [
@@ -374,9 +380,14 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
-    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
+  private static setupHostDirs(configuration: IModelHostConfiguration) {
+    const setupDir = (dir: string) => {
+      dir = path.normalize(dir);
+      IModelJsFs.recursiveMkDirSync(dir);
+      return dir;
+    };
+    this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
+    this._workspaceRoot = setupDir(configuration.workspaceRoot ?? path.join(NativeLibrary.defaultLocalDir, "iTwin", "Workspaces"));
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 

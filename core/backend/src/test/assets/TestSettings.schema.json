@@ -1,0 +1,50 @@
+{
+  "$id": "app1 schema",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "app1 settings",
+  "description": "the settings for test application 1",
+  "type": "object",
+  "groupName": "app1",
+  "order": 7,
+  "properties": {
+    "app1/list/multiSelectModifier": {
+      "type": "string",
+      "enum": [
+        "ctrlCmd",
+        "alt"
+      ],
+      "enumDescriptions": [
+        "ctrl key.",
+        "alt key."
+      ],
+      "default": "ctrlCmd",
+      "description": "multiSelectModifier"
+    },
+    "app1/list/openMode": {
+      "type": "string",
+      "enum": [
+        "singleClick",
+        "doubleClick"
+      ],
+      "default": "singleClick",
+      "description": "openModeModifier"
+    },
+    "app1/list/horizontalScrolling": {
+      "type": "boolean",
+      "default": false,
+      "description": "horizontalScrolling setting"
+    },
+    "app1/tree/indent": {
+      "type": "number",
+      "default": 8,
+      "minimum": 0,
+      "maximum": 40,
+      "description": "tree indent setting"
+    },
+    "app1/tree/blah": {
+      "type": "string",
+      "default": "blah default",
+      "description": "the setting for blah"
+    }
+  }
+}

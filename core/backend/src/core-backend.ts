@@ -164,3 +164,7 @@ export * from "./IModelDb"; // must be last
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
  */
+/**
+ * @docs-group-description Workspace
+ * APIs for loading and using Settings and Workspace resources
+ */

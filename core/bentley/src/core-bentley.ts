@@ -16,6 +16,7 @@ export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
 export * from "./IndexMap";
+export * from "./JsonSchema";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
@@ -66,6 +67,10 @@ export * from "./UtilityTypes";
 /**
  * @docs-group-description Collections
  * Specialized, customizable collection classes like priority queues.
+ */
+/**
+ * @docs-group-description Json
+ * utilities for dealing with Json strings and files.
  */
 /**
  * @docs-group-description Utils
