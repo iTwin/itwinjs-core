@@ -130,8 +130,8 @@ export class ExtensionAdmin {
     for (const extension of this._installedExtensions.values()) {
       if (!extension.manifest.activationEvents)
         continue;
-      for (const activationEvents of extension.manifest.activationEvents) {
-        if (activationEvents === event) {
+      for (const activationEvent of extension.manifest.activationEvents) {
+        if (activationEvent === event) {
           this.execute(extension); // eslint-disable-line @typescript-eslint/no-floating-promises
         }
       }
