@@ -2311,7 +2311,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
-// @alpha (undocumented)
+// @public
 export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
 
 // @internal
@@ -2326,13 +2326,13 @@ export interface FrameworkVersionChangedEventArgs {
     version: FrameworkVersionId;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export const FrameworkVersionContext: React.Context<FrameworkVersionId>;
 
 // @public
 export type FrameworkVersionId = "1" | "2";
 
-// @alpha (undocumented)
+// @public (undocumented)
 export interface FrameworkVersionProps {
     // (undocumented)
     children?: React.ReactNode;
@@ -6754,7 +6754,7 @@ export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 // @public
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
-// @internal (undocumented)
+// @public (undocumented)
 export function useFrameworkVersion(): FrameworkVersionId;
 
 // @internal (undocumented)

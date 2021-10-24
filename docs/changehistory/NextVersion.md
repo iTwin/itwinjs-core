@@ -1083,9 +1083,25 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
-The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and
-will be initialized to "2". Any existing applications should ensure the `<FrameworkVersion>` element is included in the component tree to render prior
-to the `<ConfigurableUiContent>` element.
+The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
+
+```tsx
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
+```
 
 ### New options for defining Frontstages
 
