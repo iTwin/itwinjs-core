@@ -12,9 +12,11 @@ import {
 } from "@itwin/appui-abstract";
 import { Id64, Id64Arg } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ColorDef, BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, DecorateContext, EventHandled, HitDetail,
-   InputSource, LocateFilterStatus, LocateResponse, ManipulatorToolEvent, Pixel, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
-   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, ViewRect, IModelExtension } from "@itwin/core-extension";
+import {
+  ColorDef, BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, DecorateContext, EventHandled, HitDetail,
+  InputSource, LocateFilterStatus, LocateResponse, ManipulatorToolEvent, Pixel, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
+  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, ViewRect, IModelExtension
+} from "@itwin/core-extension";
 import { CoreTools } from "./CoreTools";
 
 // cSpell:ignore buttongroup
@@ -62,7 +64,8 @@ export enum SelectionProcessing {
  */
 export class SelectionTool extends PrimitiveTool {
   public static override hidden = false;
-  public static override toolId = "Select";
+  public static override toolId = "ExtSelect";
+  public static override namespace = CoreTools.namespace;
   public static override iconSpec = "icon-cursor";
   protected _isSelectByPoints = false;
   protected _isSuspended = false;
