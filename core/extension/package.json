@@ -2,15 +2,15 @@
   "name": "@itwin/core-extension",
   "version": "3.0.0-dev.96",
   "description": "",
-  "typings": "lib/index.d.ts",
+  "typings": "index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git"
   },
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "compile": "",
+    "build": "",
+    "clean": "rimraf .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
