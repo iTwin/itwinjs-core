@@ -84,6 +84,9 @@ const applyLighting = `
 
   // Clamp while preserving hue.
   vec3 litColor = diffuseAccum + specularAccum;
+    float fresnel = -dot(toEye, normal);
+    fresnel = clamp(1.0 - fresnel, 0.0, 1.0);
+    litColor = litColor * fresnel;
   float maxIntensity = max(litColor.r, max(litColor.g, litColor.b));
   float numCel = u_lightSettings[14];
   if (numCel > 0.0)
