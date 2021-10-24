@@ -48,7 +48,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "@bentley/units-schema",
