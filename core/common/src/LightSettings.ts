@@ -312,7 +312,7 @@ export class FresnelSettings {
 
   public clone(changedProps?: FresnelSettingsProps): FresnelSettings {
     if ((undefined === changedProps?.intensity || changedProps.intensity === this.intensity)
-      || (undefined === changedProps?.invert || changedProps.invert === this.invert))
+      && (undefined === changedProps?.invert || changedProps.invert === this.invert))
       return this;
 
     const intensity = changedProps?.intensity ?? this.intensity;
