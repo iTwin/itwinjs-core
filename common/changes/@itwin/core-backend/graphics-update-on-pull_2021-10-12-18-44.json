@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix an exception when attempting to pull changes into a briefcase that already has all the changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

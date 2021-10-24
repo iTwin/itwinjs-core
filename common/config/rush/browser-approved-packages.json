@@ -503,6 +503,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "extension-prototype",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "faker",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },

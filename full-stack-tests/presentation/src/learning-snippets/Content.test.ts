@@ -114,10 +114,9 @@ describe("Learning Snippets", () => {
         keys: new KeySet(),
         descriptor: {},
       });
-      expect(content!.contentSet.length).to.eq(1);
       expect(content!.contentSet).to.containSubset([{
         primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
-      }]);
+      }]).and.to.have.lengthOf(1);
 
       // Set DISPLAY_MODELS to also get geometric model instances' content
       await Presentation.presentation.vars(ruleset.id).setBool("DISPLAY_MODELS", true);
@@ -127,12 +126,11 @@ describe("Learning Snippets", () => {
         keys: new KeySet(),
         descriptor: {},
       });
-      expect(content!.contentSet.length).to.eq(2);
       expect(content!.contentSet).to.containSubset([{
         primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
       }, {
         primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],
-      }]);
+      }]).and.to.have.lengthOf(2);
     });
 
     it("uses `requiredSchemas` attribute", async () => {
@@ -200,12 +198,11 @@ describe("Learning Snippets", () => {
         keys: new KeySet(),
         descriptor: {},
       });
-      expect(content!.contentSet.length).to.eq(2);
       expect(content!.contentSet).to.containSubset([{
         primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],
       }, {
         primaryKeys: [{ className: "BisCore:SpatialCategory", id: "0x17" }],
-      }]);
+      }]).and.to.have.lengthOf(2);
     });
 
     it("uses `onlyIfNotHandled` attribute", async () => {
@@ -243,10 +240,9 @@ describe("Learning Snippets", () => {
         keys: new KeySet(),
         descriptor: {},
       });
-      expect(content!.contentSet.length).to.eq(1);
       expect(content!.contentSet).to.containSubset([{
         primaryKeys: [{ className: "BisCore:PhysicalModel", id: "0x1c" }],
-      }]);
+      }]).and.to.have.lengthOf(1);
     });
 
   });
@@ -297,7 +293,6 @@ describe("Learning Snippets", () => {
         keys: new KeySet(),
         descriptor: {},
       });
-      expect(content!.descriptor.fields.length).to.eq(7);
       expect(content!.descriptor.fields).to.containSubset([{
         label: "Model",
       }, {
@@ -307,12 +302,10 @@ describe("Learning Snippets", () => {
       }, {
         label: "Is Private",
       }, {
-        label: "Repository Link",
-      }, {
         label: "Calculated",
       }, {
         label: "Modeled Element",
-      }]);
+      }]).and.to.have.lengthOf(6);
       const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Calculated");
       expect(content!.contentSet[0].displayValues[calculatedField!.name]).to.be.undefined;
       expect(content!.contentSet[1].displayValues[calculatedField!.name]).to.eq("PREFIX_Uncategorized");
@@ -356,10 +349,9 @@ describe("Learning Snippets", () => {
         keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
         descriptor: {},
       });
-      expect(content!.contentSet.length).to.eq(1);
       expect(content!.descriptor.fields).to.not.containSubset([{
         label: "External Source Aspect",
-      }]);
+      }]).and.to.have.lengthOf(1);
     });
 
     it("uses `priority` attribute", async () => {
@@ -409,12 +401,9 @@ describe("Learning Snippets", () => {
         descriptor: {},
       });
       expect(content!.contentSet.length).to.eq(1);
-      expect(content!.descriptor.fields.length).to.eq(2);
       expect(content!.descriptor.fields).to.containSubset([{
         label: "Code",
-      }, {
-        label: "Repository Link",
-      }]);
+      }]).and.to.have.lengthOf(1);
     });
 
     it("uses `relatedProperties` attribute", async () => {
