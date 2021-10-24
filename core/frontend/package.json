@@ -39,14 +39,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.97",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.97",
-    "@itwin/core-common": "workspace:^3.0.0-dev.97",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.97",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.97",
-    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.97",
     "@bentley/product-settings-client": "workspace:^3.0.0-dev.97",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.97",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.97",
+    "@itwin/core-common": "workspace:^3.0.0-dev.97",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.97",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.97",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.97",
     "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.97"
   },
   "//devDependencies": [

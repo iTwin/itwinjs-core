@@ -37,6 +37,10 @@ import { ExtensionLoader, ExtensionLoaderProps } from "./ExtensionLoader";
 type ResolveFunc = (() => Promise<any>);
 // type RejectFunc = ((arg: Error) => void);
 
+enum ActivationEvents {
+  onStartupApp = "onStartupApp",
+}
+
 /** The Extension Admin controls the list of currently known, loaded and executing an Extension.
  * Handles the loading of Extensions and maintains a list of the currently loaded Extensions.
  *
@@ -57,7 +61,7 @@ export class ExtensionAdmin {
   // public readonly onInstallExtension = new BeEvent<(added: readonly ExtensionProps[], removed: readonly ExtensionProps[]) => void>();
 
   private onStartup = async () => {
-    await this.activateExtensionEvents("onStartupApp");
+    await this.activateExtensionEvents(ActivationEvents.onStartupApp);
   };
 
   public constructor() {
