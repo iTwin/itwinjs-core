@@ -39,7 +39,7 @@
     },
     {
       "packageName": "@itwin/core-extension",
-      "projectFolder": "core/itwin-extension",
+      "projectFolder": "core/extension",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
