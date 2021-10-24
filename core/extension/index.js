@@ -1,5 +1,5 @@
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-const ext = globalThis[globalSymbol].getExtensionApi(import.meta.url);
+const ext = globalThis[globalSymbol].getExtensionApi("import.meta.url");
 
 // re-export tool stuff
 export const {

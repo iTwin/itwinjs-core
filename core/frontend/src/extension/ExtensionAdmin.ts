@@ -60,7 +60,7 @@ export class ExtensionAdmin {
     */
   // public readonly onInstallExtension = new BeEvent<(added: readonly ExtensionProps[], removed: readonly ExtensionProps[]) => void>();
 
-  private onStartup = async () => {
+  public onStartup = async () => {
     await this.activateExtensionEvents(ActivationEvents.onStartupApp);
   };
 
@@ -153,9 +153,9 @@ export class ExtensionAdmin {
 
   private async parseManifest(raw: unknown): Promise<ExtensionManifest> {
     try {
-      if ("object" === typeof(raw))
+      if ("object" === typeof (raw))
         return raw as ExtensionManifest;
-      if ("string" === typeof(raw))
+      if ("string" === typeof (raw))
         return JSON.parse(raw) as ExtensionManifest;
     } catch (err: any) { }
     throw new Error("Extension is invalid: package.json is not JSON.");
@@ -170,6 +170,10 @@ export class ExtensionAdmin {
   // from the application side.
   private async execute(extension: LocalExtensionProps): Promise<void> {
     let executableMain;
+
+    if (extension.mainFunc)
+      return await extension.mainFunc();
+
     if (extension.manifest.main) {
       executableMain = Function(extension.manifest.main);
       // functions can be passed into the Function that correspond to
