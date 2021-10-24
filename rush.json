@@ -31,13 +31,6 @@
   },
   "projects": [
     {
-      "packageName": "@itwin/core-extension-impl",
-      "projectFolder": "core/extension-impl",
-      "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-extension",
       "projectFolder": "core/extension",
       "reviewCategory": "common",
