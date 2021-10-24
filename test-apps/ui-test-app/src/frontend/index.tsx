@@ -26,8 +26,8 @@ import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentl
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  AccuSnap, BriefcaseConnection, ExtensionAdmin, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization,
+  NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -62,6 +62,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import * as MyExtension from "extension-prototype/lib/loader";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -251,6 +252,9 @@ export class SampleAppIModelApp {
         await reactAxe(React, ReactDOM, 1000);
       }
     }
+
+    const admin = new ExtensionAdmin();
+    await admin.addExtension(MyExtension.default.manifest, MyExtension.default.load);
   }
 
   public static async initialize() {

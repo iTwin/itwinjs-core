@@ -1,6 +1,9 @@
 {
   "name": "extension-prototype",
   "description": "extension-prototype",
+  "main": "./dist/index.js",
+  "module": "./lib/loader.js",
+  "typings": "./lib/loader",
   "private": true,
   "license": "MIT",
   "version": "0.0.0",

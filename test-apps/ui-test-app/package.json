@@ -117,7 +117,8 @@
     "react-table": "^7.1.0",
     "react-resize-detector": "^6.7.6",
     "redux": "^4.0.3",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "extension-prototype": "workspace:*"
   },
   "browserslist": [
     "electron 8.0.0",

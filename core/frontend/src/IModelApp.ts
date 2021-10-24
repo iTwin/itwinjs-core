@@ -194,6 +194,11 @@ export class IModelApp {
   /** Event raised just before the frontend IModelApp is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
+  /** Event raised after IModelApp is finished starting up.
+   * @internal
+   */
+  public static readonly onBeforeStartup = new BeEvent<() => void>();
+
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
@@ -382,7 +387,8 @@ export class IModelApp {
       this.uiAdmin,
     ].forEach((sys) => sys.onInitialized());
 
-    return this.quantityFormatter.onInitialized();
+    await this.quantityFormatter.onInitialized();
+    this.onBeforeStartup.raiseEvent();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -405,6 +411,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.onBeforeStartup.clear();
   }
 
   /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
