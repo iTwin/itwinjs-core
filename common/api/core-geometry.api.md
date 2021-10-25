@@ -1001,6 +1001,7 @@ export class ClippedPolyfaceBuilders {
 export interface Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
+    appendPolygonClip?: AppendPolygonClipFunction;
     isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
 }
 
@@ -1159,6 +1160,13 @@ export enum ClipStatus {
 }
 
 // @public
+export enum ClipStepAction {
+    acceptIn = 1,
+    acceptOut = -1,
+    passToNextStep = 0
+}
+
+// @public
 export class ClipUtilities {
     static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet | ClipPlane, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): void;
     static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
@@ -1175,12 +1183,14 @@ export class ClipUtilities {
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
     static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): boolean;
     static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): boolean;
+    static doPolygonClipParitySequence(xyz: GrowableXYZArray, clippers: Clipper[], acceptedIn: GrowableXYZArray[] | undefined, acceptedOut: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache | undefined): void;
+    static doPolygonClipSequence(xyz: GrowableXYZArray, clippers: Clipper[], acceptedIn: GrowableXYZArray[] | undefined, acceptedOut: GrowableXYZArray[] | undefined, finalCandidates: GrowableXYZArray[] | undefined, inAction: ClipStepAction, outAction: ClipStepAction, finalFragmentAction: ClipStepAction, arrayCache: GrowableXYZArrayCache | undefined): void;
     static isClipper(obj: any): boolean;
     static loopsOfConvexClipPlaneIntersectionWithRange(allClippers: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPlane, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
     static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): Range3d;
     static rangeOfConvexClipPlaneSetIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d): Range3d;
-    static restoreSingletonInPlaceOfMultipleShards(fragments: GrowableXYZArray[], baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache): void;
+    static restoreSingletonInPlaceOfMultipleShards(fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache): void;
     static selectIntervals01(curve: CurvePrimitive, unsortedFractions: GrowableFloat64Array, clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     static sumPolylineClipLength(clipper: Clipper, points: Point3d[]): number;
 }
@@ -1190,6 +1200,7 @@ export class ClipVector implements Clipper {
     announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     appendClone(clip: ClipPrimitive): void;
+    appendPolygonClip(xyz: GrowableXYZArray, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
     appendReference(clip: ClipPrimitive): void;
     appendShape(shape: Point3d[], zLow?: number, zHigh?: number, transform?: Transform, isMask?: boolean, invisible?: boolean): boolean;
     boundingRange: Range3d;
@@ -4438,7 +4449,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
 // @public
 export interface PolygonClipper {
     // (undocumented)
-    appendPolygonClip(xyz: GrowableXYZArray, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
+    appendPolygonClip: AppendPolygonClipFunction;
 }
 
 // @public
@@ -4455,6 +4466,7 @@ export class PolygonOps {
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
     static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
+    static sumAreaXY(polygons: Point3d[][]): number;
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
@@ -4469,6 +4481,7 @@ export class PolygonWireOffsetContext {
 
 // @public
 export class PolylineOps {
+    static addClosurePoint(data: Point3d[] | Point3d[][]): void;
     static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
     static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
     static compressDanglers(source: Point3d[], closed?: boolean, tolerance?: number): Point3d[];
