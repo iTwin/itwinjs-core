@@ -5,11 +5,12 @@
 
 import { expect } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Settings, SettingsPriority } from "../../workspace/Settings";
+import { ITwinSettings, Settings, SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { Mutable } from "@itwin/core-bentley";
+import { IModelHost } from "../../IModelHost";
 
-describe("Settings", () => {
+describe.only("Settings", () => {
 
   const app1: SettingsGroupSpec = {
     groupName: "app1",
@@ -81,48 +82,48 @@ describe("Settings", () => {
   };
 
   it("settings priorities", () => {
-    Settings.reset();
+    const settings = IModelHost.settings;
     SettingsSpecRegistry.addGroup(app1);
-    Settings.addDictionary("iModel1.setting.json", SettingsPriority.iModel, imodel1Settings);
-    Settings.addDictionary("iModel2.setting.json", SettingsPriority.iModel, imodel2Settings);
-    Settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
+    settings.addDictionary("iModel1.setting.json", SettingsPriority.iModel, imodel1Settings);
+    settings.addDictionary("iModel2.setting.json", SettingsPriority.iModel, imodel2Settings);
+    settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
 
-    expect(Settings.getSetting<string>("app1/sub1")).equals(imodel2Settings["app1/sub1"]);
-    expect(Settings.getSetting<string>("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
-    expect(Settings.getSetting<any>("app1/sub2").arr).deep.equals(imodel2Settings["app1/sub2"].arr);
+    expect(settings.getSetting<string>("app1/sub1")).equals(imodel2Settings["app1/sub1"]);
+    expect(settings.getSetting<string>("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
+    expect(settings.getSetting<any>("app1/sub2").arr).deep.equals(imodel2Settings["app1/sub2"].arr);
 
-    const app3obj = Settings.getSetting<any>("app3/obj");
+    const app3obj = settings.getSetting<any>("app3/obj");
     expect(app3obj).deep.equals(iTwinSettings["app3/obj"]);
     app3obj.member3.part2[0].m1 = "bad"; // should modify a copy
     expect(iTwinSettings["app3/obj"].member3.part2[0].m1).equal(0);
 
-    expect(Settings.getSetting<any>("app3/obj")).deep.equals(iTwinSettings["app3/obj"]); // should be original value
-    expect(Settings.getSetting<boolean>("app1/boolVal")).equals(true);
-    expect(Settings.getSetting<string>("app1/strVal")).equals(app1.properties["app1/strVal"].default);
-    expect(Settings.getSetting<number>("app1/intVal")).equals(22);
-    expect(Settings.getSetting("app1/not there")).is.undefined;
-    expect(Settings.getSetting("app2/not there", "fallback")).equals("fallback");
+    expect(settings.getSetting<any>("app3/obj")).deep.equals(iTwinSettings["app3/obj"]); // should be original value
+    expect(settings.getSetting<boolean>("app1/boolVal")).equals(true);
+    expect(settings.getSetting<string>("app1/strVal")).equals(app1.properties["app1/strVal"].default);
+    expect(settings.getSetting<number>("app1/intVal")).equals(22);
+    expect(settings.getSetting("app1/not there")).is.undefined;
+    expect(settings.getSetting("app2/not there", "fallback")).equals("fallback");
 
     iTwinSettings["app2/setting6"] = "new value for 6";
-    Settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
-    expect(Settings.getSetting<string>("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
+    settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
+    expect(settings.getSetting<string>("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
 
     (app1.properties["app1/strVal"] as Mutable<SettingSpec>).default = "new default";
     SettingsSpecRegistry.addGroup(app1);
     // after re-registering, the new default should be updated
-    expect(Settings.getSetting<string>("app1/strVal")).equals(app1.properties["app1/strVal"].default);
+    expect(settings.getSetting<string>("app1/strVal")).equals(app1.properties["app1/strVal"].default);
 
-    Settings.dropDictionary("iTwin.setting.json");
-    expect(Settings.getSetting<string>("app2/setting6")).is.undefined;
+    settings.dropDictionary("iTwin.setting.json");
+    expect(settings.getSetting<string>("app2/setting6")).is.undefined;
   });
 
   it("read settings file", () => {
-    Settings.reset();
-    Settings.addFile(IModelTestUtils.resolveAssetFile("test.setting.json5"), SettingsPriority.application);
-    expect(Settings.getSetting<string>("workbench/colorTheme")).equals("Visual Studio Light");
-    const token = Settings.getSetting<any>("editor/tokenColorCustomizations");
+    const settings = IModelHost.settings;
+    settings.addFile(IModelTestUtils.resolveAssetFile("test.setting.json5"), SettingsPriority.application);
+    expect(settings.getSetting<string>("workbench/colorTheme")).equals("Visual Studio Light");
+    const token = settings.getSetting<any>("editor/tokenColorCustomizations");
     expect(token["Visual Studio Light"].textMateRules[0].settings.foreground).equals("#d16c6c");
     expect(token["Default High Contrast"].comments).equals("#FF0000");
-    expect(Settings.getSetting<string[]>("cSpell/enableFiletypes")!.length).equals(17);
+    expect(settings.getSetting<string[]>("cSpell/enableFiletypes")!.length).equals(17);
   });
 });

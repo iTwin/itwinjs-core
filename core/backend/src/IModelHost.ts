@@ -28,6 +28,8 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { ITwinSettings, Settings } from "./workspace/Settings";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -163,7 +165,8 @@ export class IModelHost {
 
   public static backendVersion = "";
   private static _cacheDir = "";
-  private static _workspaceRoot = "";
+  private static _workspace: Workspace;
+  private static _settings: Settings;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -198,8 +201,9 @@ export class IModelHost {
   /** Root directory holding all the files that iTwin.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
 
-  /** Root directory for workspace files */
-  public static get workspaceRoot(): string { return this._workspaceRoot; }
+  /** get the Workspaces */
+  public static get workspace(): Workspace { return this._workspace; }
+  public static get settings(): Settings { return this._settings; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -328,6 +332,9 @@ export class IModelHost {
     }
 
     this.setupHostDirs(configuration);
+    this._settings = new ITwinSettings();
+    this._workspace = new ITwinWorkspace(configuration.workspaceRoot ?? path.join(NativeLibrary.defaultLocalDir, "iTwin", "Workspaces"));
+
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     [
@@ -387,7 +394,6 @@ export class IModelHost {
       return dir;
     };
     this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
-    this._workspaceRoot = setupDir(configuration.workspaceRoot ?? path.join(NativeLibrary.defaultLocalDir, "iTwin", "Workspaces"));
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 

@@ -3,21 +3,35 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
-import { IModelJsFs } from "../../IModelJsFs";
-import { WorkspaceFile } from "../../workspace/WorkspaceFile";
-import { IModelTestUtils } from "../IModelTestUtils";
 import * as fs from "fs-extra";
-import { extname } from "path";
+import { extname, join } from "path";
 import * as sinon from "sinon";
+import { Guid } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { IModelHost } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import { WorkspaceFile } from "../../workspace/Workspace";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe.only("WorkspaceFile", () => {
-  it("invalid WorkspaceContainer names", () => {
+
+  const rootDir = join(KnownTestLocations.outputDir, "TestWorkspaces");
+
+  const setWsRoot = (val: string) => { ((IModelHost as any).workspace.rootDir) = val; };
+  before(() => {
+    if (IModelJsFs.existsSync(rootDir))
+      IModelJsFs.purgeDirSync(rootDir);
+    else
+      IModelJsFs.mkdirSync(rootDir);
+    setWsRoot(rootDir);
+  });
+
+  it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((name) => {
-        expect(() => new WorkspaceFile(name), name).to.throw("containerName");
-        expect(() => new WorkspaceFile("a", name), name).to.throw("containerId");
+        expect(() => new WorkspaceFile(name), name).to.throw("containerId");
       });
     };
 
@@ -39,12 +53,15 @@ describe.only("WorkspaceFile", () => {
       "a".repeat(256), // too long
       " leading space",
       "trailing space "]);
+
+    new WorkspaceFile(Guid.createValue()); // guids should be valid
   });
 
   it("create new WorkspaceFile", () => {
-    const wsFile = new WorkspaceFile("Acme Engineering Inc");
-    const dir = wsFile.getContainerDir();
-    IModelJsFs.purgeDirSync(dir);
+    const wsFile = new WorkspaceFile("Acme Engineering Inc", { rootDir });
+    IModelJsFs.purgeDirSync(wsFile.containerFilesDir);
+    if (IModelJsFs.existsSync(wsFile.localDbName))
+      IModelJsFs.unlinkSync(wsFile.localDbName);
     wsFile.create();
 
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
@@ -106,4 +123,11 @@ describe.only("WorkspaceFile", () => {
     expect(f1).to.deep.equal(f2);
   });
 
+
+  "core.imodels.fontFiles": [
+
+    { "container": { alias: "default-fonts" }, "type": "file", "name": "fonts/Roboto-Regular.ttf" },
+    { "container": { alias: "default-fonts" }, "type": "file", "name": "fonts/HelveticaNeue-Light.ttf" },
+
+  ],​
 });
