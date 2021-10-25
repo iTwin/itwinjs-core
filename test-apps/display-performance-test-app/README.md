@@ -325,13 +325,13 @@ The performance data file should always contain the following column headers:
 
 The performance data file may also contain any or all of the below column headers. These columns WILL still appear if the 'minimize' flag has been set to true:
 
-* Total CPU Time - The total time it takes for the CPU to run the renderFrame function
+* Total CPU Time - The total time it takes for the CPU to run the renderFrame function; this is clamped up to 2ms for tolerance purposes if the reported value is less than 2ms
 * Total GPU Time - The total time it takes to run all the GPU commands from one renderFrame function; if the disjointTimer webgl extension is in use, the total GPU time starts when the first command is given to the GPU and ends when the last command given to the GPU finished (i.e. it does not eliminate any down time in-between individual GPU commands); if the disjointTimer webgl extension is NOT in use, this is the sum of the 'CPU Total Time' and the 'Finish GPU Queue' (ie the time from when the CPU starts to when the GPU finishes a flush)
-* Bound By - should output “gpu” if the gpu is the limiting time factor or “cpu *” if the cpu is the limiting time factor; it will output “gpu ?” if the effective fps value is >= 60 fps, as we cannot be totally sure that it is gpu bound in this scenario, because the fps is being throttled to 60; this column is ONLY available when GPU data IS gathered
-* Effective Total Time - this is the greater of the cpu and gpu total times; that is, the cpu total time if it’s determined to be cpu bound or the gpu total time if it’s determined to be gpu bound; this column is ONLY available when GPU data IS gathered
-* Effective FPS - the effective total time converted to fps (frames per second); this is an estimate of what the actual fps would be if it wasn’t throttled down to a maximum of 60 fps; this column is ONLY available when GPU data IS gathered
-* Actual Total Time - the total time it takes to get from starting to render a frame to starting to render the next frame (i.e. the time it takes to get from point A until you hit point A again); this column is available regardless of whether or not GPU data is gathered
-* Actual FPS - the actual total time converted into fps (frames per second); this should be a fairly accurate reflection of the fps value gathered when running in display-test-app; this column is available regardless of whether or not GPU data is gathered
+* Bound By - should output “gpu” if the gpu is the limiting time factor, “CPU” if the cpu is the limiting time factor, "unknown" if the timings are close enough that the limiting factor cannot be determined, or "unmeasurable" if the cpu total time is small enough that we cannot calculate what is the true limiting factor; it will add “(vsync)”  to the output if the actual fps value is > 59 fps (ie 60fps - 1fps tolerance), as we cannot be totally sure if the gathered data correctly identified the limiting factor, because the fps is being throttled to 60
+* Effective Total Time - this is the greater of the cpu and gpu total times; that is, the cpu total time if it’s determined to be cpu bound or the gpu total time if it’s determined to be gpu bound
+* Effective FPS - the effective total time converted to fps (frames per second); this is an estimate of what the actual fps would be if it wasn’t throttled down to a maximum of 60 fps
+* Actual Total Time - the total time it takes to get from starting to render a frame to starting to render the next frame (i.e. the time it takes to get from point A until you hit point A again)
+* Actual FPS - the actual total time converted into fps (frames per second); this should be a fairly accurate reflection of the fps value gathered when running in display-test-app
 
 The 'View Flags' column contains a string representation of view flag specifications that differ from those defaults found in the ViewFlags class. This string representation may consist of any or all of the following:
 
