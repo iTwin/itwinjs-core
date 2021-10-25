@@ -53,6 +53,8 @@ steps:
        if distTag is None:
          return
 
+       distTag = "nightly"
+
        print ("Setting dist tag " + distTag)
        print ("##vso[build.addbuildtag]dist-tag " + distTag)
        print ("##vso[task.setvariable variable=isRelease;isSecret=false;isOutput=true;]true")
