@@ -30,7 +30,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
     item.execute();
   }, [manager, item]);
   return (
-    <NZ_BackstageItem // eslint-disable-line deprecation/deprecation
+    <NZ_BackstageItem
       itemId={item.id}
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={ConditionalBooleanValue.getValue(item.isActive)}
@@ -61,7 +61,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   const activeFrontstageId = useActiveFrontstageId();
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);
   return (
-    <NZ_BackstageItem // eslint-disable-line deprecation/deprecation
+    <NZ_BackstageItem
       itemId={item.id}
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={isActive}

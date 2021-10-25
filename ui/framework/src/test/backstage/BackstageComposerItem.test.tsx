@@ -53,7 +53,7 @@ describe("BackstageComposerItem", () => {
       const spyExecute = sinon.fake();
       const actionItem = getActionItem({ execute: spyExecute });
       const sut = shallow(<BackstageComposerActionItem item={actionItem} />);
-      const backstageItem = sut.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
+      const backstageItem = sut.find(NZ_BackstageItem);
       backstageItem.prop("onClick")!();
       spyExecute.calledOnce.should.true;
     });
@@ -69,7 +69,7 @@ describe("BackstageComposerItem", () => {
       const backstageManager = new BackstageManager();
       sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
       const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem({ stageId: "Frontstage-1" })} />);
-      const backstageItem = sut.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
+      const backstageItem = sut.find(NZ_BackstageItem);
 
       sinon.stub(FrontstageManager, "hasFrontstage").withArgs("Frontstage-1").returns(true);
       const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
@@ -82,7 +82,7 @@ describe("BackstageComposerItem", () => {
       const backstageManager = new BackstageManager();
       sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
       const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
-      const backstageItem = sut.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
+      const backstageItem = sut.find(NZ_BackstageItem);
       sinon.stub(FrontstageManager, "hasFrontstage").withArgs("stage-1").returns(false);
       const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
       backstageItem.prop("onClick")!();
@@ -94,7 +94,7 @@ describe("BackstageComposerItem", () => {
       const backstageManager = new BackstageManager();
       sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
       const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem({ isActive: true })} />);
-      const backstageItem = sut.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
+      const backstageItem = sut.find(NZ_BackstageItem);
 
       backstageItem.prop("isActive")!.should.true;
     });

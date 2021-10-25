@@ -69,7 +69,7 @@ describe("Backstage", () => {
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
-      const backstageItem = wrapper.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
+      const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(async () => {
         await TestUtils.flushAsyncOperations();
@@ -83,7 +83,7 @@ describe("Backstage", () => {
         <FrontstageLaunchBackstageItem frontstageId="BadTest" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />,
       );
 
-      const backstageItem = wrapper.find(NZ_BackstageItem); // eslint-disable-line deprecation/deprecation
+      const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(async () => {
         await TestUtils.flushAsyncOperations();

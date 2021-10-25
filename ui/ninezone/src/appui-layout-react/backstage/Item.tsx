@@ -35,7 +35,6 @@ export interface BackstageItemProps extends CommonProps {
 }
 
 /** Item in the [[Backstage]].
-* @deprecated Use [CommandLaunchBackstageItem]($appui-react) or [FrontstageLaunchBackstageItem]($appui-react) instead
 * @internal
  */
 export class BackstageItem extends React.PureComponent<BackstageItemProps> {
