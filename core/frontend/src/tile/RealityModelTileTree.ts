@@ -907,7 +907,7 @@ export class RealityModelTileClient {
       responseType,
     };
 
-    const authToken = this._requestAuthorization ?? (await IModelApp.getAccessToken());
+    const authToken = this._requestAuthorization;
     if (authToken) {
       options = {
         ...options,
