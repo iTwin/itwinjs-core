@@ -16,7 +16,8 @@
     "//lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
     "start": "",
     "test": "",
-    "cover": ""
+    "cover": "",
+    "docs": "",
   },
   "repository": {},
   "keywords": [
