@@ -11,7 +11,7 @@ import { Point, Timer } from "@itwin/core-react";
 import { Direction } from "../../../utilities/Direction";
 
 /** Properties of [[withDragInteraction]] HOC.
- * @beta
+ * @internal
  */
 export interface WithDragInteractionProps {
   /** Drag direction to open the panel. */
@@ -74,7 +74,7 @@ function useLongPress(args: UseLongPressArgs) {
 }
 
 /** HOC to add open panel action via drag interaction.
- * @beta
+ * @internal
  */
 export const withDragInteraction = <P extends {}, C>(
   // eslint-disable-next-line @typescript-eslint/naming-convention

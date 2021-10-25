@@ -14,7 +14,7 @@ import { Dialog } from "../dialog/Dialog";
 import { TitleBar } from "../dialog/TitleBar";
 
 /** Properties of [[MessageCenterDialog]] component.
- * @beta
+ * @internal
  */
 export interface MessageCenterDialogProps extends CommonProps {
   /** Title bar buttons. I.e. [[TitleBarButton]] */
@@ -32,7 +32,7 @@ export interface MessageCenterDialogProps extends CommonProps {
 /** Message center dialog used with [[MessageCenter]] component.
  * @note This is a presentational component and should be aligned with [[MessageCenter]] component.
  * I.e. use [[FooterPopup]] to handle alignment.
- * @beta
+ * @internal
  */
 export class MessageCenterDialog extends React.PureComponent<MessageCenterDialogProps> {
   public override render() {

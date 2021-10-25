@@ -71,16 +71,16 @@ export interface ZoneRuntimeProps {
   activeTabIndex: number;
   disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
-  dropTarget: ZoneTargetType | undefined;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   ghostOutline: RectangleProps | undefined;
   isHidden: boolean;
   isInFooterMode: boolean;
-  openWidgetId: WidgetZoneId | undefined;
-  targetChangeHandler: TargetChangeHandler;
+  openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
+  targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   widget: WidgetManagerProps | undefined;
   widgetTabs: WidgetTabs;
-  widgetChangeHandler: WidgetChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
   zoneDefProvider: ZoneDefProvider;
   zoneDef: ZoneDef;
   zone: ZoneManagerProps;
@@ -256,7 +256,7 @@ export class Zone extends React.Component<ZoneProps> {
     }
   };
 
-  private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined {
+  private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined { // eslint-disable-line deprecation/deprecation
     // istanbul ignore if
     if (!this.props.runtimeProps)
       return undefined;

@@ -17,7 +17,7 @@ import { NineZoneNestedStagePanelsManager, NineZoneNestedStagePanelsManagerProps
 import { NineZoneStagePanelManager } from "./StagePanel";
 
 /** Properties used by [[NineZoneManager]].
- * @alpha
+ * @internal
  */
 export interface NineZoneManagerProps {
   readonly nested: NineZoneNestedStagePanelsManagerProps;
@@ -25,7 +25,7 @@ export interface NineZoneManagerProps {
 }
 
 /** Arguments of [[NineZoneManager.handleWidgetTabDragStart]].
- * @alpha
+ * @internal
  */
 export interface WidgetTabDragStartArguments {
   /** Initial mouse down position. */
@@ -39,7 +39,7 @@ export interface WidgetTabDragStartArguments {
 }
 
 /** Stage panel target used by [[NineZoneManager]].
- * @alpha
+ * @internal
  */
 export interface NineZoneManagerPanelTarget {
   readonly panelId: string | number;
@@ -47,7 +47,7 @@ export interface NineZoneManagerPanelTarget {
 }
 
 /** Splitter pane target used by [[NineZoneManager]].
- * @alpha
+ * @internal
  */
 export interface NineZoneManagerPaneTarget extends NineZoneManagerPanelTarget {
   readonly paneIndex: number;
@@ -64,7 +64,7 @@ export interface NineZoneManagerHiddenWidget {
 }
 
 /** Class used to manage [[NineZoneStagePanelManagerProps]].
- * @alpha
+ * @internal
  */
 export class NineZoneManager {
   private _nestedPanelsManager?: NineZoneNestedStagePanelsManager;

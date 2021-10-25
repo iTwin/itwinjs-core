@@ -12,7 +12,7 @@ import { WidgetZoneId } from "../zones/manager/Zones";
 import { getDefaultNineZoneStagePanelManagerProps, NineZoneStagePanelManager, NineZoneStagePanelManagerProps } from "./StagePanel";
 
 /** Properties used by [[NineZoneStagePanelsManager]].
- * @alpha
+ * @internal
  */
 export interface NineZoneStagePanelsManagerProps extends StagePanelsManagerProps {
   readonly bottom: NineZoneStagePanelManagerProps;
@@ -22,7 +22,7 @@ export interface NineZoneStagePanelsManagerProps extends StagePanelsManagerProps
 }
 
 /** Returns default [[StagePanelsManagerProps]] object.
- * @alpha
+ * @internal
  */
 export const getDefaultNineZoneStagePanelsManagerProps = (): NineZoneStagePanelsManagerProps => ({
   bottom: getDefaultNineZoneStagePanelManagerProps(),
@@ -39,7 +39,7 @@ const panelPropertyNames = [
 ];
 
 /** Class used to manage [[NineZoneStagePanelsManagerProps]].
- * @alpha
+ * @internal
  */
 export class NineZoneStagePanelsManager extends StagePanelsManager {
   private _nzManagers?: Map<StagePanelType, NineZoneStagePanelManager>;

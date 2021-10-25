@@ -14,7 +14,7 @@ import { CommonProps } from "@itwin/core-react";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 
 /** Properties of [[Backstage]] component.
- * @beta
+ * @internal
  */
 export interface BackstageProps extends CommonProps {
   /** Backstage items and separators. I.e. [[BackstageItem]], [[BackstageSeparator]] */
@@ -34,12 +34,12 @@ export interface BackstageProps extends CommonProps {
 }
 
 /** Default properties of [[Backstage]] component.
- * @beta
+ * @internal
  */
 export type BackstageDefaultProps = Pick<BackstageProps, "showOverlay">;
 
 /** Backstage component of 9-Zone UI app.
- * @beta
+ * @internal
  */
 export class Backstage extends React.PureComponent<BackstageProps> {
   public static readonly defaultProps: BackstageDefaultProps = {

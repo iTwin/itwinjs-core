@@ -13,7 +13,8 @@ import { CommonProps } from "@itwin/core-react";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 
 /** Properties of [[Footer]] component.
- * @beta
+ * @deprecated
+ * @internal
  */
 export interface FooterProps extends CommonProps {
   /**
@@ -34,7 +35,8 @@ export interface FooterProps extends CommonProps {
 }
 
 /** Footer component. Used in a StatusBar [[Zone]] component.
- * @beta
+ * @deprecated Use [StatusBar]($appui-react) instead
+ * @internal
  */
 export class Footer extends React.PureComponent<FooterProps> {
   public override render() {

@@ -12,7 +12,7 @@ import * as React from "react";
 import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
 
 /** Properties of [[SnapMode]] component.
- * @beta
+ * @internal
  */
 export interface SnapModeProps extends FooterIndicatorProps {
   /** Indicator label. */
@@ -27,7 +27,8 @@ export interface SnapModeProps extends FooterIndicatorProps {
 
 /** Snap mode indicator used in [[Footer]] component.
  * @note Used with [[SnapModePanel]] component.
- * @beta
+ * @deprecated Use [SnapModeField]($appui-react) instead
+ * @internal
  */
 export class SnapMode extends React.PureComponent<SnapModeProps> {
   public override render() {

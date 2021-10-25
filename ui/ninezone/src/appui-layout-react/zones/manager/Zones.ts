@@ -31,6 +31,7 @@ import { setRectangleProps } from "../../base/NineZoneState";
  * |`4`| 5 |`6`|
  * |`7`|`8`|`9`|
  *
+ * @deprecated
  * @beta
  */
 export type WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9;
@@ -60,18 +61,19 @@ export type ContentZoneId = 5;
 export type ZoneId = WidgetZoneId | ContentZoneId;
 
 /** Zones used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export type ZonesManagerZonesProps = { readonly [id in WidgetZoneId]: ZoneManagerProps };
 
 /** Widgets used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export type ZonesManagerWidgetsProps =
   { readonly [id in Exclude<WidgetZoneId, 2>]: WidgetManagerProps } &
   { readonly [2]: ToolSettingsWidgetManagerProps };
 
 /** Available zone targets.
+ * @deprecated
  * @beta
  */
 export enum ZoneTargetType {
@@ -80,7 +82,7 @@ export enum ZoneTargetType {
 }
 
 /** Zone target used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export interface ZonesManagerTargetProps {
   readonly zoneId: WidgetZoneId;
@@ -88,7 +90,7 @@ export interface ZonesManagerTargetProps {
 }
 
 /** Properties used by [[ZonesManager]].
- * @beta
+ * @internal
  */
 export interface ZonesManagerProps {
   readonly draggedWidget?: DraggedWidgetManagerProps;
@@ -101,7 +103,7 @@ export interface ZonesManagerProps {
 }
 
 /** Returns default [[ZonesManagerProps]] object.
- * @beta
+ * @internal
  */
 export const getDefaultZonesManagerProps = (): ZonesManagerProps => ({
   isInFooterMode: true,
@@ -116,7 +118,7 @@ export const getDefaultZonesManagerProps = (): ZonesManagerProps => ({
 });
 
 /** Array of all widget zone Ids.
- * @beta
+ * @internal
  */
 export const widgetZoneIds: ReadonlyArray<WidgetZoneId> = [1, 2, 3, 4, 6, 7, 8, 9];
 
@@ -180,7 +182,7 @@ export const getZoneIdFromCell = (cell: CellProps): WidgetZoneId => {
 };
 
 /** Arguments used in [[ZonesManager.handleWidgetResize]].
- * @beta
+ * @internal
  */
 export interface ZonesManagerWidgetResizeArgs {
   readonly filledHeightDiff: number;
@@ -195,7 +197,7 @@ export const getClosedWidgetTabIndex = (tabIndex: number) => {
 };
 
 /** Class used to manage [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export class ZonesManager {
   private _lastStackId = 1;

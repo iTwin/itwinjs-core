@@ -140,7 +140,7 @@ describe("ToolSettingsZone", () => {
     // ToolSetting should open by default if a ToolUiProvider is specified for tool.
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
@@ -179,7 +179,7 @@ describe("ToolSettingsZone", () => {
     // ToolSettings should closed by default.
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;

@@ -55,7 +55,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
 
   return (
     <div ref={ref} className={divClassName}>
-      <AppButton
+      <AppButton // eslint-disable-line deprecation/deprecation
         small={useSmallAppButton}
         mouseProximity={buttonProximityScale}
         onClick={backstageToggleCommand.execute}

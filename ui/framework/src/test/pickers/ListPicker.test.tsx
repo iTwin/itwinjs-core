@@ -318,7 +318,7 @@ describe("ListPicker", () => {
         />,
       );
 
-      const item = component.find(Item);
+      const item = component.find(Item); // eslint-disable-line deprecation/deprecation
       expect(item).not.to.be.undefined;
       item.prop("onClick")!();
       component.update();
@@ -394,7 +394,7 @@ describe("ListPicker", () => {
         />,
       );
 
-      const item = listPickerWrapper.find(Item);
+      const item = listPickerWrapper.find(Item); // eslint-disable-line deprecation/deprecation
       expect(item).not.to.be.undefined;
       item.prop("onClick")!();
       listPickerWrapper.update();
@@ -448,11 +448,11 @@ describe("ListPicker", () => {
           items={localListItems}
           setEnabled={setEnabled}
         />);
-      const itemComponent1 = wrapper1.find(Item);
+      const itemComponent1 = wrapper1.find(Item); // eslint-disable-line deprecation/deprecation
       expect(itemComponent1).not.to.be.undefined;
       itemComponent1.simulate("click");
       wrapper1.update();
-      wrapper1.find(Group).should.exist;
+      wrapper1.find(Group).should.exist; // eslint-disable-line deprecation/deprecation
 
       const wrapper2 = mount(
         <ListPicker
@@ -460,17 +460,17 @@ describe("ListPicker", () => {
           items={listItems}
           setEnabled={setEnabled}
         />);
-      const itemComponent2 = wrapper2.find(Item);
+      const itemComponent2 = wrapper2.find(Item); // eslint-disable-line deprecation/deprecation
       expect(itemComponent2).not.to.be.undefined;
       itemComponent2.simulate("click");
       wrapper2.update();
-      wrapper2.find(Group).should.exist;
+      wrapper2.find(Group).should.exist; // eslint-disable-line deprecation/deprecation
       wrapper1.update();
-      wrapper1.find(Group).length.should.eq(0);
+      wrapper1.find(Group).length.should.eq(0); // eslint-disable-line deprecation/deprecation
 
       itemComponent2.simulate("click");
       wrapper2.update();
-      wrapper2.find(Group).length.should.eq(0);
+      wrapper2.find(Group).length.should.eq(0); // eslint-disable-line deprecation/deprecation
     });
   });
 

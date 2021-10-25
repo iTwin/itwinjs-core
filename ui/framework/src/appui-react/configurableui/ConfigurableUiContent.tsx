@@ -68,6 +68,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       onMouseMove={handleMouseMove}
     >
       {props.appBackstage}
+      {/* eslint-disable-next-line deprecation/deprecation */}
       {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
       <ModelessDialogRenderer />
       <ModalDialogRenderer />

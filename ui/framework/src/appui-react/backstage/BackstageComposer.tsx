@@ -9,7 +9,7 @@
 import * as React from "react";
 import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
-import { Backstage as NZ_Backstage, BackstageSeparator } from "@itwin/appui-layout-react"; // eslint-disable-line sort-imports
+import { BackstageSeparator, Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { BackstageComposerItem } from "./BackstageComposerItem";

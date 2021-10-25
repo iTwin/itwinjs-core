@@ -12,7 +12,7 @@ import * as React from "react";
 import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
 
 /** Properties of [[ToolAssistance]] component.
- * @beta
+ * @internal
  */
 export interface ToolAssistanceProps extends FooterIndicatorProps {
   /** Indicator label. */
@@ -27,7 +27,8 @@ export interface ToolAssistanceProps extends FooterIndicatorProps {
 
 /** Tool assistance indicator used in [[Footer]] component.
  * @note Used with [[ToolAssistanceDialog]] component.
- * @beta
+ * @deprecated Use [ToolAssistanceField]($appui-react) instead
+ * @internal
  */
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
   public override render() {

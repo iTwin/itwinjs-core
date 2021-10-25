@@ -129,7 +129,7 @@ describe("GroupButtonItem", () => {
           sut.update();
 
           expect(groupItem.state().isPressed).to.be.true;
-          expect(sut.find(GroupColumn).length).to.eq(2);
+          expect(sut.find(GroupColumn).length).to.eq(2); // eslint-disable-line deprecation/deprecation
         });
 
         it("should toggle panel when onOpenPanel executed 36 items", () => {
@@ -148,7 +148,7 @@ describe("GroupButtonItem", () => {
           sut.update();
 
           expect(groupItem.state().isPressed).to.be.true;
-          expect(sut.find(GroupColumn).length).to.eq(3);
+          expect(sut.find(GroupColumn).length).to.eq(3); // eslint-disable-line deprecation/deprecation
         });
 
         it("should toggle panel when onOpenPanel executed 48 items", () => {
@@ -167,7 +167,7 @@ describe("GroupButtonItem", () => {
           sut.update();
 
           expect(groupItem.state().isPressed).to.be.true;
-          expect(sut.find(GroupColumn).length).to.eq(4);
+          expect(sut.find(GroupColumn).length).to.eq(4); // eslint-disable-line deprecation/deprecation
         });
 
         it("should include a GroupToolExpander when a GroupItem is included", () => {
@@ -304,7 +304,7 @@ describe("GroupButtonItem", () => {
             trayId: "tray-2",
             backTrays: ["tray-1"],
           });
-          const nestedGroup = sut.find(NestedGroup);
+          const nestedGroup = sut.find(NestedGroup); // eslint-disable-line deprecation/deprecation
           nestedGroup.prop("onBackPointerUp")!();
 
           expect(groupItem.state().trayId).to.eq("tray-1");
@@ -330,7 +330,7 @@ describe("GroupButtonItem", () => {
 
       it("should toggle panel on click", () => {
         const sut = mount<ToolbarGroupItem>(<ToolbarGroupItem groupItem={group1} />);
-        const item = sut.find(Item);
+        const item = sut.find(Item); // eslint-disable-line deprecation/deprecation
 
         item.prop("onClick")!();
         expect(sut.state().isPressed).to.be.true;

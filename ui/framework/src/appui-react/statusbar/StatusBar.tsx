@@ -79,7 +79,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       }}>
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
-            <Footer
+            <Footer // eslint-disable-line deprecation/deprecation
               className={this.props.className}
               messages={this.getFooterMessages()}
               isInFooterMode={this.props.isInFooterMode}

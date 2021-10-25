@@ -103,8 +103,8 @@ class FrontstageToolWidget extends React.Component {
   }
 
   private _horizontalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Bottom}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
@@ -116,8 +116,8 @@ class FrontstageToolWidget extends React.Component {
     />);
 
   private _verticalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Right}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Right} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ActionItemButton actionItem={CoreTools.rotateViewCommand} />
@@ -149,8 +149,8 @@ class FrontstageToolWidget extends React.Component {
 class FrontstageNavigationWidget extends React.Component {
 
   private _horizontalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Bottom}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec} labelKey={AppTools.item5.label} execute={AppTools.item5.execute} />
@@ -161,8 +161,8 @@ class FrontstageNavigationWidget extends React.Component {
   );
 
   private _verticalToolbar = (
-    <Toolbar
-      expandsTo={Direction.Left}
+    <Toolbar // eslint-disable-line deprecation/deprecation
+      expandsTo={Direction.Left} // eslint-disable-line deprecation/deprecation
       items={
         <>
           <ToolButton toolId={AppTools.item7.id} iconSpec={AppTools.item7.iconSpec} labelKey={AppTools.item7.label} execute={AppTools.item7.execute} />

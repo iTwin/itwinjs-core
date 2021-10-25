@@ -25,6 +25,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead.
  */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // eslint-disable-line deprecation/deprecation
   /** Unique Id for this backstage item. */
@@ -33,6 +34,7 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
 
 /** Backstage item that launches a Command
  * @public
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead.
  */
 export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> { // eslint-disable-line deprecation/deprecation
 
@@ -41,7 +43,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
-  constructor(props: CommandLaunchBackstageItemProps) {
+  constructor(props: CommandLaunchBackstageItemProps) { // eslint-disable-line deprecation/deprecation
     super(props);
 
     if (props.stateSyncIds)
@@ -94,7 +96,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 
   // deprecated class
   // istanbul ignore next
-  public override componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
+  public override componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) { // eslint-disable-line deprecation/deprecation
     // eslint-disable-next-line deprecation/deprecation
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))

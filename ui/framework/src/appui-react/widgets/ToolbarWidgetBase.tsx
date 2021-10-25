@@ -14,14 +14,15 @@ import { Toolbar } from "../toolbar/Toolbar";
 import { ToolbarWidgetProps, WidgetDef } from "./WidgetDef";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
+ * @deprecated
  * @public
  */
 export class ToolbarWidgetDefBase extends WidgetDef {
-  public horizontalDirection: Direction;
-  public verticalDirection: Direction;
+  public horizontalDirection: Direction; // eslint-disable-line deprecation/deprecation
+  public verticalDirection: Direction; // eslint-disable-line deprecation/deprecation
 
-  public horizontalPanelAlignment: ToolbarPanelAlignment;
-  public verticalPanelAlignment: ToolbarPanelAlignment;
+  public horizontalPanelAlignment: ToolbarPanelAlignment; // eslint-disable-line deprecation/deprecation
+  public verticalPanelAlignment: ToolbarPanelAlignment; // eslint-disable-line deprecation/deprecation
 
   public horizontalItems?: ItemList;
   public verticalItems?: ItemList;
@@ -30,11 +31,13 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   constructor(def: ToolbarWidgetProps) {
     super(def);
 
+    // eslint-disable-next-line deprecation/deprecation
     this.horizontalDirection = (def.horizontalDirection !== undefined) ? def.horizontalDirection : Direction.Bottom;
+    // eslint-disable-next-line deprecation/deprecation
     this.verticalDirection = (def.verticalDirection !== undefined) ? def.verticalDirection : Direction.Right;
 
-    this.horizontalPanelAlignment = ToolbarPanelAlignment.Start;
-    this.verticalPanelAlignment = ToolbarPanelAlignment.Start;
+    this.horizontalPanelAlignment = ToolbarPanelAlignment.Start; // eslint-disable-line deprecation/deprecation
+    this.verticalPanelAlignment = ToolbarPanelAlignment.Start; // eslint-disable-line deprecation/deprecation
 
     this.horizontalItems = def.horizontalItems;
     this.verticalItems = def.verticalItems;

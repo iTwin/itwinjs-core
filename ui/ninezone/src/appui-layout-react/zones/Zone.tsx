@@ -15,7 +15,7 @@ import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInse
 import { WidgetZoneId } from "./manager/Zones";
 
 /** Properties of [[Zone]] component.
- * @beta
+ * @internal
  */
 export interface ZoneProps extends CommonProps {
   /** Zone bounds. */
@@ -35,7 +35,7 @@ export interface ZoneProps extends CommonProps {
 }
 
 /** Zone component of 9-Zone UI app.
- * @beta
+ * @internal
  */
 export class Zone extends React.PureComponent<ZoneProps> {
   public override render() {

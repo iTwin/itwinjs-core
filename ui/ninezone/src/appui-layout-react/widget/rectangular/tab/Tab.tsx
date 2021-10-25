@@ -15,7 +15,7 @@ import { DragHandle } from "../../../base/DragHandle";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Describes available tab modes.
- * @alpha
+ * @internal
  */
 export enum TabMode {
   Closed,
@@ -24,7 +24,7 @@ export enum TabMode {
 }
 
 /** Helpers for [[TabMode]].
- * @alpha
+ * @internal
  */
 export class TabModeHelpers {
   /** Class name of [[TabMode.Closed]] */
@@ -48,7 +48,7 @@ export class TabModeHelpers {
 }
 
 /** Properties of [[Tab]] component.
- * @alpha
+ * @internal
  */
 export interface TabProps extends CommonProps {
   /** A badge to draw. */
@@ -82,12 +82,12 @@ export interface TabProps extends CommonProps {
 }
 
 /** Default properties of [[Tab]] component.
- * @alpha
+ * @internal
  */
 type TabDefaultProps = Pick<TabProps, "isProtruding">;
 
 /** Rectangular widget tab. Used in [[Stacked]] component.
- * @alpha
+ * @internal
  */
 export class Tab extends React.PureComponent<TabProps> {
   private _tab = React.createRef<HTMLDivElement>();

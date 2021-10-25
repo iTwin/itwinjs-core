@@ -135,9 +135,6 @@ export * from "./appui-layout-react/widget/rectangular/tab/Group";
 export * from "./appui-layout-react/widget/rectangular/tab/Separator";
 export * from "./appui-layout-react/widget/rectangular/tab/Tab";
 
-export * from "./appui-layout-react/widget/tool-settings/Nested";
-export * from "./appui-layout-react/widget/tool-settings/Popup";
-export * from "./appui-layout-react/widget/tool-settings/Scrollable";
 export * from "./appui-layout-react/widget/tool-settings/Tab";
 
 export * from "./appui-layout-react/widget-panels/AppContent";
