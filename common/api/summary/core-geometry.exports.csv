@@ -69,7 +69,6 @@ public;ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapeProps
 public;ClipPrimitiveShapeProps
 public;ClipShape 
 public;ClipStatus
-public;ClipStepAction
 public;ClipUtilities
 public;ClipVector 
 public;ClipVectorProps = ClipPrimitiveProps[]
