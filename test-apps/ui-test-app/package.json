@@ -80,7 +80,7 @@
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.0",
     "@itwin/components-react": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",

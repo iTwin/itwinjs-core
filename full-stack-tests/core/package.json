@@ -24,7 +24,7 @@
   "dependencies": {
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.0",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
