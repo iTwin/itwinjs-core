@@ -209,7 +209,7 @@ export abstract class BooleanClipNode implements Clipper {
 
 }
 /**
- * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
 export class BooleanClipNodeUnion extends BooleanClipNode {
@@ -242,7 +242,7 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
 }
 
 /**
- * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
 export class BooleanClipNodeParity extends BooleanClipNode {
@@ -274,7 +274,7 @@ export class BooleanClipNodeParity extends BooleanClipNode {
     }
 }
 /**
- * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
 export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper{

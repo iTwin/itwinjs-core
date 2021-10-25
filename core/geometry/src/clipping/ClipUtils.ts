@@ -44,9 +44,12 @@ export enum ClipPlaneContainment {
  * @public
  */
 export enum ClipStepAction  {
-  acceptIn = 1,   // accept the fragment as "in"
-  acceptOut = -1, // accept as out
-  passToNextStep = 0     // no immediate handling, but pass on as a candidate for the next step.
+  /** Pass fragments directly to final accepted "in" state */
+  acceptIn = 1,
+  /** Pass fragments directly to final accepted "out" state */
+  acceptOut = -1,
+/** forward fragments to subsequent steps. */
+  passToNextStep = 0
   }
 
 /** Enumerated type for describing what must yet be done to clip a piece of geometry.
@@ -94,7 +97,7 @@ export interface Clipper {
   appendPolygonClip?: AppendPolygonClipFunction;
 }
   /**
-   * Method to execute polygon clip, distributing fragments of xyz among insideFragments and outsideFragments
+   * Signature of method to execute polygon clip, distributing fragments of xyz among insideFragments and outsideFragments
    * @param xyz input polygon.  This is not changed.
    * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
