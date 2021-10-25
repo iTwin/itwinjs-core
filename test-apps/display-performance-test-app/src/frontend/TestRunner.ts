@@ -912,6 +912,8 @@ export class TestRunner {
     rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
     rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
     rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
+    rowData.set("Actual Total Time", totalTime.toFixed(fixed));
+    rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
 
     return rowData;
   }
