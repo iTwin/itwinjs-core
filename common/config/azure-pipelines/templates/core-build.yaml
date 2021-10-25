@@ -11,6 +11,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
   - task: PythonScript@0
     displayName: "rush change -v"
+    enabled: false
     inputs:
       workingDirectory: ${{ parameters.workingDir }}
       scriptSource: inline

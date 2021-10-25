@@ -93,42 +93,6 @@ export class ExtensionAdmin {
     this._installedExtensions.set(manifest.name, { manifest, mainFunc });
   }
 
-  /** Add an Extension to be downloaded. */
-  // public async addExtension(arg: ExtensionLoaderProps) {
-  //   for (const loader of this._extensionLoaders) {
-  //     const manifest = await loader.getManifest(arg);
-  //     // If not found in loader, skip to the next one.
-  //     if (undefined === manifest)
-  //       continue;
-
-  //     let localExtensionProps = {
-  //       manifest,
-  //     };
-
-  //     if (undefined !== manifest.main) {
-  //       const executableMain = Function(manifest.main);
-  //       localExtensionProps = {
-  //         ...localExtensionProps,
-  //         mainFunc: executableMain,
-  //       };
-  //     }
-
-  //     this._installedExtensions.set(manifest.name, localExtensionProps);
-  //   }
-  // }
-
-  /** Add an already downloaded Extension that is marked as installed */
-  // public async addExtension(manifest: any): Promise<void> {
-  //   // if (!extension.manifest.module) {
-  //   // }
-
-  //   if (loader) {
-  //     await loader();
-  //   }
-
-  //   // this._installedExtensions.set(extension.manifest.name, extension);
-  // }
-
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
   private async activateExtensionEvents(event: string) {
     for (const extension of this._installedExtensions.values()) {
@@ -169,28 +133,8 @@ export class ExtensionAdmin {
   // The global scope is important for an Extension as that is where the reference to the Extension Implementation is supplied
   // from the application side.
   private async execute(extension: LocalExtensionProps): Promise<void> {
-    let executableMain;
-
     if (extension.mainFunc)
-      return await extension.mainFunc();
-
-    if (extension.manifest.main) {
-      executableMain = Function(extension.manifest.main);
-      // functions can be passed into the Function that correspond to
-      executableMain();
-    }
-
-    const head = document.getElementsByTagName("head")[0];
-    // if (!head)
-    //   reject(new Error("no head element found"));
-
-    // create the script element.
-    // We handle onerror and resolve a ExtensionLoadResult failure in the onerror handler,
-    const scriptElement = document.createElement("script");
-
-    scriptElement.async = true;
-    // scriptElement.src = this._tarFileUrl;
-    head.insertBefore(scriptElement, head.lastChild);
+      return extension.mainFunc();
   }
 
 }
