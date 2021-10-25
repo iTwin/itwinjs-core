@@ -461,7 +461,7 @@ export class LightSettings {
     const numCels = 0 !== this.numCels ? this.numCels : undefined;
     const fresnel = this.fresnel.toJSON();
 
-    if (!solar && !ambient && !hemisphere && !portrait && undefined === specularIntensity && undefined === numCels)
+    if (!solar && !ambient && !hemisphere && !portrait && undefined === specularIntensity && undefined === numCels && undefined === fresnel)
       return undefined;
 
     const json: LightSettingsProps = {};
