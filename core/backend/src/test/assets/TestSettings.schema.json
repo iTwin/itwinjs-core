@@ -1,6 +1,6 @@
 {
   "$id": "app1 schema",
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "./../../assets/Settings.schema.json",
   "title": "app1 settings",
   "description": "the settings for test application 1",
   "type": "object",
@@ -45,6 +45,27 @@
       "type": "string",
       "default": "blah default",
       "description": "the setting for blah"
+    },
+    "fontList": {
+      "type": "array",
+      "description": "array of fonts to load",
+      "items": {
+        "type": "object",
+        "required": [
+          "rscAlias",
+          "fontName"
+        ],
+        "properties": {
+          "rscAlias": {
+            "type": "string",
+            "description": "resource container alias"
+          },
+          "fontName": {
+            "type": "string",
+            "description": "name of font within resource container"
+          }
+        }
+      }
     }
   }
 }

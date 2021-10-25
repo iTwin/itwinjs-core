@@ -1,4 +1,5 @@
 {
+    "$schema": "./TestSettings.schema.json",
     "editor/fontWeight": "normal",
     "editor/fontSize": 12,
     "editor/multiCursorModifier": "ctrlCmd",
@@ -53,6 +54,16 @@
             "sideBar.background": "#e2daca"
         }
     },
+    "fontList": [
+        {
+            "fontName": "Helvetica.ttf",
+            "rscAlias": "default-fonts"
+        },
+        {
+            "fontName": "Roboto-Regular.ttf",
+            "rscAlias": "default-fonts"
+        }
+    ],
     "editor/tokenColorCustomizations": {
         "Default High Contrast": {
             "comments": "#FF0000"
