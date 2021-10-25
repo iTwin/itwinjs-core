@@ -13,7 +13,7 @@ export {
   ViewRect,
   Pixel,
   LocateResponse,
-  IModelApp as IModelExtension
+  ExtensionHost,
 } from "@itwin/core-frontend";
 
 export { ColorDef } from "@itwin/core-common";

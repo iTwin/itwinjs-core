@@ -15,7 +15,7 @@ export const {
   LocateResponse,
 
   // FIXME
-  IModelExtension,
+  ExtensionHost,
 } = ext.exports;
 
 // re-export enums

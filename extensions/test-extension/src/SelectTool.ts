@@ -15,7 +15,7 @@ import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, DecorateContext, EventHandled, HitDetail,
   InputSource, LocateFilterStatus, LocateResponse, ManipulatorToolEvent, Pixel, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
-  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, ViewRect, IModelExtension
+  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, ViewRect, ExtensionHost
 } from "@itwin/core-extension";
 import { CoreTools } from "./CoreTools";
 
@@ -136,7 +136,7 @@ export class SelectionTool extends PrimitiveTool {
             { iconSpec: "icon-select-plus" },
             {
               iconSpec: "icon-select-minus",
-              isEnabledFunction: () => { const tool = IModelExtension.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
+              isEnabledFunction: () => { const tool = ExtensionHost.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
             },
           ],
         } as ButtonGroupEditorParams, {
@@ -216,7 +216,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
-    IModelExtension.notifications.setToolAssistance(instructions);
+    ExtensionHost.notifications.setToolAssistance(instructions);
   }
 
   protected initSelectTool(): void {
@@ -227,8 +227,8 @@ export class SelectionTool extends PrimitiveTool {
     this._isSelectByPoints = false;
     this._points.length = 0;
 
-    this.initLocateElements(enableLocate, false, enableLocate ? "default" : IModelExtension.viewManager.crossHairCursor, CoordinateLockOverrides.All);
-    IModelExtension.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
+    this.initLocateElements(enableLocate, false, enableLocate ? "default" : ExtensionHost.viewManager.crossHairCursor, CoordinateLockOverrides.All);
+    ExtensionHost.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
     this.showPrompt(mode, method);
   }
 
@@ -280,7 +280,7 @@ export class SelectionTool extends PrimitiveTool {
       return;
 
     const ev = new BeButtonEvent();
-    IModelExtension.toolAdmin.fillEventFromCursorLocation(ev);
+    ExtensionHost.toolAdmin.fillEventFromCursorLocation(ev);
     if (undefined === ev.viewport)
       return;
 
@@ -423,8 +423,8 @@ export class SelectionTool extends PrimitiveTool {
     this._points.length = 0;
     this._points.push(ev.point.clone());
     this._isSelectByPoints = true;
-    IModelExtension.accuSnap.enableLocate(false);
-    IModelExtension.toolAdmin.setLocateCircleOn(false);
+    ExtensionHost.accuSnap.enableLocate(false);
+    ExtensionHost.toolAdmin.setLocateCircleOn(false);
     this.showPrompt(this.selectionMode, this.selectionMethod);
     return true;
   }
@@ -458,16 +458,16 @@ export class SelectionTool extends PrimitiveTool {
 
   public async selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled> {
     if (undefined === currHit)
-      currHit = await IModelExtension.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+      currHit = await ExtensionHost.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
 
     if (undefined !== currHit)
-      return (currHit.isElementHit ? IModelExtension.viewManager.overrideElementButtonEvent(currHit, ev) : IModelExtension.viewManager.onDecorationButtonEvent(currHit, ev));
+      return (currHit.isElementHit ? ExtensionHost.viewManager.overrideElementButtonEvent(currHit, ev) : ExtensionHost.viewManager.onDecorationButtonEvent(currHit, ev));
 
     return EventHandled.No;
   }
 
   public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    IModelExtension.accuSnap.clear(); // Need to test hit at start drag location, not current AccuSnap...
+    ExtensionHost.accuSnap.clear(); // Need to test hit at start drag location, not current AccuSnap...
     if (EventHandled.Yes === await this.selectDecoration(ev))
       return EventHandled.Yes;
     if (InputSource.Touch === ev.inputSource && SelectionMethod.Pick === this.selectionMethod)
@@ -494,7 +494,7 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.Yes;
     }
 
-    const hit = await IModelExtension.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+    const hit = await ExtensionHost.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit !== undefined && !hit.isModelHit && !hit.isMapHit) { // model hit = terrain, reality models, background maps, etc - not selectable
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
@@ -530,16 +530,16 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     // Check for overlapping hits...
-    const lastHit = SelectionMode.Remove === this.selectionMode ? undefined : IModelExtension.locateManager.currHit;
+    const lastHit = SelectionMode.Remove === this.selectionMode ? undefined : ExtensionHost.locateManager.currHit;
     if (lastHit && this.iModel.selectionSet.has(lastHit.sourceId)) {
-      const autoHit = IModelExtension.accuSnap.currHit;
+      const autoHit = ExtensionHost.accuSnap.currHit;
 
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
         let nextHit;
         do {
-          nextHit = await IModelExtension.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
+          nextHit = await ExtensionHost.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
         } while (undefined !== nextHit && (nextHit.isModelHit || nextHit.isMapHit)); // Ignore reality models, terrain, maps, etc.
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
@@ -554,36 +554,36 @@ export class SelectionTool extends PrimitiveTool {
       }
     }
 
-    if (EventHandled.Yes === await this.selectDecoration(ev, IModelExtension.accuSnap.currHit))
+    if (EventHandled.Yes === await this.selectDecoration(ev, ExtensionHost.accuSnap.currHit))
       return EventHandled.Yes;
 
-    await IModelExtension.accuSnap.resetButton();
+    await ExtensionHost.accuSnap.resetButton();
     return EventHandled.Yes;
   }
 
   public override async onSuspend() {
     this._isSuspended = true;
     if (this.wantEditManipulators())
-      IModelExtension.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend);
+      ExtensionHost.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend);
   }
 
   public override async onUnsuspend() {
     this._isSuspended = false;
     if (this.wantEditManipulators())
-      IModelExtension.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend);
+      ExtensionHost.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend);
 
     this.showPrompt(this.selectionMode, this.selectionMethod);
   }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this._isSelectByPoints)
-      await IModelExtension.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
+      await ExtensionHost.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
     return (this._isSuspended || this._isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelExtension.toolAdmin.convertTouchMoveToMotion(ev); }
-  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelExtension.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelExtension.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return ExtensionHost.toolAdmin.convertTouchMoveToMotion(ev); }
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return ExtensionHost.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return ExtensionHost.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
@@ -610,7 +610,7 @@ export class SelectionTool extends PrimitiveTool {
 
   public override async onCleanup() {
     if (this.wantEditManipulators())
-      IModelExtension.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
+      ExtensionHost.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
   }
 
   public override async onPostInstall() {
@@ -618,7 +618,7 @@ export class SelectionTool extends PrimitiveTool {
     if (!this.targetView)
       return;
     if (this.wantEditManipulators())
-      IModelExtension.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Start);
+      ExtensionHost.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Start);
     this.initSelectTool();
   }
 
@@ -632,7 +632,7 @@ export class SelectionTool extends PrimitiveTool {
     }
     if (this.wantToolSettings()) {
       const syncMode: DialogPropertySyncItem = { value: this._selectionModeValue, propertyName: SelectionTool._modesName };
-      IModelExtension.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, syncMode);
+      ExtensionHost.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, syncMode);
       this.syncToolSettingsProperties([syncMode]);
     }
   }
@@ -645,7 +645,7 @@ export class SelectionTool extends PrimitiveTool {
       return undefined;
 
     // load latest values from session
-    IModelExtension.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SelectionTool._modesName])?.forEach((value) => {
+    ExtensionHost.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SelectionTool._modesName])?.forEach((value) => {
       if (value.propertyName === SelectionTool._modesName)
         this._selectionModeValue = value.value;
     });
@@ -653,7 +653,7 @@ export class SelectionTool extends PrimitiveTool {
     // Make sure a mode of SelectionMode.Remove is valid
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
       this.selectionMode = SelectionMode.Replace;
-      IModelExtension.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
+      ExtensionHost.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
     }
 
     const toolSettings = new Array<DialogItem>();
@@ -674,7 +674,7 @@ export class SelectionTool extends PrimitiveTool {
       if (this._selectionMethodValue) {
         const currWantManipulators = this.wantEditManipulators();
         if (saveWantManipulators !== currWantManipulators)
-          IModelExtension.toolAdmin.manipulatorToolEvent.raiseEvent(this, currWantManipulators ? ManipulatorToolEvent.Start : ManipulatorToolEvent.Stop);
+          ExtensionHost.toolAdmin.manipulatorToolEvent.raiseEvent(this, currWantManipulators ? ManipulatorToolEvent.Start : ManipulatorToolEvent.Stop);
         changed = true;
       }
     }
@@ -682,7 +682,7 @@ export class SelectionTool extends PrimitiveTool {
       this._selectionModeValue = updatedValue.value;
       if (this._selectionModeValue) {
         if (this.wantToolSettings())
-          IModelExtension.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
+          ExtensionHost.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
         changed = true;
       }
     }
