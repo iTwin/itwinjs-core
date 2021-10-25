@@ -722,11 +722,10 @@ importers:
       supertest: 3.4.2
       typescript: 4.4.4
 
-  ../../core/extension-impl:
+  ../../core/extension:
     specifiers:
       '@bentley/itwin-client': workspace:*
       '@bentley/product-settings-client': workspace:*
-      '@bentley/telemetry-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -735,11 +734,14 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-orbitgt': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/eslint-plugin': workspace:*
       '@itwin/webgl-compatibility': workspace:*
+      eslint: ^7.11.0
+      rimraf: ^3.0.2
+      typescript: ~4.4.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
-      '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
@@ -750,6 +752,10 @@ importers:
       '@itwin/webgl-compatibility': link:../webgl-compatibility
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      eslint: 7.32.0
+      rimraf: 3.0.2
+      typescript: 4.4.4
 
   ../../core/frontend:
     specifiers:
@@ -973,41 +979,6 @@ importers:
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
       '@types/node': 14.14.31
-      eslint: 7.32.0
-      rimraf: 3.0.2
-      typescript: 4.4.4
-
-  ../../core/itwin-extension:
-    specifiers:
-      '@bentley/itwin-client': workspace:*
-      '@bentley/product-settings-client': workspace:*
-      '@itwin/appui-abstract': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/core-orbitgt': workspace:*
-      '@itwin/core-quantity': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/webgl-compatibility': workspace:*
-      eslint: ^7.11.0
-      rimraf: ^3.0.2
-      typescript: ~4.4.0
-    dependencies:
-      '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/product-settings-client': link:../../clients/product-settings
-      '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/core-bentley': link:../bentley
-      '@itwin/core-common': link:../common
-      '@itwin/core-frontend': link:../frontend
-      '@itwin/core-geometry': link:../geometry
-      '@itwin/core-orbitgt': link:../orbitgt
-      '@itwin/core-quantity': link:../quantity
-      '@itwin/webgl-compatibility': link:../webgl-compatibility
-    devDependencies:
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -1855,7 +1826,7 @@ importers:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      '@itwin/core-extension': link:../../core/itwin-extension
+      '@itwin/core-extension': link:../../core/extension
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       buffer: 6.0.3
