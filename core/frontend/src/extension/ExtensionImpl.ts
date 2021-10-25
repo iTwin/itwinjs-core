@@ -7,18 +7,6 @@ import { ToolType } from "../tools/Tool";
 import { IModelApp } from "../IModelApp";
 import { CommonToolbarItem, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
-// import
-
-// // This file contains the implementation for the `itwin-extension` API.
-// // The contents of this should be fully enclosed within the imodeljs-frontend code itself
-// // and NEVER used by the Extension.
-
-// export interface ExtensionApiFactory {
-//   (extension: IExtensionDescription, registry: ExtensionDescriptionRegistry, configProvider: ExtHostConfigProvider): typeof itwin-extension;
-// }
-
-// export function createApi():
-
 export class ToolProvider implements UiItemsProvider {
   public readonly id;
   private _toolId = "";
