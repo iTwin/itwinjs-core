@@ -364,7 +364,7 @@ describe("StringifiedClipVector", () => {
     expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
 
-  it.only("OuterAndMask", () => {
+  it("OuterAndMask", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const outer = [[-10, -10], [10, 0], [10, 10], [-10, 10], [-10, -10]];

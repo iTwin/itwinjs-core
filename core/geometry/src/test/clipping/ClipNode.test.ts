@@ -44,7 +44,7 @@ function makePanel(origin: Point3d, vectorA: Vector3d, a0: number, a1: number, v
 
 describe("ClipNodes", () => {
 
-  it.only("ClipManyBooleans", () => {
+  it("ClipManyBooleans", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const sharedOrigin = Point3d.create(0.5, 0.75, 0.0);
