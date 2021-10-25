@@ -901,15 +901,21 @@ export class RealityModelTileClient {
   }
 
   private async _doRequest(url: string, responseType: string): Promise<any> {
-    const authToken = this._requestAuthorization ?? (await IModelApp.getAccessToken());
-
-    const options: RequestOptions = {
+    let options: RequestOptions = {
       method: "GET",
       responseType,
-      headers: {
-        authorization: authToken,
-      },
     };
+
+    const authToken = this._requestAuthorization ?? (await IModelApp.getAccessToken());
+    if (authToken) {
+      options = {
+        ...options,
+        headers: {
+          authorization: authToken,
+        },
+      };
+    }
+
     const data = await request(url, options);
     return data.body;
   }

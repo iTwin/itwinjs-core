@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix iOS15 overlay draws.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -12,7 +12,7 @@ import { Angle } from "@itwin/core-geometry";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
 import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
-import { getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
@@ -252,8 +252,12 @@ export class RealityData extends WsgInstance {
   public async getTileContent(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
     const stringUrl = await this.getBlobStringUrl(accessToken, name, nameRelativeToRootDocumentPath);
 
-    const data = await getArrayBuffer(stringUrl);
-    return data;
+    const options: RequestOptions = {
+      method: "GET",
+      responseType: "arraybuffer",
+    };
+    const data = await request(stringUrl, options);
+    return data.body;
   }
 
   /**

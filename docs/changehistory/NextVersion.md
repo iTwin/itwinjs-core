@@ -771,6 +771,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
 | `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
 | `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                               |
 | `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
 | `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
 | `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
@@ -804,10 +805,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/appui-abstract
 
-| Removed                       | Replacement  |
-| ----------------------------- | ------------ |
-| `ContentLayoutProps.priority` | *eliminated* |
-| `UiItemsArbiter`              | *eliminated* |
+| Removed                       | Replacement                  |
+| ----------------------------- | ---------------------------- |
+| `ContentLayoutProps.priority` | *eliminated*                 |
+| `UiItemsArbiter`              | *eliminated*                 |
+| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter`   |
 
 ### @itwin/core-react
 
@@ -1291,6 +1293,14 @@ were removed from the `@itwin/core-backend` package and moved to a new package, 
 ## @itwin/core-common
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
+
+## Remove ninezone-test-app
+
+The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
+
+## Improve/Enhance particle systems
+
+Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
 
 ## Changes to ECSql APIs
 
