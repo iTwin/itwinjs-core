@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils } from "@itwin/core-bentley";
+import { assert, JsonUtils } from "@itwin/core-bentley";
 import { Vector3d, XYZProps } from "@itwin/core-geometry";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 
@@ -273,29 +273,76 @@ export class HemisphereLights {
   }
 }
 
+/** JSON representation of a [[FresnelSettings]].
+ * @public
+ */
 export interface FresnelSettingsProps {
+  /** @see [[FresnelSettings.intensity]].
+   * Default value: 0
+   */
   intensity?: number;
+
+  /** @see [[FresnelSettings.invert]].
+   * Default value: false
+   */
   invert?: boolean;
 }
 
+function clampIntensity(intensity = 0): number {
+  return Math.max(intensity, 0);
+}
+
+/** As part of a [[LightSettings]], describes how to apply a Fresnel effect to the contents of the view.
+ * The "Fresnel effect" is based on the observation that the reflectivity of a surface varies based on the angle between the surface and
+ * the viewer's line of sight. For example, a flat surface will appear more reflective when viewed at a glancing angle than it will when
+ * viewed from above; and a sphere will appear more reflective around its edges than at its center.
+ *
+ * This principle can be used to improve photorealism, but the implementation provided here is intended to produce non-realistic but
+ * aesthetically-pleasing results.
+ * @see [[LightSettings.fresnel]].
+ * @public
+ */
 export class FresnelSettings {
+  /** The strength of the effect in terms of how much brighter the surface becomes. The intensity at a given point on the surface is determined by
+   * the angle between the viewer's line of sight and the vector from the viewer to that point. Maximum intensity is produced when those vectors are
+   * perpendicular, and zero intensity is produced when those vectors are parallel (unless [[invert]] is `true`).
+   *
+   * A value of zero turns off the effect. Values less than zero are clamped to zero. Typical values range between 0 and 1.
+   */
   public readonly intensity: number;
+  /** If true, inverts the effect's [[intensity]] such that maximum intensity is produced when the viewer's line of sight is parallel to the vector between
+   * the viewer and the point on the surface, and zero intensity is produced when the viewer's line of sight is perpendicular to that vector.
+   */
   public readonly invert: boolean;
 
   private constructor(intensity: number, invert: boolean) {
+    assert(intensity >= 0);
     this.intensity = intensity;
     this.invert = invert;
   }
 
   private static readonly _defaults = new FresnelSettings(0, false);
 
+  /** Create from JSON representation, using default values for any unspecified or `undefined` properties. */
   public static fromJSON(props?: FresnelSettingsProps): FresnelSettings {
-    if (0 === JsonUtils.asDouble(props?.intensity, 0) && !JsonUtils.asBool(props?.invert, false))
+    const intensity = clampIntensity(JsonUtils.asDouble(props?.intensity));
+    const invert = JsonUtils.asBool(props?.invert);
+    if (0 === intensity && !invert)
       return this._defaults;
 
-    return new this(props?.intensity ?? 0, props?.invert || false);
+    return new this(intensity, invert);
   }
 
+  /** Create a new FresnelSettings.
+   * @note Intensity values less than zero will be set to zero.
+   */
+  public static create(intensity=0, invert=false): FresnelSettings {
+    return this.fromJSON({ intensity, invert });
+  }
+
+  /** Convert to JSON representation.
+   * @note If all settings match the default values, `undefined` will be returned.
+   */
   public toJSON(): FresnelSettingsProps | undefined {
     if (0 === this.intensity && !this.invert)
       return undefined;
@@ -310,6 +357,7 @@ export class FresnelSettings {
     return props;
   }
 
+  /** Create a copy of these settings, modified to match any properties explicitly specified by `changedProps`. */
   public clone(changedProps?: FresnelSettingsProps): FresnelSettings {
     if ((undefined === changedProps?.intensity || changedProps.intensity === this.intensity)
       && (undefined === changedProps?.invert || changedProps.invert === this.invert))
@@ -320,8 +368,9 @@ export class FresnelSettings {
     return FresnelSettings.fromJSON({ intensity, invert });
   }
 
+  /** Return true if these settings are equivalent to `rhs`. */
   public equals(rhs: FresnelSettings): boolean {
-    return this.intensity === rhs.intensity && this.invert === rhs.invert;
+    return this === rhs || (this.intensity === rhs.intensity && this.invert === rhs.invert);
   }
 }
 
@@ -359,6 +408,9 @@ export interface LightSettingsProps {
    */
   numCels?: number;
 
+  /** Fresnel settings.
+   * @see [[FresnelSettings]].
+   */
   fresnel?: FresnelSettingsProps;
 }
 
@@ -370,8 +422,10 @@ export class LightSettings {
   public readonly solar: SolarLight;
   public readonly ambient: AmbientLight;
   public readonly hemisphere: HemisphereLights;
+  /** @see [[LightSettingsProps.portrait]]. */
   public readonly portraitIntensity: number;
   public readonly specularIntensity: number;
+  /** @see [[LightSettingsProps.numCels]]. */
   public readonly numCels: number;
   public readonly fresnel: FresnelSettings;
 
