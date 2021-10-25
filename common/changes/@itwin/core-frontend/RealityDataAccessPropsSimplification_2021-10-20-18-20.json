@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Simplify RealitydataAccessProps interface and usage in iModel.js",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
