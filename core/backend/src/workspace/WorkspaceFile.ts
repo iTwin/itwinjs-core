@@ -15,9 +15,7 @@ import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-
-export type WorkspaceResourceName = string;
-export type WorkspaceResourceType = "string" | "blob" | "file";
+import { WorkspaceContainerId, WorkspaceResourceName } from "./Workspace";
 
 /**
  * A container of workspace resources. `WorkspaceContainer`s may just be local files, or they may be
@@ -30,18 +28,18 @@ export interface WorkspaceContainer {
   /** The name of this container. This remains unchanged as the container itself is versioned.
    * @note containerNames must be less than 255 characters and may not have any reserved characters (see https://github.com/sindresorhus/filename-reserved-regex)
    */
-  readonly containerName: string;
+  readonly containerName: WorkspaceContainerName;
   /** The id of this container.
-   * @note This identifies the container in cloud storage. If this is a local container, it is just the container name.
+   * @note This identifies the container in cloud storage. If this is a local container.
    * For cloud-backed containers, the same `containerName` may refer to different `containerId`s as the container is versioned over time.
    */
-  readonly containerId: string;
+  readonly containerId: WorkspaceContainerId;
 
   /** Get a string resource from this container, if present. */
-  getString: (resourceName: WorkspaceResourceName) => string | undefined;
+  getString: (rscName: WorkspaceResourceName) => string | undefined;
 
   /** Get a blob resource from this container, if present. */
-  getBlob: (resourceName: WorkspaceResourceName) => Uint8Array | undefined;
+  getBlob: (rscName: WorkspaceResourceName) => Uint8Array | undefined;
 
   /** Get a local copy of a file resource from this container, if present.
    * @returns the full path to a file on the local filesystem.
@@ -53,7 +51,7 @@ export interface WorkspaceContainer {
    * @note Workspace resource files are set readonly after they are copied from the container.
    * To edit them, you must first copy them to another location.
    */
-  getFile: (resourceName: WorkspaceResourceName) => LocalFileName | undefined;
+  getFile: (rscName: WorkspaceResourceName) => LocalFileName | undefined;
 }
 
 /**
@@ -62,17 +60,17 @@ export interface WorkspaceContainer {
  * may be editing.
  */
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
-  addString: (resourceName: WorkspaceResourceName, val: string) => void;
-  updateString: (resourceName: WorkspaceResourceName, val: string) => void;
-  removeString: (resourceName: WorkspaceResourceName) => void;
+  addString: (rscName: WorkspaceResourceName, val: string) => void;
+  updateString: (rscName: WorkspaceResourceName, val: string) => void;
+  removeString: (rscName: WorkspaceResourceName) => void;
 
-  addBlob: (resourceName: WorkspaceResourceName, val: Uint8Array) => void;
-  updateBlob: (resourceName: WorkspaceResourceName, val: Uint8Array) => void;
-  removeBlob: (resourceName: WorkspaceResourceName) => void;
+  addBlob: (rscName: WorkspaceResourceName, val: Uint8Array) => void;
+  updateBlob: (rscName: WorkspaceResourceName, val: Uint8Array) => void;
+  removeBlob: (rscName: WorkspaceResourceName) => void;
 
-  addFile: (resourceName: WorkspaceResourceName, localFileName: LocalFileName) => void;
-  updateFile: (resourceName: WorkspaceResourceName, localFileName: LocalFileName) => void;
-  removeFile: (resourceName: WorkspaceResourceName) => void;
+  addFile: (rscName: WorkspaceResourceName, localFileName: LocalFileName) => void;
+  updateFile: (rscName: WorkspaceResourceName, localFileName: LocalFileName) => void;
+  removeFile: (rscName: WorkspaceResourceName) => void;
 }
 
 export class WorkspaceFile implements EditableWorkspaceContainer {
@@ -86,13 +84,13 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   public getLocalDbName() { return join(this.getContainerDir(), `${this.containerId}.itwin-workspace-container`); }
   public getLocalFilesDir() { return join(this.getContainerFilesDir(), this.containerId); }
 
-  private queryFileResource(resourceName: WorkspaceResourceName) {
-    const info = this.db.nativeDb.queryEmbeddedFile(resourceName);
+  private queryFileResource(rscName: WorkspaceResourceName) {
+    const info = this.db.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;
 
     // since resource names can contain illegal characters, path separators, etc., we make the local file name from its hash, in hex.
-    let localFileName = join(this.getLocalFilesDir(), createHash("sha1").update(resourceName).digest("hex"));
+    let localFileName = join(this.getLocalFilesDir(), createHash("sha1").update(rscName).digest("hex"));
     if (info.fileExt !== "") // since some applications may expect to see the extension, append it here if it was supplied.
       localFileName = `${localFileName}.${info.fileExt}`;
     return { localFileName, info };
@@ -112,12 +110,16 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
       throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
   }
 
-  private static validateContainerName(name: string, msg: string) {
+  private static validateContainerName(name: WorkspaceContainerName, msg: string) {
     if (name === "" || name.length > 255 || /[\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(name) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(name))
       throw new Error(`invalid ${msg}: [${name}]`);
     this.noLeadingOrTrailingSpaces(name, msg);
   }
 
+  private static validateContainerId(id: WorkspaceContainerId) {
+    if (id === "" || /[^0123456789ABCDEFGHJKMNPQRSTVWXYZ]/g.test(id))
+      throw new Error(`invalid containerId: [${id}]`);
+  }
   private static validateResourceName(name: WorkspaceResourceName) {
     if (name.trim() === "" || name.length > 1024)
       throw new Error(`invalid resource name`);
@@ -129,7 +131,7 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
       throw new Error("value is too large");
   }
 
-  public constructor(containerName: string, containerId?: GuidString) {
+  public constructor(containerName: WorkspaceContainerName, containerId?: string) {
     this.containerName = containerName;
     this.containerId = containerId ?? "0";
     WorkspaceFile.validateContainerName(containerName, "containerName");
@@ -160,31 +162,31 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
     this.db.saveChanges();
   }
 
-  public open(args: { accessToken?: AccessToken, openMode?: OpenMode }) {
+  public open(args: { accessToken?: AccessToken, openMode?: OpenMode }): void {
     this.db.openDb(this.getLocalDbName(), args.openMode ?? OpenMode.Readonly);
   }
 
-  public close() {
+  public close(): void {
     if (this.isOpen)
       this.db.closeDb();
   }
 
-  public getString(resourceName: WorkspaceResourceName): string | undefined {
+  public getString(rscName: WorkspaceResourceName): string | undefined {
     return this.db.withSqliteStatement("SELECT value from strings WHERE id=?", (stmt) => {
-      stmt.bindString(1, resourceName);
+      stmt.bindString(1, rscName);
       return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : undefined;
     });
   }
 
-  public getBlob(resourceName: WorkspaceResourceName): Uint8Array | undefined {
+  public getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined {
     return this.db.withSqliteStatement("SELECT value from blobs WHERE id=?", (stmt) => {
-      stmt.bindString(1, resourceName);
+      stmt.bindString(1, rscName);
       return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueBlob(0) : undefined;
     });
   }
 
-  public getFile(resourceName: WorkspaceResourceName): LocalFileName | undefined {
-    const file = this.queryFileResource(resourceName);
+  public getFile(rscName: WorkspaceResourceName): LocalFileName | undefined {
+    const file = this.queryFileResource(rscName);
     if (!file)
       return undefined;
 
@@ -199,17 +201,17 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
     else
       IModelJsFs.recursiveMkDirSync(dirname(localFileName));
 
-    this.db.nativeDb.extractEmbeddedFile({ name: resourceName, localFileName });
+    this.db.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
     const date = new Date(info.date);
     fs.utimesSync(localFileName, date, date); // set the last-modified date of the file
     fs.chmodSync(localFileName, 4); // set file readonly
     return localFileName;
   }
 
-  private performWriteSql(resourceName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {
+  private performWriteSql(rscName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {
     this.mustBeWriteable();
     this.db.withSqliteStatement(sql, (stmt) => {
-      stmt.bindString(1, resourceName);
+      stmt.bindString(1, rscName);
       bind?.(stmt);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
@@ -218,56 +220,56 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
     this.db.saveChanges();
 
   }
-  public addString(resourceName: WorkspaceResourceName, val: string) {
-    WorkspaceFile.validateResourceName(resourceName);
+  public addString(rscName: WorkspaceResourceName, val: string): void {
+    WorkspaceFile.validateResourceName(rscName);
     this.validateResourceSize(val);
-    this.performWriteSql(resourceName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
+    this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
 
-  public updateString(resourceName: WorkspaceResourceName, val: string) {
+  public updateString(rscName: WorkspaceResourceName, val: string): void {
     this.validateResourceSize(val);
-    this.performWriteSql(resourceName, "UPDATE strings SET value=?2 WHERE id=?1", (stmt) => stmt.bindString(2, val));
+    this.performWriteSql(rscName, "UPDATE strings SET value=?2 WHERE id=?1", (stmt) => stmt.bindString(2, val));
   }
 
-  public removeString(resourceName: WorkspaceResourceName) {
-    this.performWriteSql(resourceName, "DELETE FROM strings WHERE id=?");
+  public removeString(rscName: WorkspaceResourceName): void {
+    this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
   }
 
-  public addBlob(resourceName: WorkspaceResourceName, val: Uint8Array) {
-    WorkspaceFile.validateResourceName(resourceName);
+  public addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
+    WorkspaceFile.validateResourceName(rscName);
     this.validateResourceSize(val);
-    this.performWriteSql(resourceName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
+    this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
 
-  public updateBlob(resourceName: WorkspaceResourceName, val: Uint8Array) {
+  public updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
     this.validateResourceSize(val);
-    this.performWriteSql(resourceName, "UPDATE blobs SET value=?2 WHERE id=?1", (stmt) => stmt.bindBlob(2, val));
+    this.performWriteSql(rscName, "UPDATE blobs SET value=?2 WHERE id=?1", (stmt) => stmt.bindBlob(2, val));
   }
 
-  public removeBlob(resourceName: WorkspaceResourceName) {
-    this.performWriteSql(resourceName, "DELETE FROM blobs WHERE id=?");
+  public removeBlob(rscName: WorkspaceResourceName): void {
+    this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
   }
 
-  public addFile(resourceName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void {
-    WorkspaceFile.validateResourceName(resourceName);
+  public addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void {
+    WorkspaceFile.validateResourceName(rscName);
     this.mustBeWriteable();
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
-    this.db.nativeDb.embedFile({ name: resourceName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
+    this.db.nativeDb.embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
 
-  public updateFile(resourceName: WorkspaceResourceName, localFileName: LocalFileName): void {
+  public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
     this.mustBeWriteable();
-    this.queryFileResource(resourceName); // throws if not present
-    this.db.nativeDb.replaceEmbeddedFile({ name: resourceName, localFileName, date: this.getFileModifiedTime(localFileName) });
+    this.queryFileResource(rscName); // throws if not present
+    this.db.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
   }
 
-  public removeFile(resourceName: WorkspaceResourceName) {
+  public removeFile(rscName: WorkspaceResourceName): void {
     this.mustBeWriteable();
-    const file = this.queryFileResource(resourceName);
+    const file = this.queryFileResource(rscName);
     if (file && fs.existsSync(file.localFileName))
       fs.unlinkSync(file.localFileName);
-    this.db.nativeDb.removeEmbeddedFile(resourceName);
+    this.db.nativeDb.removeEmbeddedFile(rscName);
   }
 }

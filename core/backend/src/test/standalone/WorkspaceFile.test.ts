@@ -13,11 +13,11 @@ import { extname } from "path";
 import * as sinon from "sinon";
 
 describe.only("WorkspaceFile", () => {
-  it("invalid WorkspaceNames", () => {
+  it("invalid WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((name) => {
-        expect(() => new WorkspaceFile(name)).to.throw("containerName");
-        expect(() => new WorkspaceFile("a", name)).to.throw("containerId");
+        expect(() => new WorkspaceFile(name), name).to.throw("containerName");
+        expect(() => new WorkspaceFile("a", name), name).to.throw("containerId");
       });
     };
 
@@ -27,15 +27,15 @@ describe.only("WorkspaceFile", () => {
       "1/2",
       "a\\b",
       `a"b`,
-      "a colon:",
-      "return\r",
-      "newline\n",
+      "a:b",
       "a.b",
       "a?b",
       "a*b",
       "a|b",
       "con",
       "prn",
+      "return\r",
+      "newline\n",
       "a".repeat(256), // too long
       " leading space",
       "trailing space "]);
@@ -47,11 +47,18 @@ describe.only("WorkspaceFile", () => {
     IModelJsFs.purgeDirSync(dir);
     wsFile.create();
 
+    const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
     let blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
     let strVal = "this is test1";
     const strRscName = "string-resource/1";
     const blobRscName = "blob.resource:1";
+    const fileRscName = "settings files/my settings/a.json5";
+
+    expect(() => wsFile.addFile(fileRscName, "bad file name")).to.throw("no such file");
+    expect(() => wsFile.updateFile(fileRscName, inFile)).to.throw("error replacing");
+    expect(() => wsFile.removeFile(fileRscName)).to.throw("error removing");
+
     wsFile.addBlob(blobRscName, blobVal);
     wsFile.addString(strRscName, strVal);
     expect(wsFile.getString(strRscName)).equals(strVal);
@@ -68,8 +75,6 @@ describe.only("WorkspaceFile", () => {
     expect(wsFile.getString(strRscName)).to.be.undefined;
     expect(wsFile.getBlob(blobRscName)).to.be.undefined;
 
-    const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const fileRscName = "settings files/my settings/a.json5?=$&*";
     wsFile.addFile(fileRscName, inFile);
     const writeFile = sinon.spy((wsFile as any).db.nativeDb, "extractEmbeddedFile");
     expect(writeFile.callCount).eq(0);
@@ -99,7 +104,6 @@ describe.only("WorkspaceFile", () => {
     f1 = fs.readFileSync(inFile2);
     f2 = fs.readFileSync(outFile);
     expect(f1).to.deep.equal(f2);
-
   });
 
 });
