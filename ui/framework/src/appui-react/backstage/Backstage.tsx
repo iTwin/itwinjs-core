@@ -133,7 +133,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     return (
       <SafeAreaContext.Consumer>
         {(safeAreaInsets) => (
-          <NZ_Backstage // eslint-disable-line deprecation/deprecation
+          <NZ_Backstage
             className={this.props.className}
             header={header}
             isOpen={this.state.isVisible}

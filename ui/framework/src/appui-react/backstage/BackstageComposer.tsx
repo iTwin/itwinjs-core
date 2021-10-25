@@ -141,7 +141,7 @@ export function BackstageComposer(props: BackstageComposerProps) {
   const groups = useGroupedItems(combinedBackstageItems);
 
   return (
-    <NZ_Backstage // eslint-disable-line deprecation/deprecation
+    <NZ_Backstage
       className={props.className}
       header={props.header}
       isOpen={isOpen}
