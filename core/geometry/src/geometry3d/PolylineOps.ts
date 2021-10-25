@@ -169,5 +169,25 @@ export class PolylineOps {
      }
      return dest;
   }
+  /**
+   * Add closure points to a polyline or array of polylines
+   * @param data points.
+   */
+   public static addClosurePoint(data: Point3d[] | Point3d[][]) {
+    if (data.length === 0)
+      return;
+    const q0 = data[0];
+    if (Array.isArray(q0)) {
+      for (const child of data) {
+        if (Array.isArray(child))
+          this.addClosurePoint(child);
+      }
+      return;
+    }
+    const q1 = data[data.length - 1];
+    if (q0 instanceof Point3d && q1 instanceof Point3d && !q0.isAlmostEqual (q1)) {
+      (data as Point3d[]).push(q0.clone());
+    }
+  }
 
 }
