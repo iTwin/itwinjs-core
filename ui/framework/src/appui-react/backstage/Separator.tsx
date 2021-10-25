@@ -26,7 +26,7 @@ export class SeparatorBackstageItem extends React.PureComponent<BackstageItemPro
 
   public override render(): React.ReactNode {
     return (
-      <NZ_BackstageSeparator key={this._key} /> // eslint-disable-line deprecation/deprecation
+      <NZ_BackstageSeparator key={this._key} />
     );
   }
 }
