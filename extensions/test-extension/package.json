@@ -8,7 +8,7 @@
   "license": "MIT",
   "version": "0.0.0",
   "scripts": {
-    "build": "tsc --project ./src 1>&2 && npm run -s esbuild",
+    "build": "tsc --project ./src 1>&2",
     "build:ci": "npm run -s build",
     "esbuild": "npx esbuild src/index.ts --sourcemap --bundle --outfile=dist/index.js --format=esm --target=es2020 --external:os --minify",
     "clean": "rimraf lib dist",
