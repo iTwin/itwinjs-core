@@ -6553,14 +6553,15 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
-    static initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
+    // @internal
     static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
@@ -6676,6 +6677,8 @@ export class UiShowHideManager {
     static showUiAndResetTimer(): void;
     static get snapWidgetOpacity(): boolean;
     static set snapWidgetOpacity(value: boolean);
+    // @internal (undocumented)
+    static terminate(): void;
     static get useProximityOpacity(): boolean;
     static set useProximityOpacity(value: boolean);
     }

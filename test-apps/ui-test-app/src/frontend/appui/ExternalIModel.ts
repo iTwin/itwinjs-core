@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
@@ -45,11 +45,11 @@ export class ExternalIModel {
     if (!args.iTwinId && !args.iTwinName) {
       throw new Error("An iTwin name or id is required to construct an External iModel");
     } else if (!args.iTwinId && args.iTwinName) {
-      const iTwinClient = new ITwinAccessClient();
+      const iTwinClient = new ProjectsAccessClient();
       const iTwinList: ITwin[] = await iTwinClient.getAll(accessToken, {
         search: {
           searchString: args.iTwinName,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
           exactMatch: true,
         },
       });

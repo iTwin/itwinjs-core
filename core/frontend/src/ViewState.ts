@@ -390,8 +390,6 @@ export abstract class ViewState extends ElementState {
   public abstract is3d(): this is ViewState3d;
   /** Returns true if this ViewState is-a [[ViewState2d]] */
   public is2d(): this is ViewState2d { return !this.is3d(); }
-  /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
-  public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
@@ -553,7 +551,7 @@ export abstract class ViewState extends ElementState {
     let origin: Point3d;
 
     // Compute root vectors along edges of view frustum.
-    if (this.isCameraEnabled()) {
+    if (this.is3d() && this.isCameraOn) {
       const camera = this.camera;
       const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       viewRot.multiplyVectorInPlace(eyeToOrigin);                        // align with view coordinates.
@@ -965,7 +963,7 @@ export abstract class ViewState extends ElementState {
 
     const margin = options?.marginPercent;
 
-    if (this.isCameraEnabled()) {
+    if (this.is3d() && this.isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
@@ -1092,9 +1090,13 @@ export abstract class ViewState extends ElementState {
    * false if the viewed area do does not include more than one percent of the project.
    */
   public getIsViewingProject(): boolean {
+    if (!this.isSpatialView())
+      return false;
+
     const worldToNpc = this.computeWorldToNpc();
     if (!worldToNpc || !worldToNpc.map)
       return false;
+
     const expandedRange = this.iModel.projectExtents.clone();
     expandedRange.expandInPlace(10E3);
     const corners = expandedRange.corners(scratchCorners);
@@ -1311,7 +1313,7 @@ export abstract class ViewState3d extends ViewState {
     this.camera = new Camera(props.camera);
 
     // if the camera is on, make sure the eyepoint is centered.
-    if (this.isCameraEnabled())
+    if (this.is3d() && this.isCameraOn)
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
@@ -1501,9 +1503,9 @@ export abstract class ViewState3d extends ViewState {
       }
     }
 
-    const isCameraEnabled = this.isCameraEnabled();
+    const isCameraEnabled = this.isCameraOn;
     this.lookAt({ eyePoint, targetPoint, upVector, lensAngle: this.camera.getLensAngle() });
-    if (!isCameraEnabled && this.isCameraEnabled)
+    if (!isCameraEnabled && this.isCameraOn)
       this.turnCameraOff();
 
     return eyePoint.distance(origEyePoint);
@@ -2119,7 +2121,7 @@ export abstract class ViewState3d extends ViewState {
     const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
     const viewZ = this.getRotation().rowZ();
     const center = this.getCenter();
-    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
     const eyeRay = Ray3d.create(eye, viewZ);
     const fractions = new Array<number>(), points = new Array<Point3d>();
 
@@ -2160,7 +2162,7 @@ export abstract class ViewState3d extends ViewState {
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
     const viewCenter = this.getCenter();
     const viewZ = this.getRotation().rowZ();
-    const eye = this.isCameraEnabled() ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
 
     const centerToEye = earthCenter.unitVectorTo(eye);
     if (!centerToEye)

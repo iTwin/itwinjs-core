@@ -55,14 +55,6 @@
       ]
     },
     {
-      "name": "@bentley/itwin-registry-client",
-      "allowedCategories": [
-        "common",
-        "integration-testing",
-        "internal"
-      ]
-    },
-    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [
         "frontend",
@@ -86,9 +78,7 @@
       "name": "@bentley/telemetry-client",
       "allowedCategories": [
         "backend",
-        "frontend",
-        "integration-testing",
-        "internal"
+        "frontend"
       ]
     },
     {
@@ -241,11 +231,7 @@
     {
       "name": "@itwin/core-i18n",
       "allowedCategories": [
-        "backend",
-        "edit",
-        "extensions",
         "frontend",
-        "integration-testing",
         "internal"
       ]
     },
@@ -259,7 +245,6 @@
     {
       "name": "@itwin/core-mobile",
       "allowedCategories": [
-        "common",
         "internal"
       ]
     },
@@ -340,12 +325,6 @@
     },
     {
       "name": "@itwin/editor-frontend",
-      "allowedCategories": [
-        "internal"
-      ]
-    },
-    {
-      "name": "@itwin/electron-authorization",
       "allowedCategories": [
         "internal"
       ]
@@ -476,6 +455,14 @@
       ]
     },
     {
+      "name": "@itwin/projects-client",
+      "allowedCategories": [
+        "common",
+        "integration-testing",
+        "internal"
+      ]
+    },
+    {
       "name": "@itwin/service-authorization",
       "allowedCategories": [
         "integration-testing",
@@ -504,8 +491,7 @@
     {
       "name": "@openid/appauth",
       "allowedCategories": [
-        "backend",
-        "internal"
+        "backend"
       ]
     },
     {
@@ -1261,8 +1247,7 @@
     {
       "name": "open",
       "allowedCategories": [
-        "backend",
-        "internal"
+        "backend"
       ]
     },
     {
@@ -1511,12 +1496,6 @@
       ]
     },
     {
-      "name": "serve-handler",
-      "allowedCategories": [
-        "internal"
-      ]
-    },
-    {
       "name": "shortid",
       "allowedCategories": [
         "frontend"
@@ -1665,8 +1644,7 @@
     {
       "name": "username",
       "allowedCategories": [
-        "backend",
-        "internal"
+        "backend"
       ]
     },
     {
@@ -1721,6 +1699,12 @@
       "name": "ws",
       "allowedCategories": [
         "backend"
+      ]
+    },
+    {
+      "name": "wtfnode",
+      "allowedCategories": [
+        "tools"
       ]
     },
     {

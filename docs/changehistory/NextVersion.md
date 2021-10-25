@@ -80,6 +80,7 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
 - Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Dropped support for ESLint 6.x.
 
 ## BentleyError constructor no longer logs
 
@@ -773,6 +774,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
 | `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
 | `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                               |
 | `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
 | `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
 | `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
@@ -808,10 +810,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/appui-abstract
 
-| Removed                       | Replacement  |
-| ----------------------------- | ------------ |
-| `ContentLayoutProps.priority` | *eliminated* |
-| `UiItemsArbiter`              | *eliminated* |
+| Removed                       | Replacement                  |
+| ----------------------------- | ---------------------------- |
+| `ContentLayoutProps.priority` | *eliminated*                 |
+| `UiItemsArbiter`              | *eliminated*                 |
+| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter`   |
 
 ### @itwin/core-react
 
@@ -1296,6 +1299,14 @@ were removed from the `@itwin/core-backend` package and moved to a new package, 
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
 
+## Remove ninezone-test-app
+
+The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
+
+## Improve/Enhance particle systems
+
+Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
 ## Changes to ECSql APIs
 
 Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
@@ -1412,3 +1423,13 @@ In previous versions, the [Tool.register]($frontend) method took an optional arg
 ## Improve/Enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
+## Buildology
+
+`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
+
+All packages will continue to build a CommonJS variant, but will now deliver it to `lib/cjs`. All frontend and shared ("common") packages will now build an ESModules variant, and deliver it to `lib/esm`. This change is intended to improve the bundle sizes of applications and allow for dynamic imports in order to tree-shake unused code.
+
+If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
+
+This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).

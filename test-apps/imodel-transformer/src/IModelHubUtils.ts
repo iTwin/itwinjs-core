@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
@@ -68,7 +68,8 @@ export namespace IModelHubUtils {
 
   /** Call the specified function for each (named) Version of the specified iModel. */
   export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
-    const namedVersions = await IModelHubBackend.iModelClient.versions.get(accessToken, iModelId);
+    assert(IModelHost.hubAccess instanceof IModelHubBackend);
+    const namedVersions = await IModelHost.hubAccess.iModelClient.versions.get(accessToken, iModelId);
     for (const namedVersion of namedVersions) {
       func(namedVersion);
     }

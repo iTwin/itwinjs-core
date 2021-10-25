@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "Drop support for ESLint 6.x",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin"
+}
