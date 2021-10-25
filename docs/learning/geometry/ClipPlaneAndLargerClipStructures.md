@@ -113,24 +113,32 @@ The `Clipper` interface defines methods for clip operations.   Note that these a
 
 The _point_, _line_, and _arc_ methods are required.
 
-The _polygon_ method is optional.
+The _polygon_ method is optional.  This allows a curved-surface clipper (e.g. an ellipsoid) to implement point and curve clipping but not polygon clipping (which cannot produce exact match clip curves as polygonal output).
 
 | Interface | method | Remarks |
 |---|---|---|
 | Clipper |  `isPointOnOrInside(point: Point3d, tolerance?: number): boolean;` | Test if _point_ is inside or on |
 | Clipper |   `announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;` | compare a line segment to the clipper.  Issue function calls with fractional intervals that are "in" |
 | Clipper |   `announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;` | compare an arc to the clipper.  Announce intervals that are in. |
-| PolygonClipper |   `appendPolygonClip(xyz: GrowableXYZArray,  insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[],  arrayCache: GrowableXYZArrayCache): void;` | Clip a single polygon, emitting inside and outside pieces into indicated arrays. |
+| PolygonClipper (Optional in Clipper) |   `appendPolygonClip(xyz: GrowableXYZArray,  insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[],  arrayCache: GrowableXYZArrayCache): void;` | Clip a single polygon, emitting inside and outside pieces into indicated arrays. |
 
 # `BooleanClipNode`
 
-Clipping with a `ClipVector` is tree structure with 3 operational steps -- intersection of planes in a convex region, union of the convex regions, and then intersection of the union results.   This rigid structure has evolved for needs of  display processes.
-
-More general trees can constructed (strictly within typescript, apart from the limited display system clipping) by arbitrary trees of the abstract class `BooleanClipNode`.
-
 A `BooleanClipNode` contains an array of objects that implement the `Clipper` interface, and implements the `Clipper` interface itself.   Hence arbitrary trees of booleans can be described.
+
+This allows completely general boolean trees to be constructed (strictly within typescript, apart from the limited display system clipping) with instances of the abstract class `BooleanClipNode` as interior nodes.
+
+The tree structure is created by statics in the `BoolanClipFactory` class:
+| method | boolean expression |
+|---|---|
+| createCaptureUnion (children) | union over (array of) children |
+| createCaptureIntersection (children) | intersection among (array of) children  |
+| createCaptureParity (children)| parity among (array of) children |
+| createCaptureDifference (primary, secondary) | inside primary and outside secondary |
+| createCaptureOutside (clipper) | negation of clipper |
 
 There are 3 concrete classes:
  * BooleanClipNodeUnion -- union (boolean OR) operation among its members, with optional inversion of the result (boolean NOR)
  * BooleanClipNodeIntersection -- intersection (boolean AND) operation among its members, with optional inversin of the result (boolean NAND)
  * BooleanClipNodeParity -- parity (boolean XOR) among its members, with optional inversion of the result.
+

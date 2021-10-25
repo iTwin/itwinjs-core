@@ -41,6 +41,7 @@ export enum ClipPlaneContainment {
 }
 /**
  * Enumeration of ways to handle an intermediate fragment from a clipping step
+ * @public
  */
 export enum ClipStepAction  {
   acceptIn = 1,   // accept the fragment as "in"
