@@ -2,6 +2,18 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.19.19",
+      "tag": "@bentley/ui-ninezone_v2.19.19",
+      "date": "Mon, 25 Oct 2021 16:16:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Drop unnecessary dep on @bentley/react-scripts; add a *.d.ts file for svg?sprite loader syntax"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.18",
       "tag": "@bentley/ui-ninezone_v2.19.18",
       "date": "Thu, 21 Oct 2021 20:59:44 GMT",

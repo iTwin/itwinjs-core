@@ -2,6 +2,12 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.19",
+      "tag": "@bentley/ui-components_v2.19.19",
+      "date": "Mon, 25 Oct 2021 16:16:25 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.18",
       "tag": "@bentley/ui-components_v2.19.18",
       "date": "Thu, 21 Oct 2021 20:59:44 GMT",
