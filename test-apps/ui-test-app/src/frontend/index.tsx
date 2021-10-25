@@ -10,7 +10,7 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
-import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
+import { ProgressInfo } from "@bentley/itwin-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
@@ -211,7 +211,7 @@ export class SampleAppIModelApp {
         redirectUri,
         scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
         responseType: "code",
-        authority: await new ImsAuthorizationClient().getUrl(),
+        authority: "https://ims.bentley.com", // TODO: Double check this
       });
       try {
         await auth.signInSilent();
