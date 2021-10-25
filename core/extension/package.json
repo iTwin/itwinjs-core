@@ -13,7 +13,8 @@
     "clean": "rimraf .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "",
+    "// lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "keywords": [

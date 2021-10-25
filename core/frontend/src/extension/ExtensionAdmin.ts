@@ -9,7 +9,7 @@
 // import { Extension, ExtensionLoader, ExtensionManifest, LocalExtensionProps, PendingExtension } from "./Extension";
 import { IModelApp } from "../IModelApp";
 import { ExtensionManifest, LocalExtensionProps } from "./Extension";
-import { ExtensionLoader, ExtensionLoaderProps } from "./ExtensionLoader";
+import { ExtensionLoader } from "./ExtensionLoader";
 
 /** The Extensions loading system has 3 goals:
  *   1. Only fetch what is needed when it is required

@@ -67,7 +67,7 @@ export function Toolbar(props: ToolbarProps) {
     });
   }, []);
 
-  const availableNodes = React.useMemo<React.ReactNodeArray>(() => {
+  const availableNodes = React.useMemo<React.ReactNodeArray>(() => { // eslint-disable-line deprecation/deprecation
     return props.items.map((item, index) => {
       let addGroupSeparator = false;
       if (index > 0)

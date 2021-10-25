@@ -27,7 +27,7 @@ export class ToolProvider implements UiItemsProvider {
 }
 
 export class ExtensionImpl {
-  constructor(private id: string) { }
+  constructor(private _id: string) { }
 
   public async registerTool(tool: ToolType, onRegistered?: () => any): Promise<void> {
     try {
@@ -35,7 +35,7 @@ export class ExtensionImpl {
       UiItemsManager.register(new ToolProvider(tool));
       onRegistered?.();
     } catch (e: any) {
-      console.log(`Error registering tool: ${e}`);
+      console.log(`Error registering tool: ${e}`); // eslint-disable-line
     }
   }
 }

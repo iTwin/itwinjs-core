@@ -26,7 +26,7 @@ import { TileBoundingBoxes, TileGraphicType, TileLoadPriority, TileLoadStatus, T
 import { ClipEventType } from "../tools/ClipViewTool";
 import { PrimitiveTool } from "../tools/PrimitiveTool";
 import { SelectionMethod, SelectionMode, SelectionProcessing } from "../tools/SelectTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, EventHandled, InputSource, InteractiveTool, KeyinParseError, ParseAndRunResult, Tool, ToolType } from "../tools/Tool";
+import { BeButton, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, EventHandled, InputSource, InteractiveTool, KeyinParseError, ParseAndRunResult, Tool } from "../tools/Tool";
 import { ManipulatorToolEvent, StartOrResume } from "../tools/ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "../tools/ToolAssistance";
 import { ViewTool } from "../tools/ViewTool";
