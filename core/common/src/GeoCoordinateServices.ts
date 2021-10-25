@@ -43,7 +43,7 @@ export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus {
  * @beta
  */
 export interface IModelCoordinatesRequestProps {
-  sourceDatum: string;
+  source: string;
   geoCoords: XYZProps[];
 }
 
@@ -65,7 +65,7 @@ export interface IModelCoordinatesResponseProps {
  * @beta
  */
 export interface GeoCoordinatesRequestProps {
-  targetDatum: string;
+  target: string;
   iModelCoords: XYZProps[];
 }
 

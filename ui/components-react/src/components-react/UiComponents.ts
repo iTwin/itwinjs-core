@@ -22,7 +22,7 @@ export class UiComponents {
 
   /**
    * Registers the localization service namespace for UiComponents. Also initializes UiCore.
-   * @param localization The internationalization service created by the application.
+   * @param localization The internationalization service created by the host application.
    */
   public static async initialize(localization: Localization): Promise<void> {
     if (UiComponents._initialized) {
@@ -51,7 +51,9 @@ export class UiComponents {
   /** Determines if UiComponents has been initialized */
   public static get initialized(): boolean { return UiComponents._initialized; }
 
-  /** The internationalization service created by the application. */
+  /** The internationalization service created by the host application.
+   * @internal
+   */
   public static get localization(): Localization {
     if (!UiComponents._localization)
       throw new UiError(UiComponents.loggerCategory(this), "_localization: UiComponents.initialize has not been called. Unable to return Localization object.");

@@ -216,7 +216,7 @@ class ViewAttachments {
 
   public constructor(infos: ViewAttachmentInfo[], sheetView: SheetViewState) {
     for (const info of infos) {
-      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || info.attachedView.isCameraEnabled();
+      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || (info.attachedView.is3d() && info.attachedView.isCameraOn);
       const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
       const attachment = new ctor(info.attachedView, info, sheetView);
       this._attachments.push(attachment);
