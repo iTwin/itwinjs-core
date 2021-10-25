@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added support to LightSettings for Fresnel effect.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

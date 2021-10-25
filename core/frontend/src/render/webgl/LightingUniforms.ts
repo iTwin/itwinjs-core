@@ -68,8 +68,8 @@ export class LightingUniforms {
     data[13] = settings.specularIntensity;
     data[14] = settings.numCels;
 
-    let fresnel = settings.fresnel.intensity;
-    data[15] = settings.fresnel.invert ? -fresnel : fresnel
+    const fresnel = settings.fresnel.intensity;
+    data[15] = settings.fresnel.invert ? -fresnel : fresnel;
   }
 
   public bind(uniform: UniformHandle): void {
