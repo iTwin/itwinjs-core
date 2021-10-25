@@ -18,5 +18,5 @@ export class ExtensionHost {
   public static get viewManager(): ViewManager { return IModelApp.viewManager; }
   public static get locateManager(): ElementLocateManager { return IModelApp.locateManager; } // internal ?
   public static get accuSnap(): AccuSnap { return IModelApp.accuSnap; }
-  public static get localization(): Localization { return IModelApp.localization; }
+  public static get localization(): Localization { return IModelApp.localization; } // re think this, should be contribution point
 }
