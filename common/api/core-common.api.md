@@ -3179,6 +3179,23 @@ export interface FormDataCommon {
 }
 
 // @public
+export class FresnelSettings {
+    clone(changedProps?: FresnelSettingsProps): FresnelSettings;
+    static create(intensity?: number, invert?: boolean): FresnelSettings;
+    equals(rhs: FresnelSettings): boolean;
+    static fromJSON(props?: FresnelSettingsProps): FresnelSettings;
+    readonly intensity: number;
+    readonly invert: boolean;
+    toJSON(): FresnelSettingsProps | undefined;
+}
+
+// @public
+export interface FresnelSettingsProps {
+    intensity?: number;
+    invert?: boolean;
+}
+
+// @public
 export class Frustum {
     constructor();
     clone(result?: Frustum): Frustum;
@@ -3276,7 +3293,7 @@ export interface GeoCoordinatesRequestProps {
     // (undocumented)
     iModelCoords: XYZProps[];
     // (undocumented)
-    targetDatum: string;
+    target: string;
 }
 
 // @beta
@@ -4475,7 +4492,7 @@ export interface IModelCoordinatesRequestProps {
     // (undocumented)
     geoCoords: XYZProps[];
     // (undocumented)
-    sourceDatum: string;
+    source: string;
 }
 
 // @beta (undocumented)
@@ -4902,12 +4919,12 @@ export class LightSettings {
     // (undocumented)
     equals(rhs: LightSettings): boolean;
     // (undocumented)
+    readonly fresnel: FresnelSettings;
+    // (undocumented)
     static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
     readonly hemisphere: HemisphereLights;
-    // (undocumented)
     readonly numCels: number;
-    // (undocumented)
     readonly portraitIntensity: number;
     // (undocumented)
     readonly solar: SolarLight;
@@ -4920,6 +4937,7 @@ export class LightSettings {
 // @public
 export interface LightSettingsProps {
     ambient?: AmbientLightProps;
+    fresnel?: FresnelSettingsProps;
     hemisphere?: HemisphereLightsProps;
     numCels?: number;
     portrait?: {

@@ -3281,7 +3281,7 @@ export class FuzzySearchResults<T> implements Iterable<T> {
 
 // @internal
 export class GeoConverter {
-    constructor(iModel: IModelConnection, datum: string);
+    constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
     // (undocumented)
     getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps;
     // (undocumented)
@@ -3355,7 +3355,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 export class GeoServices {
     constructor(iModel: IModelConnection);
     // (undocumented)
-    getConverter(datum?: string): GeoConverter | undefined;
+    getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
     }
 
 // @public
@@ -6826,7 +6826,6 @@ export class OrbitGtTileTree extends TileTree {
 export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
-    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
@@ -7444,8 +7443,8 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 // @internal
 export class RealityModelTileClient {
     constructor(rdConnection: RealityDataConnection, iTwinId?: string);
-    // (undocumented)
-    getBlobAccessData(): Promise<URL | undefined>;
+    getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any>;
+    getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any>;
     getRealityDataType(): Promise<string | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;

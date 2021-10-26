@@ -22,6 +22,8 @@ import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { BooleanClipNodeIntersection } from "./BooleanClipNode";
 import { Arc3d } from "../curve/Arc3d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /** Wire format describing a [[ClipVector]].
  * @public
@@ -192,10 +194,18 @@ export class ClipVector implements Clipper {
     if (this._clipNodeProxy)
       return this._clipNodeProxy.announceClippedArcIntervals(arc, announce);
     return false;
-    return false;
   }
-
-  /** Transforms this ClipVector to a new coordinate-system.
+/** Execute polygon clip as intersection of the child primitives. */
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+      this.ensureProxyClipNode();
+      if (this._clipNodeProxy)
+        this._clipNodeProxy.appendPolygonClip(xyz, insideFragments, outsideFragments, arrayCache);
+      }
+ /** Transforms this ClipVector to a new coordinate-system.
    * Note that if the transform has rotate and scale the boundingRange member expands.
    * Returns true if successful.
    */

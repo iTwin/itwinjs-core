@@ -82,6 +82,35 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
 - Dropped support for ESLint 6.x.
 
+## Fresnel effect
+
+[LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
+
+Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
+
+![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
+
+The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+```
+  // Enable ambient occlusion.
+  viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
+
+  // Configure the lighting.
+  viewport.displayStyle.lightSettings = LightSettings.fromJSON({
+    // A relatively bright ambient light is the only light source.
+    ambient: {
+      intensity: 0.55,
+    },
+    // Increase the brightness of surfaces that are closer to parallel with the viewer's line of sight.
+    fresnel: {
+      intensity: 0.8,
+      invert: true,
+    },
+  });
+```
+
 ## BentleyError constructor no longer logs
 
 In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
@@ -1293,6 +1322,14 @@ were removed from the `@itwin/core-backend` package and moved to a new package, 
 ## @itwin/core-common
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
+
+## Remove ninezone-test-app
+
+The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
+
+## Improve/Enhance particle systems
+
+Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
 
 ## Changes to ECSql APIs
 
