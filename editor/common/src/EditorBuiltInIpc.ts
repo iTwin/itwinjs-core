@@ -7,7 +7,7 @@
  */
 
 import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Matrix3dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
+import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
 import { ColorDefProps, EcefLocationProps, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
@@ -124,23 +124,35 @@ export interface ElementGeometryCacheFilter {
 }
 
 /** @alpha */
+export enum BRepEntityType {
+  /** Body consisting of at least one solid region */
+  Solid = 0,
+  /** Body consisting of connected sets of faces having edges that are shared by a maximum of two faces */
+  Sheet = 1,
+  /** Body consisting of connected sets of edges having vertices that are shared by a maximum of two edges */
+  Wire = 2,
+  /** Body can not be used to represent this geometric entry */
+  Invalid = 3,
+}
+
+/** @alpha */
 export interface ElementGeometryResultOptions {
   /** If true, return geometry as data that can be converted to a render graphic */
-  wantGraphic?: true | undefined;
+  wantGraphic?: true;
   /** If true, return geometry as flatbuffer format data.
    * The data is potentially large and may include brep entries that cannot be directly
    * inspected or manipulated on the frontend, request only as needed. */
-  wantGeometry?: true | undefined;
+  wantGeometry?: true;
   /** If true, return geometry range. */
-  wantRange?: true | undefined;
+  wantRange?: true;
   /** If true, return geometry appearance information. */
-  wantAppearance?: true | undefined;
+  wantAppearance?: true;
   /** The chord tolerance to use when creating the graphic (default is 0.01) */
   chordTolerance?: number;
   /** Unique identifier for the render graphic request */
   requestId?: string;
   /** If true, a successful result updates the source element or is inserted as a new element when insertProps is supplied */
-  writeChanges?: true | undefined;
+  writeChanges?: true;
   /** If specified, writeChanges inserts a new [GeometricElement]($backend) using these properties */
   insertProps?: GeometricElementProps;
 }
@@ -185,7 +197,7 @@ export interface SubEntityLocationProps {
   subEntity: SubEntityProps;
   /** The face, edge, or vertex location in world coordinates from closest point or locate request */
   point?: XYZProps;
-  /** The face normal in world coordinates of the identified location on sub-entity */
+  /** The face normal vector in world coordinates of the identified location on sub-entity */
   normal?: XYZProps;
   /** The face or edge u parameter of identified location on sub-entity */
   uParam?: number;
@@ -222,14 +234,6 @@ export interface SubEntityGeometryProps {
 }
 
 /** @alpha */
-export interface OffsetFacesProps {
-  /** The faces to offset */
-  faces: SubEntityProps | SubEntityProps[];
-  /** The offset to apply to all faces, or the offset for each face */
-  distances: number | number[];
-}
-
-/** @alpha */
 export interface SubEntityFilter {
   /** true to reject non-planar faces */
   nonPlanarFaces?: true;
@@ -260,11 +264,276 @@ export interface LocateSubEntityProps {
 }
 
 /** @alpha */
+export interface ConnectedSubEntityProps {
+  /** Set to return edges comprising the single loop of this face that contains the supplied edge */
+  loopFace?: SubEntityProps;
+  /** Set to return edges that are connected and tangent to the supplied edge */
+  smoothEdges?: true;
+  /** Set to return faces that are smoothly connected to the supplied face */
+  smoothFaces?: true;
+  /** Set to return adjacent faces to the supplied face or limit smooth face propagation */
+  adjacentFaces?: true;
+  /** Set to include adjacent faces with identical surface geometry to the supplied face */
+  sameSurface?: true;
+}
+
+/** @alpha */
+export interface EvaluatedFaceProps {
+  /** The face location in world coordinates of the supplied uv parameter */
+  point: XYZProps;
+  /** The face normal vector in world coordinates of the supplied uv parameter */
+  normal: XYZProps;
+  /** The first derivative with respect to u at the uv parameter */
+  uDir: XYZProps;
+  /** The first derivative with respect to v at the uv parameter */
+  vDir: XYZProps;
+}
+
+/** @alpha */
+export interface EvaluatedEdgeProps {
+  /** The edge location in world coordinates of the supplied u parameter */
+  point: XYZProps;
+  /** The normalized curve tangent in world coordinates at the u parameter */
+  uDir: XYZProps;
+}
+
+/** @alpha */
+export interface EvaluatedVertexProps {
+  /** The vertex location in world coordinates */
+  point: XYZProps;
+}
+
+/** @alpha */
+export interface FaceParameterRangeProps {
+  /** The u parameter range of the face */
+  uRange: Range1dProps;
+  /** The v parameter range of the face */
+  vRange: Range1dProps;
+}
+
+/** @alpha */
+export interface EdgeParameterRangeProps {
+  /** The u parameter range of the edge */
+  uRange: Range1dProps;
+}
+
+/** @alpha */
+export interface PointInsideResultProps {
+  /** Identifies the geometric primitive in the geometry stream */
+  index: number;
+  /** Result status */
+  inside: boolean;
+}
+
+/** @alpha */
+export enum BooleanMode {
+  /** Unite target with one or more tool entities */
+  Unite = 0,
+  /** Subtract one or more tool entities from target entity */
+  Subtract = 1,
+  /** Intersect target with one or more tool entities */
+  Intersect = 2,
+}
+
+/** @alpha */
+export interface BooleanOperationProps {
+  /** Specifies boolean mode */
+  mode: BooleanMode;
+  /** The elements to use as tool bodies (consumed in boolean) */
+  tools: Id64String | Id64String[];
+}
+
+/** @alpha */
+export interface SewSheetProps {
+  /** The elements to use as tool bodies (consumed in boolean) */
+  tools: Id64String | Id64String[];
+}
+
+/** @alpha */
+export interface ThickenSheetProps {
+  /** The offset distance in the direction of the sheet body face normal */
+  front: number;
+  /** The offset distance in the opposite direction of the sheet body face normal */
+  back: number;
+}
+
+/** @alpha */
+export interface OffsetFacesProps {
+  /** The faces to offset. */
+  faces: SubEntityProps | SubEntityProps[];
+  /** The offset to apply to all faces, or the offset for each face */
+  distances: number | number[];
+  /** Set to use faces only to identify which geometric primitives to offset, same offset applied to all faces of body */
+  offsetAll?: true;
+}
+
+/** @alpha */
+export interface OffsetEdgesProps {
+  /** The edges to offset with the first edge used as the reference edge for the offset distance. Edges that don't share a face with the reference edge are ignored. */
+  edges: SubEntityProps | SubEntityProps[];
+  /** The offset direction relative to the reference edge */
+  direction: XYZProps;
+  /** The offset distance for each edge */
+  distance: number;
+  /** Whether to automatically continue blend along connected and tangent edges that aren't explicitly specified. */
+  propagateSmooth: boolean;
+}
+
+/** When shelling, a positive offset goes outwards (in the direction of the surface normal),
+ * a negative offset is inwards, and a face with zero offset will be pierced/removed.
+ * @alpha
+ */
+export interface HollowFacesProps {
+  /** The offset distance to apply to any face not specifically included in the faces array */
+  defaultDistance: number;
+  /** The faces to offset by values other than the default offset distance */
+  faces: SubEntityProps | SubEntityProps[];
+  /** The offset to apply to all specified faces, or the offset for each face in array */
+  distances: number | number[];
+}
+
+/** @alpha */
+export interface SweepFacesProps {
+  /** The faces to be swept */
+  faces: SubEntityProps | SubEntityProps[];
+  /** A scaled vector to define the sweep direction and distance */
+  path: XYZProps;
+}
+
+/** @alpha */
+export interface SpinFacesProps {
+  /** The faces to be spun */
+  faces: SubEntityProps | SubEntityProps[];
+  /** The axis origin */
+  origin: XYZProps;
+  /** The axis direction */
+  direction: XYZProps;
+  /** The sweep angle (value in range of -2pi to 2pi), Full sweep if undefined. */
+  angle?: AngleProps;
+}
+
+/** @alpha */
+export interface DeleteSubEntityProps {
+  /** The sub-entities to remove. All sub-entities should be of the same [[SubEntityType]]. [[SubEntityType.Vertex]] unsupported. */
+  subEntities: SubEntityProps | SubEntityProps[];
+}
+
+/** @alpha */
+export interface TransformSubEntityProps {
+  /** The sub-entities to transform. All sub-entities should be of the same [[SubEntityType]]. */
+  subEntities: SubEntityProps | SubEntityProps[];
+  /** The transform to apply to all sub-entities, or the transform for each sub-entity */
+  transforms: TransformProps | TransformProps[];
+}
+
+/** @alpha */
+export interface BlendEdgesProps {
+  /** The edges to blend */
+  edges: SubEntityProps | SubEntityProps[];
+  /** The radius to apply to all edges, or the radius for each edge */
+  radii: number | number[];
+  /** Whether to automatically continue blend along connected and tangent edges that aren't explicitly specified. */
+  propagateSmooth: boolean;
+}
+
+/** @alpha */
+export enum ChamferMode {
+  /** Chamfer ranges */
+  Ranges = 0,
+  /** Chamfer length. Specify lengths using values1, values2 is unused. */
+  Length = 1,
+  /** Right/Left distances. Equal distance if values2 is undefined. */
+  Distances = 2,
+  /** Right distance and angle (radians) */
+  DistanceAngle = 3,
+  /** Angle (radians) and left distance */
+  AngleDistance = 4,
+}
+
+/** @alpha */
+export interface ChamferEdgesProps {
+  /** Specifies chamfer type and determines how values1 and values2 are interpreted and used */
+  mode: ChamferMode;
+  /** The edges to chamfer */
+  edges: SubEntityProps | SubEntityProps[];
+  /** The chamfer value to apply to all edges, or the value for each edge. Meaning varies by ChamferMode. */
+  values1: number | number[];
+  /** The chamfer value to apply to all edges, or the value for each edge. Meaning varies by ChamferMode, unused for (Unused for ChamferMode.Length. */
+  values2?: number | number[];
+  /** Whether to automatically continue blend along connected and tangent edges that aren't explicitly specified. */
+  propagateSmooth: boolean;
+}
+
+/** @alpha */
 export interface SolidModelingCommandIpc extends EditCommandIpc {
+  /** Clear geometry cache for all elements */
   clearElementGeometryCache(): Promise<void>;
+  /** Create new geometry cache entries for the supplied geometric element, or check existing an cache against supplied filter. */
   createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
+  /** Report the type of brep entity that would be created for each entry referenced by the supplied geometric element. */
+  summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined>;
+  /** Get the geometric representation of a sub-entity in flatbuffer format or graphic data. */
   getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+  /** Get face uv parameter range, or edge u parameter range */
+  getSubEntityParameterRange(id: Id64String, subEntity: SubEntityProps): Promise<FaceParameterRangeProps | EdgeParameterRangeProps | undefined>;
+  /** Evaluate location on face, edge, or vertex. uParam and vParam required for face, uParam required for edge. */
+  evaluateSubEntity(id: Id64String, subEntity: SubEntityProps, uParam?: number, vParam?: number): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined>;
+  /** Return whether the supplied face has a planar surface */
+  isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+  /** Return whether the angle between the normals of the supplied edge's faces never exceeds the internal smooth angle tolerance along the length of the edge */
+  isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+  /** Return whether the supplied sub-entity is a laminar edge of a sheet body, i.e. boundary of a single face */
+  isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+  /** Return whether the supplied sub-entity is a linear edge */
+  isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+  /** Return whether the angle between the normals of the supplied vertices's edges never exceeds the internal smooth angle tolerance along the length of the edge */
+  isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+  /** Return whether the supplied geometric primitive index is a disjoint body */
+  isDisjointBody(id: Id64String, index: number): Promise<boolean>;
+  /** Return whether the supplied geometric primitive index is a sheet body with a single planar face */
+  isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
+  /** Return whether the supplied geometric primitive index is a sheet or solid entity that has all planar faces */
+  hasOnlyPlanarFaces(id: Id64String, index: number): Promise<boolean>;
+  /** Return whether the supplied geometric primitive index is a body with any edge that is non-linear or any face that is non-planar */
+  hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean>;
+  /** Get sub-entities of the requested type for the supplied element */
+  getBodySubEntities(id: Id64String, type: SubEntityType, firstOnly?: true): Promise<SubEntityProps[] | undefined>;
+  /** Get related sub-entities for the supplied sub-entity. For example, get the array of faces containing a supplied edge. */
+  getConnectedSubEntities(id: Id64String, subEntity: SubEntityProps, type: SubEntityType, opts?: ConnectedSubEntityProps): Promise<SubEntityProps[] | undefined>;
+  /** Identify face, edge, and vertex sub-entities from the supplied element by their proximity to a ray. */
   locateSubEntities(id: Id64String, spacePoint: XYZProps, direction: XYZProps, opts: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
+  /** Find the ray intersection with a face */
+  locateFace(id: Id64String, subEntity: SubEntityProps, point: XYZProps, direction: XYZProps): Promise<SubEntityLocationProps[] | undefined>;
+  /** Find the closest sub-entity from the supplied element to a given point. */
+  getClosestSubEntity(id: Id64String, testPoint: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  /** Find the closest face from the supplied element to a given point. */
   getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  /** Find the closest point on a face or edge to a given point */
+  getClosestPoint(id: Id64String, subEntity: SubEntityProps, point: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  /** Test if a point is inside or on the boundary of any body from the supplied element */
+  isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
+  /** Perform the specified boolean operation between the target element and one or more tool elements. */
+  booleanOperation(id: Id64String, params: BooleanOperationProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Sew the sheet bodies from the target element and one or more tool elements together by joining those that share edges in common. */
+  sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify sheet bodies from the supplied element by thickening to create solids bodies. */
+  thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid and sheet bodies by offsetting selected faces. */
   offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid and sheet bodies by offsetting selected edges. */
+  offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid bodies by hollowing selected faces. */
+  hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid and sheet bodies by sweeping selected faces along a path vector. */
+  sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid and sheet bodies by spinning selected faces along an arc specified by a revolve axis and sweep angle. */
+  spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify the target solid or sheet body by removing selected faces oe edges. */
+  deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify the target solid or sheet body by transforming selected faces, edges, or vertices. */
+  transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify the specified edges by changing them into faces having the requested blending surface geometry. */
+  blendEdges(id: Id64String, params: BlendEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify the specified edges by changing them into faces having the requested chamfer surface geometry. */
+  chamferEdges(id: Id64String, params: ChamferEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
 }

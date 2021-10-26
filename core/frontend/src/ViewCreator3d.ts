@@ -14,15 +14,15 @@ Either takes in a list of modelIds, or displays all 3D models by default.
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat, RenderMode,
-  ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
+  RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { Environment } from "./DisplayStyleState";
-import { IModelConnection } from "./IModelConnection";
-import { SpatialViewState } from "./SpatialViewState";
 import { StandardViewId } from "./StandardView";
+import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
+import { SpatialViewState } from "./SpatialViewState";
+import { Environment } from "./DisplayStyleState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
@@ -263,14 +263,16 @@ export class ViewCreator3d {
    * Get all PhysicalModel ids in the connection
    */
   private async _getAllModels(): Promise<Id64Array> {
-    let query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
+    // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
+    // If the iModel has an earlier version, the statement will throw because the property does not exist.
+    // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
+    const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+    const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
     let models = [];
     try {
-      models = await this._executeQuery(query);
+      models = await this._executeQuery(`${select} ${spatialCriterion}`);
     } catch {
-      // possible that the isNotSpatiallyLocated property is not available in the iModel's schema
-      query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
-      models = await this._executeQuery(query);
+      models = await this._executeQuery(select);
     }
 
     return models;
