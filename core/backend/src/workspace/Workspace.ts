@@ -18,20 +18,23 @@ import { SqliteStatement } from "../SqliteStatement";
 import { SettingsPriority } from "./Settings";
 import { IModelDb } from "../IModelDb";
 
-export type WorkspaceContainerAlias = string;
+export type WorkspaceContainerName = string;
 export type WorkspaceContainerId = string;
 export type WorkspaceResourceName = string;
 export type WorkspaceResourceType = "string" | "blob" | "file";
 
-/** either a WorkspaceContainerId or a WorkspaceContainerAlias, or both. */
-export type WorkspaceContainerProps =
-  { alias: WorkspaceContainerAlias, id?: WorkspaceContainerId } |
-  { alias?: WorkspaceContainerAlias, id: WorkspaceContainerId };
+/** either a WorkspaceContainerName or a WorkspaceContainerId. */
+export type WorkspaceContainerProps = WorkspaceContainerName | { id: WorkspaceContainerId };
 
 export interface WorkspaceResourceProps {
   container: WorkspaceContainerProps;
-  name: WorkspaceResourceName;
+  rscName: WorkspaceResourceName;
   type?: WorkspaceResourceType; // defaults to "string"
+}
+
+export interface WorkspaceContainerAlias {
+  name: WorkspaceContainerName;
+  id: WorkspaceContainerId;
 }
 
 /**
@@ -48,10 +51,10 @@ export interface WorkspaceContainer {
   readonly containerId: WorkspaceContainerId;
 
   /** Get a string resource from this container, if present. */
-  getString: (rscName: WorkspaceResourceName) => string | undefined;
+  getString(rscName: WorkspaceResourceName): string | undefined;
 
   /** Get a blob resource from this container, if present. */
-  getBlob: (rscName: WorkspaceResourceName) => Uint8Array | undefined;
+  getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
 
   /** Get a local copy of a file resource from this container, if present.
    * @returns the full path to a file on the local filesystem.
@@ -63,7 +66,7 @@ export interface WorkspaceContainer {
    * @note Workspace resource files are set readonly after they are copied from the container.
    * To edit them, you must first copy them to another location.
    */
-  getFile: (rscName: WorkspaceResourceName) => LocalFileName | undefined;
+  getFile(rscName: WorkspaceResourceName): LocalFileName | undefined;
 }
 
 /**
@@ -72,21 +75,20 @@ export interface WorkspaceContainer {
  * may be editing.
  */
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
-  addString: (rscName: WorkspaceResourceName, val: string) => void;
-  updateString: (rscName: WorkspaceResourceName, val: string) => void;
-  removeString: (rscName: WorkspaceResourceName) => void;
+  addString(rscName: WorkspaceResourceName, val: string): void;
+  updateString(rscName: WorkspaceResourceName, val: string): void;
+  removeString(rscName: WorkspaceResourceName): void;
 
-  addBlob: (rscName: WorkspaceResourceName, val: Uint8Array) => void;
-  updateBlob: (rscName: WorkspaceResourceName, val: Uint8Array) => void;
-  removeBlob: (rscName: WorkspaceResourceName) => void;
+  addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+  updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+  removeBlob(rscName: WorkspaceResourceName): void;
 
-  addFile: (rscName: WorkspaceResourceName, localFileName: LocalFileName) => void;
-  updateFile: (rscName: WorkspaceResourceName, localFileName: LocalFileName) => void;
-  removeFile: (rscName: WorkspaceResourceName) => void;
+  addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
+  updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
+  removeFile(rscName: WorkspaceResourceName): void;
 }
 
 export interface WorkspaceContainerOpts {
-  containerAlias?: WorkspaceContainerAlias;
   forIModel?: IModelDb;
   accessToken?: AccessToken;
   openMode?: OpenMode;
@@ -95,12 +97,13 @@ export interface WorkspaceContainerOpts {
 
 export interface Workspace {
   readonly rootDir: LocalDirName;
-  resolveContainerId: (url: WorkspaceContainerProps) => WorkspaceContainerId | undefined;
-  getContainer: (props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts) => WorkspaceContainer;
-  addSettings: (settingRsc: WorkspaceResourceProps, priority: SettingsPriority) => void;
-  dropAll: () => void;
-  dropForIModel: (iModel: IModelDb) => void;
-  dropContainer: (id: WorkspaceContainerId) => void;
+  resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined;
+  obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
+  getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer;
+  addSettingsDictionary(settingRsc: WorkspaceResourceProps | WorkspaceContainerName, priority: SettingsPriority): void;
+  dropAll(): void;
+  dropForIModel(iModel: IModelDb): void;
+  dropContainer(container: WorkspaceContainer): void;
 }
 
 export class WorkspaceFile implements EditableWorkspaceContainer {
@@ -108,7 +111,6 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly localDbName: LocalFileName;
   public readonly containerId: WorkspaceContainerId;
-  public readonly containerAlias?: WorkspaceContainerAlias;
   public readonly iModelOwner?: IModelDb;
 
   public get containerFilesDir() { return join(this.filesDir, this.containerId); }
@@ -148,8 +150,9 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   }
 
   private static validateResourceName(name: WorkspaceResourceName) {
-    if (name.trim() === "" || name.length > 1024)
-      throw new Error(`invalid resource name`);
+    this.noLeadingOrTrailingSpaces(name, "resource name");
+    if (name.length > 1024)
+      throw new Error("resource name too long");
   }
 
   private validateResourceSize(val: Uint8Array | string) {
@@ -162,7 +165,6 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
     WorkspaceFile.validateContainerId(containerId);
     const rootDir = opts?.rootDir ?? IModelHost.workspace.rootDir;
     this.containerId = containerId;
-    this.containerAlias = opts?.containerAlias;
     this.iModelOwner = opts?.forIModel;
     this.filesDir = join(rootDir, "Files");
     this.localDbName = join(rootDir, `${this.containerId}.itwin-workspace-container`);
@@ -300,18 +302,20 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   }
 }
 
+/** @internal */
 export class ITwinWorkspace implements Workspace {
   private _workspaces = new Map<WorkspaceContainerId, WorkspaceFile>();
-  public readonly rootDir: LocalDirName;
+  public constructor(public readonly rootDir: LocalDirName) { }
 
-  public constructor(workspaceRoot: LocalDirName) {
-    this.rootDir = workspaceRoot;
+  public async obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
+    // NEEDS_WORK - download or attach
+    return this.getContainer(props, opts);
   }
 
   public getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer {
     const id = this.resolveContainerId(props);
     if (undefined === id)
-      throw new Error(`can't resolve container alias [${props.alias}]`);
+      throw new Error(`can't resolve container name [${props}]`);
     let container = this._workspaces.get(id);
     if (container)
       return container;
@@ -326,13 +330,13 @@ export class ITwinWorkspace implements Workspace {
     return container;
   }
 
-  public addSettings(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
+  public addSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
     const container = this.getContainer(settingRsc.container);
-    const setting = container.getString(settingRsc.name);
+    const setting = container.getString(settingRsc.rscName);
     if (undefined === setting)
-      throw new Error(`could not load setting resource ${settingRsc.name}`);
+      throw new Error(`could not load setting resource ${settingRsc.rscName}`);
 
-    IModelHost.settings.addJson(`${container.containerId}/${settingRsc.name}`, priority, setting);
+    IModelHost.settings.addJson(`${container.containerId}/${settingRsc.rscName}`, priority, setting);
   }
 
   public dropAll() {
@@ -350,25 +354,27 @@ export class ITwinWorkspace implements Workspace {
     }
   }
 
-  public dropContainer(id: WorkspaceContainerId) {
+  public dropContainer(toDrop: WorkspaceContainer) {
+    const id = toDrop.containerId;
     const container = this._workspaces.get(id);
-    if (container === undefined)
+    if (container !== toDrop)
       throw new Error(`container ${id} not open`);
     container.close();
     this._workspaces.delete(id);
   }
 
   public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined {
-    const id = props.id ?? IModelHost.settings.resolveSetting("workspace-alias", (val) => {
+    if (typeof props === "object")
+      return props.id;
+    return IModelHost.settings.resolveSetting("workspace/container/alias", (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.alias === props.alias && typeof entry.id === "string")
+          if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")
             return entry.id;
         }
       }
       return undefined; // keep going through all settings dictionaries
-    });
+    }, props);
 
-    return id;
   }
 }

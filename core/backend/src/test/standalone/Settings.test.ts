@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { ITwinSettings, Settings, SettingsPriority } from "../../workspace/Settings";
+import { SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { Mutable } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";

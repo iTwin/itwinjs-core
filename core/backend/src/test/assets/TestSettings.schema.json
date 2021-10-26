@@ -46,23 +46,44 @@
       "default": "blah default",
       "description": "the setting for blah"
     },
-    "fontList": {
+    "workspace/container/alias": {
       "type": "array",
-      "description": "array of fonts to load",
+      "description": "array of workspace container aliases",
       "items": {
         "type": "object",
         "required": [
-          "rscAlias",
-          "fontName"
+          "name",
+          "id"
         ],
         "properties": {
-          "rscAlias": {
+          "id": {
             "type": "string",
-            "description": "resource container alias"
+            "description": "the id of the workspace container"
           },
-          "fontName": {
+          "name": {
             "type": "string",
-            "description": "name of font within resource container"
+            "description": "the name of the workspace container"
+          }
+        }
+      },
+      "fontList": {
+        "type": "array",
+        "description": "array of fonts to load",
+        "items": {
+          "type": "object",
+          "required": [
+            "container",
+            "fontName"
+          ],
+          "properties": {
+            "container": {
+              "type": "string",
+              "description": "resource container name"
+            },
+            "fontName": {
+              "type": "string",
+              "description": "name of font within resource container"
+            }
           }
         }
       }

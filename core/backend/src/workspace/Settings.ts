@@ -10,40 +10,44 @@ import * as fs from "fs-extra";
 import { parse } from "json5";
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { SettingsSpecRegistry } from "./SettingsSpecRegistry";
+import { LocalFileName } from "@itwin/core-common";
 
 export type SettingType = JSONSchemaType;
+export type SettingName = string;
 
-export type SettingResolver<T> = (val: T, settingName: string, priority: SettingsPriority) => T | undefined;
+export type SettingResolver<T> = (val: T, settingName: SettingName, priority: SettingsPriority) => T | undefined;
 
 export interface SettingDictionary {
   [name: string]: SettingType;
 }
 
 export enum SettingsPriority {
-  application = 100,
-  organization = 200,
-  iTwin = 300,
+  defaults = 100,
+  application = 200,
+  organization = 300,
+  iTwin = 400,
   iModel = 500,
 }
 
 export interface Settings {
   readonly onSettingsChanged: BeEvent<() => void>;
-  addFile(fileName: string, priority: SettingsPriority): void;
+  addFile(fileName: LocalFileName, priority: SettingsPriority): void;
   addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
   addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
-  dropDictionary(fileName: string, raiseEvent?: boolean): void;
-  resolveSetting<T extends SettingType>(settingName: string, resolver: SettingResolver<T>): T | undefined;
+  dropDictionary(fileName: LocalFileName, raiseEvent?: boolean): void;
+  resolveSetting<T extends SettingType>(settingName: string, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+  resolveSetting<T extends SettingType>(settingName: string, resolver: SettingResolver<T>, defaultValue: T): T;
   getSetting<T extends SettingType>(settingName: string, defaultValue?: T): T | undefined;
-  getString(settingName: string, defaultValue: string): string;
-  getString(settingName: string): string | undefined;
-  getBoolean(settingName: string, defaultValue: boolean): boolean;
-  getBoolean(settingName: string): boolean | undefined;
-  getNumber(settingName: string, defaultValue: number): number;
-  getNumber(settingName: string): number | undefined;
-  getObj(settingName: string, defaultValue: object): object;
-  getObj(settingName: string): object | undefined;
-  getArray<T>(settingName: string, defaultValue: Array<T>): Array<T>;
-  getArray<T>(settingName: string): Array<T> | undefined;
+  getString(settingName: SettingName, defaultValue: string): string;
+  getString(settingName: SettingName, defaultValue?: string): string | undefined;
+  getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
+  getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
+  getNumber(settingName: SettingName, defaultValue: number): number;
+  getNumber(settingName: SettingName): number | undefined;
+  getObj(settingName: SettingName, defaultValue: object): object;
+  getObj(settingName: SettingName): object | undefined;
+  getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+  getArray<T>(settingName: SettingName): Array<T> | undefined;
 }
 
 function deepClone<T extends SettingType>(obj: any): T {
@@ -87,7 +91,7 @@ export class ITwinSettings implements Settings {
     this.updateDefaults();
   }
 
-  public addFile(fileName: string, priority: SettingsPriority) {
+  public addFile(fileName: LocalFileName, priority: SettingsPriority) {
     this.addJson(fileName, priority, fs.readFileSync(fileName, "utf-8"));
   }
 
@@ -120,48 +124,48 @@ export class ITwinSettings implements Settings {
     return false;
   }
 
-  public resolveSetting<T extends SettingType>(settingName: string, resolver: SettingResolver<T>): T | undefined {
+  public resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined {
     for (const dict of this._dictionaries) {
-      const val = dict.getSetting(settingName) as T | undefined;
-      const retVal = val && resolver(val, dict.name, dict.priority);
-      if (undefined !== retVal)
-        return retVal;
+      const val = dict.getSetting(name) as T | undefined;
+      const resolved = val && resolver(val, dict.name, dict.priority);
+      if (undefined !== resolved)
+        return resolved;
     }
-    return undefined;
+    return defaultValue;
   }
 
-  public getSetting<T extends SettingType>(settingName: string, defaultValue?: T): T | undefined {
-    return this.resolveSetting(settingName, (val) => deepClone<T>(val)) ?? defaultValue;
+  public getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined {
+    return this.resolveSetting(name, (val) => deepClone<T>(val)) ?? defaultValue;
   }
 
-  public getString(settingName: string, defaultValue: string): string;
-  public getString(settingName: string): string | undefined;
-  public getString(settingName: string, defaultValue?: string): string | undefined {
-    const out = this.getSetting<string>(settingName);
+  public getString(name: SettingName, defaultValue: string): string;
+  public getString(name: SettingName): string | undefined;
+  public getString(name: SettingName, defaultValue?: string): string | undefined {
+    const out = this.getSetting<string>(name);
     return typeof out === "string" ? out : defaultValue;
   }
-  public getBoolean(settingName: string, defaultValue: boolean): boolean;
-  public getBoolean(settingName: string): boolean | undefined;
-  public getBoolean(settingName: string, defaultValue?: boolean): boolean | undefined {
-    const out = this.getSetting<boolean>(settingName);
+  public getBoolean(name: SettingName, defaultValue: boolean): boolean;
+  public getBoolean(name: SettingName): boolean | undefined;
+  public getBoolean(name: SettingName, defaultValue?: boolean): boolean | undefined {
+    const out = this.getSetting<boolean>(name);
     return typeof out === "boolean" ? out : defaultValue;
   }
-  public getNumber(settingName: string, defaultValue: number): number;
-  public getNumber(settingName: string): number | undefined;
-  public getNumber(settingName: string, defaultValue?: number): number | undefined {
-    const out = this.getSetting<number>(settingName);
+  public getNumber(name: SettingName, defaultValue: number): number;
+  public getNumber(name: SettingName): number | undefined;
+  public getNumber(name: SettingName, defaultValue?: number): number | undefined {
+    const out = this.getSetting<number>(name);
     return typeof out === "number" ? out : defaultValue;
   }
-  public getObj(settingName: string, defaultValue: object): object;
-  public getObj(settingName: string): object | undefined;
-  public getObj(settingName: string, defaultValue?: object): object | undefined {
-    const out = this.getSetting<object>(settingName);
+  public getObj(name: SettingName, defaultValue: object): object;
+  public getObj(name: SettingName): object | undefined;
+  public getObj(name: SettingName, defaultValue?: object): object | undefined {
+    const out = this.getSetting<object>(name);
     return typeof out === "object" ? out : defaultValue;
   }
-  public getArray<T>(settingName: string, defaultValue: Array<T>): Array<T>;
-  public getArray<T>(settingName: string): Array<T> | undefined;
-  public getArray<T>(settingName: string, defaultValue?: Array<T>): Array<T> | undefined {
-    const out = this.getSetting<Array<T>>(settingName);
+  public getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
+  public getArray<T>(name: SettingName): Array<T> | undefined;
+  public getArray<T>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
+    const out = this.getSetting<Array<T>>(name);
     return Array.isArray(out) ? out : defaultValue;
   }
 }
