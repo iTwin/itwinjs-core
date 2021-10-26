@@ -8,7 +8,7 @@ import { ApproximateTerrainHeights } from "../../../ApproximateTerrainHeights";
 import { GeographicTilingScheme, QuadId } from "../../../core-frontend";
 
 describe("ApproximateTerrainHeights", () => {
-  it.only("test correct heights", async () => {
+  it("test correct heights", async () => {
     const tilingScheme = new GeographicTilingScheme();
     const testPairs = [
       { id: new QuadId(3, 2, 1), range: Range1d.createXX(-102.31, 3682.63) },
