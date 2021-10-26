@@ -915,7 +915,7 @@ export class TestRunner {
       boundBy = "gpu";
     else
       boundBy = "CPU";
-    if (totalTime > 59) // ie actual total time > 60fps - 1fps tolerance
+    if ((1000.0 / totalTime) > 59) // ie actual fps > 60fps - 1fps tolerance
       boundBy += " (vsync)";
     const totalCpuTime = totalRenderTime > 2 ? totalRenderTime : 2; // add 2ms lower bound to cpu total time for tolerance
     const effectiveFps = 1000.0 / (totalGpuTime > totalCpuTime ? totalGpuTime : totalCpuTime);
