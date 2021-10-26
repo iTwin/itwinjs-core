@@ -21,7 +21,6 @@ import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityData } from "../RealityDataAccessProps";
 import { RealityDataConnection } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -343,23 +342,6 @@ export namespace OrbitGtTileTree {
     orbitGtBlob?: OrbitGtBlobProps;
     modelId?: Id64String;
   }
-  /**
-   * Gets string url to fetch blob data from. Access is read-only.
-   * @param accessToken The client request context.
-   * @param name name or path of tile
-   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
-   * @returns string url for blob data
-   */
-  export async function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string> {
-    const url = await realityData.getBlobUrl(accessToken);
-
-    const host = `${url.origin + url.pathname}/`;
-
-    const query = url.search;
-
-    return `${host}${realityData.rootDocument}${query}`;
-  }
-
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
@@ -402,7 +384,8 @@ export namespace OrbitGtTileTree {
       if (!docRootName)
         return undefined;
       const token = await IModelApp.getAccessToken();
-      blobStringUrl = await getBlobStringUrl(token, realityData );
+      const blobUrl = await realityData.getBlobUrl(token, docRootName);
+      blobStringUrl = blobUrl.toString();
     } else {
       const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
       if (orbitGtBlobProps === undefined)
