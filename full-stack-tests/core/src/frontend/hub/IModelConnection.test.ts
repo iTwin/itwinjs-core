@@ -6,13 +6,13 @@ import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
-  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
+  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -26,11 +26,11 @@ describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    await IModelApp.shutdown();
-    await MockRender.App.startup({
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
       hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
-    });
+    }, true);
 
     Logger.initializeToConsole();
     Logger.setLevel("core-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -49,7 +49,7 @@ describe("IModelConnection (#integration)", () => {
     await TestUtility.purgeAcquiredBriefcases(iModel.iModelId!);
     if (iModel)
       await iModel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {

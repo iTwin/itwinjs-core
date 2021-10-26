@@ -312,17 +312,17 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(undefined);
 
     // DeviceName can be changed and ChangeSetIdOnDevice can be set when extending a briefcase
-    const changeSet: ChangeSet = (await utils.createChangeSets(accessToken, imodelId, briefcase, 0, 1))[0];
+    const changeset: ChangeSet = (await utils.createChangeSets(accessToken, imodelId, briefcase, 0, 1))[0];
     deviceName += briefcase.briefcaseId;
     briefcase.deviceName = deviceName;
-    briefcase.changeSetIdOnDevice = changeSet.id;
+    briefcase.changeSetIdOnDevice = changeset.id;
     mockUpdateBriefcase(imodelId, briefcase);
     briefcase = await iModelClient.briefcases.update(accessToken, imodelId, briefcase);
 
     mockGetBriefcaseById(imodelId, briefcase);
     briefcase = (await iModelClient.briefcases.get(accessToken, imodelId, new BriefcaseQuery().byId(briefcase.briefcaseId!)))[0];
     chai.expect(briefcase.deviceName).to.be.equals(deviceName);
-    chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(changeSet.id);
+    chai.expect(briefcase.changeSetIdOnDevice).to.be.equals(changeset.id);
   });
 
   it("should download a Briefcase (#iModelBank)", async () => {

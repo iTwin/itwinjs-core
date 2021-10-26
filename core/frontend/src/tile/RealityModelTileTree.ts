@@ -459,6 +459,7 @@ class RealityModelTileLoader extends RealityTileLoader {
 
     if (isNaN(childIndex) || tilesetJson === undefined || tilesetJson.children === undefined || childIndex >= tilesetJson.children.length) {
       assert(false, "scalable mesh child not found.");
+      return undefined;
     }
 
     const foundChild = tilesetJson.children[childIndex];

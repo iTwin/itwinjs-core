@@ -7,20 +7,20 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("Model change monitoring", () => {
     let imodel: BriefcaseConnection;
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend();
       await initializeEditTools();
     });
 
     after(async () => {
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     beforeEach(async () => {

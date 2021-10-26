@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-
-import { TestUtility } from "./TestUtility";
-import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestUtility } from "../TestUtility";
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {
@@ -18,8 +17,8 @@ describe("MapLayerSettingsService (#integration)", () => {
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
-    await IModelApp.shutdown();
-    await IModelApp.startup();
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend();
     await TestUtility.initialize(TestUsers.regular);
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
@@ -28,7 +27,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.assert.isDefined(iModelId);
   });
   after(async () => {
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it.skip("should store and retrieve layer", async () => {

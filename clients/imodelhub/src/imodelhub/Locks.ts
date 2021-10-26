@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { AccessToken, GuidString, Id64String, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { ResponseError } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
@@ -41,11 +41,11 @@ export enum LockType {
  */
 export enum LockLevel {
   /** Lock is not owned. */
-  None,
+  None = 0,
   /** Lock can be owned by multiple [[Briefcase]]s. Shared Lock is usually acquired together with Locks for lower level objects that depend on this object. */
-  Shared,
+  Shared = 1,
   /** Lock can only be owned by a single briefcase. Exclusive Lock is required to modify model or element when using pessimistic concurrency. */
-  Exclusive,
+  Exclusive = 2,
 }
 
 /**

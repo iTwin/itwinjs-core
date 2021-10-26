@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
@@ -36,11 +36,11 @@ export class IModelSession {
       if (!iModelData.iTwinName)
         throw new Error(`The iModel has no iTwin name, so it cannot get the iTwin.`);
 
-      const client = new ITwinAccessClient();
+      const client = new ProjectsAccessClient();
       const iTwinList: ITwin[] = await client.getAll(requestContext, {
         search: {
           searchString: iModelData.iTwinName,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
           exactMatch: true,
         }});
 

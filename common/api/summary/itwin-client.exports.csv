@@ -4,23 +4,21 @@ beta;CancelRequest
 beta;class Client
 internal;DefaultRequestOptionsProvider
 internal;DownloadFailed 
-beta;FileHandler
-internal;getArrayBuffer(url: string): Promise
+internal;FileHandler
 internal;getJson(url: string): Promise
 beta;ImsAuthorizationClient 
 beta;ITwinClientLoggerCategory
-beta;ProgressCallback = (progress: ProgressInfo) => void
-beta;ProgressInfo
-internal;removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined
+internal;ProgressCallback = (progress: ProgressInfo) => void
+internal;ProgressInfo
 internal;request(url: string, options: RequestOptions): Promise
-beta;RequestBasicCredentials
-beta;RequestGlobalOptions
-beta;requestIdHeaderName = "X-Correlation-Id"
-beta;RequestOptions
-beta;RequestQueryOptions
-beta;RequestQueryStringifyOptions
-beta;RequestTimeoutOptions
-beta;Response
-beta;ResponseError 
+internal;RequestBasicCredentials
+internal;RequestGlobalOptions
+internal;requestIdHeaderName = "X-Correlation-Id"
+internal;RequestOptions
+internal;RequestQueryOptions
+internal;RequestQueryStringifyOptions
+internal;RequestTimeoutOptions
+internal;Response
+internal;ResponseError 
 beta;SasUrlExpired 
 internal;UserCancelledError 

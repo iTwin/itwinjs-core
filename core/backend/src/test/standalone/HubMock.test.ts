@@ -12,7 +12,7 @@ import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
@@ -20,11 +20,10 @@ describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
-  let accessToken: AccessToken;
+  const accessToken: AccessToken = "fake token";
 
   before(async () => {
     HubMock.startup("HubMockTest");
-    accessToken = await IModelTestUtils.getAccessToken(TestUserType.Regular);
   });
   after(() => {
     HubMock.shutdown();

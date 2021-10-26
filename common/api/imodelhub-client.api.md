@@ -20,9 +20,9 @@ import { Id64String } from '@itwin/core-bentley';
 import { IModelHubStatus } from '@itwin/core-bentley';
 import { IModelIdArg } from '@itwin/core-frontend';
 import { IModelVersion } from '@itwin/core-common';
-import { ITwin } from '@bentley/itwin-registry-client';
 import { LogFunction } from '@itwin/core-bentley';
 import { ProgressCallback } from '@bentley/itwin-client';
+import { Project } from '@itwin/projects-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
@@ -687,7 +687,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     // (undocumented)
     deleteITwin(accessToken: AccessToken, iTwinId: string): Promise<void>;
     // (undocumented)
-    getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
+    getITwinByName(accessToken: AccessToken, name: string): Promise<Project>;
     }
 
 // @internal
@@ -829,6 +829,7 @@ export class IModelHubClientError extends IModelHubError {
 
 // @public
 export enum IModelHubClientLoggerCategory {
+    FileHandlers = "imodelhub-client.FileHandlers",
     // @internal (undocumented)
     IModelBank = "imodelhub-client.iModelBank",
     IModelHub = "imodelhub-client.iModelHub"
@@ -967,7 +968,7 @@ export class InstanceIdQuery extends WsgQuery {
 // @internal
 export interface ITwinManagerClient {
     // (undocumented)
-    getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
+    getITwinByName(accessToken: AccessToken, name: string): Promise<Project>;
 }
 
 // @internal

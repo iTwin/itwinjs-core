@@ -9,4 +9,3 @@ The __@bentley/reality-data-client__ package contains client wrappers for sendin
 ## Documentation
 
 See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
-

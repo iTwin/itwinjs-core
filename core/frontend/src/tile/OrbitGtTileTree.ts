@@ -341,7 +341,6 @@ export namespace OrbitGtTileTree {
     orbitGtBlob?: OrbitGtBlobProps;
     modelId?: Id64String;
   }
-
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
@@ -384,7 +383,8 @@ export namespace OrbitGtTileTree {
       if (!docRootName)
         return undefined;
       const token = await IModelApp.getAccessToken();
-      blobStringUrl = await rdSource.getDataUrl(token);
+      const blobUrl = await realityData.getBlobUrl(token, docRootName);
+      blobStringUrl = blobUrl.toString();
     } else {
       const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
       if (orbitGtBlobProps === undefined)

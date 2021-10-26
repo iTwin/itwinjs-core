@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { Content, PropertyValueFormat } from "@itwin/presentation-common";
+import { Content, PresentationError, PropertyValueFormat } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey,
   createTestNestedContentField, createTestSimpleContentField,
@@ -482,6 +482,12 @@ describe("getElementsCount", () => {
     imodelMock.verifyAll();
   });
 
+  it("throws if class list contains invalid class name", () => {
+    expect(() => getElementIdsByClass(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
+    expect(() => getElementIdsByClass(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
+    expect(() => getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
+  });
+
 });
 
 describe("getElementIdsByClass", () => {
@@ -548,6 +554,12 @@ describe("getElementIdsByClass", () => {
       .verifiable();
     getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass"]);
     imodelMock.verifyAll();
+  });
+
+  it("throws if class list contains invalid class name", () => {
+    expect(() => getElementIdsByClass(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
+    expect(() => getElementIdsByClass(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
+    expect(() => getElementIdsByClass(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
   });
 
   it("does not add LIMIT clause when page options are invalid", () => {

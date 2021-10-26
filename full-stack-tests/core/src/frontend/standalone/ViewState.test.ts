@@ -9,11 +9,12 @@ import {
 } from "@itwin/core-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
-  MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
+  ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { Mutable } from "@itwin/core-bentley";
+import { TestUtility } from "../TestUtility";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
@@ -23,7 +24,8 @@ describe("ViewState", () => {
   let unitTestRpcImp: TestRpcInterface;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
@@ -39,7 +41,7 @@ describe("ViewState", () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
     if (imodel3) await imodel3.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -437,9 +439,7 @@ describe("ViewState", () => {
     // Add 2d models to selector
     view.modelSelector.addModels(["0x24", "0x28"]);
     await imodel2.models.load(view.modelSelector.models);
-    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x24"), DrawingModelState);
-    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x28"), SheetModelState);
     expect(view.modelSelector.models.size).to.equal(numSpatialModels + 2);
 
@@ -570,7 +570,7 @@ describe("ViewState2d", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("ReadWriteTest.bim");
   });
 
@@ -578,7 +578,7 @@ describe("ViewState2d", () => {
     if (imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should have valid viewed extents", async () => {

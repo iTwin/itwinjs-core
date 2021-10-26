@@ -30,6 +30,7 @@ module.exports = {
     "@typescript-eslint/array-type": "off", // TODO: May want to turn this on for consistency
     "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/ban-types": "off",
+    // "@typescript-eslint/ban-tslint-comment": "error",
     "@typescript-eslint/class-name-casing": "off",
     "@typescript-eslint/camelcase": "off", // Using @typescript-eslint/naming-convention instead
     "@typescript-eslint/consistent-type-assertions": "error",
@@ -166,6 +167,7 @@ module.exports = {
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unsafe-call": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",

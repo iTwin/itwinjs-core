@@ -730,9 +730,6 @@ internal;WidgetPanelsTab(): JSX.Element
 internal;WidgetPanelsToolbars(): JSX.Element
 internal;WidgetPanelsToolSettings(): JSX.Element | null
 public;WidgetProps 
-beta;WidgetProvider
-internal;WidgetProvidersChangedEvent 
-internal;WidgetProvidersChangedEventArgs
 internal;WidgetsChangedEvent 
 internal;WidgetsChangedEventArgs
 internal;WidgetStack 

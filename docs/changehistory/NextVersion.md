@@ -12,8 +12,10 @@ Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. T
 
 The following dependencies of iTwin.js have been updated;
 
-- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
-- `electron` updated to from `^11.1.0` -> `^14.0.0`,
+- `openid-client` updated from to `^3.15.3` -> `^4.7.4`,
+- `electron` updated from to `^11.1.0` -> `^14.0.0`,
+- `react` updated from to `^16.8.9` -> `^17.0.0`,
+- `react-dom` updated from to `^16.8.9` -> `^17.0.0`,
 
 ## Package name changes
 
@@ -78,6 +80,36 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
 - Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Dropped support for ESLint 6.x.
+
+## Fresnel effect
+
+[LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
+
+Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
+
+![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
+
+The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+```
+  // Enable ambient occlusion.
+  viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
+
+  // Configure the lighting.
+  viewport.displayStyle.lightSettings = LightSettings.fromJSON({
+    // A relatively bright ambient light is the only light source.
+    ambient: {
+      intensity: 0.55,
+    },
+    // Increase the brightness of surfaces that are closer to parallel with the viewer's line of sight.
+    fresnel: {
+      intensity: 0.8,
+      invert: true,
+    },
+  });
+```
 
 ## BentleyError constructor no longer logs
 
@@ -768,6 +800,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
 | `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
 | `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                               |
 | `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
 | `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
 | `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
@@ -801,10 +834,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/appui-abstract
 
-| Removed                       | Replacement  |
-| ----------------------------- | ------------ |
-| `ContentLayoutProps.priority` | *eliminated* |
-| `UiItemsArbiter`              | *eliminated* |
+| Removed                       | Replacement                  |
+| ----------------------------- | ---------------------------- |
+| `ContentLayoutProps.priority` | *eliminated*                 |
+| `UiItemsArbiter`              | *eliminated*                 |
+| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter`   |
 
 ### @itwin/core-react
 
@@ -1044,6 +1078,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `UserInfo`                         | Moved to @itwin/appui-react |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
+### @bentley/appui-react
+
+| Removed                            | Replacement                                           |
+| ---------------------------------- | ----------------------------------------------------- |
+| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+
 ### @bentley/frontend-authorization-client
 
 | Removed                                          | Replacement                    |
@@ -1070,7 +1110,7 @@ A new @itwin/imodel-components-react package has been added and contains items r
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
-For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
 ### New options for defining Frontstages
 
@@ -1283,6 +1323,14 @@ were removed from the `@itwin/core-backend` package and moved to a new package, 
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
 
+## Remove ninezone-test-app
+
+The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
+
+## Improve/Enhance particle systems
+
+Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
 ## Changes to ECSql APIs
 
 Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
@@ -1399,3 +1447,13 @@ In previous versions, the [Tool.register]($frontend) method took an optional arg
 ## Improve/Enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
+
+## Buildology
+
+`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
+
+All packages will continue to build a CommonJS variant, but will now deliver it to `lib/cjs`. All frontend and shared ("common") packages will now build an ESModules variant, and deliver it to `lib/esm`. This change is intended to improve the bundle sizes of applications and allow for dynamic imports in order to tree-shake unused code.
+
+If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
+
+This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).

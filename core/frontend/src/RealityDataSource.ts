@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { request, RequestOptions } from "@bentley/itwin-client";
-import { assert, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
+import { getJson, request, RequestOptions } from "@bentley/itwin-client";
+import { AccessToken, assert, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelError, OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
@@ -29,22 +29,20 @@ export interface RealityDataSource {
    * @returns string containing the URL to reality data.
    */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+
   /**
-   * Gets string url for the provider to fetch data from. Access is read-only.
-   * @param accessToken The client request context.
-   * @returns string url containing the data (blob data url for context share provider)
-   */
-  getDataUrl(accessToken: string): Promise<string>;
-  /**
+   * TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
    * @internal
    */
   getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
   /**
+   * TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    * @internal
    */
   getTileContent(url: string): Promise<any>;
   /**
+   * TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    * @internal
    */
@@ -167,7 +165,7 @@ class RealityDataSourceImpl implements RealityDataSource {
     } catch (e) {
     }
 
-    return (tilesetUrl !== undefined) ? rdSource : undefined;
+    return (tilesetUrl !== undefined) ? rdSource: undefined;
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data connection for a corresponding reality data source key.
@@ -237,35 +235,35 @@ class RealityDataSourceImpl implements RealityDataSource {
       this._baseUrl = `${urlParts.join("/")}/`;
   }
   private async _doRequest(url: string, responseType: string): Promise<any> {
-    const authToken = this._requestAuthorization ?? (await IModelApp.getAccessToken());
-
-    const options: RequestOptions = {
+    let options: RequestOptions = {
       method: "GET",
       responseType,
-      headers: {
-        authorization: authToken,
-      },
     };
+
+    const authToken = this._requestAuthorization;
+    if (authToken) {
+      options = {
+        ...options,
+        headers: {
+          authorization: authToken,
+        },
+      };
+    }
+
     const data = await request(url, options);
     return data.body;
   }
   /**
-   * Gets string url to fetch blob data from. Access is read-only.
-   * @param accessToken The client request context.
+   * Gets a tileset's app data json
    * @param name name or path of tile
-   * @returns string url for blob data
+   * @returns app data json object
+   * @internal
    */
-  public async getDataUrl(accessToken: string): Promise<string> {
-    if (!this.realityData)
-      throw new Error("Reality data is undefined, it is required to access context share blob string url.");
+  public async getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
+    const url = await realityData.getBlobUrl(accessToken, name);
 
-    const url = await this.realityData.getBlobUrl(accessToken);
-
-    const host = `${url.origin + url.pathname}/`;
-
-    const query = url.search;
-
-    return `${host}${this.realityData.rootDocument}${query}`;
+    const data = await getJson(url.toString());
+    return data;
   }
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
@@ -292,6 +290,7 @@ class RealityDataSourceImpl implements RealityDataSource {
     }
     return this._tilesetUrl;
   }
+  /** TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium */
   public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
     let url = await this.getServiceUrl(iTwinId);
     if (!url)
@@ -307,7 +306,7 @@ class RealityDataSourceImpl implements RealityDataSource {
       if (!realityData.rootDocument)
         throw new Error(`Root document not defined for reality data: ${realityData.id}`);
 
-      return realityData.getTileJson(token, realityData.rootDocument);
+      return this.getRealityDataTileJson(token, realityData.rootDocument, realityData);
     }
 
     // The following is only if the reality data is not stored on PW Context Share.
@@ -324,7 +323,24 @@ class RealityDataSourceImpl implements RealityDataSource {
     this.setBaseUrl(url);
     return this._doRequest(url, "json");
   }
+
   /**
+   * Gets tile content
+   * @param name name or path of tile
+   * @returns array buffer of tile content
+   */
+  public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
+    const url = await realityData.getBlobUrl(accessToken, name);
+    const options: RequestOptions = {
+      method: "GET",
+      responseType: "arraybuffer",
+    };
+    const data = await request(url.toString(), options);
+    return data.body;
+  }
+
+  /**
+   * TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(url: string): Promise<any> {
@@ -333,13 +349,15 @@ class RealityDataSourceImpl implements RealityDataSource {
     const useRds = this.isContextShare && token !== undefined;
 
     const tileUrl = this._baseUrl + url;
-    if (useRds)
-      return this.realityData!.getTileContent(token, tileUrl);
+    if (useRds  && this.realityData) {
+      return this.getRealityDataTileContent(token, tileUrl, this.realityData);
+    }
 
     return this._doRequest(tileUrl, "arraybuffer");
   }
 
   /**
+   * TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(url: string): Promise<any> {
@@ -347,8 +365,9 @@ class RealityDataSourceImpl implements RealityDataSource {
     const token = await IModelApp.getAccessToken();
     const tileUrl = this._baseUrl + url;
 
-    if (this.isContextShare && undefined !== token)
-      return this.realityData!.getTileJson(token, tileUrl);
+    if (this.isContextShare && undefined !== token && this.realityData) {
+      return this.getRealityDataTileJson(token, tileUrl, this.realityData);
+    }
 
     return this._doRequest(tileUrl, "json");
   }

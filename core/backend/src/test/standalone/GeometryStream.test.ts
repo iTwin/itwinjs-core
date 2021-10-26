@@ -21,7 +21,7 @@ import {
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
 import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils, Timer } from "../IModelTestUtils";
+import { IModelTestUtils, Timer } from "../";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);

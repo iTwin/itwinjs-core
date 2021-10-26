@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, ProcessDetector } from "@itwin/core-bentley";
-import {
-  BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
-} from "@itwin/core-common";
-import {
-  DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@itwin/core-frontend";
-import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { Id64 } from "@itwin/core-bentley";
+import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
+import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
+import { TestUtility } from "../TestUtility";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("Plan projections", () => {
   let mirukuru: IModelConnection;
@@ -28,18 +24,15 @@ describe("Plan projections", () => {
       },
     };
 
-    await IModelApp.shutdown();
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup(opts);
-    else
-      await IModelApp.startup(opts.iModelApp);
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(opts.iModelApp);
 
     mirukuru = await SnapshotConnection.openFile("planprojection.bim");
   });
 
   after(async () => {
     await mirukuru.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("is obscured by background map based on settings", async () => {

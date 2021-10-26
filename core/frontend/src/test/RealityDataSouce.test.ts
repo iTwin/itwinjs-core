@@ -50,7 +50,7 @@ describe("RealityDataSource", () => {
   });
   it("should handle creation from url to an .opc file on an azure blob", () => {
     const tilesetUrl = "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
-    const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
+    const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
     expect(rdSourceKey.id).to.be.equal("fe8d32a5-f6ab-4157-b3ec-a9b53db923e3");

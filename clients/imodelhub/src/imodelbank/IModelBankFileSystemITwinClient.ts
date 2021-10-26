@@ -6,7 +6,7 @@
  * @module iModelBankClient
  */
 import { AccessToken, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/itwin-registry-client";
+import { Project as ITwin } from "@itwin/projects-client";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgError, WSStatus } from "../wsg/WsgClient";

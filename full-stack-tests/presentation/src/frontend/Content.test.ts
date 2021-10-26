@@ -493,9 +493,9 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
+                  id: "0xb0",
+                  name: "BisCore:PhysicalModel",
+                  label: "Physical Model",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -508,14 +508,14 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
+                  id: "0xb0",
+                  name: "BisCore:PhysicalModel",
+                  label: "Physical Model",
                 },
                 targetClassInfo: {
-                  id: "0x44",
-                  name: "BisCore:ISubModeledElement",
-                  label: "Modellable Element",
+                  id: "0xb4",
+                  name: "BisCore:PhysicalPartition",
+                  label: "Physical Partition",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -528,9 +528,9 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0x44",
-                  name: "BisCore:ISubModeledElement",
-                  label: "Modellable Element",
+                  id: "0xb4",
+                  name: "BisCore:PhysicalPartition",
+                  label: "Physical Partition",
                 },
                 targetClassInfo: {
                   id: "0xa9",

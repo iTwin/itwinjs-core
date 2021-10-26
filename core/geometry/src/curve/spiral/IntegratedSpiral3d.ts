@@ -312,9 +312,10 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** emit stroke fragments to `dest` handler. */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
     const n = this.computeStrokeCountForOptions(options);
-    const activeStrokes = this.activeStrokes;
     dest.startParentCurvePrimitive(this);
-    if (n <= activeStrokes.numPoints()) {
+    const activeStrokes = this.activeStrokes;
+    const preferPrimary = dest.needPrimaryGeometryForStrokes === undefined ? false : dest.needPrimaryGeometryForStrokes();
+    if (!preferPrimary && n <= activeStrokes.numPoints()) {
       this.activeStrokes.emitStrokableParts(dest, options);
     } else {
       dest.announceIntervalForUniformStepStrokes(this, n, 0.0, 1.0);
