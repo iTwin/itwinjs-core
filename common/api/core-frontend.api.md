@@ -3303,7 +3303,7 @@ export class FuzzySearchResults<T> implements Iterable<T> {
 
 // @internal
 export class GeoConverter {
-    constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
+    constructor(iModel: IModelConnection, datum: string);
     // (undocumented)
     getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps;
     // (undocumented)
@@ -3377,7 +3377,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 export class GeoServices {
     constructor(iModel: IModelConnection);
     // (undocumented)
-    getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
+    getConverter(datum?: string): GeoConverter | undefined;
     }
 
 // @public
@@ -5768,7 +5768,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
 // @internal (undocumented)
 export abstract class MapTilingScheme {
-    protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean);
+    protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean, _rectangle?: Range2d);
     // (undocumented)
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
     cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d;
@@ -5812,6 +5812,8 @@ export abstract class MapTilingScheme {
     xFractionToLongitude(xFraction: number): number;
     // (undocumented)
     xFractionToTileX(xFraction: number, level: number): number;
+    // (undocumented)
+    protected yFractionFlip(fraction: number): number;
     // (undocumented)
     abstract yFractionToLatitude(yFraction: number): number;
     // (undocumented)
@@ -6860,6 +6862,7 @@ export class OrbitGtTileTree extends TileTree {
 export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
+    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
@@ -7479,8 +7482,8 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 // @internal
 export class RealityModelTileClient {
     constructor(rdConnection: RealityDataConnection, iTwinId?: string);
-    getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any>;
-    getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any>;
+    // (undocumented)
+    getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
@@ -12751,6 +12754,7 @@ export abstract class ViewState extends ElementState {
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
     get isAttachedToViewport(): boolean;
+    isCameraEnabled(): this is ViewState3d;
     abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
