@@ -78,7 +78,7 @@ export abstract class MapTilingScheme {
 
   public yFractionToTileY(yFraction: number, level: number): number {
     const nTiles = this.getNumberOfYTilesAtLevel(level);
-    return Math.min(Math.floor(nTiles * (this.rowZeroAtNorthPole ? (1.0 - yFraction) : yFraction)), nTiles - 1);
+    return Math.min(Math.floor(yFraction * nTiles), nTiles - 1);
   }
 
   public tileXToLongitude(x: number, level: number) {

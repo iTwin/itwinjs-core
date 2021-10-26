@@ -99,7 +99,7 @@ export class ApproximateTerrainHeights {
       let failed = false;
       for (let j = 0; j < 4; ++j) {
         const corner = this._scratchCorners[j];
-        this._tilingScheme.cartographicToTileXY(corner, i, this._scratchTileXY); // Note level for iModelJS is Cesium+1 (our root is zero).
+        this._tilingScheme.cartographicToTileXY(corner, i, this._scratchTileXY);
         if (j === 0) {
           currentX = this._scratchTileXY.x;
           currentY = this._scratchTileXY.y;

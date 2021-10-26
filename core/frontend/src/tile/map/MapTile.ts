@@ -366,9 +366,8 @@ export class MapTile extends RealityTile {
 
         children.push(this.mapTree.createGlobeChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
       }
-      resolve(children);
     }
-
+    resolve(children);
     return children;
   }
 
