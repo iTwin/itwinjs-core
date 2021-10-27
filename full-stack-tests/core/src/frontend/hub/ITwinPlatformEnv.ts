@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { ITwin } from "@bentley/itwin-registry-client";
+import { Project as ITwin } from "@itwin/projects-client";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
-import { ITwinRegistryClientWrapper } from "../../common/ITwinRegistryClientWrapper";
+import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
   readonly iModelName: string;
@@ -84,15 +84,15 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 /** Defines a base set of the set of Simple base interface for the client implementations that will be passed to the IModelApp. */
 export interface ITwinPlatformAbstraction {
   readonly hubAccess: TestFrontendHubAccess;
-  readonly iTwinMgr: ITwinRegistryClientWrapper;
+  readonly iTwinMgr: ITwinAccessClientWrapper;
   readonly authClient?: AuthorizationClient;
 }
 
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Platform. */
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
-  public readonly iTwinMgr = new ITwinRegistryClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
+  public readonly iTwinMgr = new ITwinAccessClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
   public readonly hubAccess = new IModelHubFrontend();
-  public readonly authClient?: AuthorizationClient;
+  public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
 
   public constructor(authClient?: AuthorizationClient) {
     this.authClient = authClient;

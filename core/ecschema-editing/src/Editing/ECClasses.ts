@@ -213,7 +213,7 @@ export class ECClasses {
     if (schema === undefined)
       throw new Error(`Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found`);
 
-    const ecClass = await schema.getItem<ECClass>(classKey.name);
+    const ecClass = await schema.getItem<MutableClass>(classKey.name);
     if (ecClass === undefined)
       throw new Error(`Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}`);
 
@@ -228,7 +228,7 @@ export class ECClasses {
         throw new Error(`Schema item type not supported`);
     }
 
-    return ecClass as MutableClass;
+    return ecClass;
   }
 }
 

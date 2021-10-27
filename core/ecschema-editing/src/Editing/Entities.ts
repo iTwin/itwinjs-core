@@ -83,10 +83,7 @@ export class Entities extends ECClasses {
       if (!baseClassKey.schemaKey.matches(schema.schemaKey))
         baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
 
-      if (baseClassSchema === undefined)
-        return { errorMessage: `Unable to locate the schema ${baseClassKey.schemaKey.toString()} for the specified base class ${baseClassKey.fullName}.` };
-
-      const baseClassItem = await baseClassSchema.lookupItem(baseClassKey) as EntityClass;
+      const baseClassItem = await baseClassSchema.lookupItem<EntityClass>(baseClassKey);
       if (baseClassItem === undefined)
         return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
 
@@ -124,8 +121,8 @@ export class Entities extends ECClasses {
     return { itemKey: newClass.key };
   }
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem(entityKey)) as MutableEntityClass;
-    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem(mixinKey)) as Mixin;
+    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
+    const mixin = (await this._schemaEditor.schemaContext.getSchemaItem<Mixin>(mixinKey));
 
     // TODO: have a helpful returns
     if (entity === undefined) return;
@@ -137,7 +134,7 @@ export class Entities extends ECClasses {
   }
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
-    const entity = (await this._schemaEditor.schemaContext.getSchemaItem(entityKey)) as MutableEntityClass;
+    const entity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableEntityClass>(entityKey));
 
     if (entity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${entityKey.fullName} not found in schema context.`);
     if (entity.schemaItemType !== SchemaItemType.EntityClass) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${entityKey.fullName} to be of type Entity Class.`);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken } from "@itwin/core-bentley";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelCloudEnvironment, ITwinManagerClient } from "@bentley/imodelhub-client";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 import { getIModelHubClient } from "./TestUtils";
@@ -12,11 +12,11 @@ import { getIModelHubClient } from "./TestUtils";
 /** An implementation of TestITwin backed by an iTwin */
 class TestITwinManagerClient implements ITwinManagerClient {
   public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
-    const client = new ITwinAccessClient();
+    const client = new ProjectsAccessClient();
     const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
-        propertyName: ITwinSearchableProperty.Name,
+        propertyName: ProjectsSearchableProperty.Name,
         exactMatch: true,
       },
     });

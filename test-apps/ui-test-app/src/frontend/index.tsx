@@ -11,13 +11,14 @@ import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@itwin/appui-react";
@@ -317,7 +318,7 @@ export class SampleAppIModelApp {
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults = {
+    const defaults: InitialAppUiSettings = {
       colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
       dragInteraction: false,
       frameworkVersion: "2",
@@ -487,10 +488,10 @@ export class SampleAppIModelApp {
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const accessToken = await IModelApp.getAccessToken();
-      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
+      const iTwinList: ITwin[] = await (new ProjectsAccessClient()).getAll(accessToken, {
         search: {
           searchString: iTwinName,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
           exactMatch: true,
         },
       });
@@ -607,7 +608,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion version={props.frameworkVersion === "2" ? "2" : "1"}>
+    <FrameworkVersion>
       {props.children}
     </FrameworkVersion>
   );

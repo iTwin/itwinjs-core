@@ -237,6 +237,8 @@ public;FontMapProps
 public;FontProps
 public;FontType
 internal;FormDataCommon
+public;FresnelSettings
+public;FresnelSettingsProps
 public;Frustum
 internal;FrustumPlanes
 internal;FrustumPlanes

@@ -5,9 +5,9 @@
   "main": "lib/ui-test-extension.js",
   "typings": "lib/ui-test-extension",
   "scripts": {
-    "compile": "npm run -s build",
     "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets && npm run -s copy:locale",
     "build": "npm run -s prebuild && tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public/",
     "copy:locale": "cpx \"./src/public/locales/**/*\" ./lib/public",
@@ -44,7 +44,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",

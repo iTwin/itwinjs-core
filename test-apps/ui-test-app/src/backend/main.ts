@@ -27,7 +27,7 @@ import { getSupportedRpcs } from "../common/rpcs";
     initializeLogging();
 
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = IModelHubBackend;
+    iModelHost.hubAccess = new IModelHubBackend();
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {

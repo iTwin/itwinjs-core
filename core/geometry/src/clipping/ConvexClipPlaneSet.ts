@@ -10,6 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -88,10 +89,16 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * * Each plane reference in the `planes` array is taken into the result.
    * * The input array itself is NOT taken into the result.
    */
-  public static createPlanes(planes: ClipPlane[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
+  public static createPlanes(planes: (ClipPlane | Plane3dByOriginAndUnitNormal)[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
-    for (const plane of planes)
-      result._planes.push(plane);
+    for (const plane of planes) {
+      if (plane instanceof ClipPlane) {
+        result._planes.push(plane);
+      } else if (plane instanceof Plane3dByOriginAndUnitNormal) {
+        const clipPlane = ClipPlane.createPlane(plane);
+        result._planes.push(clipPlane);
+      }
+    }
     return result;
   }
 
@@ -553,9 +560,11 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * Add a plane to the convex set.
    * @param plane plane to add
    */
-  public addPlaneToConvexSet(plane: ClipPlane | undefined) {
-    if (plane)
+  public addPlaneToConvexSet(plane: ClipPlane | Plane3dByOriginAndUnitNormal| undefined) {
+    if (plane instanceof ClipPlane)
       this._planes.push(plane);
+    else if (plane instanceof Plane3dByOriginAndUnitNormal)
+      this._planes.push(ClipPlane.createPlane(plane));
   }
   /**
    * test many points.  Distribute them to arrays depending on in/out result.

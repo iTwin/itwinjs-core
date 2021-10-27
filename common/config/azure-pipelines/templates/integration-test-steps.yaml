@@ -23,8 +23,6 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to itwin-registry-client
-
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
@@ -39,11 +37,6 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to oidc-signin-tool
     displayName: "Rush build"
-
-  - script: "npm run test:integration"
-    workingDirectory: "clients/itwin-registry"
-    displayName: "Run iTwin Registry Client Tests"
-    condition: succeededOrFailed()
 
   - script: "npm run test:integration"
     workingDirectory: clients/reality-data
@@ -78,14 +71,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: "tools/oidc-signin-tool"
     displayName: "Run OIDC Sign-in Tool Tests"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish iTwin Registry Client Test Results"
-    inputs:
-      testResultsFiles: "clients/itwin-registry/lib/test/junit_results.xml"
-      testRunTitle: "Client - iTwin Registry Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

@@ -2,6 +2,7 @@
   "colors": true,
   "check-leaks": true,
   "spec": [
+    "lib/test/**/*.test.js",
     "lib/cjs/test/**/*.test.js"
   ],
   "require": "source-map-support/register",

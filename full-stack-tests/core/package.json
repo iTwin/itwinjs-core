@@ -5,9 +5,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run -s build",
     "copy:config": "internal-tools copy-config",
     "build": "tsc 1>&2 && npm run -s webpack:frontend",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run -s test",
     "docs": "",
@@ -31,7 +31,6 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-markup": "workspace:*",
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
@@ -44,12 +43,12 @@
     "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@bentley/itwin-registry-client": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",

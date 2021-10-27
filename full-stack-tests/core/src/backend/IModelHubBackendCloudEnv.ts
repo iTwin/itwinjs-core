@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelCloudEnvironment, IModelHubClient } from "@bentley/imodelhub-client";
 import { AzureFileHandler } from "@bentley/imodelhub-client/lib/cjs/itwin-client/file-handlers";
-import { ITwinRegistryClientWrapper } from "../common/ITwinRegistryClientWrapper";
+import { ITwinAccessClientWrapper } from "../common/ITwinAccessClientWrapper";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 
 export class IModelHubBackendCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
-  public readonly iTwinMgr = new ITwinRegistryClientWrapper();
+  public readonly iTwinMgr = new ITwinAccessClientWrapper();
   public readonly imodelClient = new IModelHubClient(new AzureFileHandler());
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }

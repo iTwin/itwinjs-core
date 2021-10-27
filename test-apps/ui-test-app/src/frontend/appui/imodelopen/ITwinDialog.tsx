@@ -9,7 +9,7 @@ import * as React from "react";
 import { SearchBox } from "@itwin/core-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ITwinTab, ITwinTabs } from "./ITwinTabs";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelApp } from "@itwin/core-frontend";
 
 /** Properties for the [[ITwinDialog]] component */
@@ -42,7 +42,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
 
   private async getRecentITwins() {
     this.setState({ isLoading: true, iTwins: undefined });
-    const client = new ITwinAccessClient();
+    const client = new ProjectsAccessClient();
     const accessToken = await IModelApp.getAccessToken();
     const iTwins = await client.getAll(accessToken, {
       pagination: {
@@ -79,7 +79,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
       this.setState({ isLoading: true, iTwins: undefined });
 
       const accessToken = await IModelApp.getAccessToken();
-      const client = new ITwinAccessClient();
+      const client = new ProjectsAccessClient();
       client.getAll(accessToken, { // eslint-disable-line @typescript-eslint/no-floating-promises
         pagination: {
           top: 40,
@@ -87,7 +87,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
         search: {
           searchString: value,
           exactMatch: false,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
         },
       }).then((iTwins: ITwin[]) => {
         this.setState({ isLoading: false, iTwins, filter: value });

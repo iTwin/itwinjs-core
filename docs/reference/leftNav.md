@@ -24,7 +24,6 @@ packageClassification:  [
      "order":"2",
      "header": "Client Packages",
      "packages": [
-       "itwin-registry-client",
        "extension-client",
        "imodelhub-client",
        "itwin-client",

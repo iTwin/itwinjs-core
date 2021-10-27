@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelHost, IModelJsFs, V1CheckpointManager } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
@@ -294,11 +294,11 @@ class TestITwin {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
-  private static _iTwinAccessClient?: ITwinAccessClient;
+  private static _iTwinAccessClient?: ProjectsAccessClient;
 
-  private static get iTwinClient(): ITwinAccessClient {
+  private static get iTwinClient(): ProjectsAccessClient {
     if (this._iTwinAccessClient === undefined)
-      this._iTwinAccessClient = new ITwinAccessClient();
+      this._iTwinAccessClient = new ProjectsAccessClient();
     return this._iTwinAccessClient;
   }
 
@@ -307,7 +307,7 @@ class TestITwin {
     const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
-        propertyName: ITwinSearchableProperty.Name,
+        propertyName: ProjectsSearchableProperty.Name,
         exactMatch: true,
       },
     });
