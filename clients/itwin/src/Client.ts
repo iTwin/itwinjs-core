@@ -6,7 +6,7 @@
  * @module iTwinServiceClients
  */
 import { AccessToken, Logger } from "@itwin/core-bentley";
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { request, RequestOptions } from "./Request";
 

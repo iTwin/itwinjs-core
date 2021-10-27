@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
-import * as sarequest from "superagent";
+import sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
