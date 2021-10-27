@@ -14,12 +14,17 @@ import { LocalFileName } from "@itwin/core-common";
 
 export type SettingType = JSONSchemaType;
 export type SettingName = string;
+export type DictionaryName = string;
 
-export type SettingResolver<T> = (val: T, settingName: SettingName, priority: SettingsPriority) => T | undefined;
+export type SettingResolver<T> = (val: T, dict: DictionaryName, priority: SettingsPriority) => T | undefined;
 
-export interface SettingDictionary {
+export interface SettingInspector<T> { value: T, dictionary: DictionaryName, priority: number }
+
+export interface SettingObject {
   [name: string]: SettingType;
 }
+
+export type SettingDictionary = SettingObject;
 
 export enum SettingsPriority {
   defaults = 100,
@@ -32,8 +37,8 @@ export enum SettingsPriority {
 export interface Settings {
   readonly onSettingsChanged: BeEvent<() => void>;
   addFile(fileName: LocalFileName, priority: SettingsPriority): void;
-  addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
-  addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
+  addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+  addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
   dropDictionary(fileName: LocalFileName, raiseEvent?: boolean): void;
   resolveSetting<T extends SettingType>(settingName: string, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
   resolveSetting<T extends SettingType>(settingName: string, resolver: SettingResolver<T>, defaultValue: T): T;
@@ -44,10 +49,11 @@ export interface Settings {
   getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
   getNumber(settingName: SettingName, defaultValue: number): number;
   getNumber(settingName: SettingName): number | undefined;
-  getObj(settingName: SettingName, defaultValue: object): object;
-  getObj(settingName: SettingName): object | undefined;
+  getObject(settingName: SettingName, defaultValue: SettingObject): SettingObject;
+  getObject(settingName: SettingName): SettingObject | undefined;
   getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
   getArray<T>(settingName: SettingName): Array<T> | undefined;
+  inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
 }
 
 function deepClone<T extends SettingType>(obj: any): T {
@@ -138,6 +144,15 @@ export class ITwinSettings implements Settings {
     return this.resolveSetting(name, (val) => deepClone<T>(val)) ?? defaultValue;
   }
 
+  /** for debugging. Returns an array of all values for a setting, sorted by priority.
+   * @note values are not cloned. Do not modify objects or arrays.
+   */
+  public inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[] {
+    const all: SettingInspector<T>[] = [];
+    this.resolveSetting<T>(name, (value, dictionary, priority) => { all.push({ value, dictionary, priority }); return undefined; });
+    return all;
+  }
+
   public getString(name: SettingName, defaultValue: string): string;
   public getString(name: SettingName): string | undefined;
   public getString(name: SettingName, defaultValue?: string): string | undefined {
@@ -156,10 +171,10 @@ export class ITwinSettings implements Settings {
     const out = this.getSetting<number>(name);
     return typeof out === "number" ? out : defaultValue;
   }
-  public getObj(name: SettingName, defaultValue: object): object;
-  public getObj(name: SettingName): object | undefined;
-  public getObj(name: SettingName, defaultValue?: object): object | undefined {
-    const out = this.getSetting<object>(name);
+  public getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
+  public getObject(name: SettingName): SettingObject | undefined;
+  public getObject(name: SettingName, defaultValue?: SettingObject): SettingObject | undefined {
+    const out = this.getSetting<SettingObject>(name);
     return typeof out === "object" ? out : defaultValue;
   }
   public getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;

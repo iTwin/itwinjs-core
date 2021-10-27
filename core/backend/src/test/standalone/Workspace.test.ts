@@ -10,31 +10,17 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
-import { WorkspaceContainerId, WorkspaceFile } from "../../workspace/Workspace";
+import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceContainerId, WorkspaceFile } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelHost } from "../../IModelHost";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 
 describe.only("WorkspaceFile", () => {
 
-  const rootDir = join(KnownTestLocations.outputDir, "TestWorkspaces");
-  let oldWsRoot: string;
-  const setWsRoot = (val: string) => { (IModelHost as any).workspace.rootDir = val; };
-  before(() => {
-    oldWsRoot = IModelHost.workspace.rootDir;
-    if (IModelJsFs.existsSync(rootDir))
-      IModelJsFs.purgeDirSync(rootDir);
-    else
-      IModelJsFs.mkdirSync(rootDir);
-    setWsRoot(rootDir);
-  });
-  after(() => {
-    setWsRoot(oldWsRoot);
-  });
+  const workspace = new ITwinWorkspace(join(KnownTestLocations.outputDir, "TestWorkspaces"));
 
   function makeContainer(id: WorkspaceContainerId) {
-    const wsFile = new WorkspaceFile(id);
+    const wsFile = new EditableWorkspaceFile(id, workspace);
     IModelJsFs.purgeDirSync(wsFile.containerFilesDir);
     if (IModelJsFs.existsSync(wsFile.localDbName))
       IModelJsFs.unlinkSync(wsFile.localDbName);
@@ -50,7 +36,7 @@ describe.only("WorkspaceFile", () => {
   it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((name) => {
-        expect(() => new WorkspaceFile(name), name).to.throw("containerId");
+        expect(() => new WorkspaceFile(name, workspace), name).to.throw("containerId");
       });
     };
 
@@ -73,7 +59,7 @@ describe.only("WorkspaceFile", () => {
       " leading space",
       "trailing space "]);
 
-    new WorkspaceFile(Guid.createValue()); // guids should be valid
+    new WorkspaceFile(Guid.createValue(), workspace); // guids should be valid
   });
 
   it("create new WorkspaceFile", () => {
@@ -137,10 +123,9 @@ describe.only("WorkspaceFile", () => {
     fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsContainer.close();
 
-    const workspace = IModelHost.workspace;
-    const settings = IModelHost.settings;
-    workspace.addSettingsDictionary({ rscName: "default-settings", container: "defaults" }, SettingsPriority.defaults);
-    expect(settings.getSetting("editor/renderWhitespace")).eq("selection");
+    const settings = workspace.settings;
+    workspace.loadSettingsDictionary({ rscName: "default-settings", container: "defaults" }, SettingsPriority.defaults);
+    expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     interface FontEntry { fontName: string, container: string }
     const fontList = settings.getArray<FontEntry>("workspace/fontList")!;

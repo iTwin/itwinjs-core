@@ -11,11 +11,10 @@ import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import { AccessToken, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { SettingsPriority } from "./Settings";
+import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
 import { IModelDb } from "../IModelDb";
 
 export type WorkspaceContainerName = string;
@@ -69,55 +68,39 @@ export interface WorkspaceContainer {
   getFile(rscName: WorkspaceResourceName): LocalFileName | undefined;
 }
 
-/**
- * An editable [[WorkspaceContainer]]. This interface is used by administrators for creating and modifying `WorkspaceContainer`s.
- * For cloud-backed containers, the write token must be obtained before this interface may be used. Only one user at at time
- * may be editing.
- */
-export interface EditableWorkspaceContainer extends WorkspaceContainer {
-  addString(rscName: WorkspaceResourceName, val: string): void;
-  updateString(rscName: WorkspaceResourceName, val: string): void;
-  removeString(rscName: WorkspaceResourceName): void;
-
-  addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
-  updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
-  removeBlob(rscName: WorkspaceResourceName): void;
-
-  addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
-  updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
-  removeFile(rscName: WorkspaceResourceName): void;
-}
-
 export interface WorkspaceContainerOpts {
   forIModel?: IModelDb;
   accessToken?: AccessToken;
   openMode?: OpenMode;
-  rootDir?: LocalDirName;
+  workspaceRoot?: LocalDirName;
+  filesDir?: LocalDirName;
 }
 
 export interface Workspace {
   readonly rootDir: LocalDirName;
+  readonly filesDir: LocalDirName;
+  readonly settings: Settings;
   resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined;
   obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
   getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer;
-  addSettingsDictionary(settingRsc: WorkspaceResourceProps | WorkspaceContainerName, priority: SettingsPriority): void;
-  dropAll(): void;
-  dropForIModel(iModel: IModelDb): void;
+  loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): void;
   dropContainer(container: WorkspaceContainer): void;
+  close(): void;
 }
 
-export class WorkspaceFile implements EditableWorkspaceContainer {
-  private readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
-  public readonly filesDir: LocalDirName;
-  public readonly localDbName: LocalFileName;
+/** @internal */
+export class WorkspaceFile implements WorkspaceContainer {
+  protected readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
+  public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
+  public readonly localDbName: LocalDirName;
   public readonly iModelOwner?: IModelDb;
 
-  public get containerFilesDir() { return join(this.filesDir, this.containerId); }
+  public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
   public get isOpenForWrite() { return this.isOpen && !this.db.nativeDb.isReadonly(); }
 
-  private queryFileResource(rscName: WorkspaceResourceName) {
+  protected queryFileResource(rscName: WorkspaceResourceName) {
     const info = this.db.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;
@@ -129,16 +112,7 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
     return { localFileName, info };
   }
 
-  private mustBeWriteable() {
-    if (!this.isOpenForWrite)
-      throw new Error("workspace not open for write");
-  }
-
-  private getFileModifiedTime(localFileName: LocalFileName): number {
-    return fs.statSync(localFileName).mtimeMs;
-  }
-
-  private static noLeadingOrTrailingSpaces(name: string, msg: string) {
+  protected static noLeadingOrTrailingSpaces(name: string, msg: string) {
     if (name.trim() !== name)
       throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
   }
@@ -149,25 +123,12 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
     this.noLeadingOrTrailingSpaces(id, "containerId");
   }
 
-  private static validateResourceName(name: WorkspaceResourceName) {
-    this.noLeadingOrTrailingSpaces(name, "resource name");
-    if (name.length > 1024)
-      throw new Error("resource name too long");
-  }
-
-  private validateResourceSize(val: Uint8Array | string) {
-    const len = typeof val === "string" ? val.length : val.byteLength;
-    if (len > (1024 * 1024 * 1024)) // one gigabyte
-      throw new Error("value is too large");
-  }
-
-  public constructor(containerId: WorkspaceContainerId, opts?: WorkspaceContainerOpts) {
+  public constructor(containerId: WorkspaceContainerId, workspace: Workspace, opts?: WorkspaceContainerOpts) {
     WorkspaceFile.validateContainerId(containerId);
-    const rootDir = opts?.rootDir ?? IModelHost.workspace.rootDir;
+    this.workspace = workspace;
     this.containerId = containerId;
+    this.localDbName = join(workspace.rootDir, `${this.containerId}.itwin-workspace-container`);
     this.iModelOwner = opts?.forIModel;
-    this.filesDir = join(rootDir, "Files");
-    this.localDbName = join(rootDir, `${this.containerId}.itwin-workspace-container`);
   }
 
   public async attach(_token: AccessToken) {
@@ -176,22 +137,12 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   public async download() {
   }
 
-  public async upload() {
-  }
-
   public purgeContainerFiles() {
     IModelJsFs.purgeDirSync(this.containerFilesDir);
   }
-  public create() {
-    IModelJsFs.recursiveMkDirSync(dirname(this.localDbName));
-    this.db.createDb(this.localDbName);
-    this.db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
-    this.db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
-    this.db.saveChanges();
-  }
 
-  public open(args?: { accessToken?: AccessToken, openMode?: OpenMode }): void {
-    this.db.openDb(this.localDbName, args?.openMode ?? OpenMode.Readonly);
+  public open(): void {
+    this.db.openDb(this.localDbName, OpenMode.Readonly);
   }
 
   public close(): void {
@@ -219,11 +170,12 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
       return undefined;
 
     const { localFileName, info } = file;
+    // check whether the file is already up to date.
     const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
     if (stat && Math.trunc(stat.mtimeMs) === info.date && stat.size === info.size)
-      return localFileName;
+      return localFileName; // yes, we're done
 
-    // check whether the file is already up to date.
+    // extractEmbeddedFile fails if the file exists or if the directory does not exist
     if (stat)
       fs.removeSync(localFileName);
     else
@@ -231,13 +183,43 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
 
     this.db.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
     const date = new Date(info.date);
-    fs.utimesSync(localFileName, date, date); // set the last-modified date of the file
+    fs.utimesSync(localFileName, date, date); // set the last-modified date of the file to match date in container
     fs.chmodSync(localFileName, 4); // set file readonly
     return localFileName;
   }
+}
+
+/**
+ * An editable [[WorkspaceFile]]. This is used by administrators for creating and modifying `WorkspaceContainer`s.
+ * For cloud-backed containers, the write token must be obtained before this class may be used. Only one user at at time
+ * may be editing.
+ * @beta
+ */
+export class EditableWorkspaceFile extends WorkspaceFile {
+  private static validateResourceName(name: WorkspaceResourceName) {
+    WorkspaceFile.noLeadingOrTrailingSpaces(name, "resource name");
+    if (name.length > 1024)
+      throw new Error("resource name too long");
+  }
+
+  private validateResourceSize(val: Uint8Array | string) {
+    const len = typeof val === "string" ? val.length : val.byteLength;
+    if (len > (1024 * 1024 * 1024)) // one gigabyte
+      throw new Error("value is too large");
+  }
+
+  public async upload() {
+  }
+
+  public override open(): void {
+    this.db.openDb(this.localDbName, OpenMode.ReadWrite);
+  }
+
+  private getFileModifiedTime(localFileName: LocalFileName): number {
+    return fs.statSync(localFileName).mtimeMs;
+  }
 
   private performWriteSql(rscName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {
-    this.mustBeWriteable();
     this.db.withSqliteStatement(sql, (stmt) => {
       stmt.bindString(1, rscName);
       bind?.(stmt);
@@ -246,10 +228,18 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
         throw new IModelError(rc, "workspace write error");
     });
     this.db.saveChanges();
-
   }
+
+  public create() {
+    IModelJsFs.recursiveMkDirSync(dirname(this.localDbName));
+    this.db.createDb(this.localDbName);
+    this.db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
+    this.db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
+    this.db.saveChanges();
+  }
+
   public addString(rscName: WorkspaceResourceName, val: string): void {
-    WorkspaceFile.validateResourceName(rscName);
+    EditableWorkspaceFile.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
@@ -264,7 +254,7 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   }
 
   public addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
-    WorkspaceFile.validateResourceName(rscName);
+    EditableWorkspaceFile.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
@@ -279,8 +269,7 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   }
 
   public addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void {
-    WorkspaceFile.validateResourceName(rscName);
-    this.mustBeWriteable();
+    EditableWorkspaceFile.validateResourceName(rscName);
     fileExt = fileExt ?? extname(localFileName);
     if (fileExt?.[0] === ".")
       fileExt = fileExt.slice(1);
@@ -288,24 +277,30 @@ export class WorkspaceFile implements EditableWorkspaceContainer {
   }
 
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
-    this.mustBeWriteable();
     this.queryFileResource(rscName); // throws if not present
     this.db.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
   }
 
   public removeFile(rscName: WorkspaceResourceName): void {
-    this.mustBeWriteable();
     const file = this.queryFileResource(rscName);
     if (file && fs.existsSync(file.localFileName))
       fs.unlinkSync(file.localFileName);
     this.db.nativeDb.removeEmbeddedFile(rscName);
   }
+
 }
 
 /** @internal */
 export class ITwinWorkspace implements Workspace {
   private _workspaces = new Map<WorkspaceContainerId, WorkspaceFile>();
-  public constructor(public readonly rootDir: LocalDirName) { }
+  public readonly filesDir: LocalDirName;
+  public readonly rootDir: LocalDirName;
+  public readonly settings: Settings;
+  public constructor(rootDir: LocalDirName, filesDir?: LocalDirName) {
+    this.settings = new ITwinSettings();
+    this.rootDir = rootDir;
+    this.filesDir = filesDir ?? join(rootDir, "Files");
+  }
 
   public async obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
     // NEEDS_WORK - download or attach
@@ -320,38 +315,27 @@ export class ITwinWorkspace implements Workspace {
     if (container)
       return container;
 
-    container = new WorkspaceFile(id, opts);
-    container.open(opts);
+    container = new WorkspaceFile(id, this, opts);
+    container.open();
     this._workspaces.set(id, container);
-    if (opts?.forIModel) {
-      const iModel = opts.forIModel;
-      opts.forIModel.onBeforeClose.addOnce(() => this.dropForIModel(iModel));
-    }
+    if (opts?.forIModel)
+      opts.forIModel.onBeforeClose.addOnce(() => this.dropContainer(container!));
     return container;
   }
 
-  public addSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
+  public loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
     const container = this.getContainer(settingRsc.container);
     const setting = container.getString(settingRsc.rscName);
     if (undefined === setting)
       throw new Error(`could not load setting resource ${settingRsc.rscName}`);
 
-    IModelHost.settings.addJson(`${container.containerId}/${settingRsc.rscName}`, priority, setting);
+    this.settings.addJson(`${container.containerId}/${settingRsc.rscName}`, priority, setting);
   }
 
-  public dropAll() {
+  public close() {
     for (const [_id, container] of this._workspaces)
       container.close();
     this._workspaces.clear();
-  }
-
-  public dropForIModel(iModel: IModelDb) {
-    for (const [id, container] of this._workspaces) {
-      if (container.iModelOwner === iModel) {
-        container.close();
-        this._workspaces.delete(id);
-      }
-    }
   }
 
   public dropContainer(toDrop: WorkspaceContainer) {
@@ -366,7 +350,7 @@ export class ITwinWorkspace implements Workspace {
   public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined {
     if (typeof props === "object")
       return props.id;
-    return IModelHost.settings.resolveSetting("workspace/container/alias", (val) => {
+    return this.settings.resolveSetting("workspace/container/alias", (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")

@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -29,7 +29,6 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { ITwinSettings, Settings } from "./workspace/Settings";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -87,12 +86,13 @@ export class IModelHostConfiguration {
    *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public cacheDir?: string;
+  public cacheDir?: LocalDirName;
 
-  public workspaceRoot?: string;
+  public workspaceRoot?: LocalDirName;
+  public workspaceFilesDir?: LocalDirName;
 
   /** The directory where the app's assets are found. */
-  public appAssetsDir?: string;
+  public appAssetsDir?: LocalDirName;
 
   /** The kind of iModel hub server to use.
    * @beta
@@ -166,7 +166,6 @@ export class IModelHost {
   public static backendVersion = "";
   private static _cacheDir = "";
   private static _workspace: Workspace;
-  private static _settings: Settings;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -203,7 +202,6 @@ export class IModelHost {
 
   /** get the Workspaces */
   public static get workspace(): Workspace { return this._workspace; }
-  public static get settings(): Settings { return this._settings; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -332,8 +330,7 @@ export class IModelHost {
     }
 
     this.setupHostDirs(configuration);
-    this._settings = new ITwinSettings();
-    this._workspace = new ITwinWorkspace(configuration.workspaceRoot ?? path.join(NativeLibrary.defaultLocalDir, "iTwin", "Workspaces"));
+    this.setupWorkspace(configuration);
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -395,6 +392,11 @@ export class IModelHost {
     };
     this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
+  }
+
+  private static setupWorkspace(configuration: IModelHostConfiguration) {
+    const wsRoot = configuration.workspaceRoot ?? path.join(NativeLibrary.defaultLocalDir, "iTwin", "Workspaces");
+    this._workspace = new ITwinWorkspace(wsRoot, configuration.workspaceFilesDir);
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
