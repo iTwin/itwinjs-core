@@ -112,6 +112,7 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { JSONSchemaType } from '@itwin/core-bentley';
 import { LightLocationProps } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
@@ -2340,7 +2341,7 @@ export class IModelHost {
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
-    static get cacheDir(): string;
+    static get cacheDir(): LocalDirName;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2388,12 +2389,13 @@ export class IModelHost {
     static tileUploader: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
+    static get workspace(): Workspace;
     }
 
 // @public
 export class IModelHostConfiguration {
-    appAssetsDir?: string;
-    cacheDir?: string;
+    appAssetsDir?: LocalDirName;
+    cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
@@ -2417,6 +2419,8 @@ export class IModelHostConfiguration {
     tileContentRequestTimeout: number;
     // @internal
     tileTreeRequestTimeout: number;
+    // @beta
+    workspace?: WorkspaceOpts;
 }
 
 // @public

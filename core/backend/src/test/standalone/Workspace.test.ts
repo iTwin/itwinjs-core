@@ -15,9 +15,9 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
-  const workspace = new ITwinWorkspace(join(KnownTestLocations.outputDir, "TestWorkspaces"));
+  const workspace = new ITwinWorkspace({ containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
   function makeContainer(id: WorkspaceContainerId) {
     const wsFile = new EditableWorkspaceFile(id, workspace);
@@ -112,7 +112,7 @@ describe.only("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it("resolve workspace alias", () => {
+  it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultContainer = makeContainer("defaults");
     defaultContainer.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
@@ -124,13 +124,13 @@ describe.only("WorkspaceFile", () => {
     fontsContainer.close();
 
     const settings = workspace.settings;
-    workspace.loadSettingsDictionary({ rscName: "default-settings", container: "defaults" }, SettingsPriority.defaults);
+    await workspace.loadSettingsDictionary({ rscName: "default-settings", container: "defaults" }, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     interface FontEntry { fontName: string, container: string }
     const fontList = settings.getArray<FontEntry>("workspace/fontList")!;
     const fontContainerName = fontList[0].container;
-    const fonts = workspace.getContainer(fontContainerName);
+    const fonts = await workspace.getContainer(fontContainerName);
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile(fontList[0].fontName)!;
     expect(fontFile).contains(".ttf");
@@ -148,7 +148,7 @@ describe.only("WorkspaceFile", () => {
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
     expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-02");
     expect(workspace.resolveContainerId({ id: "fonts-01" })).equals("fonts-01");
-    expect(() => workspace.getContainer(fontContainerName)).to.throw("not found");
+    await expect(workspace.getContainer(fontContainerName)).to.be.rejectedWith("not found");
 
     settings.dropDictionary("imodel-02");
     expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");

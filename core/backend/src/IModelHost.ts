@@ -28,7 +28,7 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -88,8 +88,10 @@ export class IModelHostConfiguration {
    */
   public cacheDir?: LocalDirName;
 
-  public workspaceRoot?: LocalDirName;
-  public workspaceFilesDir?: LocalDirName;
+  /** Options for creating the [[Workspace]]
+   * @beta
+   */
+  public workspace?: WorkspaceOpts;
 
   /** The directory where the app's assets are found. */
   public appAssetsDir?: LocalDirName;
@@ -330,7 +332,7 @@ export class IModelHost {
     }
 
     this.setupHostDirs(configuration);
-    this.setupWorkspace(configuration);
+    this._workspace = new ITwinWorkspace(configuration.workspace);
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -392,11 +394,6 @@ export class IModelHost {
     };
     this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
-  }
-
-  private static setupWorkspace(configuration: IModelHostConfiguration) {
-    const wsRoot = configuration.workspaceRoot ?? path.join(NativeLibrary.defaultLocalDir, "iTwin", "Workspaces");
-    this._workspace = new ITwinWorkspace(wsRoot, configuration.workspaceFilesDir);
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */

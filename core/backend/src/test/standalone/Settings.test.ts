@@ -9,7 +9,7 @@ import { ITwinSettings, SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { Mutable } from "@itwin/core-bentley";
 
-describe.only("Settings", () => {
+describe("Settings", () => {
 
   const app1: SettingsGroupSpec = {
     groupName: "app1",

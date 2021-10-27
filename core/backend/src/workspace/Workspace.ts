@@ -16,31 +16,85 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 
+/** The names of Settings used by Workspaces
+ * @beta
+ */
+export enum WorkspaceSetting {
+  ContainerAlias = "workspace/container/alias",
+}
+
+/**
+ * The name of a workspace container. This is the user-supplied name of a container, used to specify its *purpose* within a workspace.
+ * WorkspaceNames can be "aliased" by `WorkspaceSetting.ContainerAlias` settings so that "resolved" [[WorkspaceContainerId]] that supplies
+ * the actual container for a WorkspaceContainerName may vary. Also note that more than one WorkspaceContainerName may resolve to the same
+ * WorkspaceContainerId, if multiple purposes are served by the same container.
+ * @note there are no constraints on the contents or length of `WorkspaceContainerName`s, although short descriptive names are recommended.
+ * However, when no alias exists in WorkspaceSetting.ContainerAlias for a WorkspaceContainerName, then the WorkspaceContainerName becomes
+ * the WorkspaceContainerId, and the constraints on WorkspaceContainerId apply.
+ * @beta
+ */
 export type WorkspaceContainerName = string;
+
+/**
+ * The unique identifier of a WorkspaceContainer. This becomes the base name for the local file holding the WorkspaceContainer, and is also the
+ * name of its cloud-storage-container. `WorkspaceContainerName` are resolved to WorkspaceContainerId through `WorkspaceSetting.ContainerAlias` settings,
+ * so users may not recognize the actual WorkspaceContainerId supplying resources for a WorkspaceContainerName.
+ *
+ * `WorkspaceContainerId`s may not:
+ *  - be blank or start or end with a space
+ *  - be longer than 255 characters
+ *  - contain any characters with Unicode values less than 0x20
+ *  - contain characters reserved for filename, device, wildcard, or url syntax (e.g. "\.<>:"/\\"`'|?*")
+ * @beta
+ */
 export type WorkspaceContainerId = string;
+
+/**
+ * The name is used for loading WorkspaceResources from a [[WorkspaceContainer]].
+ * * `WorkspaceResourceName`s may not:
+ *  - be blank or start or end with a space
+ *  - be longer than 1024 characters
+ * @note a single WorkspaceContainer may hold WorkspaceResources of type 'blob', 'string' and 'file', all with the same WorkspaceResourceName.
+ * @beta
+ */
 export type WorkspaceResourceName = string;
 
-/** either a WorkspaceContainerName or a WorkspaceContainerId. */
+/**
+ * Properties that specify a WorkspaceContainer. This can either be a WorkspaceContainerName or an
+ * object with a member named `id` that holds a WorkspaceContainerId. If WorkspaceContainerId is supplied,
+ * it is used directly. Otherwise the name must be resolved via [[Workspace.resolveContainerId]].
+ * @beta
+ */
 export type WorkspaceContainerProps = WorkspaceContainerName | { id: WorkspaceContainerId };
 
+/** Properties that specify a WorkspaceResource within a WorkspaceContainer.
+ * @beta
+ */
 export interface WorkspaceResourceProps {
+  /** the properties of the WorkspaceContainer holding the resource. */
   container: WorkspaceContainerProps;
+  /** the name of the resource within [[container]] */
   rscName: WorkspaceResourceName;
 }
 
 /**
- * A container of workspace resources. `WorkspaceContainer`s may just be local files, or they may be
- * stored and synchronized with cloud blob-store containers.
- * WorkspaceContainers hold WorkspaceResources, each identified by a [[WorkspaceResourceName]] and a [[WorkspaceResourceType]].
- * Resources of type `string` and `blob` may be loaded directly from a `WorkspaceContainer`. Resources of type `file` are
+ * A container of workspace resources. `WorkspaceContainer`s may just be local [[WorkspaceFile]]s, or they may be  stored and
+ * synchronized with cloud blob-store containers. WorkspaceContainers hold WorkspaceResources, each identified by a [[WorkspaceResourceName]].
+ * Resources of type `string` and `blob` may be loaded directly from the `WorkspaceContainer`. Resources of type `file` are
  * copied from the container into a temporary local file so they can be accessed directly.
+ * @beta
  */
 export interface WorkspaceContainer {
-  /** The id of this container.
-   * @note This identifies the container in cloud storage. If this is a local container, it may just be a local filename.
-   */
+  /** The WorkspaceContainerId of this container. */
   readonly containerId: WorkspaceContainerId;
+  /** The Workspace that opened this WorkspaceContainer */
+  readonly workspace: Workspace;
+  /** If present, IModelDb that owns this [[WorkspaceContainer]]. The lifetime of this container is paired with the iModelDb. */
+  readonly iModelOwner?: IModelDb;
+  /** the directory for extracting file resources. */
+  readonly containerFilesDir: LocalDirName;
 
   /** Get a string resource from this container, if present. */
   getString(rscName: WorkspaceResourceName): string | undefined;
@@ -48,7 +102,7 @@ export interface WorkspaceContainer {
   /** Get a blob resource from this container, if present. */
   getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
 
-  /** Get a local copy of a file resource from this container, if present.
+  /** Extract a local copy of a file resource from this container, if present.
    * @returns the full path to a file on the local filesystem.
    * @note The file is copied from the container into the local filesystem so it may be accessed directly. This happens only
    * as necessary, if the local file doesn't exist, or if it is out-of-date because it was updated in the container.
@@ -61,19 +115,60 @@ export interface WorkspaceContainer {
   getFile(rscName: WorkspaceResourceName): LocalFileName | undefined;
 }
 
+/** Options supplied when opening a WorkspaceContainer. */
 export interface WorkspaceContainerOpts {
+  /** If present, the container will be closed and removed when the iModel is closed. */
   forIModel?: IModelDb;
 }
 
+/**
+ * Options for constructing a [[Workspace]].
+ * @beta
+ */
+export interface WorkspaceOpts {
+  /** The local directory for the WorkspaceContainer files. The [[Workspace]] will (only) look in this directory
+   * for files named `${this.containerId}.itwin-workspace-container`.
+   * @note if not supplied, defaults to `iTwin/Workspace` in the user-local folder.
+   */
+  containerDir?: LocalDirName;
+  /** A local directory to store temporary files extracted for file-resources.
+   * @note if not supplied, defaults to `a folder named "Files" inside [[containerDir]]
+   */
+  filesDir?: LocalDirName;
+}
+
+/**
+ * Settings and resources that customize an application for the current session.
+ * See [Workspaces](%docs/learning/Workspaces)
+ * @beta
+ */
 export interface Workspace {
-  readonly rootDir: LocalDirName;
+  /** The local directory for the WorkspaceContainer files with the name `${this.containerId}.itwin-workspace-container`. */
+  readonly containerDir: LocalDirName;
+  /** the local directory where this Workspace will store temporary files extracted for file-resources. */
   readonly filesDir: LocalDirName;
+  /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
-  resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined;
-  obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
-  getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer;
-  loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): void;
+  /**
+   * Resolve a WorkspaceContainerProps to a WorkspaceContainerId. If props is an object with an `id` member, that value is returned unchanged.
+   * If it is a string, then the highest priority [[WorkspaceSetting.ContainerAlias]] setting with an entry for the WorkspaceContainerName
+   * is used. If no WorkspaceSetting.ContainerAlias entry for the WorkspaceContainerName can be found, the name returned as the id.
+   */
+  resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+  /**
+   * Get an open [[WorkspaceContainer]]. If the container is present but not open, it is opened first.
+   * If it is not  present or not up-to-date, it is downloaded first.
+   * @returns a Promise that is resolved when the container is local, opened, and available for access.
+   */
+  getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
+  /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
+   * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingsDictionary]]
+   * @returns a Promise that is resolved when the settings resource has been loaded.
+   */
+  loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+  /** Close and remove a currently opened [[WorkspaceContainer]] from this Workspace. */
   dropContainer(container: WorkspaceContainer): void;
+  /** Close this Workspace. All currently opened WorkspaceContainers are dropped. */
   close(): void;
 }
 
@@ -81,21 +176,16 @@ export interface Workspace {
 export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainerId, WorkspaceFile>();
   public readonly filesDir: LocalDirName;
-  public readonly rootDir: LocalDirName;
+  public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
 
-  public constructor(rootDir: LocalDirName, filesDir?: LocalDirName) {
+  public constructor(opts?: WorkspaceOpts) {
     this.settings = new ITwinSettings();
-    this.rootDir = rootDir;
-    this.filesDir = filesDir ?? join(rootDir, "Files");
+    this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
+    this.filesDir = opts?.filesDir ?? join(this.containerDir, "Files");
   }
 
-  public async obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
-    // NEEDS_WORK - download or attach
-    return this.getContainer(props, opts);
-  }
-
-  public getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer {
+  public async getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
@@ -111,8 +201,8 @@ export class ITwinWorkspace implements Workspace {
     return container;
   }
 
-  public loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
-    const container = this.getContainer(settingRsc.container);
+  public async loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
+    const container = await this.getContainer(settingRsc.container);
     const setting = container.getString(settingRsc.rscName);
     if (undefined === setting)
       throw new Error(`could not load setting resource ${settingRsc.rscName}`);
@@ -135,10 +225,10 @@ export class ITwinWorkspace implements Workspace {
     this._containers.delete(id);
   }
 
-  public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined {
+  public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId {
     if (typeof props === "object")
       return props.id;
-    return this.settings.resolveSetting("workspace/container/alias", (val) => {
+    return this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")
@@ -146,12 +236,15 @@ export class ITwinWorkspace implements Workspace {
         }
       }
       return undefined; // keep going through all settings dictionaries
-    }, props);
+    }, props)!;
 
   }
 }
 
-/** @internal */
+/**
+ * A local file holding a WorkspaceContainer.
+ * @beta
+ */
 export class WorkspaceFile implements WorkspaceContainer {
   protected readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
   public readonly workspace: Workspace;
@@ -161,7 +254,6 @@ export class WorkspaceFile implements WorkspaceContainer {
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
-  public get isOpenForWrite() { return this.isOpen && !this.db.nativeDb.isReadonly(); }
 
   protected queryFileResource(rscName: WorkspaceResourceName) {
     const info = this.db.nativeDb.queryEmbeddedFile(rscName);
@@ -190,7 +282,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
-    this.localDbName = join(workspace.rootDir, `${this.containerId}.itwin-workspace-container`);
+    this.localDbName = join(workspace.containerDir, `${this.containerId}.itwin-workspace-container`);
     this.iModelOwner = opts?.forIModel;
   }
 
@@ -293,6 +385,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     this.db.saveChanges();
   }
 
+  /** Create a new, empty, EditableWorkspaceFile for importing Workspace resources. */
   public create() {
     IModelJsFs.recursiveMkDirSync(dirname(this.localDbName));
     this.db.createDb(this.localDbName);
@@ -301,36 +394,63 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     this.db.saveChanges();
   }
 
+  /** Add a new string resource to this WorkspaceFile.
+   * @param rscName The name of the string resource.
+   * @param val The string to save.
+   */
   public addString(rscName: WorkspaceResourceName, val: string): void {
     EditableWorkspaceFile.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?)", (stmt) => stmt.bindString(2, val));
   }
 
+  /** Update an existing string resource with a new value.
+   * @param rscName The name of the string resource.
+   * @param val The new value.
+   * @throws if rscName does not exist
+   */
   public updateString(rscName: WorkspaceResourceName, val: string): void {
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "UPDATE strings SET value=?2 WHERE id=?1", (stmt) => stmt.bindString(2, val));
   }
 
+  /** Remove a string resource. */
   public removeString(rscName: WorkspaceResourceName): void {
     this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
   }
 
+  /** Add a new blob resource to this WorkspaceFile.
+   * @param rscName The name of the blob resource.
+   * @param val The blob to save.
+   */
   public addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
     EditableWorkspaceFile.validateResourceName(rscName);
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?)", (stmt) => stmt.bindBlob(2, val));
   }
 
+  /** Update an existing blob resource with a new value.
+   * @param rscName The name of the blob resource.
+   * @param val The new value.
+   * @throws if rscName does not exist
+   */
   public updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
     this.validateResourceSize(val);
     this.performWriteSql(rscName, "UPDATE blobs SET value=?2 WHERE id=?1", (stmt) => stmt.bindBlob(2, val));
   }
 
+  /** Remove a blob resource. */
   public removeBlob(rscName: WorkspaceResourceName): void {
     this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
   }
 
+  /** Copy the contents of an existing local file into this WorkspaceFile as a file resource.
+   * @param rscName The name of the file resource.
+   * @param localFileName The name of a local file to be read.
+   * @param fileExt The extension (do not include the leading ".") to be appended to the generated fileName
+   * when this file is extracted from the WorkspaceContainer. By default the characters after the last "." in [[localFileName]]
+   * are used. Pass this argument to override that.
+   */
   public addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void {
     EditableWorkspaceFile.validateResourceName(rscName);
     fileExt = fileExt ?? extname(localFileName);
@@ -339,11 +459,17 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     this.db.nativeDb.embedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName), fileExt });
   }
 
+  /** Replace an existing file resource with the contents of a local file.
+   * @param rscName The name of the file resource.
+   * @param localFileName The name of a local file to be read.
+   * @throws if rscName does not exist
+   */
   public updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void {
     this.queryFileResource(rscName); // throws if not present
     this.db.nativeDb.replaceEmbeddedFile({ name: rscName, localFileName, date: this.getFileModifiedTime(localFileName) });
   }
 
+  /** Remove a file resource. */
   public removeFile(rscName: WorkspaceResourceName): void {
     const file = this.queryFileResource(rscName);
     if (file && fs.existsSync(file.localFileName))
