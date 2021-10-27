@@ -7,7 +7,7 @@
  */
 
 import "@ungap/url-search-params/index";
-import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -17,12 +17,13 @@ import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 
-/** @public */
+/** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
 
 /** A web application RPC request.
- * @public
+ * @internal
  */
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
@@ -36,24 +37,23 @@ export class WebAppRpcRequest extends RpcRequest {
   public static maxUrlComponentSize = 1024;
 
   /** The HTTP method for this request. */
-  public method: HttpMethod_T;
+  public override method: HttpMethod_T;
 
   /** Convenience access to the protocol of this request. */
-  public readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
+  public override readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
 
   /** Standardized access to metadata about the request (useful for purposes such as logging). */
   public metadata = { status: 0, message: "" };
 
   /** Parse headers */
-  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedClientRequestContext {
-    const headerNames: SerializedClientRequestContext = protocol.serializedClientRequestContextHeaderNames;
-    const parsedHeaders: SerializedClientRequestContext = {
+  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
+    const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;
+    const parsedHeaders: SerializedRpcActivity = {
       id: req.header(headerNames.id) || "",
       applicationId: req.header(headerNames.applicationId) || "",
       applicationVersion: req.header(headerNames.applicationVersion) || "",
       sessionId: req.header(headerNames.sessionId) || "",
-      authorization: headerNames.authorization ? req.header(headerNames.authorization) : undefined,
-      userId: headerNames.userId ? req.header(headerNames.userId) : undefined,
+      authorization: (headerNames.authorization ? req.header(headerNames.authorization) : "") ?? "",
     };
     return parsedHeaders;
   }
@@ -139,7 +139,7 @@ export class WebAppRpcRequest extends RpcRequest {
     return this._response;
   }
 
-  protected isHeaderAvailable(name: string): boolean {
+  protected override isHeaderAvailable(name: string): boolean {
     const allowed = this.protocol.allowedHeaders;
     return allowed.has("*") || allowed.has(name);
   }
@@ -162,12 +162,12 @@ export class WebAppRpcRequest extends RpcRequest {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
-        reject(new ServerError(-1, reason || "Server connection error."));
+        reject(new ServerError(-1, typeof (reason) === "string" ? reason : "Server connection error."));
       }
     });
   }
 
-  protected computeRetryAfter(attempts: number): number {
+  protected override computeRetryAfter(attempts: number): number {
     const retryAfter = this._response && this._response.headers.get("Retry-After");
     if (retryAfter) {
       this.resetTransientFaultCount();
@@ -188,7 +188,7 @@ export class WebAppRpcRequest extends RpcRequest {
     return super.computeRetryAfter(attempts);
   }
 
-  protected handleUnknownResponse(code: number) {
+  protected override handleUnknownResponse(code: number) {
     if (this.protocol.isTimeout(code)) {
       this.reject(new ServerTimeoutError("Request timeout."));
     } else {
@@ -227,7 +227,7 @@ export class WebAppRpcRequest extends RpcRequest {
           return;
 
         this._loading = false;
-        reject(new ServerError(this.metadata.status, reason || "Unknown server response error."));
+        reject(new ServerError(this.metadata.status, typeof (reason) === "string" ? reason : "Unknown server response error."));
       }
     });
   }
@@ -377,7 +377,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private setupTextTransport(parameters: RpcSerializedValue) {
     if (this.operation.policy.allowResponseCaching(this)) {
-      const encodedBody = btoa(parameters.objects);
+      const encodedBody = btoa(parameters.objects); // eslint-disable-line deprecation/deprecation
       if (encodedBody.length <= WebAppRpcRequest.maxUrlComponentSize) {
         this._request.method = "get";
         this._request.body = undefined;

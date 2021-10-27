@@ -7,12 +7,14 @@
  */
 
 import { join } from "path";
-import { DbResult, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelError, StorageValue } from "@bentley/imodeljs-common";
+import { DbResult, IModelStatus } from "@itwin/core-bentley";
+import { IModelError, StorageValue } from "@itwin/core-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { NativeHost } from "./NativeHost";
+
+// cspell:ignore ecdb
 
 /**
  * A local file stored in the [[NativeHost.appSettingsCacheDir]] for storing key/value pairs.
@@ -27,19 +29,23 @@ export class NativeAppStorage {
   /** Set the value for a key */
   public setData(key: string, value: StorageValue): void {
     const rc = this._ecdb.withPreparedSqliteStatement("INSERT INTO app_setting(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val", (stmt) => {
-      let type: string | undefined = value === null ? "null" : typeof value;
-      if (type === "object") {
-        if (value instanceof Uint8Array) {
-          type = "Uint8Array";
-        } else {
-          type = undefined;
-        }
+      let valType = (value === undefined || value === null) ? "null" : typeof value;
+      if (valType === "object" && (value instanceof Uint8Array))
+        valType = "Uint8Array";
+
+      switch (valType) {
+        case "null":
+        case "number":
+        case "string":
+        case "boolean":
+        case "Uint8Array":
+          break;
+        default:
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${valType} for value for key='${key}`);
       }
-      if (!type) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type for value for key='${key}'`);
-      }
+
       stmt.bindValue(1, key);
-      stmt.bindValue(2, type);
+      stmt.bindValue(2, valType);
       stmt.bindValue(3, value);
       return stmt.step();
     });
@@ -49,26 +55,40 @@ export class NativeAppStorage {
     this._ecdb.saveChanges();
   }
 
-  /** Get the value for a key from this Storage. If key is not present, return undefined. */
-  public getData(key: string): StorageValue | undefined {
+  /** Get the value for a key from this Storage. If key is not present or is null, return undefined. */
+  public getData(key: string): StorageValue {
     return this._ecdb.withPreparedSqliteStatement("SELECT type,val FROM app_setting WHERE key=?", (stmt) => {
       stmt.bindValue(1, key);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      switch (stmt.getValue(0).getString()) {
+      const valType = stmt.getValueString(0);
+      switch (valType) {
         case "number":
-          return stmt.getValue(1).getDouble();
+          return stmt.getValueDouble(1);
         case "string":
-          return stmt.getValue(1).getString();
+          return stmt.getValueString(1);
         case "boolean":
-          return Boolean(stmt.getValue(1).getInteger());
+          return Boolean(stmt.getValueInteger(1));
         case "Uint8Array":
-          return stmt.getValue(1).getBlob();
+          return stmt.getValueBlob(1);
         case "null":
-          return null;
+          return undefined;
       }
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Unsupported type in cache");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type in cache ${valType}`);
     });
+  }
+
+  /** return the type of the value for a key, or undefined if not present. */
+  public getValueType(key: string): "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined {
+    return this._ecdb.withSqliteStatement("SELECT type FROM app_setting WHERE key=?", (stmt) => {
+      stmt.bindValue(1, key);
+      return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValueString(0) as any : undefined;
+    });
+  }
+
+  /** return `true` if the key is present, but has a null value. */
+  public hasNullValue(key: string): boolean {
+    return this.getValueType(key) === "null";
   }
 
   /** Get the value for a key as a string. If it is not present, or not of type string, return undefined */
@@ -100,7 +120,7 @@ export class NativeAppStorage {
     const keys = new Array<string>();
     this._ecdb.withPreparedSqliteStatement("SELECT key FROM app_setting", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        keys.push(stmt.getValue(0).getString());
+        keys.push(stmt.getValueString(0));
       }
     });
     return keys;

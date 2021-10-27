@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "remove requestContext argument from importSchemas",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

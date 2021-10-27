@@ -1,11 +1,13 @@
 # start off ignoring everything
 *
 # then add back only the files we want
+!*.md
+
 !lib/**/*.d.ts
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
-!lib/assets/**/*
-!*.md
+!lib/**/assets/**/*
+
 # then ignore some stuff again
-lib/test
+lib/**/test/**

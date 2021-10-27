@@ -29,7 +29,7 @@ USER node
 RUN mkdir /home/node/rpctests
 WORKDIR /home/node/rpctests
 
-RUN npm install @bentley/rpcinterface-full-stack-tests@latest
+RUN npm install @itwin/rpcinterface-full-stack-tests@latest
 
 # Export node modules path
 RUN export PATH="$PATH:/home/node/rpctests/node_modules/.bin"
@@ -38,4 +38,4 @@ RUN export PATH="$PATH:/home/node/rpctests/node_modules/.bin"
 
 # Run tests on start up. Need to attach a ".env" as docker volume to /rpctests
 # Run volume like this : "docker run --mount type=bind,source="$(pwd)"/.env,target=/home/node/rpctests/.env "
-CMD [ "npx", "@bentley/certa", "-r", "chrome", "-c", "./node_modules/@bentley/rpcinterface-full-stack-tests/certa.json" ]
+CMD [ "npx", "@itwin/certa", "-r", "chrome", "-c", "./node_modules/@itwin/rpcinterface-full-stack-tests/certa.json" ]

@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config } from "@bentley/bentleyjs-core";
-
 // Keep the dependencies of this file to only ones that can be used from both the frontend and backend.  This allows the same class for
 // test users to be used in either case.
 
@@ -34,47 +32,54 @@ export class TestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
   public static get regular(): TestUserCredentials {
     return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
+      email: process.env.IMJS_TEST_REGULAR_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
     };
   }
 
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
+  /** User with typical permissions of the iTwin administrator - Co-Admin: Yes, Connect-Services-Admin: No */
   public static get manager(): TestUserCredentials {
     return {
-      email: Config.App.getString("imjs_test_manager_user_name"),
-      password: Config.App.getString("imjs_test_manager_user_password"),
+      email: process.env.IMJS_TEST_MANAGER_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_MANAGER_USER_PASSWORD ?? "",
     };
   }
 
   /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
   public static get super(): TestUserCredentials {
     return {
-      email: Config.App.getString("imjs_test_super_user_name"),
-      password: Config.App.getString("imjs_test_super_user_password"),
+      email: process.env.IMJS_TEST_SUPER_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_SUPER_USER_PASSWORD ?? "",
     };
   }
 
   /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
   public static get superManager(): TestUserCredentials {
     return {
-      email: Config.App.getString("imjs_test_super_manager_user_name"),
-      password: Config.App.getString("imjs_test_super_manager_user_password"),
+      email: process.env.IMJS_TEST_SUPER_MANAGER_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_SUPER_MANAGER_USER_PASSWORD ?? "",
     };
   }
 
   /**
    * Gets the default iModel.js OIDC SPA client registration available at the config variables:
    *
-   *  - imjs_oidc_browser_test_client_id
-   *  - imjs_oidc_browser_test_redirect_uri
-   *  - imjs_oidc_browser_test_scopes
+   *  - IMJS_OIDC_BROWSER_TEST_CLIENT_ID
+   *  - IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
+   *  - IMJS_OIDC_BROWSER_TEST_SCOPES
    */
   public static getTestBrowserAuthorizationClientConfiguration(): TestBrowserAuthorizationClientConfiguration {
+    if (process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_CLIENT_ID");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_REDIRECT_URI");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
+
     return {
-      clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
-      redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
-      scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
+      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
     };
   }
 }

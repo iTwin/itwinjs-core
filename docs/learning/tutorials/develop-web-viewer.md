@@ -1,8 +1,8 @@
-# Developing a web viewer
+# Developing a Web Viewer
 
-## Develop
+## Setup
 
-- [Install necessary prerequisites]($docs/getting-started/development-prerequisites).
+- [Install necessary prerequisites]($docs/learning/tutorials/development-prerequisites).
 - From a terminal, `npx create-react-app your-app-name --template @itwin/web-viewer --scripts-version @bentley/react-scripts`
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code.
@@ -10,7 +10,7 @@
   1. Go to <https://developer.bentley.com>
   2. Click the **Sign In** button and sign-in using your Bentley account credentials
       - If you have not already registered, click **Register now** and complete the registration process.
-  3. Click on your user icon and navigate to the **My Apps** page
+  3. Navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
   4. Click the **Register New** button
   5. Give your application a Name
   6. Select the **Visualization** API
@@ -35,10 +35,10 @@
 
 ## Useful Links
 
-- [Create React App](https://create-react-app.dev/)
 - [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react)
 - [iTwin Viewer Create React App Template](https://www.npmjs.com/package/@itwin/cra-template-web-viewer)
 - [Bentley React Scripts](https://www.npmjs.com/package/@bentley/react-scripts)
+- [Create React App](https://create-react-app.dev/)
 
 ## Next Steps
 

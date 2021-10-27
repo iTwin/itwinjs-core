@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add GeometryClass to ExportGraphics",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -50,7 +50,7 @@ export class Item {
   public values: ValuesDictionary<Value>;
   /** Display values dictionary */
   public displayValues: ValuesDictionary<DisplayValue>;
-  /** List of field names whose values are merged (see [Merging values]($docs/learning/presentation/Content/Terminology#value-merging)) */
+  /** List of field names whose values are merged (see [Merging values]($docs/presentation/Content/Terminology#value-merging)) */
   public mergedFieldNames: string[];
   /** Extended data injected into this content item */
   public extendedData?: { [key: string]: any };
@@ -63,7 +63,7 @@ export class Item {
    * @param classInfo For cases when item consists only of same class instances, information about the ECClass
    * @param values Raw values dictionary
    * @param displayValues Display values dictionary
-   * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/presentation/Content/Terminology#value-merging))
+   * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/Content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
    */
   public constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined,

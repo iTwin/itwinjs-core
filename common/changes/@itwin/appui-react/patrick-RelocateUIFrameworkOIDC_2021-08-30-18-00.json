@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Removed OIDC signin/signout and UserProfileBackstageItem",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

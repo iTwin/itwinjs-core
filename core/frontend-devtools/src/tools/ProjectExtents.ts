@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { AxisAlignedBox3d, ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
+import { AxisAlignedBox3d, ColorDef, LinePixels } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */
@@ -97,11 +97,11 @@ export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean
  * @beta
  */
 export class ToggleProjectExtentsTool extends Tool {
-  public static toolId = "ToggleProjectExtents";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ToggleProjectExtents";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView()) {
       const iModel = vp.iModel;
@@ -112,10 +112,10 @@ export class ToggleProjectExtentsTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

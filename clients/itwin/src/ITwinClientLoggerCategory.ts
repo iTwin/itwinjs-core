@@ -15,9 +15,6 @@ export enum ITwinClientLoggerCategory {
   /** The logger category used by base clients */
   Clients = "itwin-client.Clients",
 
-  /** The logger category used when converting to/from ECJson. */
-  ECJson = "itwin-client.ECJson",
-
   Request = "itwin-client.Request",
 
   Authorization = "itwin-client.Authorization",

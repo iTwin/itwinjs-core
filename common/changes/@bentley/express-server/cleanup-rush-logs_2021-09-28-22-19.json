@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/express-server",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server"
+}

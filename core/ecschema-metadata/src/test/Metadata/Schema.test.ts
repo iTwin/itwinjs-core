@@ -15,6 +15,7 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
+import { SchemaKey } from "../../SchemaKey";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
@@ -155,6 +156,180 @@ describe("Schema", () => {
       expect(await testSchema.getItem("TESTENTITY")).not.undefined;
       expect(await testSchema.getItem("TestEntity")).not.undefined;
       expect(await testSchema.getItem("testEntity")).not.undefined;
+    });
+  });
+
+  describe("adding and deleting classes from schemas", async () => {
+    it("should do nothing when deleting class name that is not in schema, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+    });
+
+    it("should do nothing when deleting class name that is not in schema", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+    });
+
+    it("should do nothing if class is already deleted, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+    });
+
+    it("should do nothing if class is already deleted", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      await (testSchema as MutableSchema).deleteClass("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+    });
+
+    it("should add and delete classes by case-insensitive names", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity1");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity2");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity3");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity2"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity3"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      await (testSchema as MutableSchema).deleteClass("TestEntity1");
+      expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("testentity2");
+      expect(await testSchema.getItem("TestEntity2")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TESTENTITY3");
+      expect(await testSchema.getItem("TestEntity3")).to.be.undefined;
+    });
+
+    it("should add and delete classes by case-insensitive names, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity1");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity2");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity3");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity2"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity3"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      (testSchema as MutableSchema).deleteClassSync("TestEntity1");
+      expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("testentity2");
+      expect(await testSchema.getItem("TestEntity2")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TESTENTITY3");
+      expect(await testSchema.getItem("TestEntity3")).to.be.undefined;
+    });
+
+    it("should successfully delete for all ECClasses from schema, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createMixinClass("TestMixin");
+      await (testSchema as MutableSchema).createStructClass("TestStruct");
+      await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
+      await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestCustomAttribute"))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestRelationship"))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+
+      (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestMixin");
+      expect(await testSchema.getItem("TestMixin")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestStruct");
+      expect(await testSchema.getItem("TestStruct")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestCustomAttribute");
+      expect(await testSchema.getItem("TestCustomAttribute")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestRelationship");
+      expect(await testSchema.getItem("TestRelationship")).to.be.undefined;
+    });
+
+    it("should successfully delete for all ECClasses from schema", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createMixinClass("TestMixin");
+      await (testSchema as MutableSchema).createStructClass("TestStruct");
+      await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
+      await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestCustomAttribute"))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestRelationship"))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+
+      await (testSchema as MutableSchema).deleteClass("TestEntity");
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestMixin");
+      expect(await testSchema.getItem("TestMixin")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestStruct");
+      expect(await testSchema.getItem("TestStruct")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestCustomAttribute");
+      expect(await testSchema.getItem("TestCustomAttribute")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestRelationship");
+      expect(await testSchema.getItem("TestRelationship")).to.be.undefined;
     });
   });
 
@@ -1388,6 +1563,64 @@ describe("Schema", () => {
         const rightSchema = new Schema(context, "RightSchema", "rs", 1, 2, 3);
         const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
         assert.strictEqual(result, 0);
+      });
+    });
+    describe("setVersion Tests", () => {
+      it("Update read, write and minor version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(2, 3, 4);
+        assert.strictEqual(testSchema.readVersion, 2);
+        assert.strictEqual(testSchema.writeVersion, 3);
+        assert.strictEqual(testSchema.minorVersion, 4);
+      });
+      it("Update read version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(2);
+        assert.strictEqual(testSchema.readVersion, 2);
+        assert.strictEqual(testSchema.writeVersion, 2);
+        assert.strictEqual(testSchema.minorVersion, 3);
+      });
+      it("Update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(undefined, 3);
+        assert.strictEqual(testSchema.readVersion, 1);
+        assert.strictEqual(testSchema.writeVersion, 3);
+        assert.strictEqual(testSchema.minorVersion, 3);
+      });
+      it("Update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(undefined, undefined, 4);
+        assert.strictEqual(testSchema.readVersion, 1);
+        assert.strictEqual(testSchema.writeVersion, 2);
+        assert.strictEqual(testSchema.minorVersion, 4);
+      });
+      it("version not initialized, update read version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, new SchemaKey("TestSchema"), "ts");
+        testSchema.setVersion(1);
+        assert.strictEqual(testSchema.readVersion, 1);
+        assert.strictEqual(testSchema.writeVersion, 0);
+        assert.strictEqual(testSchema.minorVersion, 0);
+      });
+      it("version not initialized, update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, new SchemaKey("TestSchema"), "ts");
+        testSchema.setVersion(undefined, 1);
+        assert.strictEqual(testSchema.readVersion, 0);
+        assert.strictEqual(testSchema.writeVersion, 1);
+        assert.strictEqual(testSchema.minorVersion, 0);
+      });
+      it("version not initialized, update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, new SchemaKey("TestSchema"), "ts");
+        testSchema.setVersion(undefined, undefined, 1);
+        assert.strictEqual(testSchema.readVersion, 0);
+        assert.strictEqual(testSchema.writeVersion, 0);
+        assert.strictEqual(testSchema.minorVersion, 1);
       });
     });
   });

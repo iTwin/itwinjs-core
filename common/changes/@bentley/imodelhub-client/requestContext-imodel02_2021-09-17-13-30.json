@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "remove ClientRequestContext.current",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client"
+}

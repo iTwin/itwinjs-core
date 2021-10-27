@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Updated `RulesetEmbedder` to allow calling callbacks before and after Model/Element is inserted or updated",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}

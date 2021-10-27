@@ -1,6 +1,0 @@
-sep=;
-Release Tag;API Item
-beta;ExtensionClient 
-beta;ExtensionFile
-beta;ExtensionProps
-internal;extensionPropsFromJSON(jsonObject: any): ExtensionProps | undefined

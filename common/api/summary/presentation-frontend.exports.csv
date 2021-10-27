@@ -1,9 +1,12 @@
 sep=;
 Release Tag;API Item
+internal;BrowserLocalFavoritePropertiesStorage 
 internal;buildPagedResponse: 
 alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
 alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
+public;createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
+public;DefaultFavoritePropertiesStorageTypes
 public;FavoritePropertiesManager 
 public;FavoritePropertiesManagerProps
 public;FavoritePropertiesOrderInfo
@@ -20,12 +23,14 @@ alpha;IModelContentChangeEventArgs
 alpha;IModelHierarchyChangeEventArgs
 public;ISelectionProvider
 internal;NodeIdentifier
+internal;NoopFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorage 
 internal;OfflineCachingFavoritePropertiesStorageProps
 public;Presentation
 public;PresentationFrontendLoggerCategory
 public;PresentationManager 
 public;PresentationManagerProps
+public;PresentationProps
 public;PropertyFullName = string
 public;RulesetManager
 internal;RulesetManagerImpl 

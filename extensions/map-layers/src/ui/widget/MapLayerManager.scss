@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
@@ -16,6 +17,7 @@ button.map-manager-item-visibility {
   &:hover {
     color: $hovered-icon-color;
   }
+
   &:focus {
     outline: none;
     box-shadow: $uicore-button-focus-boxshadow;
@@ -46,7 +48,7 @@ button.map-manager-item-visibility {
   border-bottom-width: 1px;
 
   .map-manager-header-label {
-    font-size: $uicore-font-size;
+    font-size: $iui-font-size;
     width: auto;
     white-space: nowrap;
     flex: 1 1 auto;
@@ -60,17 +62,14 @@ button.map-manager-item-visibility {
   .map-manager-header-buttons-group {
     margin-left: auto;
     border: none;
-    flex: 1 1 auto;
-    text-align: right;
+    display: flex;
     padding-right: 5px;
   }
 
   .map-manager-toggle {
-    height: 22px;
-    width : 48px;
+    height: 24px;
   }
 }
-
 
 .map-manager-container {
   margin: 10px 6px 0px 6px;
@@ -90,7 +89,9 @@ button.map-manager-item-visibility {
     border: 1px solid #ccc;
     margin-bottom: 15px;
   }
-  .map-manager-underlays, .map-manager-overlays  {
+
+  .map-manager-underlays,
+  .map-manager-overlays {
     display: flex;
     align-content: center;
     margin-top: 8px;
@@ -107,6 +108,7 @@ button.map-manager-item-visibility {
       &:hover {
         color: $hovered-icon-color;
       }
+
       &:focus {
         box-shadow: $uicore-button-focus-boxshadow;
         outline: none;
@@ -150,7 +152,6 @@ button.map-manager-item-visibility {
     margin-bottom: 4px;
   }
 
-
   .map-manager-no-layers-container {
     display: flex;
     flex-direction: column;
@@ -169,7 +170,7 @@ button.map-manager-item-visibility {
     border-width: 2px;
     margin: 6px;
     width: auto;
-    height: 6.5em    // Avoid container resize when dragging layer the first time.
+    height: 6.5em; // Avoid container resize when dragging layer the first time.
   }
 
   .map-manager-no-layers-label {
@@ -196,14 +197,14 @@ button.map-manager-item-visibility {
     }
 
     .map-manager-select {
-      height: 2.0em;
+      height: 2em;
       flex: auto;
       width: 100%;
       min-width: 100px;
     }
 
     .map-manager-add {
-      height: 2.0em;
+      height: 2em;
       flex: initial;
       width: fit-content;
       margin-left: 6px;
@@ -289,17 +290,20 @@ button.map-manager-item-visibility {
     &:hover {
       color: $hovered-icon-color;
     }
+
     &:focus {
       box-shadow: $uicore-button-focus-boxshadow;
       outline: none;
     }
+
     .core-context-menu-container {
       .core-context-menu-item {
-        > .core-context-menu-icon {
+        >.core-context-menu-icon {
           flex-shrink: 1;
           flex-grow: 0;
           width: 0;
         }
+
         .core-slider.core-slider-minMax {
           min-width: 100px;
         }
@@ -320,6 +324,7 @@ button.map-manager-item-visibility {
     &:hover {
       color: $hovered-icon-color;
     }
+
     &:focus {
       outline: none;
       box-shadow: $uicore-button-focus-boxshadow;
@@ -335,6 +340,7 @@ button.map-manager-item-visibility {
     &:hover {
       color: $hovered-icon-color;
     }
+
     &:focus {
       outline: none;
       box-shadow: $uicore-button-focus-boxshadow;
@@ -347,9 +353,11 @@ button.map-manager-item-visibility {
   background-color: $buic-background-1;
   color: $buic-foreground-body;
   margin-left: 2px;
+
   &:hover {
     color: $hovered-icon-color;
   }
+
   &:focus {
     box-shadow: $uicore-button-focus-boxshadow;
     outline: none;
@@ -364,6 +372,7 @@ button.map-manager-item-visibility {
   &:hover {
     color: $hovered-icon-color;
   }
+
   &:focus {
     box-shadow: $uicore-button-focus-boxshadow;
     outline: none;
@@ -378,7 +387,7 @@ button.map-manager-item-visibility {
   width: 400px;
   height: 400px;
   color: $buic-foreground-body;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   padding: 4px;
   display: block;
   box-sizing: border-box;
@@ -401,7 +410,7 @@ button.map-manager-item-visibility {
 
 .map-layer-settings-popup-panel {
   color: $buic-foreground-body;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   display: grid;
   grid-row-gap: 4px;
   padding: 4px;
@@ -442,15 +451,15 @@ button.map-manager-item-visibility {
 }
 
 .map-manager-not-geo-located-text {
-  width:90%;
+  width: 90%;
   color: $buic-foreground-muted;
   font-style: italic;
   text-align: center;
 }
 
 .map-sources-delete-confirmation {
-   @include uicore-z-index(status-popup);
-  }
+  @include uicore-z-index(status-popup);
+}
 
 .map-sources-popup-panel {
   padding: 4px;
@@ -464,36 +473,36 @@ button.map-manager-item-visibility {
     display: flex;
     margin-left: 1px;
     column-gap: 4px;
-    }
+  }
 
   ul.core-listbox {
     background-color: $buic-background-1;
   }
 
   .map-manager-sources {
+    margin-top: 4px;
     height: 250px;
     min-height: 60px;
 
-
-
     .map-source-list-entry {
-
       button.map-source-list-entry-button {
+        height: auto;
         padding: 0 4px 0 4px;
         margin: 0;
         background-color: transparent;
         border: none;
         color: $buic-foreground-body;
 
-
         &:hover {
           color: $hovered-icon-color;
         }
+
         &:focus {
           outline: none;
           box-shadow: $uicore-button-focus-boxshadow;
         }
       }
+
       .map-source-list-entry-name {
         flex: 1 1 auto;
         text-overflow: ellipsis;

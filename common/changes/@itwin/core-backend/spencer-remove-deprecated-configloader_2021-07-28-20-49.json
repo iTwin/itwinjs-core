@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

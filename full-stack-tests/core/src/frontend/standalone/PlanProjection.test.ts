@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
-import {
-  BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
-} from "@bentley/imodeljs-common";
-import {
-  DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
-import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { Id64 } from "@itwin/core-bentley";
+import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
+import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
+import { TestUtility } from "../TestUtility";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("Plan projections", () => {
   let mirukuru: IModelConnection;
@@ -28,18 +24,15 @@ describe("Plan projections", () => {
       },
     };
 
-    await IModelApp.shutdown();
-    if (ProcessDetector.isElectronAppFrontend)
-      await ElectronApp.startup(opts);
-    else
-      await IModelApp.startup(opts.iModelApp);
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(opts.iModelApp);
 
     mirukuru = await SnapshotConnection.openFile("planprojection.bim");
   });
 
   after(async () => {
     await mirukuru.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("is obscured by background map based on settings", async () => {
@@ -70,8 +63,7 @@ describe("Plan projections", () => {
     await testOnScreenViewport("0x29", mirukuru, 100, 100, async (vp) => {
       for (const test of tests) {
         // Top view; rectangle is coincident with background map.
-        vp.viewFlags.backgroundMap = true;
-        vp.viewFlags.lighting = false;
+        vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
         vp.displayStyle.backgroundColor = ColorDef.fromJSON(ColorByName.magenta);
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
           useDepthBuffer: test.mapDepth,

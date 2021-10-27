@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { dispose, disposeArray, IDisposable } from "@bentley/bentleyjs-core";
+import { dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
 import { CanvasDecorationList } from "./CanvasDecoration";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 

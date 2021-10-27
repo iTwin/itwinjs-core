@@ -4,11 +4,11 @@
 
 ## Settings Storage
 
-Settings that are set up to be stored between "session" need to be stored and retrieved from some storage location. There are two provided storage locations that will serve that purpose. [LocalSettingsStorage]($ui-core) will use browser localStorage. [UserSettingsStorage]($ui-framework) will use the Product Settings Service available through IModelApp.settings. Please note that UserSettingsStorage requires the user to be logged-in to have access to this storage.
+Settings that are set up to be stored between "session" need to be stored and retrieved from some storage location. There are two provided storage locations that will serve that purpose. [LocalSettingsStorage]($core-react) will use browser localStorage. [UserSettingsStorage]($appui-react) will use the Product Settings Service available through IModelApp.settings. Please note that UserSettingsStorage requires the user to be logged-in to have access to this storage.
 
-If an application wants to store settings only for the current session [SessionSettingsStorage]($ui-core) is available.
+If an application wants to store settings only for the current session [SessionSettingsStorage]($core-react) is available.
 
-An application can choose to create and register their own class that implements the [UiSettingsStorage](ui-core) interface, if a custom storage location is desired for UI Settings.
+An application can choose to create and register their own class that implements the [UiSettingsStorage]($core-react) interface, if a custom storage location is desired for UI Settings.
 
 ### Defining which storage to use
 
@@ -24,23 +24,25 @@ Typically in the index.tsx file of an IModelApp that uses `App UI` user interfac
   }
 ```
 
-The component [UiSettingsProvider]($ui-framework) can be added into the component tree to provide the storage object via React context. See hook [useUiSettingsStorageContext]($ui-framework). Below is an example of how to wrap the [ConfigurableUiContent]($ui-framework) element so that the context is available to all App UI components.
+The component [UiSettingsProvider]($appui-react) can be added into the component tree to provide the storage object via React context. See hook [useUiSettingsStorageContext]($appui-react). Below is an example of how to wrap the [ConfigurableUiContent]($appui-react) element so that the context is available to all App UI components.
 
 ```tsx
+<FrameworkVersion version="2">
   <UiSettingsProvider settingsStorage={uiSettingsStorage}>
     <ConfigurableUiContent
       appBackstage={<AppBackstageComposer />}
     />
   </UiSettingsProvider>
+</FrameworkVersion>
 ```
 
 ## UserSettingsProvider
 
-The [UserSettingsProvider]($ui-framework) interface can be implemented by classes that want to restore their saved settings when the method [UiFramework.setUiSettingsStorage]($ui-framework) is called to set the UiSettingsStorage. A `UserSettingsProvider` class must be registered by calling [UiFramework.registerUserSettingsProvider] and supplying the implementing class instance. The `UserSettingsProvider` interface only requires that the provider define a unique `providerId` that is used to ensure the provider is only registered once. It must also implement the method `loadUserSettings(storage: UiSettingsStorage)` to asynchronously load its settings from [UiSettingsStorage](ui-core).
+The [UserSettingsProvider]($appui-react) interface can be implemented by classes that want to restore their saved settings when the method [UiFramework.setUiSettingsStorage]($appui-react) is called to set the UiSettingsStorage. A `UserSettingsProvider` class must be registered by calling [UiFramework.registerUserSettingsProvider] and supplying the implementing class instance. The `UserSettingsProvider` interface only requires that the provider define a unique `providerId` that is used to ensure the provider is only registered once. It must also implement the method `loadUserSettings(storage: UiSettingsStorage)` to asynchronously load its settings from [UiSettingsStorage]($core-react).
 
 ### AppUiSettings
 
-The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvider interface, can be instantiated by the IModelApp and registered as an UserSettingsProvider. This is left up to the application so each one can provide default values for the settings maintained by the `AppUiSettings` class. Below is an excerpt from application startup code that shows the registration of `AppUiSettings`.
+The [AppUiSettings]($appui-react) class, which implements the UserSettingsProvider interface, can be instantiated by the IModelApp and registered as an UserSettingsProvider. This is left up to the application so each one can provide default values for the settings maintained by the `AppUiSettings` class. Below is an excerpt from application startup code that shows the registration of `AppUiSettings`.
 
 ```ts
   public static async initialize() {
@@ -48,7 +50,7 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
 
     // initialize Presentation
     await Presentation.initialize({
-      activeLocale: IModelApp.i18n.languageList()[0],
+      activeLocale: IModelApp.i18n.getLanguageList()[0],
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 
@@ -74,23 +76,27 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
   }
 ```
 
+### FrameworkVersion
+
+The [FrameworkVersion]($appui-react) component defines the version context that is accessible to any lower level components. The version string should typically be set to "2" and it should match the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
+
 ## Settings Components
 
 ### Quantity Formatting Settings
 
-  The [QuantityFormatSettingsPage]($ui-framework) component provides the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+  The [QuantityFormatSettingsPage]($appui-react) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
 
 ### User Interface Settings
 
-  The [UiSettingsPage]($ui-framework) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+  The [UiSettingsPage]($appui-react) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
 
 ### Settings stage
 
-UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($ui-framework). This stage will display all [SettingsTabEntry]($ui-core) entries that are provided via [SettingsTabsProvider]($ui-core) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
+UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($appui-react). This stage will display all [SettingsTabEntry]($core-react) entries that are provided via [SettingsTabsProvider]($core-react) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($core-react) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
 
 #### Adding a backstage item
 
-The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($ui-abstract) that is used to construct the backstage. Below is an example of how to set up a backstage menu component that will display the 'Settings' entry if `SettingsTabEntry` items are provided.
+The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($appui-abstract) that is used to construct the backstage. Below is an example of how to set up a backstage menu component that will display the 'Settings' entry if `SettingsTabEntry` items are provided.
 
 ```tsx
 export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
@@ -112,7 +118,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
 
 #### Defining a SettingsTabsProvider
 
-Below is an example [SettingsTabsProvider]($ui-core) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
+Below is an example [SettingsTabsProvider]($core-react) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
 
 ```tsx
 export class AppSettingsTabsProvider implements SettingsTabsProvider {

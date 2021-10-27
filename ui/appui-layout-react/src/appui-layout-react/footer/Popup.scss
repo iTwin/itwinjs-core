@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/index";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "variables";
+
+.nz-footer-popup {
+  border: unset;
+  font-size: $iui-font-size;
+
+  @include uicore-z-index(status-popup);
+
+  &.nz-content-dialog {
+    color: $buic-background-control-stroke;
+  }
+
+  &.nz-content-panel {
+    color: $buic-background-panel;
+  }
+}

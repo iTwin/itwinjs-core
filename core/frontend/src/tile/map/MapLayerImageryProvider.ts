@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@bentley/imodeljs-common";
+import { BeEvent } from "@itwin/core-bentley";
+import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
 
 import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId } from "../internal";
@@ -33,7 +33,7 @@ export abstract class MapLayerImageryProvider {
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
-  public get minimumZoomLevel(): number { return 4; }
+  public get minimumZoomLevel(): number { return 0; }
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }
@@ -46,7 +46,6 @@ export abstract class MapLayerImageryProvider {
       if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
     });
   }
-  protected _requestContext = new ClientRequestContext("");
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
 
   public getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined { return undefined; }
@@ -102,7 +101,7 @@ export abstract class MapLayerImageryProvider {
   public async makeTileRequest(url: string) {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
-    return request(this._requestContext, url, tileRequestOptions);
+    return request(url, tileRequestOptions);
   }
 
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
@@ -119,7 +118,7 @@ export abstract class MapLayerImageryProvider {
       }
 
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
-    } catch (error) {
+    } catch (error: any) {
       if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 
@@ -127,7 +126,7 @@ export abstract class MapLayerImageryProvider {
         // and then encountered an error, otherwise I assume an error was already reported
         // through the source validation process.
         if (this._hasSuccessfullyFetchedTile) {
-          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
@@ -145,7 +144,7 @@ export abstract class MapLayerImageryProvider {
     }; // spell-checker: disable-line
 
     try {
-      const response: Response = await request(this._requestContext, url, requestOptions);
+      const response: Response = await request(url, requestOptions);
       if (undefined !== response.text) {
         strings.push(response.text);
       }
@@ -154,7 +153,7 @@ export abstract class MapLayerImageryProvider {
   }
   protected async toolTipFromJsonUrl(_strings: string[], url: string): Promise<void> {
     try {
-      const json = await getJson(this._requestContext, url);
+      const json = await getJson(url);
       if (undefined !== json) {
 
       }

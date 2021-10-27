@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LinePixels } from "@bentley/imodeljs-common";
+import { LinePixels } from "@itwin/core-common";
 import { LineCode } from "../../../render/webgl/LineCode";
 
 describe("LineCode", () => {

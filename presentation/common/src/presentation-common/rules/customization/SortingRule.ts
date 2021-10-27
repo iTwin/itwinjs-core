@@ -18,8 +18,8 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 export interface SortingRuleBase extends RuleBase, ConditionContainer {
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
@@ -36,7 +36,7 @@ export interface SortingRuleBase extends RuleBase, ConditionContainer {
 /**
  * Sorting rule implementations
  *
- * @see [More details]($docs/learning/presentation/Customization/SortingRule.md)
+ * @see [More details]($docs/presentation/Customization/SortingRule.md)
  * @public
  */
 export type SortingRule = PropertySortingRule | DisabledSortingRule;

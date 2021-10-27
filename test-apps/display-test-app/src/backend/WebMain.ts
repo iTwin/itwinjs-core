@@ -6,9 +6,11 @@ import * as express from "express";
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import * as enableWs from "express-ws";
+import { Logger } from "@itwin/core-bentley";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { LocalhostIpcHost } from "@itwin/core-backend";
 
 /* eslint-disable no-console */
 
@@ -41,6 +43,7 @@ const dtaWebMain = (async () => {
   const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
 
   const app = express();
+  enableWs(app);
   app.use(express.text());
 
   // Enable CORS for all apis
@@ -54,6 +57,7 @@ const dtaWebMain = (async () => {
   // --------------------------------------------
   // Routes
   // --------------------------------------------
+  (app as any).ws("/ipc", (ws: any, _req: any) => LocalhostIpcHost.connect(ws));
   app.get("/v3/swagger.json", (req: any, res: any) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
   app.post("*", async (req: any, res: any) => cloudConfig.protocol.handleOperationPostRequest(req, res));
   app.get(/\/imodel\//, async (req: any, res: any) => cloudConfig.protocol.handleOperationGetRequest(req, res));

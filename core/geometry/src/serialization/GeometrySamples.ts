@@ -60,6 +60,7 @@ import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { PolyfaceData } from "../polyface/PolyfaceData";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 
 /* eslint-disable no-console */
 /**
@@ -191,7 +192,7 @@ export class Sample {
       Range3d.createXYZ(1, 2, 3),
       Range3d.createXYZXYZ(-2, -3, 1, 200, 301, 8)];
   }
-  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x1,y1) */
+  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x0+ax, y0 + ay) */
   public static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z: number = 0): Point3d[] {
     return [
       Point3d.create(x0, y0, z),
@@ -201,6 +202,12 @@ export class Sample {
       Point3d.create(x0, y0, z),
     ];
   }
+
+  /** Create 5 points of a (axis aligned) rectangle with corners (cx-ax,cy-ay) and (cx+ax,cy+ay) */
+  public static createCenteredRectangleXY(cx: number, cy: number, ax: number, ay: number, z: number = 0): Point3d[] {
+    return this.createRectangleXY(cx - ax, cy - ay, 2 * ax, 2 * ay, z);
+  }
+
   /** Access the last point in the array. push another shifted by dx,dy,dz.
    * * No push if all are 0.
    * * If array is empty, push a leading 000
@@ -216,10 +223,11 @@ export class Sample {
   public static createUnitCircle(numPoints: number): Point3d[] {
     const points: Point3d[] = [];
     const dTheta = Geometry.safeDivideFraction(Math.PI * 2, numPoints - 1, 0.0);
-    for (let i = 0; i < numPoints; i++) {
+    for (let i = 0; i + 1 < numPoints; i++) {
       const theta = i * dTheta;
       points.push(Point3d.create(Math.cos(theta), Math.sin(theta), 0.0));
     }
+    points.push(points[0].clone());
     return points;
   }
   /** Create points for an L shaped polygon
@@ -1122,7 +1130,7 @@ export class Sample {
    * @param vectorY step in "Y" direction
    * @param numXVertices number of vertices in X direction
    * @param numYVertices number of vertices in y direction
-   * @param createParams true to create parameters, with paramter value `(i,j)` for point at (0 based) vertex in x,y directions
+   * @param createParams true to create parameters, with parameter value `(i,j)` for point at (0 based) vertex in x,y directions
    * @param createNormals true to create a (single) normal indexed from all facets
    * @param createColors true to create a single color on each quad.  (shared between its triangles)
    * @note edgeVisible is false only on the diagonals
@@ -2361,5 +2369,80 @@ export class Sample {
       data.auxData.indices.push(channelIndex);
     }
     data.auxData.channels.push(channel);
+  }
+/**
+ * Create a mesh between concentric arcs
+ * @param edgesPerQuadrant edges per 90 degrees
+ * @param center arc center
+ * @param r0 first radius
+ * @param r1 second radius
+ * @param theta0 start angle
+ * @param theta1 end angle.
+ * @returns
+ */
+  public static createMeshInAnnulus(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle): IndexedPolyface | undefined {
+    const point0 = [];
+    const point1 = [];
+    if (edgesPerQuadrant < 1)
+      edgesPerQuadrant = 1;
+    let edgeCount = Math.ceil(edgesPerQuadrant * (theta1.degrees - theta0.degrees) / 90);
+    if (edgeCount < 1)
+      edgeCount = 1;
+    for (let i = 0; i <= edgeCount; i++){
+      const theta = Angle.createInterpolate(theta0, i / edgeCount, theta1);
+      point0.push (center.plusXYZ (r0 * theta.cos(), r0 * theta.sin(),0));
+      point1.push (center.plusXYZ (r1 * theta.cos(), r1 * theta.sin(),0));
+    }
+    point1.reverse();
+    const builder = PolyfaceBuilder.create();
+    builder.addGreedyTriangulationBetweenLineStrings(point0, point1);
+    return builder.claimPolyface();
+  }
+/**
+ *  create strokes on an arc at radius r0, then returning at radius r1.
+ */
+  public static createAnnulusPolyline(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle, addClosure: boolean): Point3d[]{
+    const point0: Point3d[] = [];
+    const point1: Point3d[] = [];
+    if (edgesPerQuadrant < 1)
+      edgesPerQuadrant = 1;
+    let edgeCount = Math.ceil(edgesPerQuadrant * (theta1.degrees - theta0.degrees) / 90);
+    if (edgeCount < 1)
+      edgeCount = 1;
+    for (let i = 0; i <= edgeCount; i++){
+      const theta = Angle.createInterpolate(theta0, i / edgeCount, theta1);
+      point0.push (center.plusXYZ (r0 * theta.cos(), r0 * theta.sin(),0));
+      point1.push (center.plusXYZ (r1 * theta.cos(), r1 * theta.sin(),0));
+    }
+    while (point1.length > 0)
+      point0.push(point1.pop()!);
+    if (addClosure)
+      point0.push(point0[0].clone());
+    return point0;
+  }
+  /**
+   * Return an array of points on a circular arc.
+   * @param edgesPerQuadrant number of edges per 90 degrees
+   * @param center arc center
+   * @param r0 arc radius
+   * @param theta0 start angle
+   * @param theta1 end angle
+   * @param addClosure true to add a closure stroke
+   * @returns
+   */
+  public static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure: boolean = true, z: number = 0): Point3d[] {
+    const point0: Point3d[] = [];
+    if (edgesPerQuadrant < 1)
+      edgesPerQuadrant = 1;
+    let edgeCount = Math.ceil(edgesPerQuadrant * (theta1.degrees - theta0.degrees) / 90);
+    if (edgeCount < 1)
+      edgeCount = 1;
+    for (let i = 0; i <= edgeCount; i++) {
+      const theta = Angle.createInterpolate(theta0, i / edgeCount, theta1);
+      point0.push(center.plusXYZ(r0 * theta.cos(), r0 * theta.sin(), z));
+    }
+    if (addClosure)
+      point0.push(point0[0].clone());
+    return point0;
   }
 }

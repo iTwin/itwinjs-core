@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-rpcinterface-impl",
+      "comment": "fix code for breaking change to .query() method",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-impl"
+}

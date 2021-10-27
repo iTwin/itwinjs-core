@@ -6,18 +6,17 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
+import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
+import { IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptorType, HierarchyCompareOptions, HierarchyRequestOptions,
-  HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isDisplayLabelsRequestOptions,
-  isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey,
-  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification, PresentationError, PresentationIpcEvents,
-  PresentationStatus, PresentationUnitSystem, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
-  VariableValueTypes,
-} from "@bentley/presentation-common";
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  HierarchyUpdateInfo, InstanceKey, isSingleElementPropertiesRequestOptions, Item, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions,
+  Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+} from "@itwin/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -66,11 +65,9 @@ export interface PresentationManagerProps {
   /**
    * Sets the active unit system to use for formatting property values with
    * units. Default presentation units are used if this is not specified. The active unit
-   * system can later be changed through [[PresentationManager]] or overriden for each request
-   *
-   * @alpha
+   * system can later be changed through [[PresentationManager]] or overriden for each request.
    */
-  activeUnitSystem?: PresentationUnitSystem;
+  activeUnitSystem?: UnitSystemKey;
 
   /**
    * ID used to identify client that requests data. Generally, clients should
@@ -123,7 +120,7 @@ export class PresentationManager implements IDisposable {
   public activeLocale: string | undefined;
 
   /** Get / set active unit system used to format property values with units */
-  public activeUnitSystem: PresentationUnitSystem | undefined;
+  public activeUnitSystem: UnitSystemKey | undefined;
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
@@ -194,42 +191,6 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  /**
-   * Compare two hierarchies.
-   * @public
-   */
-  public async compareHierarchies(props: HierarchyCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]> {
-    if (!props.prev.rulesetOrId && !props.prev.rulesetVariables)
-      return [];
-
-    const options = await this.addRulesetAndVariablesToOptions(props);
-    let modifications: PartialHierarchyModification[] = [];
-
-    try {
-      while (true) {
-        const result = (await this.rpcRequestsHandler.compareHierarchiesPaged({ ...this.toRpcTokenOptions(options), prev: { ...options.prev, rulesetVariables: options.prev.rulesetVariables?.map(RulesetVariable.toJSON) } }));
-        modifications.push(...result.changes.map(PartialHierarchyModification.fromJSON));
-        if (!result.continuationToken)
-          break;
-
-        if (result.changes.length === 0) {
-          Logger.logError(PresentationFrontendLoggerCategory.Package, "Hierarchy compare returned no changes but has continuation token.");
-          return [];
-        }
-
-        options.continuationToken = result.continuationToken;
-      }
-    } catch (e) {
-      if (e instanceof PresentationError && e.errorNumber === PresentationStatus.Canceled) {
-        modifications = [];
-      } else {
-        // rethrow
-        throw e;
-      }
-    }
-    return modifications;
-  }
-
   /** Function that is called when a new IModelConnection is used to retrieve data.
    *  @internal
    */
@@ -269,7 +230,7 @@ export class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem, rulesetVariables?: RulesetVariable[] }>(requestOptions: TOptions) {
+  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey, rulesetVariables?: RulesetVariable[] }>(requestOptions: TOptions) {
     // 1. put default `locale` and `unitSystem`
     // 2. put all `requestOptions` members (if `locale` or `unitSystem` are set, they'll override the defaults put at #1)
     // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `requestOptions` put at #2
@@ -316,52 +277,28 @@ export class PresentationManager implements IDisposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  /**
-   * Retrieves nodes
-   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, RulesetVariable>>, parentKey: NodeKey | undefined): Promise<Node[]>; // eslint-disable-line @typescript-eslint/unified-signatures
   /** Retrieves nodes */
-  public async getNodes(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, RulesetVariable> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>, parentKey?: NodeKey): Promise<Node[]> {
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
+    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
     const result = await buildPagedResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
     return this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON));
   }
 
-  /**
-   * Retrieves nodes count.
-   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, RulesetVariable>, parentKey: NodeKey | undefined): Promise<number>; // eslint-disable-line @typescript-eslint/unified-signatures
   /** Retrieves nodes count. */
-  public async getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>): Promise<number>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, RulesetVariable> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>, parentKey?: NodeKey): Promise<number> {
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>): Promise<number> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
+    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
     return this._requestsHandler.getNodesCount(rpcOptions);
   }
 
-  /**
-   * Retrieves total nodes count and a single page of nodes.
-   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, RulesetVariable>>, parentKey: NodeKey | undefined): Promise<{ count: number, nodes: Node[] }>; // eslint-disable-line @typescript-eslint/unified-signatures
   /** Retrieves total nodes count and a single page of nodes. */
-  public async getNodesAndCount(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<{ count: number, nodes: Node[] }>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, RulesetVariable> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>, parentKey?: NodeKey): Promise<{ count: number, nodes: Node[] }> {
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<{ count: number, nodes: Node[] }> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
+    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
     const result = await buildPagedResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
     return {
       count: result.total,
@@ -369,60 +306,36 @@ export class PresentationManager implements IDisposable {
     };
   }
 
-  /**
-   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
-   * @param requestOptions options for the request
-   * @param paths Paths from root node to some child node.
-   * @param markedIndex Index of the path in `paths` that will be marked.
-   * @return A promise object that returns either an array of paths on success or an error string on error.
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
+  /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
+  public async getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]> {
     await this.onConnection(requestOptions.imodel);
-
-    const pathsJson = paths.map((p) => p.map(InstanceKey.toJSON));
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getNodePaths(this.toRpcTokenOptions(options), pathsJson, markedIndex);
+    const rpcOptions = this.toRpcTokenOptions({ ...options, instancePaths: options.instancePaths.map((p) => p.map(InstanceKey.toJSON)) });
+    const result = await this._requestsHandler.getNodePaths(rpcOptions);
+    return result.map(NodePathElement.fromJSON);
+  }
+
+  /** Retrieves paths from root nodes to nodes containing filter text in their label. */
+  public async getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]> {
+    await this.onConnection(requestOptions.imodel);
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     return result.map(NodePathElement.fromJSON);
   }
 
   /**
-   * Retrieves paths from root nodes to nodes containing filter text in their label.
-   * @param requestOptions options for the request
-   * @param filterText Text to filter nodes against.
-   * @return A promise object that returns either an array of paths on success or an error string on error.
+   * Get all content sources for a given list of classes.
+   * @beta
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getFilteredNodePaths(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never, RulesetVariable>, filterText: string): Promise<NodePathElement[]> {
+  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection>): Promise<SelectClassInfo[]> {
     await this.onConnection(requestOptions.imodel);
-
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options), filterText);
-    return result.map(NodePathElement.fromJSON);
+    const rpcOptions = this.toRpcTokenOptions(requestOptions);
+    const result = await this._requestsHandler.getContentSources(rpcOptions);
+    return SelectClassInfo.listFromCompressedJSON(result.sources, result.classesMap);
   }
 
-  /**
-   * A no-op that used to request the whole hierarchy to be loaded on the backend.
-   * @alpha @deprecated Will be removed in 3.0.
-   */
-  // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
-  public async loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
-    // This is noop just to avoid breaking the API.
-  }
-
-  /**
-   * Retrieves the content descriptor which describes the content and can be used to customize it.
-   * @deprecated Use an overload with [[ContentDescriptorRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
-  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable> | ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>, displayType?: string, keys?: KeySet, selection?: SelectionInfo): Promise<Descriptor | undefined> {
-    if (!isContentDescriptorRequestOptions(requestOptions))
-      return this.getContentDescriptor({ ...requestOptions, displayType: displayType!, keys: keys!, selection });
-
+  /** Retrieves the content descriptor which describes the content and can be used to customize it. */
+  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -433,18 +346,8 @@ export class PresentationManager implements IDisposable {
     return Descriptor.fromJSON(result);
   }
 
-  /**
-   * Retrieves content set size based on the supplied content descriptor override.
-   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
-  public async getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<number>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>, descriptorOrOverrides?: Descriptor | DescriptorOverrides, keys?: KeySet): Promise<number> {
-    if (!isExtendedContentRequestOptions(requestOptions))
-      return this.getContentSetSize({ ...requestOptions, descriptor: descriptorOrOverrides!, keys: keys! });
-
+  /** Retrieves overall content set size. */
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>): Promise<number> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -455,32 +358,13 @@ export class PresentationManager implements IDisposable {
     return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
-  /**
-   * Retrieves the content based on the supplied content descriptor override.
-   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, RulesetVariable>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
-  public async getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>>): Promise<Content | undefined>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, RulesetVariable> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<Content | undefined> {
-    if (!isExtendedContentRequestOptions(requestOptions))
-      return this.getContent({ ...requestOptions, descriptor: argsDescriptor!, keys: argsKeys! });
+  /** Retrieves content which consists of a content descriptor and a page of records. */
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>): Promise<Content | undefined> {
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
-  /**
-   * Retrieves the content and content set size based on the supplied content descriptor override.
-   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, RulesetVariable>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{ content: Content, size: number } | undefined>;
-  public async getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>>): Promise<{ content: Content, size: number } | undefined>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, RulesetVariable> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<{ content: Content, size: number } | undefined> {
-    if (!isExtendedContentRequestOptions(requestOptions))
-      return this.getContentAndSize({ ...requestOptions, descriptor: argsDescriptor!, keys: argsKeys! });
-
+  /** Retrieves content set size and content which consists of a content descriptor and a page of records. */
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>): Promise<{ content: Content, size: number } | undefined> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
@@ -509,40 +393,8 @@ export class PresentationManager implements IDisposable {
     };
   }
 
-  /**
-   * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param requestOptions        options for the request
-   * @param descriptorOrOverrides Content descriptor which specifies how the content should be returned.
-   * @param keys                  Keys of ECInstances to get the content for.
-   * @param fieldName             Name of the field from which to take values.
-   * @param maximumValueCount     Maximum numbers of values that can be returned. Unlimited if 0.
-   * @return A promise object that returns either distinct values on success or an error string on error.
-   * @deprecated Use [[getPagedDistinctValues]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
-    const values = await this.getPagedDistinctValues({
-      ...requestOptions,
-      descriptor: descriptorOrOverrides,
-      keys,
-      fieldDescriptor: {
-        type: FieldDescriptorType.Name,
-        fieldName,
-      },
-      paging: {
-        start: 0,
-        size: maximumValueCount,
-      },
-    });
-    return values.items.map((v) => v.displayValue ? v.displayValue.toString() : "");
-  }
-
-  /**
-   * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param requestOptions Options for the request
-   * @public
-   */
-  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<PagedResponse<DisplayValueGroup>> {
+  /** Retrieves distinct values of specific field from the content. */
+  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>): Promise<PagedResponse<DisplayValueGroup>> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -561,36 +413,37 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
+  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
+  /**
+   * Retrieves property data in a simplified format for multiple elements specified by class
+   * or all elements.
+   * @alpha
+   */
+  public async getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
     await this.onConnection(requestOptions.imodel);
-    return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    }
+
+    const rpcOptions = this.toRpcTokenOptions(requestOptions);
+    return buildPagedResponse(requestOptions.paging, async (partialPageOptions) => {
+      return this._requestsHandler.getElementProperties({ ...rpcOptions, paging: partialPageOptions });
+    });
   }
 
-  /**
-   * Retrieves display label definition of specific item
-   * @deprecated Use an overload with [[DisplayLabelRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
-  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection> | DisplayLabelRequestOptions<IModelConnection, InstanceKey>, key?: InstanceKey): Promise<LabelDefinition> {
+  /** Retrieves display label definition of specific item. */
+  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition> {
     await this.onConnection(requestOptions.imodel);
-    const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, key: InstanceKey.toJSON(isDisplayLabelRequestOptions(requestOptions) ? requestOptions.key : key!) });
+    const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, key: InstanceKey.toJSON(requestOptions.key) });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
     return this._localizationHelper.getLocalizedLabelDefinition(LabelDefinition.fromJSON(result));
   }
-  /**
-   * Retrieves display label definition of specific items
-   * @deprecated Use an overload with [[DisplayLabelsRequestOptions]]
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
-  public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection> | DisplayLabelsRequestOptions<IModelConnection, InstanceKey>, keys?: InstanceKey[]): Promise<LabelDefinition[]> {
+
+  /** Retrieves display label definition of specific items. */
+  public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
-    const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, keys: (isDisplayLabelsRequestOptions(requestOptions) ? requestOptions.keys : keys!).map(InstanceKey.toJSON) });
+    const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, keys: requestOptions.keys.map(InstanceKey.toJSON) });
     const result = await buildPagedResponse(undefined, async (partialPageOptions) => {
       const partialKeys = (!partialPageOptions.start) ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
       return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });

@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { LinePixels } from "./LinePixels";
 

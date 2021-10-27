@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Vector3d } from "@bentley/geometry-core";
+import { Vector3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
 import { LightSettings, LightSettingsProps, SolarLightProps } from "../LightSettings";
@@ -62,6 +62,12 @@ describe("LightSettings", () => {
     roundTrip({ hemisphere: { intensity: 2.5 } }, "input");
     roundTrip({ hemisphere: { intensity: -0.1 } }, undefined);
     roundTrip({ hemisphere: { intensity: 5.1 } }, { hemisphere: { intensity: 5.0 } });
+
+    roundTrip({ fresnel: { } }, undefined);
+    roundTrip({ fresnel: { intensity: 0.8, invert: false } }, { fresnel: { intensity: 0.8 } });
+    roundTrip({ fresnel: { intensity: 0, invert: true } }, { fresnel: { invert: true } });
+    roundTrip({ fresnel: { intensity: -1, invert: true } }, { fresnel: { invert: true } });
+    roundTrip({ fresnel: { intensity: 1.2, invert: true } }, "input");
   });
 
   it("should preserve sun direction", () => {

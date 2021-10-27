@@ -6,10 +6,10 @@
  * @module Tools
  */
 
-import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { Easing, GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
-import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
+import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
+import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -19,7 +19,7 @@ import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
-import { ViewChangeOptions } from "../ViewAnimation";
+import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
@@ -385,9 +385,9 @@ export class ToolAdmin {
     if (!opts.alertBox)
       return;
 
-    let out = `<h2>${IModelApp.i18n.translate("iModelJs:Errors.ReloadPage")}</h2>`;
+    let out = `<h2>${IModelApp.localization.getLocalizedString("iModelJs:Errors.ReloadPage")}</h2>`;
     if (opts.details) {
-      out += `<h3>${IModelApp.i18n.translate("iModelJs:Errors.Details")}</h3><h4>`;
+      out += `<h3>${IModelApp.localization.getLocalizedString("iModelJs:Errors.Details")}</h3><h4>`;
       msg.split("\n").forEach((line) => out += `${line}<br>`);
       out += "</h4>";
     }
@@ -616,7 +616,7 @@ export class ToolAdmin {
         current.lastTouchStart = ev;
         IModelApp.accuSnap.onTouchStart(ev);
         if (undefined !== tool)
-          tool.onTouchStart(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await tool.onTouchStart(ev);
         return;
       }
 
@@ -658,8 +658,8 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/unbound-method
-          ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          await ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }
@@ -670,13 +670,13 @@ export class ToolAdmin {
         current.lastTouchStart = undefined;
         IModelApp.accuSnap.onTouchCancel(ev);
         if (undefined !== tool)
-          tool.onTouchCancel(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await tool.onTouchCancel(ev);
         return;
       }
 
       case "touchmove": {
         if (!IModelApp.accuSnap.onTouchMove(ev) && undefined !== tool)
-          tool.onTouchMove(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await tool.onTouchMove(ev);
 
         if (undefined === current.lastTouchStart)
           return;
@@ -705,7 +705,8 @@ export class ToolAdmin {
             return;
 
           if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
-            this.idleTool.onTouchMoveStart(ev, touchStart); // eslint-disable-line @typescript-eslint/no-floating-promises
+            await this.idleTool.onTouchMoveStart(ev, touchStart);
+
           return;
         }
         return;
@@ -800,9 +801,9 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public onInstallTool(tool: InteractiveTool) { this.currentInputState.onInstallTool(); return tool.onInstall(); }
+  public async onInstallTool(tool: InteractiveTool): Promise<boolean> { this.currentInputState.onInstallTool(); return tool.onInstall(); }
   /** @internal */
-  public onPostInstallTool(tool: InteractiveTool) { tool.onPostInstall(); }
+  public async onPostInstallTool(tool: InteractiveTool) { return tool.onPostInstall(); }
 
   public get viewTool(): ViewTool | undefined { return this._viewTool; }
   public get primitiveTool(): PrimitiveTool | undefined { return this._primitiveTool; }
@@ -843,7 +844,7 @@ export class ToolAdmin {
     const buttonMask = (event.ev as MouseEvent).buttons;
     const cancelDrag = (current.isDragging(BeButton.Data) && !(buttonMask & 1)) || (current.isDragging(BeButton.Reset) && !(buttonMask & 2)) || (current.isDragging(BeButton.Middle) && !(buttonMask & 4));
     if (cancelDrag)
-      tool.onReinitialize();
+      await tool.onReinitialize();
   }
 
   /** @internal */
@@ -880,10 +881,9 @@ export class ToolAdmin {
     const vp = ev.viewport;
     const motion = ev;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     toolPromise.then(() => {
-      if (toolPromise !== this._toolMotionPromise)
-        return;
+      if (undefined === this._toolMotionPromise)
+        return; // Only early return if canceled, result from a previous motion is preferable to showing nothing...
 
       // Update decorations when dynamics are inactive...
       if (!IModelApp.viewManager.inDynamicsMode) {
@@ -895,7 +895,7 @@ export class ToolAdmin {
       const context = new DynamicsContext(vp);
       tool.onDynamicFrame(motion, context);
       context.changeDynamics();
-    });
+    }).catch((_) => { });
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {
@@ -985,7 +985,6 @@ export class ToolAdmin {
 
     const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     snapPromise.then((snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
@@ -1014,7 +1013,7 @@ export class ToolAdmin {
 
       this.updateDynamics(ev);
       return;
-    });
+    }).catch((_) => { });
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
@@ -1202,7 +1201,7 @@ export class ToolAdmin {
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
     const filtered = this.filterViewport(vp);
     if (undefined === this._viewTool && button === BeButton.Data)
-      IModelApp.viewManager.setSelectedView(vp);
+      await IModelApp.viewManager.setSelectedView(vp);
     if (filtered)
       return;
 
@@ -1256,7 +1255,7 @@ export class ToolAdmin {
   }
 
   /** Process key down events while the Ctrl key is pressed */
-  public async onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{handled: boolean, result: boolean}> {
+  public async onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{ handled: boolean, result: boolean }> {
     let handled = false;
     let result = false;
 
@@ -1281,7 +1280,7 @@ export class ToolAdmin {
   }
 
   /** Process shortcut key events */
-  public processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): boolean {
+  public async processShortcutKey(_keyEvent: KeyboardEvent, _wentDown: boolean): Promise<boolean> {
     return false;
   }
 
@@ -1307,7 +1306,7 @@ export class ToolAdmin {
         return EventHandled.Yes;
     }
 
-    if (this.processShortcutKey(keyEvent, wentDown))
+    if (await this.processShortcutKey(keyEvent, wentDown))
       return EventHandled.Yes;
 
     return EventHandled.No;
@@ -1364,26 +1363,26 @@ export class ToolAdmin {
     this.activeToolChanged.raiseEvent(tool, start);
   }
 
-  private onUnsuspendTool() {
+  private async onUnsuspendTool() {
     const tool = this.activeTool;
     if (tool === undefined)
       return;
 
-    tool.onUnsuspend();
+    await tool.onUnsuspend();
     this.onActiveToolChanged(tool, StartOrResume.Resume);
   }
 
   /** @internal */
-  public setInputCollector(newTool?: InputCollector) {
+  public async setInputCollector(newTool?: InputCollector) {
     if (undefined !== this._inputCollector) {
-      this._inputCollector.onCleanup();
+      await this._inputCollector.onCleanup();
       this._inputCollector = undefined;
     }
     this._inputCollector = newTool;
   }
 
   /** @internal */
-  public exitInputCollector() {
+  public async exitInputCollector() {
     if (undefined === this._inputCollector)
       return;
     let unsuspend = false;
@@ -1394,47 +1393,47 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    this.setInputCollector(undefined);
+    await this.setInputCollector(undefined);
     if (unsuspend)
-      this.onUnsuspendTool();
+      await this.onUnsuspendTool();
 
     IModelApp.accuDraw.onInputCollectorExit();
     this.updateDynamics();
   }
 
   /** @internal */
-  public startInputCollector(newTool: InputCollector): void {
+  public async startInputCollector(newTool: InputCollector) {
     IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onInputCollectorInstall();
 
     if (undefined !== this._inputCollector) {
-      this.setInputCollector(undefined);
+      await this.setInputCollector(undefined);
     } else {
       const tool = this.activeTool;
       if (tool)
-        tool.onSuspend();
+        await tool.onSuspend();
       this._suspendedByInputCollector = new SuspendedToolState();
     }
 
     IModelApp.viewManager.endDynamicsMode();
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
-    this.setInputCollector(newTool);
+    await this.setInputCollector(newTool);
     // it is important to raise event after setInputCollector is called
     this.onActiveToolChanged(newTool, StartOrResume.Start);
   }
 
   /** @internal */
-  public setViewTool(newTool?: ViewTool) {
+  public async setViewTool(newTool?: ViewTool) {
     if (undefined !== this._viewTool) {
-      this._viewTool.onCleanup();
+      await this._viewTool.onCleanup();
       this._viewTool = undefined;
     }
     this._viewTool = newTool;
   }
 
   /** @internal */
-  public exitViewTool() {
+  public async exitViewTool() {
     if (undefined === this._viewTool)
       return;
     let unsuspend = false;
@@ -1445,26 +1444,26 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    this.setViewTool(undefined);
+    await this.setViewTool(undefined);
     if (unsuspend)
-      this.onUnsuspendTool();
+      await this.onUnsuspendTool();
 
     IModelApp.accuDraw.onViewToolExit();
     this.updateDynamics();
   }
 
   /** @internal */
-  public startViewTool(newTool: ViewTool) {
+  public async startViewTool(newTool: ViewTool) {
 
     IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onViewToolInstall();
 
     if (undefined !== this._viewTool) {
-      this.setViewTool(undefined);
+      await this.setViewTool(undefined);
     } else {
       const tool = this.activeTool;
       if (tool)
-        tool.onSuspend();
+        await tool.onSuspend();
       this._suspendedByViewTool = new SuspendedToolState();
     }
 
@@ -1477,30 +1476,30 @@ export class ToolAdmin {
     IModelApp.accuSnap.onStartTool();
 
     this.setCursor(IModelApp.viewManager.crossHairCursor);
-    this.setViewTool(newTool);
+    await this.setViewTool(newTool);
     // it is important to raise event after setViewTool is called
     this.onActiveToolChanged(newTool, StartOrResume.Start);
   }
 
   /** @internal */
-  public setPrimitiveTool(newTool?: PrimitiveTool) {
+  public async setPrimitiveTool(newTool?: PrimitiveTool) {
     if (undefined !== this._primitiveTool) {
-      this._primitiveTool.onCleanup();
+      await this._primitiveTool.onCleanup();
       this._primitiveTool = undefined;
     }
     this._primitiveTool = newTool;
   }
 
   /** @internal */
-  public startPrimitiveTool(newTool?: PrimitiveTool) {
+  public async startPrimitiveTool(newTool?: PrimitiveTool) {
     IModelApp.notifications.outputPrompt("");
-    this.exitViewTool();
+    await this.exitViewTool();
 
     if (undefined !== this._primitiveTool)
-      this.setPrimitiveTool(undefined);
+      await this.setPrimitiveTool(undefined);
 
     // clear the primitive tool first so following call does not trigger the refreshing of the ToolSetting for the previous primitive tool
-    this.exitInputCollector();
+    await this.exitInputCollector();
 
     IModelApp.viewManager.endDynamicsMode();
     this.setIncompatibleViewportCursor(true); // Don't restore this
@@ -1514,7 +1513,7 @@ export class ToolAdmin {
 
     if (undefined !== newTool) {
       this.setCursor(IModelApp.viewManager.crossHairCursor);
-      this.setPrimitiveTool(newTool);
+      await this.setPrimitiveTool(newTool);
     }
     // it is important to raise event after setPrimitiveTool is called
     this.onActiveToolChanged(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
@@ -1591,9 +1590,9 @@ export class ToolAdmin {
    * The tool's [[Tool.run]] method is invoked with arguments specified by [[defaultToolArgs]].
    * @see [[defaultToolId]] to configure the default tool.
    */
-  public startDefaultTool() {
-    if (!IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
-      this.startPrimitiveTool(undefined);
+  public async startDefaultTool(): Promise<void> {
+    if (!await IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
+      return this.startPrimitiveTool(undefined);
   }
 
   public setCursor(cursor: string | undefined): void {
@@ -1726,13 +1725,11 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
+  public async onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
     IModelApp.accuDraw.onSelectedViewportChanged(previous, current);
 
-    if (undefined === current) {
-      this.callOnCleanup();
-      return;
-    }
+    if (undefined === current)
+      return this.callOnCleanup();
 
     if (undefined !== this._viewTool)
       this._viewTool.onSelectedViewportChanged(previous, current);
@@ -1759,11 +1756,11 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public callOnCleanup(): void {
-    this.exitViewTool();
-    this.exitInputCollector();
+  public async callOnCleanup() {
+    await this.exitViewTool();
+    await this.exitInputCollector();
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onCleanup();
+      await this._primitiveTool.onCleanup();
   }
 }
 
@@ -1809,12 +1806,17 @@ export class WheelEventProcessor {
     }
 
     const view = vp.view;
-    const animationOptions: ViewChangeOptions = {
+    let globalAlignment;
+    if (view.is3d() && view.iModel.ecefLocation)
+      globalAlignment = { target, transition: zoomRatio > 1 };
+
+    const animationOptions: ViewChangeOptions & OnViewExtentsError = {
       animateFrustumChange: true,
       cancelOnAbort: true,
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
       onExtentsError: (err) => view.outputStatusMessage(err),
+      globalAlignment,
     };
 
     const currentInputState = IModelApp.toolAdmin.currentInputState;
@@ -1857,7 +1859,7 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions)))
+      if (ViewStatus.Success === (status = view.lookAt({ eyePoint: newEye, targetPoint: target, upVector: view.getYVector(), lensAngle: view.camera.lens, opts: animationOptions })))
         vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);

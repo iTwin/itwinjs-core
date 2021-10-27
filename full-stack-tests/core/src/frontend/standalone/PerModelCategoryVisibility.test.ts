@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@itwin/core-common";
 import {
-  FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
   Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(vp: Viewport) {
@@ -70,7 +71,7 @@ describe("Per-model category visibility overrides", () => {
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -88,15 +89,15 @@ describe("Per-model category visibility overrides", () => {
     vp = ScreenViewport.create(viewDiv, spatialView.clone());
   });
 
+  afterEach(() => {
+    vp.dispose();
+  });
+
   after(async () => {
     if (imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
-  });
-
-  afterEach(() => {
-    vp.dispose();
+    await TestUtility.shutdownFrontend();
   });
 
   it("overrides category selector", async () => {

@@ -70,6 +70,18 @@
     "ShutDown": {
       "keyin": "dta shutdown"
     },
+    "SignIn": {
+      "keyin": "dta signin"
+    },
+    "SignOut": {
+      "keyin": "dta signout"
+    },
+    "PushChanges": {
+      "keyin": "dta push"
+    },
+    "PullChanges": {
+      "keyin": "dta pull"
+    },
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
     },

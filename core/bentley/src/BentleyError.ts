@@ -7,7 +7,6 @@
  */
 
 import { DbResult } from "./BeSQLite";
-import { LogFunction, Logger } from "./Logger";
 
 /** Standard status code.
  * This status code should be rarely used.
@@ -62,7 +61,6 @@ export enum IModelStatus {
   MissingId = IMODEL_ERROR_BASE + 33,
   NoGeometry = IMODEL_ERROR_BASE + 34,
   NoMultiTxnOperation = IMODEL_ERROR_BASE + 35,
-  NotDgnMarkupProject = IMODEL_ERROR_BASE + 36,
   NotEnabled = IMODEL_ERROR_BASE + 37,
   NotFound = IMODEL_ERROR_BASE + 38,
   NotOpen = IMODEL_ERROR_BASE + 39,
@@ -237,29 +235,6 @@ export enum HttpStatus {
   ServerError = 0x17004,
 }
 
-/** Server returned WSG errors
- * @beta Right name? Right package?
- */
-export enum WSStatus {
-  Success = 0,
-  WSERROR_BASE = 0x18000,
-  Unknown = WSERROR_BASE + 1,
-  LoginFailed = WSERROR_BASE + 2,
-  SslRequired = WSERROR_BASE + 3,
-  NotEnoughRights = WSERROR_BASE + 4,
-  RepositoryNotFound = WSERROR_BASE + 5,
-  SchemaNotFound = WSERROR_BASE + 6,
-  ClassNotFound = WSERROR_BASE + 7,
-  PropertyNotFound = WSERROR_BASE + 8,
-  InstanceNotFound = WSERROR_BASE + 9,
-  FileNotFound = WSERROR_BASE + 10,
-  NotSupported = WSERROR_BASE + 11,
-  NoServerLicense = WSERROR_BASE + 12,
-  NoClientLicense = WSERROR_BASE + 13,
-  TooManyBadLoginAttempts = WSERROR_BASE + 14,
-  LoginRequired = WSERROR_BASE + 15,
-}
-
 /** iModelHub Services Errors
  * @beta Right package?
  */
@@ -301,21 +276,21 @@ export enum IModelHubStatus {
   EventTypeDoesNotExist = IMODELHUBERROR_BASE + 32,
   EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 33,
   EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
-  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
-  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
-  FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
+  ITwinIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
+  FailedToGetITwinPermissions = IMODELHUBERROR_BASE + 36,
+  FailedToGetITwinMembers = IMODELHUBERROR_BASE + 37,
   ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 38,
   VersionAlreadyExists = IMODELHUBERROR_BASE + 39,
   JobSchedulingFailed = IMODELHUBERROR_BASE + 40,
   ConflictsAggregate = IMODELHUBERROR_BASE + 41,
-  FailedToGetProjectById = IMODELHUBERROR_BASE + 42,
+  FailedToGetITwinById = IMODELHUBERROR_BASE + 42,
 
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
-  ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
+  ITwinDoesNotExist = IMODELHUBERROR_BASE + 47,
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
@@ -340,21 +315,6 @@ export enum AuthStatus {
   Success = 0,
   AUTHSTATUS_BASE = 0x22000,
   Error = AUTHSTATUS_BASE,
-}
-
-/** iModel.js Extensions
- * @beta
- */
-export enum ExtensionStatus {
-  Success = 0,
-  EXTENSIONSTATUS_BASE = 0x23000,
-  UnknownError = EXTENSIONSTATUS_BASE + 1,
-  BadRequest = EXTENSIONSTATUS_BASE + 2,
-  ExtensionNotFound = EXTENSIONSTATUS_BASE + 3,
-  BadExtension = EXTENSIONSTATUS_BASE + 4,
-  ExtensionAlreadyExists = EXTENSIONSTATUS_BASE + 5,
-  UploadError = EXTENSIONSTATUS_BASE + 6,
-  DownloadError = EXTENSIONSTATUS_BASE + 7,
 }
 
 /** GeoServiceStatus errors
@@ -382,48 +342,62 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
   message: string;
 }
 
-/** Defines the *signature* for a function that returns meta-data related to an error.
- * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
+/** A function that returns a metadata object for a [[BentleyError]].
+ * This is generally used for logging. However not every exception is logged, so use this if the metadata for an exception is expensive to create.
  * @public
  */
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
-/** The error type thrown by this module. `BentleyError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values.
+/** Optional metadata attached to a [[BentleyError]]. May either be an object or a function that returns an object.
+ * If this exception is logged and metadata is present, the metaData object is attached to the log entry via `JSON.stringify`
+ * @public
+ */
+export type LoggingMetaData = GetMetaDataFunction | object | undefined;
+
+function isObject(obj: unknown): obj is { [key: string]: unknown } {
+  return typeof obj === "object" && obj !== null;
+}
+
+interface ErrorProps {
+  message: string;
+  stack?: string;
+  metadata?: object;
+}
+
+/** Base exception class for iTwin.js exceptions.
  * @public
  */
 export class BentleyError extends Error {
-  private readonly _getMetaData: GetMetaDataFunction | undefined;
-  public errorNumber: number;
+  private readonly _metaData: LoggingMetaData;
 
-  /** Construct a new BentleyError
-   * @param errorNumber The required error number originating from one of the standard status enums.
-   * See [[IModelStatus]], [[DbResult]], [[BentleyStatus]], [[BriefcaseStatus]], [[RepositoryStatus]], [[ChangeSetStatus]], [[HttpStatus]], [[WSStatus]], [[IModelHubStatus]]
-   * @param message The optional error message (should not be localized).
-   * @param log The optional LogFunction that should be used to log this BentleyError.
-   * @param category The optional logger category to use when logging.
-   * @param getMetaData Optional data to be passed to the logger.
+  /**
+   * @param errorNumber The a number that identifies of the problem.
+   * @param message  message that describes the problem (should not be localized).
+   * @param metaData metaData about the exception.
    */
-  public constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(public errorNumber: number, message?: string, metaData?: LoggingMetaData) {
     super(message);
     this.errorNumber = errorNumber;
-    this._getMetaData = getMetaData;
+    this._metaData = metaData;
     this.name = this._initName();
-    if (log)
-      Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
-  /** Returns true if this BentleyError includes (optional) meta data. */
-  public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
+  /** Returns true if this BentleyError includes (optional) metadata. */
+  public get hasMetaData(): boolean { return undefined !== this._metaData; }
 
-  /** Return the meta data associated with this BentleyError. */
-  public getMetaData(): any {
-    return this.hasMetaData ? this._getMetaData!() : undefined;
+  /** get the meta data associated with this BentleyError, if any. */
+  public getMetaData(): object | undefined {
+    return BentleyError.getMetaData(this._metaData);
+  }
+
+  /** get the metadata object associated with an ExceptionMetaData, if any. */
+  public static getMetaData(metaData: LoggingMetaData): object | undefined {
+    return (typeof metaData === "function") ? metaData() : metaData;
   }
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
   protected _initName(): string {
     switch (this.errorNumber) {
-      // IModelStatus cases
       case IModelStatus.AlreadyLoaded: return "Already Loaded";
       case IModelStatus.AlreadyOpen: return "Already Open";
       case IModelStatus.BadArg: return "Bad Arg";
@@ -459,7 +433,6 @@ export class BentleyError extends Error {
       case IModelStatus.MissingId: return "Missing Id";
       case IModelStatus.NoGeometry: return "No Geometry";
       case IModelStatus.NoMultiTxnOperation: return "NoMultiTxnOperation";
-      case IModelStatus.NotDgnMarkupProject: return "NotDgnMarkupProject";
       case IModelStatus.NotEnabled: return "Not Enabled";
       case IModelStatus.NotFound: return "Not Found";
       case IModelStatus.NotOpen: return "Not Open";
@@ -488,8 +461,6 @@ export class BentleyError extends Error {
       case IModelStatus.WrongElement: return "Wrong Element";
       case IModelStatus.WrongHandler: return "Wrong Handler";
       case IModelStatus.WrongModel: return "Wrong Model";
-
-      // DbResult cases
       case DbResult.BE_SQLITE_ERROR: return "BE_SQLITE_ERROR";
       case DbResult.BE_SQLITE_INTERNAL: return "BE_SQLITE_INTERNAL";
       case DbResult.BE_SQLITE_PERM: return "BE_SQLITE_PERM";
@@ -579,11 +550,7 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_CONSTRAINT_TRIGGER: return "Trigger Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_UNIQUE: return "Unique Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_VTAB: return "VTable Constraint Error";
-
-      // BentleyStatus cases
       case BentleyStatus.ERROR: return "Error";
-
-      // BriefcaseStatus
       case BriefcaseStatus.CannotAcquire: return "CannotAcquire";
       case BriefcaseStatus.CannotDownload: return "CannotDownload";
       case BriefcaseStatus.CannotCopy: return "CannotCopy";
@@ -591,11 +558,7 @@ export class BentleyError extends Error {
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
       case BriefcaseStatus.DownloadCancelled: return "DownloadCancelled";
       case BriefcaseStatus.ContainsDeletedChangeSets: return "ContainsDeletedChangeSets";
-
-      // RpcInterface
       case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
-
-      // ChangeSetStatus
       case ChangeSetStatus.ApplyError: return "Error applying a change set";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
       case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
@@ -621,8 +584,6 @@ export class BentleyError extends Error {
       case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
       case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";
       case ChangeSetStatus.CannotMergeIntoReversed: return "Cannot merge changes into a DgnDb that has reversed change sets";
-
-      // RepositoryStatus
       case RepositoryStatus.ServerUnavailable: return "ServerUnavailable";
       case RepositoryStatus.LockAlreadyHeld: return "LockAlreadyHeld";
       case RepositoryStatus.SyncError: return "SyncError";
@@ -638,30 +599,10 @@ export class BentleyError extends Error {
       case RepositoryStatus.LockNotHeld: return "LockNotHeld";
       case RepositoryStatus.RepositoryIsLocked: return "RepositoryIsLocked";
       case RepositoryStatus.ChannelConstraintViolation: return "ChannelConstraintViolation";
-
-      // HTTP Status
       case HttpStatus.Info: return "HTTP Info";
       case HttpStatus.Redirection: return "HTTP Redirection";
       case HttpStatus.ClientError: return "HTTP Client error";
       case HttpStatus.ServerError: return "HTTP Server error";
-
-      // WSStatus
-      case WSStatus.Unknown: return "Unknown error";
-      case WSStatus.ClassNotFound: return "Class not found";
-      case WSStatus.FileNotFound: return "File not found";
-      case WSStatus.InstanceNotFound: return "Instance not found";
-      case WSStatus.LoginFailed: return "Login failed";
-      case WSStatus.NoClientLicense: return "No client license";
-      case WSStatus.NoServerLicense: return "No server license";
-      case WSStatus.NotEnoughRights: return "Not enough rights";
-      case WSStatus.NotSupported: return "Not supported";
-      case WSStatus.PropertyNotFound: return "Property not found";
-      case WSStatus.RepositoryNotFound: return "Repository not found";
-      case WSStatus.SchemaNotFound: return "Schema not found";
-      case WSStatus.SslRequired: return "SSL required";
-      case WSStatus.TooManyBadLoginAttempts: return "Too many bad login attempts";
-
-      // IModelHubStatus
       case IModelHubStatus.Unknown: return "Unknown error";
       case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
       case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";
@@ -697,40 +638,26 @@ export class BentleyError extends Error {
       case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
       case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
-      case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
-      case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
-      case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
+      case IModelHubStatus.ITwinIdIsNotSpecified: return "ITwin Id is not specified";
+      case IModelHubStatus.FailedToGetITwinPermissions: return "Failed to get iTwin permissions";
+      case IModelHubStatus.FailedToGetITwinMembers: return "Failed to get iTwin members";
       case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
       case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
-      case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
+      case IModelHubStatus.FailedToGetITwinById: return "Failed to query iTwin by its id";
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
-      case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
-
-      // errors that are returned for incorrect iModelHub request.
+      case IModelHubStatus.ITwinDoesNotExist: return "ITwin does not exist";
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
-
-      // errors returned from authorization
       case AuthStatus.Error: return "Authorization error";
-
-      // errors returned by iModel.js Extension client
-      case ExtensionStatus.UnknownError: return "Unknown error from backend";
-      case ExtensionStatus.BadExtension: return "Bad file extension";
-      case ExtensionStatus.BadRequest: return "Bad request";
-      case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
-      case ExtensionStatus.ExtensionNotFound: return "Extension not found";
-      case ExtensionStatus.UploadError: return "Failed to upload file";
-
-      // GeoServiceStatus
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
@@ -738,8 +665,6 @@ export class BentleyError extends Error {
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending";
-
-      // Unexpected cases
       case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:
@@ -751,4 +676,77 @@ export class BentleyError extends Error {
         return `Error (${this.errorNumber})`;
     }
   }
+
+  /** Use run-time type checking to safely get a useful string summary of an unknown error value, or `""` if none exists.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+   * @public
+   */
+  public static getErrorMessage(error: unknown): string {
+    if (typeof error === "string")
+      return error;
+
+    if (error instanceof Error)
+      return error.toString();
+
+    if (isObject(error)) {
+      if (typeof error.message === "string")
+        return error.message;
+
+      if (typeof error.msg === "string")
+        return error.msg;
+
+      if (error.toString() !== "[object Object]")
+        return error.toString();
+    }
+
+    return "";
+  }
+
+  /** Use run-time type checking to safely get the call stack of an unknown error value, if possible.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+   * @public
+   */
+  public static getErrorStack(error: unknown): string | undefined {
+    if (isObject(error) && typeof error.stack === "string")
+      return error.stack;
+
+    return undefined;
+  }
+
+  /** Use run-time type checking to safely get the metadata with an unknown error value, if possible.
+   * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof BentleyError`
+   * @see [[BentleyError.getMetaData]]
+   * @public
+   */
+  public static getErrorMetadata(error: unknown): object | undefined {
+    if (isObject(error) && typeof error.getMetaData === "function") {
+      const metadata = error.getMetaData();
+      if (typeof metadata === "object" && metadata !== null)
+        return metadata;
+    }
+
+    return undefined;
+  }
+
+  /** Returns a new `ErrorProps` object representing an unknown error value.  Useful for logging or wrapping/re-throwing caught errors.
+   * @note Unlike `Error` objects (which lose messages and call stacks when serialized to JSON), objects
+   *       returned by this are plain old JavaScript objects, and can be easily logged/serialized to JSON.
+   * @public
+   */
+  public static getErrorProps(error: unknown): ErrorProps {
+    const serialized: ErrorProps = {
+      message: BentleyError.getErrorMessage(error),
+    };
+
+    const stack = BentleyError.getErrorStack(error);
+    if (stack)
+      serialized.stack = stack;
+
+    const metadata = BentleyError.getErrorMetadata(error);
+    if (metadata)
+      serialized.metadata = metadata;
+
+    return serialized;
+  }
 }
+

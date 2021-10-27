@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Produce triangles (instead of quads) (when requested) in AddUVGridBody.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

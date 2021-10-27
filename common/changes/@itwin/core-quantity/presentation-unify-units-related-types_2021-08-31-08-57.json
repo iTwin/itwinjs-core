@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Added `UnitSystemKey` to identify different unit systems.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

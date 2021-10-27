@@ -6,11 +6,11 @@
  * @module HyperModeling
  */
 
-import { Transform, XAndY } from "@bentley/geometry-core";
-import { AbstractToolbarProps } from "@bentley/ui-abstract";
+import { Transform, XAndY } from "@itwin/core-geometry";
+import { AbstractToolbarProps } from "@itwin/appui-abstract";
 import {
   ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { SectionMarker, SectionMarkerSet } from "./SectionMarkers";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
@@ -389,7 +389,7 @@ export class HyperModelingDecorator implements Decorator {
 
   private sync(): void {
     this._needSync = false;
-    if (this.viewport.view.is3d() && this.updateMarkerVisibility()) {
+    if (HyperModeling.isInitialized && this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
       this.viewport.invalidateCachedDecorations(this);
     }

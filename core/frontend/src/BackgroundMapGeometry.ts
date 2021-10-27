@@ -6,12 +6,12 @@
  * @module Views
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic, ColorByName, ColorDef, EcefLocation, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { BingElevationProvider, WebMercatorTilingScheme } from "./tile/internal";
+import { WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();
@@ -61,7 +61,7 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
   const intersectRange = Range3d.createNull();
   accumulateFrustumPlaneDepthRange(frustum, plane, viewRotation, intersectRange, eyePoint);
 
-  return intersectRange.isNull ? Range1d.createNull(): Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
+  return intersectRange.isNull ? Range1d.createNull() : Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
 }
 
 /** Geometry of background map - either an ellipsoid or a plane as defined by GlobeMode.
@@ -89,7 +89,7 @@ export class BackgroundMapGeometry {
   private static _scratchPoint = Point3d.createZero();
 
   constructor(private _bimElevationBias: number, globeMode: GlobeMode, private _iModel: IModelConnection) {
-    this._ecefToDb = _iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
+    this._ecefToDb = _iModel.getMapEcefToDb(_bimElevationBias);
     this.globeMode = globeMode;
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(_iModel);
     this.cartesianTransitionRange = this.cartesianRange.clone();
@@ -121,7 +121,7 @@ export class BackgroundMapGeometry {
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
     if (undefined === result)
-      result = Cartographic.fromRadians(0, 0, 0);
+      result = Cartographic.createZero();
 
     if (this.globeMode === GlobeMode.Plane) {
       const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
@@ -213,10 +213,12 @@ export class BackgroundMapGeometry {
   }
 
   /** @internal */
-  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
-    const viewRotation = frustum.getRotation(scratchViewRotation)!;
+    const viewRotation = frustum.getRotation(scratchViewRotation);
+    if (undefined === viewRotation)
+      return Range1d.createNull();      // Degenerate frustum...
     const viewZ = viewRotation.getRow(2);
     const cartoRange = this.cartesianTransitionRange;
     const intersectRange = Range3d.createNull();
@@ -270,7 +272,7 @@ export class BackgroundMapGeometry {
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             } else {
               /* If parallel projection - clip toward side of ellipsoid with BIM geometry */
-              if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
+              if (viewZ.dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
             clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
@@ -404,9 +406,9 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
   const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
-  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoNorth.z).toEcef()!;
-  const ecefEast = Cartographic.fromDegrees(geoEast.x, geoEast.y, geoEast.z).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees({ longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z }).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees({ longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z }).toEcef()!;
+  const ecefEast = Cartographic.fromDegrees({ longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z }).toEcef()!;
 
   const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
@@ -428,78 +430,3 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
 }
 
-/** @internal */
-export class BackgroundMapLocation {
-  private _ecefToDb?: Transform;
-  private _ecefValidated = false;
-  private _geodeticToSeaLevel?: number;
-  private _projectCenterAltitude?: number;
-
-  public onEcefChanged(ecefLocation: EcefLocation| undefined) {
-    this._ecefToDb = ecefLocation?.getTransform().inverse();
-    this._ecefValidated = false;
-  }
-
-  public async initialize(iModel: IModelConnection): Promise<void> {
-    if (this._ecefToDb !== undefined && this._ecefValidated)
-      return;
-
-    if (!iModel.ecefLocation) {
-      this._ecefToDb = Transform.createIdentity();
-      this._geodeticToSeaLevel = 0;
-      this._projectCenterAltitude = 0;
-      return;
-    }
-
-    const ecefLocationDbToEcef = iModel.ecefLocation.getTransform();
-    this._ecefToDb = ecefLocationDbToEcef.inverse();
-    if (this._ecefToDb === undefined) {
-      assert(false);
-      this._ecefToDb = Transform.createIdentity();
-      return;
-    }
-    const projectExtents = iModel.projectExtents;
-    const origin = projectExtents.localXYZToWorld(.5, .5, .5);
-    if (!origin) {
-      this._ecefToDb = Transform.createIdentity();
-      return;
-    }
-
-    origin.z = 0; // always use ground plane
-    const ecefToDb = await calculateEcefToDbTransformAtLocation(origin, iModel);
-    if (undefined !== ecefToDb)
-      this._ecefToDb = ecefToDb;
-
-    const elevationProvider = new BingElevationProvider();
-
-    this._geodeticToSeaLevel = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-    this._projectCenterAltitude = await elevationProvider.getHeightValue(iModel.projectExtents.center, iModel, true);
-    this._ecefValidated = true;
-  }
-  public getMapEcefToDb(bimElevationBias: number): Transform {
-    if (undefined === this._ecefToDb) {
-      assert(false);
-      return Transform.createIdentity();
-    }
-
-    const mapEcefToDb = this._ecefToDb.clone();
-    mapEcefToDb.origin.z += bimElevationBias;
-
-    return mapEcefToDb;
-  }
-
-  public get geodeticToSeaLevel(): number {
-    if (undefined === this._geodeticToSeaLevel) {
-      assert (false);
-      return 0.0;
-    }
-    return this._geodeticToSeaLevel;
-  }
-  public get projectCenterAltitude(): number {
-    if (undefined === this._projectCenterAltitude) {
-      assert (false);
-      return 0.0;
-    }
-    return this._projectCenterAltitude;
-  }
-}

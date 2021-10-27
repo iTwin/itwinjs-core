@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Arc3d, Point3d } from "@bentley/geometry-core";
+import { Arc3d, Point3d } from "@itwin/core-geometry";
 // __PUBLISH_EXTRACT_START__ Element.subclass
-import { IModelDb, SpatialCategory, SpatialLocationElement } from "@bentley/imodeljs-backend";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**
@@ -15,7 +15,7 @@ import { RobotWorld } from "./RobotWorldSchema";
  * In this example, a "robot" is represented as a circle in the X-Y plane.
  */
 export class Robot extends SpatialLocationElement {
-  public static get className(): string { return "Robot"; }
+  public static override get className(): string { return "Robot"; }
   //  Define the properties added by this subclass
   public radius: number = 0.1;                     // The girth of the robot
 

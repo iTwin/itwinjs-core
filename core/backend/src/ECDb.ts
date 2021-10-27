@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelJsNative } from "@bentley/imodeljs-native";
 /** @packageDocumentation
  * @module ECDb
  */
-
-import { ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import {
-  Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-} from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
@@ -108,11 +106,11 @@ export class ECDb implements IDisposable {
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
-   * @param changeSetName The name of the operation that generated these changes.
+   * @param changesetName The name of the operation that generated these changes.
    * @throws [IModelError]($common) if the database is not open or if the operation failed.
    */
-  public saveChanges(changeSetName?: string): void {
-    const status: DbResult = this.nativeDb.saveChanges(changeSetName);
+  public saveChanges(changesetName?: string): void {
+    const status: DbResult = this.nativeDb.saveChanges(changesetName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to save changes");
   }
@@ -148,12 +146,13 @@ export class ECDb implements IDisposable {
    * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
    */
-  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql);
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -175,12 +174,13 @@ export class ECDb implements IDisposable {
    * For statements that will be reused often, instead use [[withPreparedStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.prepareStatement(ecsql);
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
       const val = callback(stmt);
@@ -198,11 +198,12 @@ export class ECDb implements IDisposable {
 
   /** Prepare an ECSQL statement.
    * @param ecsql The ECSQL statement to prepare
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
    */
-  public prepareStatement(ecsql: string): ECSqlStatement {
+  public prepareStatement(ecsql: string, logErrors = true): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, ecsql);
+    stmt.prepare(this.nativeDb, ecsql, logErrors);
     return stmt;
   }
 
@@ -214,12 +215,13 @@ export class ECDb implements IDisposable {
    * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
@@ -241,11 +243,12 @@ export class ECDb implements IDisposable {
    * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @public
    */
-  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this.prepareSqliteStatement(sql);
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this.prepareSqliteStatement(sql, logErrors);
     const release = () => stmt.dispose();
     try {
       const val: T = callback(stmt);
@@ -263,12 +266,13 @@ export class ECDb implements IDisposable {
 
   /** Prepare an SQL statement.
    * @param sql The SQLite SQL statement to prepare
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
    * @internal
    */
-  public prepareSqliteStatement(sql: string): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb);
+    stmt.prepare(this.nativeDb, logErrors);
     return stmt;
   }
 
@@ -277,6 +281,49 @@ export class ECDb implements IDisposable {
     return this._nativeDb!;
   }
 
+  /** Allow to execute query and read results along with meta data. The result are streamed.
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param config Allow to specify certain flags which control how query is executed.
+   * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
+   * @beta
+   * */
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+    if (!this._nativeDb || !this._nativeDb.isOpen()) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+    }
+    const executor = {
+      execute: async (request: DbQueryRequest) => {
+        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+      },
+    };
+    return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  /** Execute a query and stream its results
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
+   * @param options Allow to specify certain flags which control how query is executed.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   */
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    const builder = new QueryOptionsBuilder(options);
+    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
+      builder.setConvertClassIdsToNames(true);
+    }
+    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
+    while (await reader.step())
+      yield reader.formatCurrentRow(rowFormat);
+  }
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
@@ -284,135 +331,19 @@ export class ECDb implements IDisposable {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
+   * @param params The values to bind to the parameters (if the ECSQL has any).
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
-      return row.nRows;
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+      return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
-   * The result of the query is returned as an array of JavaScript objects where every array element represents an
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @param restartToken when provide cancel the previous query with same token in same session.
-   * @returns Returns structure containing rows and status.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @internal
-   */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
-    const stats = this._concurrentQueryStats;
-    const config = IModelHost.configuration!.concurrentQuery;
-    stats.lastActivityTime = Date.now();
-    if (!this._concurrentQueryInitialized) {
-      // Initialize concurrent query and setup statistics reset timer
-      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(config);
-      stats.dispose = () => {
-        if (stats.logTimerHandle) {
-          clearInterval(stats.logTimerHandle);
-          stats.logTimerHandle = null;
-        }
-        if (stats.resetTimerHandle) {
-          clearInterval(stats.resetTimerHandle);
-          stats.resetTimerHandle = null;
-        }
-      };
-      // Concurrent query will reset and log statistics every 'resetStatisticsInterval'
-      const resetIntervalMs = 1000 * 60 * Math.max(config.resetStatisticsInterval ? config.resetStatisticsInterval : 60, 10);
-      stats.resetTimerHandle = setInterval(() => {
-        if (this.isOpen && this._concurrentQueryInitialized) {
-          try {
-            const timeElapsedSinceLastActivity = Date.now() - stats.lastActivityTime;
-            if (timeElapsedSinceLastActivity < logIntervalMs) {
-              const statistics = JSON.parse(this.nativeDb.captureConcurrentQueryStats(true));
-              Logger.logInfo(loggerCategory, "Resetting concurrent query statistics", () => statistics);
-            }
-          } catch { }
-        } else {
-          clearInterval(stats.resetTimerHandle);
-          stats.resetTimerHandle = null;
-        }
-      }, resetIntervalMs);
-
-      // Concurrent query will log statistics every 'logStatisticsInterval'
-      const logIntervalMs = 1000 * 60 * Math.max(config.logStatisticsInterval ? config.logStatisticsInterval : 5, 5);
-      stats.logTimerHandle = setInterval(() => {
-        if (this.isOpen && this._concurrentQueryInitialized) {
-          try {
-            const timeElapsedSinceLastActivity = Date.now() - stats.lastActivityTime;
-            if (timeElapsedSinceLastActivity < logIntervalMs) {
-              const statistics = JSON.parse(this.nativeDb.captureConcurrentQueryStats(false));
-              Logger.logInfo(loggerCategory, "Concurrent query statistics", () => statistics);
-            }
-          } catch { }
-        } else {
-          clearInterval(stats.logTimerHandle);
-          stats.logTimerHandle = null;
-        }
-      }, logIntervalMs);
-    }
-
-    if (!bindings) bindings = [];
-    if (!limit) limit = {};
-    if (!quota) quota = {};
-    if (!priority) priority = QueryPriority.Normal;
-
-    return new Promise<QueryResponse>((resolve) => {
-      let sessionRestartToken = restartToken ? restartToken.trim() : "";
-      if (sessionRestartToken !== "")
-        sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
-
-      const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
-      if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
-        resolve({ status: QueryResponseStatus.PostError, rows: [] });
-
-      const poll = () => {
-        if (!this.nativeDb || !this.nativeDb.isOpen()) {
-          resolve({ status: QueryResponseStatus.Done, rows: [] });
-        } else {
-          const pollResult = this.nativeDb.pollConcurrentQuery(postResult.taskId);
-          if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Done) {
-            resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, Base64EncodedString.reviver) });
-          } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial) {
-            const returnBeforeStep = pollResult.result.length === 0;
-            resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, Base64EncodedString.reviver) });
-          } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
-            resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-          else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
-            setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
-          else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Cancelled)
-            resolve({ status: QueryResponseStatus.Cancelled, rows: [pollResult.result] });
-          else
-            resolve({ status: QueryResponseStatus.Error, rows: [pollResult.result] });
-        }
-      };
-      setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
-    });
-  }
-  /** Execute a query and stream its results
+  /** Cancel any previous query with same token and run execute the current specified query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -421,100 +352,18 @@ export class ECDb implements IDisposable {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   */
-  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any> {
-    let result: QueryResponse;
-    let offset: number = 0;
-    let rowsToGet = limitRows ? limitRows : -1;
-    do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
-      while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
-      }
-
-      if (result.status === QueryResponseStatus.Error) {
-        if (result.rows[0] === undefined) {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
-        } else {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
-        }
-      }
-
-      if (rowsToGet > 0) {
-        rowsToGet -= result.rows.length;
-      }
-      offset += result.rows.length;
-
-      for (const row of result.rows)
-        yield row;
-
-    } while (result.status !== QueryResponseStatus.Done);
-  }
-  /** Execute a query and stream its results
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
-   * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
+   * @param options Allow to specify certain flags which control how query is executed.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
-    let result: QueryResponse;
-    let offset: number = 0;
-    let rowsToGet = limitRows ? limitRows : -1;
-    do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
-      while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
-      }
-      if (result.status === QueryResponseStatus.Cancelled) {
-        throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);
-      } else if (result.status === QueryResponseStatus.Error) {
-        if (result.rows[0] === undefined) {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
-        } else {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
-        }
-      }
-
-      if (rowsToGet > 0) {
-        rowsToGet -= result.rows.length;
-      }
-      offset += result.rows.length;
-
-      for (const row of result.rows)
-        yield row;
-
-    } while (result.status !== QueryResponseStatus.Done);
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+      yield row;
+    }
   }
 }

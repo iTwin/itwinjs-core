@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
@@ -374,6 +374,7 @@ export interface ThematicDisplayProps {
 /** The thematic display setup of a [[DisplayStyle3d]].
  * Thematic display allows a user to colorize a scene using a color gradient in a way that provides a visual cue about certain attributes of the rendered geometry. This scene colorization will be done based on certain geometric attributes like height, surface slope, position of surfaces relative to a sun position, or geometric position relative to a list of sensors.
  * The documentation for [[ThematicDisplayMode]] describes how each mode colorizes the scene.
+ * @note Applying thematic display to geometry prevents shadows from applying to the same geometry.
  * @public
  */
 export class ThematicDisplay {

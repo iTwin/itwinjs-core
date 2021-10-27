@@ -1,10 +1,10 @@
-# @bentley/physical-material-backend
+# @itwin/physical-material-backend
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The **@bentley/physical-material-backend** package contains classes that backend code can use to work with the PhysicalMaterial schema.
+The **@itwin/physical-material-backend** package contains classes that backend code can use to work with the PhysicalMaterial schema.
 
 ## Documentation
 

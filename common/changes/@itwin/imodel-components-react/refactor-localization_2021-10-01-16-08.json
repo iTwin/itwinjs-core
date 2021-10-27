@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodel-components-react",
+      "comment": "Replace usage of I18N with generic Localization interface.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodel-components-react"
+}

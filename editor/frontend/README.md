@@ -1,10 +1,10 @@
-# @bentley/imodeljs-editor-frontend
+# @itwin/editor-frontend
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/imodeljs-editor-frontend__ package contains frontend classes for editing iModels.
+The __@itwin/editor-frontend__ package contains frontend classes for editing iModels.
 
 ## Documentation
 

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { RpcManager } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("PresentationRpcInterface", () => {
@@ -35,6 +35,14 @@ describe("PresentationRpcInterface", () => {
     it("returns properties for requested element", async () => {
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementId: "0x1",
+      });
+      expect(result).to.matchSnapshot();
+    });
+
+    it("returns properties for some elements of class 'GeometricElement3d", async () => {
+      const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
+        elementClasses: ["BisCore:GeometricElement3d"],
+        paging: { start: 0, size: 2 },
       });
       expect(result).to.matchSnapshot();
     });

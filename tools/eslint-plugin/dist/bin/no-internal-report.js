@@ -24,7 +24,7 @@ const nodeModules = getNodeModulesDir(path.dirname(process.argv[1]));
 if (!nodeModules)
   throw ("Could not find node_modules directory");
 
-const distDir = path.join(nodeModules, "@bentley/eslint-plugin/dist")
+const distDir = path.join(nodeModules, "@itwin/eslint-plugin/dist")
 if (!fs.existsSync(distDir))
   throw ("Could not find required dir: " + distDir);
 

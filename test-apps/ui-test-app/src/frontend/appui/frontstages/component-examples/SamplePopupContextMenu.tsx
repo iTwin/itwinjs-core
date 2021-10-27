@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@itwin/core-react";
+import { RelativePosition } from "@itwin/appui-abstract";
 
 export function SamplePopupContextMenu() {
   const [targetRef, target] = useRefState<HTMLButtonElement>();

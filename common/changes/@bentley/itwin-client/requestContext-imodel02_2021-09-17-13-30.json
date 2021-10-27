@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "remove ClientRequestContext.current",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client"
+}

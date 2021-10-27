@@ -1,0 +1,43 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/text/mixins";
+@import "../variables";
+
+.uifw-pointer-message {
+  border: {
+    color: $uifw-popup-border-color;
+    radius: $uifw-popup-border-radius;
+    style: solid;
+    width: $uifw-popup-border-width;
+  }
+
+  background-color: rgba($buic-background-2-rgb, $uifw-popup-opacity);
+
+  .uifw-pointer-message-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    >.uifw-pointer-message-icon {
+      padding-left: 3px;
+      padding-right: 3px;
+    }
+
+    >.uifw-pointer-message-text {
+      color: $buic-foreground-body;
+      padding-left: 3px;
+      padding-right: 3px;
+
+      >.uifw-pointer-message-brief {
+        @include uicore-text(body);
+      }
+
+      >.uifw-pointer-message-detailed {
+        @include uicore-text(small);
+      }
+    }
+  }
+}

@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CompressedId64Set, Id64, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, GeometryStreamBuilder, PhysicalElementProps } from "@bentley/imodeljs-common";
-import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
+import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { EditTools } from "@itwin/editor-frontend";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
   return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, imodel.key);
@@ -62,3 +63,17 @@ export async function deleteElements(imodel: BriefcaseConnection, ids: string[])
 export async function initializeEditTools(): Promise<void> {
   return EditTools.initialize();
 }
+
+export async function makeCode(iModel: IModelConnection, specName: string, scope: Id64String, value: string): Promise<CodeProps> {
+  const modelCodeSpec = await iModel.codeSpecs.getByName(specName);
+  return { scope, spec: modelCodeSpec.id, value };
+}
+
+export async function makeModelCode(iModel: IModelConnection, scope: Id64String, value: string): Promise<CodeProps> {
+  return makeCode(iModel, BisCodeSpec.informationPartitionElement, scope, value);
+}
+
+export async function callFullStackTestIpc<T extends AsyncMethodsOf<FullStackTestIpc>>(methodName: T, ...args: Parameters<FullStackTestIpc[T]>) {
+  return IpcApp.callIpcChannel(fullstackIpcChannel, methodName, ...args) as PromiseReturnType<FullStackTestIpc[T]>;
+}
+

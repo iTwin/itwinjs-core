@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema2ts",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema2ts"
+}

@@ -2,21 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
-import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { IModelHubError } from "@bentley/imodelhub-client";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
-import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: StandaloneDb;
 
-  const accessToken: AccessToken = (AccessToken as any);
-  const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);
+  const accessToken: AccessToken = "";
 
   before(async () => {
     iModel = IModelTestUtils.openIModelForWrite("test.bim");
@@ -24,71 +22,6 @@ describe("Example Code", () => {
 
   after(() => {
     iModel.close();
-  });
-
-  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback
-  //                                  Rule: A Promise-returning function takes an ClientRequestContext as an argument
-  async function asyncFunctionCallsAsync(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();        // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
-
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
-        Logger.logTrace("cat", "callback invoked");
-        resolve();
-      }, 1);
-    });
-  }
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback2
-  function synchronousFunctionCallsAsync() {
-    // This is an example of the rare case where a synchronous function invokes an async function and
-    // the async callback emits logging messages. In this case, because the caller is synchronous, it must
-    // access the current ClientRequestContext and assign it to a local variable.
-    const requestContext = ClientRequestContext.current;        // Must hold a local reference for callback to use.
-    setTimeout(() => {
-      requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
-      Logger.logTrace("cat", "callback invoked");
-    }, 1);
-  }
-  // __PUBLISH_EXTRACT_END__
-
-  async function someAsync(_context: ClientRequestContext): Promise<void> { }
-  // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
-  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncMethod
-
-  //                                Rule: A Promise-returning function takes an ClientRequestContext as an argument
-  async function asyncMethodExample(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-
-    try {
-      await someAsync(requestContext); // Rule: Pass the ClientRequestContext to Promise-returning methods
-      requestContext.enter();        // Rule: Enter the ClientRequestContext on the line after an await
-      Logger.logTrace("cat", "promise resolved");
-    } catch (_err) {
-      requestContext.enter();        // Rule: Enter the ClientRequestContext in an async rejection
-      Logger.logTrace("cat", "promise rejected");
-    }
-
-    // The same rules, using .then.catch instead of await + try/catch.
-    someAsync(requestContext)          // Rule: Pass the ClientRequestContext to Promise-returning methods
-      .then(() => {
-        requestContext.enter();    // Rule: Enter the ClientRequestContext on the line of .then callback
-        Logger.logTrace("cat", "promise resolved");
-      })
-      .catch((_err) => {
-        requestContext.enter();    // Rule: Enter the ClientRequestContext in .catch callback
-        Logger.logTrace("cat", "promise rejected");
-      });
-
-  }
-  // __PUBLISH_EXTRACT_END__
-
-  it("should handle ClientRequestContext in async callbacks", async () => {
-    await asyncFunctionCallsAsync(new ClientRequestContext("abc"));
-    await synchronousFunctionCallsAsync(); // eslint-disable-line @typescript-eslint/await-thenable
-    await asyncMethodExample(new ClientRequestContext("abc"));
   });
 
   it("should update the imodel project extents", async () => {
@@ -116,58 +49,15 @@ describe("Example Code", () => {
     if (iModel.isBriefcase) {
       const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
 
-      // __PUBLISH_EXTRACT_START__ ConcurrencyControl.setPolicy
-
-      // Turn on optimistic concurrency control.
-      // This allows the app to modify elements, models, etc. without first acquiring locks.
-      // Later, when the app downloads and merges changeSets from iModelHub,
-      // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
-      // as specified by this policy.
-      briefcaseDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-      // __PUBLISH_EXTRACT_END__
-
-      // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
-      try {
-        await briefcaseDb.concurrencyControl.codes.reserve(authorizedRequestContext);
-        authorizedRequestContext.enter();
-      } catch (err) {
-        if (err instanceof IModelHubError) {
-          // Do something about unavailable Codes ... or ...
-          briefcaseDb.abandonChanges();
-          return;
-        }
-      }
-      // __PUBLISH_EXTRACT_END__
-
       // Make some local changes. In this example, we'll create a modeled element and a model.
       const newModeledElementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode");
       assert.isTrue(newModeledElementId !== undefined);
-
-      // Now, before saving to the briefcase, we must acquire locks and reserve codes.
-
-      // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
-
-      try {
-        await briefcaseDb.concurrencyControl.request(authorizedRequestContext);
-        authorizedRequestContext.enter();
-      } catch (err) {
-        // If we can't get *all* of the locks and codes that are needed,
-        // then we can't go on with this transaction as is.
-        // We could possibly make additional changes to remove the need
-        // for the resources that are unavailable. In this case,
-        // we will just bail out.
-        briefcaseDb.abandonChanges();
-        return;
-      }
-      // __PUBLISH_EXTRACT_END__
 
       // If we do get the resources we need, we can commit the local changes to a local transaction in the IModelDb.
       briefcaseDb.saveChanges("inserted generic objects");
 
       // When all local changes are saved in the briefcase, we push them to the iModel server.
-      await briefcaseDb.pushChanges(authorizedRequestContext, "comment");
-      authorizedRequestContext.enter();
-
+      await briefcaseDb.pushChanges({ accessToken, description: "comment" });
     }
 
     // assertions to ensure example code is working properly

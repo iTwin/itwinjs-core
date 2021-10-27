@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Updated to Electron 14",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

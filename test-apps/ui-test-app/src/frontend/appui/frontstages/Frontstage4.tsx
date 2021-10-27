@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import {
-  DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
-} from "@bentley/ui-abstract";
+  DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardContentLayouts, StandardTypeNames, WidgetState,
+} from "@itwin/appui-abstract";
 import {
-  CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
-  FrontstageProvider, GroupButton, ModalDialogManager, ModelessDialogManager,
-  NavigationWidget, StagePanel, StagePanelState, ToolButton,
-  ToolWidget, Widget, Zone, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
+  ModelessDialogManager, NavigationWidget, StagePanel, StagePanelState, ToolButton, ToolWidget, Widget, Zone, ZoneState,
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { PopupTestDialog } from "../dialogs/PopupTest";
+import { SampleModalDialog } from "../dialogs/SampleModalDialog";
+import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
 import { TestModalDialog } from "../dialogs/TestModalDialog";
 import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
@@ -28,12 +29,7 @@ import {
   HorizontalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl2, VerticalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
-import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
-import { DialogButtonDef, DialogButtonType } from "@bentley/ui-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
-import { SampleModalDialog } from "../dialogs/SampleModalDialog";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -75,12 +71,12 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   }
 
   // called to apply a single property value change.
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
   };
 
   /** Called by UI to inform data provider of changes.  */
-  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === DynamicModalUiDataProvider.userPropertyName) {
@@ -98,7 +94,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   }
 
   /** Used Called by UI to request available properties when UI is manually created. */
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     const items: DialogItem[] = [];
 
     items.push({ value: this._userValue, property: DynamicModalUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
@@ -122,7 +118,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
     }
   };
 
-  public supplyButtonData(): DialogButtonDef[] | undefined {
+  public override supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
 
     if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)
@@ -141,12 +137,18 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 }
 
 export class Frontstage4 extends FrontstageProvider {
+  public get id(): string {
+    return "Test4";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "CubeContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "navigationCube",
             classId: "CubeContent",
           },
         ],
@@ -155,13 +157,11 @@ export class Frontstage4 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test4"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -188,7 +188,6 @@ export class Frontstage4 extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
             ]}
           />
@@ -200,7 +199,6 @@ export class Frontstage4 extends FrontstageProvider {
               widgets: [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
               ],
             },
@@ -270,7 +268,7 @@ export class Frontstage4 extends FrontstageProvider {
               ]}
               direction={Direction.Right}
             />
-            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ActionItemButton actionItem={AppTools.activityMessageItem} />
             <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec} labelKey={AppTools.addMessageCommand.label}
               execute={AppTools.addMessageCommand.execute} />
           </>
@@ -322,8 +320,10 @@ export class Frontstage4 extends FrontstageProvider {
   };
 
   private get _spinnerTestDialogItem() {
+    const id = "spinners";
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
     });
   }
 

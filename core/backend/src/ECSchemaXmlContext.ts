@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 

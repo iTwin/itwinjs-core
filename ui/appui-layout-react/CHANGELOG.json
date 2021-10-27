@@ -1,0 +1,1820 @@
+{
+  "name": "@itwin/appui-layout-react",
+  "entries": [
+    {
+      "version": "2.19.13",
+      "tag": "@itwin/appui-layout-react_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@itwin/appui-layout-react_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@itwin/appui-layout-react_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@itwin/appui-layout-react_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.9",
+      "tag": "@itwin/appui-layout-react_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@itwin/appui-layout-react_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@itwin/appui-layout-react_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@itwin/appui-layout-react_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@itwin/appui-layout-react_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@itwin/appui-layout-react_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@itwin/appui-layout-react_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@itwin/appui-layout-react_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@itwin/appui-layout-react_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initialize size and position of popout window when popping a widget out from floating state."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@itwin/appui-layout-react_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@itwin/appui-layout-react_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@itwin/appui-layout-react_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@itwin/appui-layout-react_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@itwin/appui-layout-react_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@itwin/appui-layout-react_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to provide widgets to zones via UiItemsProvider when using AppUI version 1."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@itwin/appui-layout-react_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@itwin/appui-layout-react_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@itwin/appui-layout-react_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@itwin/appui-layout-react_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to define state of popout widgets in NinezoneState."
+          },
+          {
+            "comment": "Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained."
+          },
+          {
+            "comment": "fix css deprecation warning about using 'fit-available'."
+          },
+          {
+            "comment": "Update scss to remove use of slash for division to avoid SASS deprecation warnings."
+          },
+          {
+            "comment": "Fix sass error reported by Civil iTwin."
+          },
+          {
+            "comment": "publish in-use APIs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@itwin/appui-layout-react_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@itwin/appui-layout-react_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@itwin/appui-layout-react_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@itwin/appui-layout-react_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@itwin/appui-layout-react_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@itwin/appui-layout-react_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@itwin/appui-layout-react_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@itwin/appui-layout-react_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@itwin/appui-layout-react_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@itwin/appui-layout-react_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@itwin/appui-layout-react_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update unit tests for resizeObserver fix."
+          },
+          {
+            "comment": "Update test to account for different number of calls to getBoundingClientRect."
+          },
+          {
+            "comment": "Update to latest classnames package "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@itwin/appui-layout-react_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Footer separator fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@itwin/appui-layout-react_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:27 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@itwin/appui-layout-react_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@itwin/appui-layout-react_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update unit tests for resizeObserver fix."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@itwin/appui-layout-react_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@itwin/appui-layout-react_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@itwin/appui-layout-react_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Specify grid-column in the scss for the Navigation and Tools widgets."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@itwin/appui-layout-react_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@itwin/appui-layout-react_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cleanup statusbar styling to ensure items are centered and do not overflow area."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@itwin/appui-layout-react_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@itwin/appui-layout-react_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@itwin/appui-layout-react_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add api to float and dock widgets in UI2.0."
+          },
+          {
+            "comment": "Replace custom assert definition with one from bentleyjs-core."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@itwin/appui-layout-react_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Floating widget opacity for UI 2.0. Slider formatMin, formatMax props."
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@itwin/appui-layout-react_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@itwin/appui-layout-react_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@itwin/appui-layout-react_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@itwin/appui-layout-react_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@itwin/appui-layout-react_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@itwin/appui-layout-react_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@itwin/appui-layout-react_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow all PopupProps to be passed in to FooterPopup."
+          },
+          {
+            "comment": "Fix double border issue in minimized active widget tab."
+          },
+          {
+            "comment": "Update panel transition to persist content size when collapsing."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.3",
+      "tag": "@itwin/appui-layout-react_v2.10.3",
+      "date": "Fri, 08 Jan 2021 18:34:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.2",
+      "tag": "@itwin/appui-layout-react_v2.10.2",
+      "date": "Fri, 08 Jan 2021 14:52:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.1",
+      "tag": "@itwin/appui-layout-react_v2.10.1",
+      "date": "Tue, 22 Dec 2020 00:53:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@itwin/appui-layout-react_v2.10.0",
+      "date": "Fri, 18 Dec 2020 18:24:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Cancel requested animation frame in Panel component."
+          },
+          {
+            "comment": "Improve panel widget transitions."
+          },
+          {
+            "comment": "Render single border between panel widgets."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.9",
+      "tag": "@itwin/appui-layout-react_v2.9.9",
+      "date": "Sun, 13 Dec 2020 19:00:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.8",
+      "tag": "@itwin/appui-layout-react_v2.9.8",
+      "date": "Fri, 11 Dec 2020 02:57:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.7",
+      "tag": "@itwin/appui-layout-react_v2.9.7",
+      "date": "Wed, 09 Dec 2020 20:58:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.6",
+      "tag": "@itwin/appui-layout-react_v2.9.6",
+      "date": "Mon, 07 Dec 2020 18:40:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.5",
+      "tag": "@itwin/appui-layout-react_v2.9.5",
+      "date": "Sat, 05 Dec 2020 01:55:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.4",
+      "tag": "@itwin/appui-layout-react_v2.9.4",
+      "date": "Wed, 02 Dec 2020 20:55:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.3",
+      "tag": "@itwin/appui-layout-react_v2.9.3",
+      "date": "Mon, 23 Nov 2020 20:57:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@itwin/appui-layout-react_v2.9.2",
+      "date": "Mon, 23 Nov 2020 15:33:50 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@itwin/appui-layout-react_v2.9.1",
+      "date": "Thu, 19 Nov 2020 17:03:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@itwin/appui-layout-react_v2.9.0",
+      "date": "Wed, 18 Nov 2020 16:01:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update widget colors."
+          },
+          {
+            "comment": "Fix widget grip position issue."
+          },
+          {
+            "comment": "Fix incorrect targeted state of tab targets."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.8.1",
+      "tag": "@itwin/appui-layout-react_v2.8.1",
+      "date": "Tue, 03 Nov 2020 00:33:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.8.0",
+      "tag": "@itwin/appui-layout-react_v2.8.0",
+      "date": "Fri, 23 Oct 2020 17:04:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow to expand collapsed panel with unitialized size."
+          },
+          {
+            "comment": "Added jsdoc ESLint rule for UI packages"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.6",
+      "tag": "@itwin/appui-layout-react_v2.7.6",
+      "date": "Wed, 11 Nov 2020 16:28:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.5",
+      "tag": "@itwin/appui-layout-react_v2.7.5",
+      "date": "Fri, 23 Oct 2020 16:23:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.4",
+      "tag": "@itwin/appui-layout-react_v2.7.4",
+      "date": "Mon, 19 Oct 2020 17:57:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add timer to panel auto expander."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.3",
+      "tag": "@itwin/appui-layout-react_v2.7.3",
+      "date": "Wed, 14 Oct 2020 17:00:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.2",
+      "tag": "@itwin/appui-layout-react_v2.7.2",
+      "date": "Tue, 13 Oct 2020 18:20:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.1",
+      "tag": "@itwin/appui-layout-react_v2.7.1",
+      "date": "Thu, 08 Oct 2020 13:04:35 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.7.0",
+      "tag": "@itwin/appui-layout-react_v2.7.0",
+      "date": "Fri, 02 Oct 2020 18:03:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Footer indicator improvement"
+          },
+          {
+            "comment": "Fixed lint warnings."
+          },
+          {
+            "comment": "Table cell editing via keyboard"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.5",
+      "tag": "@itwin/appui-layout-react_v2.6.5",
+      "date": "Sat, 26 Sep 2020 16:06:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.4",
+      "tag": "@itwin/appui-layout-react_v2.6.4",
+      "date": "Tue, 22 Sep 2020 17:40:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.3",
+      "tag": "@itwin/appui-layout-react_v2.6.3",
+      "date": "Mon, 21 Sep 2020 14:47:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.2",
+      "tag": "@itwin/appui-layout-react_v2.6.2",
+      "date": "Mon, 21 Sep 2020 13:07:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.1",
+      "tag": "@itwin/appui-layout-react_v2.6.1",
+      "date": "Fri, 18 Sep 2020 13:15:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.6.0",
+      "tag": "@itwin/appui-layout-react_v2.6.0",
+      "date": "Thu, 17 Sep 2020 13:16:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "BadgeType support for Backstage items"
+          },
+          {
+            "comment": "Moved ESLint configuration to a plugin"
+          },
+          {
+            "comment": "Addressed ESLint warnings in UI packages. Fixed react-set-state-usage rule. Allowing PascalCase for functions in UI packages for React function component names."
+          },
+          {
+            "comment": "Update minimized active tab styling."
+          },
+          {
+            "comment": "Increase invisible clickable bounds of stage panel resize grip."
+          },
+          {
+            "comment": "Add resizable flag to PanelState."
+          },
+          {
+            "comment": "Required active tab id in WidgetState."
+          },
+          {
+            "comment": "Add panel collapse transition and auto-collapse interaction for unpinned panels."
+          },
+          {
+            "comment": "Ability to provide allowed panel targets for a tab."
+          },
+          {
+            "comment": "Widget tab badge support."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.5.5",
+      "tag": "@itwin/appui-layout-react_v2.5.5",
+      "date": "Wed, 02 Sep 2020 17:42:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.4",
+      "tag": "@itwin/appui-layout-react_v2.5.4",
+      "date": "Fri, 28 Aug 2020 15:34:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.3",
+      "tag": "@itwin/appui-layout-react_v2.5.3",
+      "date": "Wed, 26 Aug 2020 11:46:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.2",
+      "tag": "@itwin/appui-layout-react_v2.5.2",
+      "date": "Tue, 25 Aug 2020 22:09:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.1",
+      "tag": "@itwin/appui-layout-react_v2.5.1",
+      "date": "Mon, 24 Aug 2020 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.5.0",
+      "tag": "@itwin/appui-layout-react_v2.5.0",
+      "date": "Thu, 20 Aug 2020 20:57:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed updating focus when Tabs activeIndex updated. More a11y issues."
+          },
+          {
+            "comment": "Added eslint-plugin-jsx-a11y devDependency and made first pass at adding a11y roles"
+          },
+          {
+            "comment": "Added react-axe and resolved some a11y issues"
+          },
+          {
+            "comment": "Moved SpecialKey & FunctionKey enums to ui-abstract & started using them throughout UI packages"
+          },
+          {
+            "comment": "lock down @types/react version at 16.9.43 to prevent build error from csstype dependency"
+          },
+          {
+            "comment": "Added Table component keyboard row selection. Miscellaneous a11y fixes."
+          },
+          {
+            "comment": "Switch to ESLint"
+          },
+          {
+            "comment": "Add drop shadow to toolsettings overflow popup.  "
+          },
+          {
+            "comment": "Close widget overflow popup when tab is clicked."
+          },
+          {
+            "comment": "Add corner resize handles to floating widgets."
+          },
+          {
+            "comment": "Add preferredPanelWidgetSize to TabState."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.4.2",
+      "tag": "@itwin/appui-layout-react_v2.4.2",
+      "date": "Fri, 14 Aug 2020 16:34:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.4.1",
+      "tag": "@itwin/appui-layout-react_v2.4.1",
+      "date": "Fri, 07 Aug 2020 19:57:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.4.0",
+      "tag": "@itwin/appui-layout-react_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Contain floating widget bounds."
+          },
+          {
+            "comment": "Ability to provide title for dock tool settings button."
+          },
+          {
+            "comment": "Persist floating widget size."
+          },
+          {
+            "comment": "Add send home button to floating widgets."
+          },
+          {
+            "comment": "Use Popup components for widget overflow and tool settings overflow popups."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.3.3",
+      "tag": "@itwin/appui-layout-react_v2.3.3",
+      "date": "Thu, 23 Jul 2020 12:57:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.3.2",
+      "tag": "@itwin/appui-layout-react_v2.3.2",
+      "date": "Tue, 14 Jul 2020 23:50:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.3.1",
+      "tag": "@itwin/appui-layout-react_v2.3.1",
+      "date": "Mon, 13 Jul 2020 18:50:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.3.0",
+      "tag": "@itwin/appui-layout-react_v2.3.0",
+      "date": "Fri, 10 Jul 2020 17:23:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix tool settings styling on FireFox. Floating Toolsettings was missing z-index."
+          },
+          {
+            "comment": "Replace PointerEvents with touch and mouse events."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.2.1",
+      "tag": "@itwin/appui-layout-react_v2.2.1",
+      "date": "Tue, 07 Jul 2020 14:44:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.2.0",
+      "tag": "@itwin/appui-layout-react_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updates to documentation"
+          },
+          {
+            "comment": "Added support for popup with multiple editors"
+          },
+          {
+            "comment": "Fix widget panel interactions on touch devices."
+          },
+          {
+            "comment": "Prevent widget content renderer from overflowing widget tabs."
+          },
+          {
+            "comment": "Fix touch drag of tool settings handle."
+          },
+          {
+            "comment": "Fix widget drag interactions for touch devices."
+          },
+          {
+            "comment": "Fix widget content flicker when expanding minimized widget."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.1.0",
+      "tag": "@itwin/appui-layout-react_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix toolbar overflow panel display."
+          },
+          {
+            "comment": "Remove border on small app button."
+          },
+          {
+            "comment": "Address React warnings about deprecated methods."
+          },
+          {
+            "comment": "Contain floating widgets in visible nine zone area."
+          },
+          {
+            "comment": "Use react-scripts for demo app."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@itwin/appui-layout-react_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for 2.0 ui Tool and Navigation widgets to react to UiFramework.onUiVisibilityChanged events"
+          },
+          {
+            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
+          },
+          {
+            "comment": "Removed deprecated Expandable item History Tray support"
+          },
+          {
+            "comment": "fix sizing of SvgSprite icons in backstage."
+          },
+          {
+            "comment": "Add missing tilde to scss files"
+          },
+          {
+            "comment": "Address warning to convert 'start' to 'flex start'"
+          },
+          {
+            "comment": "Fix bug 292829 where toolbar border displayed when all items are hidden."
+          },
+          {
+            "comment": "Update test to avoid warnings."
+          },
+          {
+            "comment": "Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar."
+          },
+          {
+            "comment": "Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks."
+          },
+          {
+            "comment": "Ui 2.0 - Blur the toolbar item background"
+          },
+          {
+            "comment": "update styling of widget panel background color"
+          },
+          {
+            "comment": " Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Fixed Safari browser issues"
+          },
+          {
+            "comment": "Update StatusBarComposer to support Overflow panel."
+          },
+          {
+            "comment": "Ui 2.0 - Toolbar display changes"
+          },
+          {
+            "comment": "Updated Toolbar colors/opacity for Ui 2.0"
+          },
+          {
+            "comment": "Move common hooks to ui-core."
+          },
+          {
+            "comment": "Move react to peerDependencies."
+          },
+          {
+            "comment": "Learning documentation for ui-core"
+          },
+          {
+            "comment": "TOC for UI 2.0 Docs, @alpha to @beta, Components Examples"
+          },
+          {
+            "comment": "Ability to drag docked tool settings to widget mode."
+          },
+          {
+            "comment": "Support for floating widget targets."
+          },
+          {
+            "comment": "Fix safe area insets for bottom zones w/o footer. "
+          },
+          {
+            "comment": "Keep active tab visible."
+          },
+          {
+            "comment": "Reparent widget content when dragging widget around."
+          },
+          {
+            "comment": "Floating widget stacking order."
+          },
+          {
+            "comment": "Map children to panes fix."
+          },
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "Update auto-generated dialog items to work with the Tool Settings Bar."
+          },
+          {
+            "comment": "Update stage panels to not hide overflow to popups are not clipped."
+          },
+          {
+            "comment": "Minor styling changes"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "Update how overflow toolsetting panel is constructed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@itwin/appui-layout-react_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@itwin/appui-layout-react_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.13.0",
+      "tag": "@itwin/appui-layout-react_v1.13.0",
+      "date": "Wed, 04 Mar 2020 16:16:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix safe area insets for bottom zones w/o footer."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.12.0",
+      "tag": "@itwin/appui-layout-react_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@itwin/appui-layout-react_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Docked tool settings component."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.10.0",
+      "tag": "@itwin/appui-layout-react_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix widget target infinite set state issue."
+          },
+          {
+            "comment": "Add css option to pad between icon and label in Label StatusBar Indicator."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.9.0",
+      "tag": "@itwin/appui-layout-react_v1.9.0",
+      "date": "Tue, 10 Dec 2019 18:08:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Invoke onTargetChanged when component unmounts."
+          },
+          {
+            "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
+          },
+          {
+            "comment": "Added support for NotifyMessageDetails.displayTime for Toast messages"
+          },
+          {
+            "comment": "Ability to determine available tool settings width."
+          },
+          {
+            "comment": "Fix code analysis report issues."
+          },
+          {
+            "comment": "Use exhaustive-deps linter rule."
+          },
+          {
+            "comment": "Expandable group touch support."
+          },
+          {
+            "comment": "Use typescript as webpack configuration language."
+          },
+          {
+            "comment": "Ability to set zone width from zones manager."
+          },
+          {
+            "comment": "Removed unused React state variables. Removed unsupported setState calls from render() methods."
+          },
+          {
+            "comment": "Added ConditionalField and FooterModeField components. StatusBar responsive changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.8.0",
+      "tag": "@itwin/appui-layout-react_v1.8.0",
+      "date": "Fri, 22 Nov 2019 14:03:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Icon package version."
+          },
+          {
+            "comment": "Tablet responsive UI"
+          },
+          {
+            "comment": "Added StatusBarComposer, StatusBarItem, StatusBarManager and StatusBarItemsManager"
+          },
+          {
+            "comment": "Added tslint-react-hooks to UI packages"
+          },
+          {
+            "comment": "Remove unsupported fit-content CSS value."
+          },
+          {
+            "comment": "Fix flex CSS rule shorthand issue in stage panel splitter."
+          },
+          {
+            "comment": "Touch support for widget drag, widget resize and stage panel splitter."
+          },
+          {
+            "comment": "Add disabled resize handles option to widget."
+          },
+          {
+            "comment": "Deprecate history tray components."
+          },
+          {
+            "comment": "Open tool panel via drag interaction."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.7.0",
+      "tag": "@itwin/appui-layout-react_v1.7.0",
+      "date": "Fri, 01 Nov 2019 13:28:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed mouse interaction for Navigation Aids"
+          },
+          {
+            "comment": "Made the Status Bar & Backstage more responsive on smaller screens"
+          },
+          {
+            "comment": "Added initial ui-abstract package setup"
+          },
+          {
+            "comment": "Added UiAdmin with support for displaying Menus and Toolbars at a location"
+          },
+          {
+            "comment": "Merge zone to save window resize settings and update target zone bounds."
+          },
+          {
+            "comment": "Fix footer offset in widget mode."
+          },
+          {
+            "comment": "Enable pointer events over toolbar instead of toolbar container."
+          },
+          {
+            "comment": "Persist zones layout on window resize."
+          },
+          {
+            "comment": "Fix Safari high CPU issue."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.0",
+      "tag": "@itwin/appui-layout-react_v1.6.0",
+      "date": "Wed, 09 Oct 2019 20:28:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added AutoSuggest component and improved KeyinBrowser component"
+          },
+          {
+            "comment": "Ability to drag and resize tool settings widget."
+          },
+          {
+            "comment": "Change prop type from RefObject<T> to T."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.5.0",
+      "tag": "@itwin/appui-layout-react_v1.5.0",
+      "date": "Mon, 30 Sep 2019 22:28:48 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "copyright headers"
+          },
+          {
+            "comment": "Tool Assistance changes per UX Design"
+          },
+          {
+            "comment": "Tool Assistance for Ctrl+Z and other chars"
+          },
+          {
+            "comment": "upgrade to TypeScript 3.6.2"
+          },
+          {
+            "comment": "Prevent BackstageItem label overflow."
+          },
+          {
+            "comment": "Make components aware of safe area insets."
+          },
+          {
+            "comment": "Enable backstage scrolling."
+          },
+          {
+            "comment": "Scrollable tool settings content."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.4.0",
+      "tag": "@itwin/appui-layout-react_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.3.0",
+      "tag": "@itwin/appui-layout-react_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use latest icon library"
+          },
+          {
+            "comment": "Add support for BackstageComposer so Plugins can add backstage items."
+          },
+          {
+            "comment": "Added CursorPrompt, improved Pointer messages"
+          },
+          {
+            "comment": "Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+          },
+          {
+            "comment": "Updated generic icon package"
+          },
+          {
+            "comment": "Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Improved ToolAssistance item spacing. ViewSelector shows current view."
+          },
+          {
+            "comment": "Update to latest icon package version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.2.0",
+      "tag": "@itwin/appui-layout-react_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move zonesBounds from manager to props."
+          },
+          {
+            "comment": "Update horizontal toolbar styles"
+          },
+          {
+            "comment": "Update <img> height/width for toolbar items so svg icons would display."
+          },
+          {
+            "comment": "Added ToolAssistance support and Tool.iconSpec"
+          },
+          {
+            "comment": "Demo changes."
+          },
+          {
+            "comment": "Refactor and test ZonesManager."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@itwin/appui-layout-react_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added beta badge support to toolbar buttons and widget tabs"
+          },
+          {
+            "comment": "Resolved tslint issue with ui-ninezone demo"
+          },
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          },
+          {
+            "comment": "Add stage panel support."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.0.0",
+      "tag": "@itwin/appui-layout-react_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added UI Logger & UiError usage & improved i18n calls"
+          },
+          {
+            "comment": "Update to css-loader 2.1.1"
+          },
+          {
+            "comment": "Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Added Overflow button support"
+          },
+          {
+            "comment": "Release tag cleanup and ui-framework unit tests"
+          },
+          {
+            "comment": "Add support for solar timeline."
+          },
+          {
+            "comment": "Added NumericInput component to ui-core. Added dependency on react-numeric-input."
+          },
+          {
+            "comment": "Prevent zones component from creating a stacking context."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.191.0",
+      "tag": "@itwin/appui-layout-react_v0.191.0",
+      "date": "Mon, 13 May 2019 15:52:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to latest version of icon library."
+          },
+          {
+            "comment": "@beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds."
+          },
+          {
+            "comment": "Fixed AppButton onClick on Firefox and bar color"
+          },
+          {
+            "comment": "CommonProps usage in ui-framework. SvgPath sample in ui-test-app. Added tools/build/tslint-docs.json."
+          },
+          {
+            "comment": "Show/Hide UI enhancements. Widget Opacity enhancements."
+          },
+          {
+            "comment": "Added local snapshot support to ui-test-app. Added specialized div components to ui-core."
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Fixed Viewport heights & initial navigation aid. Widget transparency."
+          },
+          {
+            "comment": "From hackathon-ui-team: StagePanels, UI Show/Hide, PopupButtons"
+          },
+          {
+            "comment": "Put sourcemap in npm package."
+          },
+          {
+            "comment": "Require React & React-dom 16.8"
+          },
+          {
+            "comment": "Update icons-generic-webfont version to latest available."
+          },
+          {
+            "comment": "Add TitleBar component for toolsetting instead of using one from footer. Title bas needed to be more compact in toolsettings widget."
+          },
+          {
+            "comment": "Tool Settings: removed minimize tab, added min to title bar, styled title"
+          },
+          {
+            "comment": "Auto close popups when clicking outside."
+          },
+          {
+            "comment": "Move zone components to @beta."
+          },
+          {
+            "comment": "Move tool settings components to @beta."
+          },
+          {
+            "comment": "Remove popover components."
+          },
+          {
+            "comment": "Prevent widget content unmount in 9-Zone demo."
+          },
+          {
+            "comment": "Change start to flex-start to avoid linting warnings from postcss-loader"
+          },
+          {
+            "comment": "Upgrade TypeDoc dependency to 0.14.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.190.0",
+      "tag": "@itwin/appui-layout-react_v0.190.0",
+      "date": "Thu, 14 Mar 2019 14:26:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added 'uifw-' to ContentLayout CSS class names and others. Fixed Status Bar separators."
+          },
+          {
+            "comment": "Added 'uifw-' prefix to most ui-framework CSS class names"
+          },
+          {
+            "comment": "Cleaned up index.scss for variables & mixins in ui-core and added classes.scss that generates CSS"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.189.0",
+      "tag": "@itwin/appui-layout-react_v0.189.0",
+      "date": "Wed, 06 Mar 2019 15:41:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "UI documentation fixes"
+          },
+          {
+            "comment": "Use new buildIModelJsBuild script"
+          },
+          {
+            "comment": "Remove unneeded typedoc plugin dependency"
+          },
+          {
+            "comment": "Minor UI Color Theme changes"
+          },
+          {
+            "comment": "Support for including CSS files in published UI packages"
+          },
+          {
+            "comment": "Added styling capability ot messages"
+          },
+          {
+            "comment": "Removed dependency on BWC. Parts of BWC copied into ui-core in preparation for theming support."
+          },
+          {
+            "comment": "Added ToggleEditor. Support for defaultTool in Frontstage."
+          },
+          {
+            "comment": "Save BUILD_SEMVER to globally accessible map"
+          },
+          {
+            "comment": "Added support for UI color themes"
+          },
+          {
+            "comment": "Display status message above status indicator popup."
+          },
+          {
+            "comment": "Update to use newer generic-icons-webfont package."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.2.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.188.0",
+      "tag": "@itwin/appui-layout-react_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.187.0",
+      "tag": "@itwin/appui-layout-react_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.186.0",
+      "tag": "@itwin/appui-layout-react_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Status Field to show selection count"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.185.0",
+      "tag": "@itwin/appui-layout-react_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@itwin/appui-layout-react_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Keyboard Shortcut support"
+          },
+          {
+            "comment": "Ensure unique relative paths in ninezone source."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.183.0",
+      "tag": "@itwin/appui-layout-react_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.182.0",
+      "tag": "@itwin/appui-layout-react_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.181.0",
+      "tag": "@itwin/appui-layout-react_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@itwin/appui-layout-react_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@itwin/appui-layout-react_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added showDialogInitially support to ActivityMessageDetails"
+          },
+          {
+            "comment": "Refactor Tooltip component to position over multiple viewports."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.178.0",
+      "tag": "@itwin/appui-layout-react_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Migrate from React.Component to React.PureComponent"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@itwin/appui-layout-react_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.176.0",
+      "tag": "@itwin/appui-layout-react_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@itwin/appui-layout-react_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@itwin/appui-layout-react_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@itwin/appui-layout-react_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed initial & return layout of Frontstage. Styling of scrollbar in Chrome."
+          },
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.172.0",
+      "tag": "@itwin/appui-layout-react_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Created index file to match package name, eliminate subdirectory index files, decrease usage of default exports, some class name changes to avoid conflicts in the index file."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.171.0",
+      "tag": "@itwin/appui-layout-react_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed Omit typedef source from ui/ninezone to ui/core"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@itwin/appui-layout-react_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed Omit typedef source from ui/ninezone to ui/core"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.169.0",
+      "tag": "@itwin/appui-layout-react_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@itwin/appui-layout-react_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@itwin/appui-layout-react_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed some content control sizing issues"
+          },
+          {
+            "comment": "Moved most isHidden logic for toolbar items into ui-ninezone"
+          },
+          {
+            "comment": "Hiding items by rendering them conditionally instead of using a CSS class."
+          },
+          {
+            "comment": "ui-framework unit tests & docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.166.0",
+      "tag": "@itwin/appui-layout-react_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@itwin/appui-layout-react_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@itwin/appui-layout-react_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to TypeScript 3.1"
+          },
+          {
+            "comment": "Fixed height issues with widget content"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.163.0",
+      "tag": "@itwin/appui-layout-react_v0.163.0",
+      "date": "Wed, 31 Oct 2018 20:55:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added JSX specification for Frontstage, Zone & Widget"
+          },
+          {
+            "comment": "Fixed ui-framework unit test"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.162.0",
+      "tag": "@itwin/appui-layout-react_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Make ToolAdmin.defaultTool. public. Allow getToolTip to return HTMLElement | string."
+          },
+          {
+            "comment": "Tooltips, ToolAdmin.activeToolChanged support, SheetNavigationAid/SheetsModalFrontstage improvements."
+          },
+          {
+            "comment": "Ui Documentation"
+          },
+          {
+            "comment": "Vertical PropertyGrid layout improvements. PropertyGrid background color. Setting the widget state."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.161.0",
+      "tag": "@itwin/appui-layout-react_v0.161.0",
+      "date": "Fri, 19 Oct 2018 13:04:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.160.0",
+      "tag": "@itwin/appui-layout-react_v0.160.0",
+      "date": "Wed, 17 Oct 2018 18:18:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.159.0",
+      "tag": "@itwin/appui-layout-react_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.158.0",
+      "tag": "@itwin/appui-layout-react_v0.158.0",
+      "date": "Mon, 15 Oct 2018 19:36:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.157.0",
+      "tag": "@itwin/appui-layout-react_v0.157.0",
+      "date": "Sun, 14 Oct 2018 17:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixing scripts for linux"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.156.0",
+      "tag": "@itwin/appui-layout-react_v0.156.0",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial release"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -23,7 +23,7 @@ When an iTwin.js backend opens an iModel, it first verifies with iModelHub that 
 
 ## Creating a new iModel in iModelHub
 
-When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, associated with an iTwin context (e.g. a [Project]($context-registry-client)), and its timeline is initialized. iModelHub provides tools to configure access to the iModel by users and applications. As new users and agents connect to iModelHub to access the iModel, they are each assigned briefcases with a unique Id.
+When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, associated with an iTwin, and its timeline is initialized. iModelHub provides tools to configure access to the iModel by users and applications. As new users and agents connect to iModelHub to access the iModel, they are each assigned briefcases with a unique Id.
 
 > See [Working with iModels](./iModels/index.md).
 

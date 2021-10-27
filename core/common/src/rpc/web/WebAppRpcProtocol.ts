@@ -14,9 +14,11 @@ import { RpcProtocol } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-import { CommonLoggerCategory, RpcInterface, RpcManager } from "../../imodeljs-common";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { RpcInterface } from "../../RpcInterface";
+import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 
 class InitializeInterface extends RpcInterface {
   public static readonly interfaceName = "InitializeInterface";
@@ -45,9 +47,11 @@ class InitializeInterface extends RpcInterface {
  * @public
  */
 export interface HttpServerRequest extends Readable {
+  aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
   httpVersionMinor: number;
+  complete: boolean;
   connection: any;
   headers: { [header: string]: string | string[] | undefined };
   rawHeaders: string[];
@@ -76,10 +80,10 @@ export interface HttpServerResponse extends Writable {
 }
 
 /** The HTTP application protocol.
- * @public
+ * @internal
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
-  public preserveStreams = true;
+  public override preserveStreams = true;
 
   private _initialized: Promise<void> | undefined;
 
@@ -100,7 +104,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
           (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
         }
       } catch (err) {
-        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", () => err);
+        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", BentleyError.getErrorProps(err));
       }
 
       resolve();
@@ -151,7 +155,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public readonly requestType = WebAppRpcRequest;
 
   /** Supplies the status corresponding to a protocol-specific code value. */
-  public getStatus(code: number): RpcRequestStatus {
+  public override getStatus(code: number): RpcRequestStatus {
     switch (code) {
       case 404: return RpcRequestStatus.NotFound;
       case 202: return RpcRequestStatus.Pending;
@@ -166,7 +170,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   }
 
   /** Supplies the protocol-specific code corresponding to a status value. */
-  public getCode(status: RpcRequestStatus): number {
+  public override getCode(status: RpcRequestStatus): number {
     switch (status) {
       case RpcRequestStatus.NotFound: return 404;
       case RpcRequestStatus.Pending: return 202;

@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as PresentationFrontendDiagnostics from "@bentley/presentation-frontend/lib/presentation-frontend/Diagnostics";
+import * as PresentationFrontendDiagnostics from "@itwin/presentation-frontend/lib/cjs/presentation-frontend/Diagnostics";
 import { createDiagnosticsOptions } from "../../presentation-components/common/Diagnostics";
 
 describe("createDiagnosticsOptions", () => {
@@ -19,7 +20,7 @@ describe("createDiagnosticsOptions", () => {
 
   it("returns options with perf flag when dev diagnostic props have it", () => {
     const handler = sinon.stub();
-    expect(createDiagnosticsOptions({ devDiagnostics: { perf:true, handler } })).to.deep.eq({ perf: true, handler });
+    expect(createDiagnosticsOptions({ devDiagnostics: { perf: true, handler } })).to.deep.eq({ perf: true, handler });
   });
 
   it("returns options with dev severity when dev diagnostic props have it", () => {

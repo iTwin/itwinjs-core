@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
-@import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 $component-examples-leftpanel-width: 225px;
 $component-examples-rightpanel-width: 200px;
@@ -14,7 +14,7 @@ $component-examples-rightpanel-width: 200px;
   height: 100%;
 
   color: $buic-text-color;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
 
   display: grid;
   grid-template-columns: 280px auto;
@@ -45,29 +45,29 @@ $component-examples-rightpanel-width: 200px;
     .component-examples-item {
       display: flex;
 
-      > .panel {
+      >.panel {
         display: flex;
         box-sizing: border-box;
       }
 
-      > .left-panel {
+      >.left-panel {
         flex: 1;
         flex-direction: column;
         min-width: $component-examples-leftpanel-width;
         padding: 15px;
 
-        > .title {
+        >.title {
           font-size: 18px;
         }
 
-        > .description {
+        >.description {
           margin-top: 10px;
           font-size: 12px;
           color: $buic-text-color-muted;
         }
       }
 
-      > .right-panel {
+      >.right-panel {
         flex: 4;
         align-items: center;
         min-width: $component-examples-rightpanel-width;
@@ -83,6 +83,13 @@ $component-examples-rightpanel-width: 200px;
       width: 100%;
       color: $buic-inputs-border;
     }
+
+    .component-examples-horizontal-tabs {
+      >li {
+        width: 33%;
+      }
+    }
+
   }
 }
 
@@ -91,4 +98,3 @@ $component-examples-rightpanel-width: 200px;
   gap: 20px;
   align-items: center;
 }
-

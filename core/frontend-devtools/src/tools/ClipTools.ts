@@ -9,13 +9,13 @@
 
 import {
   ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
-} from "@bentley/imodeljs-common";
-import { IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 
-/** This tool specifies or unspecifies a clip color to use for pixels inside or outside the clip region.
+/** This tool specifies or un-specifies a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
  * - clear
  * - inside   <color string> | clear
@@ -31,14 +31,14 @@ import { DisplayStyleTool } from "./DisplayStyleTools";
  * @beta
  */
 export class ClipColorTool extends Tool {
-  public static toolId = "ClipColorTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "ClipColorTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
   private _clearClipColors() {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
-      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? { };
+      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
       props.insideColor = props.outsideColor = undefined;
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
@@ -47,7 +47,7 @@ export class ClipColorTool extends Tool {
   private setClipColor(colStr: string, which: "insideColor" | "outsideColor") {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
-      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? { };
+      const props = vp.displayStyle.settings.clipStyle.toJSON() ?? {};
       props[which] = colStr === "clear" ? undefined : RgbColor.fromColorDef(ColorDef.fromString(colStr));
       vp.displayStyle.settings.clipStyle = ClipStyle.fromJSON(props);
     }
@@ -67,7 +67,7 @@ export class ClipColorTool extends Tool {
    * "blanchedAlmond" (see possible values from [[ColorByName]]). Case insensitive.
    * @beta
    */
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (1 === args.length) {
       if (args[0] === "clear")
         this._clearClipColors();
@@ -87,14 +87,14 @@ export class ClipColorTool extends Tool {
  * @beta
  */
 export class ToggleSectionCutTool extends Tool {
-  public static toolId = "ToggleSectionCut";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ToggleSectionCut";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
   /** This method runs the tool, controlling a view state's view details' flag for producing cut geometry for a clip style.
    * @param produceCutGeometry whether to produce cut geometry
    */
-  public run(produceCutGeometry?: boolean): boolean {
+  public override async run(produceCutGeometry?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       const style = vp.view.displayStyle.settings.clipStyle;
@@ -116,10 +116,10 @@ export class ToggleSectionCutTool extends Tool {
   /** Executes this tool's run method with args[0] containing `produceCutGeometry`.
    * @see [[run]]
    */
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }
@@ -129,13 +129,13 @@ export class ToggleSectionCutTool extends Tool {
  * @beta
  */
 export class TestClipStyleTool extends DisplayStyleTool {
-  public static toolId = "TestClipStyle";
-  public static get maxArgs() { return 1; }
-  public static get minArgs() { return 1; }
+  public static override toolId = "TestClipStyle";
+  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
 
   private _useStyle = false;
 
-  protected get require3d() { return true; }
+  protected override get require3d() { return true; }
 
   protected parse(args: string[]): boolean {
     this._useStyle = parseBoolean(args[0]) ?? false;

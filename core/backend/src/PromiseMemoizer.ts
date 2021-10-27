@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { IDisposable, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** Wrapper around a promise that allows synchronous queries of it's state
@@ -29,15 +29,18 @@ export class QueryablePromise<T> {
   }
 }
 
+/** @internal */
 export type MemoizeFnType<T> = (...args: any[]) => Promise<T>;
+/** @internal */
 export type GenerateKeyFnType = (...args: any[]) => string;
 
 /** Utility to cache and retrieve results of long running asynchronous functions.
  * The cache is keyed on the input arguments passed to these functions
  * @internal
  */
-export class PromiseMemoizer<T> {
+export class PromiseMemoizer<T> implements IDisposable {
   private readonly _cachedPromises: Map<string, QueryablePromise<T>> = new Map<string, QueryablePromise<T>>();
+  private readonly _timers: Map<string, NodeJS.Timer> = new Map<string, NodeJS.Timer>();
   private readonly _memoizeFn: MemoizeFnType<T>;
   private readonly _generateKeyFn: GenerateKeyFnType;
   private readonly _maxCacheSize: number;
@@ -73,7 +76,11 @@ export class PromiseMemoizer<T> {
     }
 
     const removeCachedPromise = (v: T) => {
-      setTimeout(() => this._cachedPromises.delete(key), this._cacheTimeout);
+      const cleanUp = () => {
+        this._cachedPromises.delete(key);
+        this._timers.delete(key);
+      };
+      this._timers.set(key, setTimeout(cleanUp, this._cacheTimeout));
       return v;
     };
 
@@ -92,5 +99,12 @@ export class PromiseMemoizer<T> {
   /** Clear all entries in the memoizer cache */
   public clearCache = () => {
     this._cachedPromises.clear();
+  };
+
+  public dispose = () => {
+    for (const timer of this._timers.values())
+      clearTimeout(timer);
+    this._timers.clear();
+    this.clearCache();
   };
 }

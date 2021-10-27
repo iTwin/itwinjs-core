@@ -22,7 +22,6 @@ export interface ThumbnailFormatProps {
 
 /** Describes a thumbnail image for an [[IModel]] or [ViewDefinition]($backend).
  * @see [IModelDb.Views.getThumbnail]($backend) or [IModelConnection.Views.getThumbnail]($frontend) to obtain a thumbnail for a view.
- * @see [IModelDb.Views.saveThumbnail]($backend) or [IModelConnection.Views.saveThumbnail]($frontend) to save a thumbnail for a view.
  * @public
  */
 export interface ThumbnailProps extends ThumbnailFormatProps {

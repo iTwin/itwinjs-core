@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d, Range3dProps } from "@bentley/geometry-core";
+import { ByteStream } from "@itwin/core-bentley";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, IModelTileRpcInterface, iModelTileTreeIdToString,
+  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
   TileMetadata, TileProps, TileTreeMetadata,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 import { fakeViewState } from "./TileIO.test";
 
 describe("Tile tolerance", () => {
@@ -22,7 +23,7 @@ describe("Tile tolerance", () => {
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: { minimumSpatialTolerance } });
+    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance } });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
@@ -30,7 +31,7 @@ describe("Tile tolerance", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function makeTile(props: TileProps): TileMetadata {
@@ -59,8 +60,16 @@ describe("Tile tolerance", () => {
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
-    const content = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
-    const stream = new ByteStream(content.buffer);
+    const tile = {
+      iModelTree: {
+        iModel: imodel,
+        geometryGuid: undefined,
+        contentIdQualifier: undefined,
+        id: treeId,
+      },
+      contentId,
+    } as IModelTile;
+    const stream = new ByteStream((await IModelApp.tileAdmin.generateTileContent(tile)).buffer);
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;

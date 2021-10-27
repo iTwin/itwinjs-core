@@ -4,19 +4,34 @@ This article discusses RPC communication in iTwin.js. See also [RPC vs IPC](./Rp
 
 Table of Contents:
 
-- [Overview](#overview)
-- Implementing RpcInterfaces
-  - [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
-  - [RpcInterface Performance](#rpcinterface-performance)
-  - [Define the Interface](#define-the-interface)
-  - [Client Stub](#client-stub)
-  - [Server Implementation](#server-implementation)
-- Configuring RpcInterfaces
+- [RpcInterface](#rpcinterface)
+  - [Overview](#overview)
+  - [Implementing an RpcInterface](#implementing-an-rpcinterface)
+    - [RpcInterfaces are TypeScript Classes](#rpcinterfaces-are-typescript-classes)
+    - [Parameter and Return Types](#parameter-and-return-types)
+    - [RpcInterface Performance](#rpcinterface-performance)
+    - [Define the Interface](#define-the-interface)
+    - [Client Stub](#client-stub)
+    - [Server Implementation](#server-implementation)
+    - [RPC Configuration](#rpc-configuration)
+    - [Web RPC configuration](#web-rpc-configuration)
+    - [Desktop RPC configuration](#desktop-rpc-configuration)
+    - [In-process RPC configuration](#in-process-rpc-configuration)
   - [Server-side Configuration](#server-side-configuration)
-  - [Client-side Configuration](#client-side-configuration)
-- [Serve the Interfaces](#serve-the-interfaces)
-- [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
-- [Logging and ActivityIds](#logging-and-activityids)
+    - [Register Impls](#register-impls)
+    - [Choose Interfaces](#choose-interfaces)
+  - [Configure Interfaces](#configure-interfaces)
+    - [Serve the Interfaces](#serve-the-interfaces)
+    - [Client-side Configuration](#client-side-configuration)
+    - [Desktop Configuration](#desktop-configuration)
+    - [Web Configuration](#web-configuration)
+      - [Same Server](#same-server)
+      - [Different Servers](#different-servers)
+  - [Asynchronous Nature of RpcInterfaces](#asynchronous-nature-of-rpcinterfaces)
+  - [Logging and ActivityIds](#logging-and-activityids)
+  - [RpcInterface Versioning](#rpcinterface-versioning)
+  - [Non-Zero Major Versions (released)](#non-zero-major-versions-released)
+  - [Zero Major Versions (prerelease)](#zero-major-versions-prerelease)
 
 ## Overview
 
@@ -83,7 +98,7 @@ The `interfaceName` property specifies the immutable name of the interface. This
 
 See [below](#rpcinterface-versioning) for more on interface versioning.
 
-The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
+The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@itwin/core-common`.
 
 A best practice is that an interface definition class should be marked as `abstract`. That tells the developer of the client that the definition class is never instantiated or used directly. Instead, callers use the [client stub](#client-stub) for the interface when making calls.
 
@@ -114,8 +129,6 @@ To write an impl, write a concrete TypeScript class that extends [RpcInterface](
 The impl must override each method in the interface definition class. Each override must perform the intended operation.
 
 Each impl method must return the operation's result as a Promise.
-
-The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($bentley). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
 
 The methods in the impl may have to transform certain argument types, such as IModelRpcProps, before they can be used by backend code.
 
@@ -153,7 +166,7 @@ A server must expose the RpcInterfaces that it implements or imports, so that cl
 
 ### Register Impls
 
-The server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
+The backend code must call `RpcManager.registerImpl` to register the classes for the interfaces that it implements, if any.
 
 *Example:*
 
@@ -271,8 +284,6 @@ Briefly, here is how it works:
   * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
 * Log Browsers
   * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
-
-See [managing the ClientRequestContext](../learning/backend/ManagingClientRequestContext.md) for details.
 
 ## RpcInterface Versioning
 

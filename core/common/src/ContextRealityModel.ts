@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
@@ -15,16 +15,97 @@ import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
  * @alpha
  */
 export interface OrbitGtBlobProps {
+  rdsUrl?: string;
   containerName: string;
   blobFileName: string;
   sasToken: string;
   accountName: string;
 }
 
+/** Identify the Reality Data service provider
+ * @alpha
+ */
+export enum RealityDataProvider {
+  /**
+   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
+   * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
+   * You should use other mode when possible
+   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   */
+  TilesetUrl = "TilesetUrl",
+  /**
+   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.OrbitGtBlob property.
+   * It was use to support OrbitPointCloud (OPC) from other server than ContextShare
+   * You should use other mode when possible
+   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   */
+  OrbitGtBlob = "OrbitGtBlob",
+  /**
+   * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format or  OPC storage format
+   * This provider support all type of 3dTile storage fomat and OrbitPointCloud: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles, OPC
+   * @see [[RealityDataFormat]].
+   */
+  ContextShare = "ContextShare",
+  /**
+   * Will provide Open Street Map Building (OSM) from Cesium Ion (in 3dTile format)
+   */
+  CesiumIonAsset = "CesiumIonAsset",
+}
+
+/** Identify the Reality Data storage format
+ * @alpha
+ */
+export enum RealityDataFormat {
+  /**
+   * 3dTile supported formats; RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
+   * */
+  ThreeDTile = "ThreeDTile",
+  /**
+   * Orbit Point Cloud (OPC) storage format (RealityDataType.OPC)
+  */
+  OPC = "OPC",
+}
+
+/**
+ * Key used by RealityDataConnection to identify RealityDataSource and reality data format
+ * This key identify one and only one reality data on the provider
+ * @alpha
+ */
+export interface RealityDataSourceKey {
+  /**
+   * The provider that supplies the access to reality data source for displaying the reality model
+   * @see [[RealityDataProvider]] for default supported value;
+  */
+  provider: string;
+  /**
+   * The format used by the provider to store the reality data
+   * @see [[RealityDataFormat]] for default supported value;
+  */
+  format: string;
+  /** The reality data id that identify a reality data for the provider */
+  id: string;
+  /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
+  iTwinId?: string;
+}
+
+/** JSON representation of the reality data reference attachment properties.
+ * @alpha
+ */
+export interface RealityDataSourceProps {
+  /** The source key that identify a reality data for the provider. */
+  sourceKey: RealityDataSourceKey;
+}
+
 /** JSON representation of a [[ContextRealityModel]].
  * @public
  */
 export interface ContextRealityModelProps {
+  /**
+   * The reality data source key identify the reality data provider and storage format.
+   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+   * @alpha
+   */
+  rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   tilesetUrl: string;
   /** @see [[ContextRealityModel.orbitGtBlob]].
@@ -53,6 +134,9 @@ export namespace ContextRealityModelProps {
     // We want to make deep copies, omit undefined properties and empty strings, and require tilesetUrl to be defined.
     const output: ContextRealityModelProps = { tilesetUrl: input.tilesetUrl ?? "" };
 
+    if (input.rdSourceKey)
+      output.rdSourceKey = { ...input.rdSourceKey };
+
     if (input.name)
       output.name = input.name;
 
@@ -75,7 +159,7 @@ export namespace ContextRealityModelProps {
       output.planarClipMask = { ...input.planarClipMask };
 
     if (input.classifiers)
-      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ... x.flags } }; });
+      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ...x.flags } }; });
 
     return output;
   }
@@ -89,6 +173,11 @@ export namespace ContextRealityModelProps {
  */
 export class ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
+  /**
+   * The reality data source key identify the reality data provider and storage format.
+   * @alpha
+   */
+  public readonly  rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -113,6 +202,7 @@ export class ContextRealityModel {
    */
   public constructor(props: ContextRealityModelProps) {
     this._props = props;
+    this.rdSourceKey = props.rdSourceKey;
     this.name = props.name ?? "";
     this.url = props.tilesetUrl ?? "";
     this.orbitGtBlob = props.orbitGtBlob;

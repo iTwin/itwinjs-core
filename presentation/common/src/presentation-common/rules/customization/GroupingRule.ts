@@ -28,7 +28,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *           - Display label grouping node (specified by `groupByLabel` property)
  *             - ECInstance nodes (may be grouped under a single node by [[SameLabelInstanceGroup]])
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/GroupingRule.md)
+ * @see [More details]($docs/presentation/Hierarchies/GroupingRule.md)
  * @public
  */
 export interface GroupingRule extends RuleBase, ConditionContainer {
@@ -37,8 +37,8 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
@@ -218,7 +218,7 @@ export interface PropertyRangeGroupSpecification {
   imageId?: string;
 
   /**
-   * Grouping node label. May be [localized]($docs/learning/presentation/Localization.md).
+   * Grouping node label. May be [localized]($docs/presentation/Advanced/Localization.md).
    * Defaults to `{from value} - {to value}`
    *
    * @minLength 1

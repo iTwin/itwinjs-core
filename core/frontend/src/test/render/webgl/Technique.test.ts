@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";
@@ -148,7 +148,7 @@ describe("Techniques", () => {
         let ex: Error | undefined;
         try {
           compiled = prog.compile() === CompileStatus.Success;
-        } catch (err) {
+        } catch (err: any) {
           ex = err;
         }
 
@@ -175,7 +175,7 @@ describe("Techniques", () => {
         let ex: Error | undefined;
         try {
           compiled = program.compile() === CompileStatus.Success;
-        } catch (err) {
+        } catch (err: any) {
           ex = err;
         }
 

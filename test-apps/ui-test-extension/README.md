@@ -1,15 +1,13 @@
-# Dialog Items Example Extension
+# ui-test-extension
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
-An iTwin.js Extension that demonstrates how to use the DialogItem and related interfaces in @bentley/ui-abstract to create user interfaces without writing any React code.
-
-This extension is an example of an extension that can be added to iTwin.js host applications.
-See http://itwinjs.org for comprehensive documentation on the iTwin.js API and the various constructs used in this sample.
+This is an example of a "run time" extension package that can be used in iTwin.js host applications to augment the UI components displayed
+in the main design frontstage. See <http://itwinjs.org> for comprehensive documentation on the iTwin.js API and the various constructs used in this sample.
 
 ## Development Setup
 
-1. Select and prepare an iTwin.js host application. You can use the [Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app), for example.
+1. The test application ui-test-app servers as the default an iTwin.js host application.
 
 2. The dependencies are installed as part of "rush install" in the iTwin.js repository.
 
@@ -19,21 +17,13 @@ See http://itwinjs.org for comprehensive documentation on the iTwin.js API and t
   npm run build
   ```
 
-4. Copy all the output files in the lib/extension directory tree to imjs_extensions/ui-test directory in the build directory of the host application.
-
-### To run in ui-test-app, on a Windows machine, use the following key-ins from the root imodeljs directory.
+4. Once the extension is built, change to the directory `ui-test-app` and build that application.
 
   ```sh
-  cd test-apps\ui-test-app
-  cd build
-  md imjs_extensions
-  cd imjs_extensions
-  mklink /d ui-test ..\..\..\ui-test-extension\lib\extension
-  cd ..\..
-  npm run start:servers
+  npm run build
   ```
 
-5. Start the host application - go to its directory and run:
+5. Start the ui-test-app
 
   ```sh
   npm run start:servers
@@ -41,7 +31,10 @@ See http://itwinjs.org for comprehensive documentation on the iTwin.js API and t
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-7. Start the extension using the ExtensionTool - ExtensionTool.run("ui-test");
+7. Use key-in palette to load the activate/initialize the ui-test-extension.
+
+- press `Ctrl+F2`
+- enter `load test extension`
 
 ## Contributing
 

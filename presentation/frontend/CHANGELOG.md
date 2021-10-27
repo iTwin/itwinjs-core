@@ -1,6 +1,160 @@
-# Change Log - @bentley/presentation-frontend
+# Change Log - @itwin/presentation-frontend
 
-This log was last generated on Wed, 16 Jun 2021 20:29:32 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+_Version update only_
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+_Version update only_
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+_Version update only_
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:09 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Add `PresentationManager.getElementProperties` to get properties for a single element in a simplified way.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add ability to unset a ruleset variable value
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
 
 ## 2.16.3
 Wed, 16 Jun 2021 20:29:32 GMT
@@ -98,7 +252,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 ### Updates
 
 - Fixed broken double angle bracket link syntax
-- Changed 'compareHierarchy' to build result in pages for massive result sets. 
+- Changed 'compareHierarchy' to build result in pages for massive result sets.
 - HiliteSetProvider: return geometric elements grouped by BisCore.GroupInformationElement
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
@@ -541,7 +695,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

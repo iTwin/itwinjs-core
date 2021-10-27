@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHost } from "@bentley/imodeljs-backend";
+import * as path from "path";
+import { IModelHost } from "@itwin/core-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */
@@ -68,14 +69,12 @@ IModelHost.startup().then(async () => {
     */
   ]) {
     console.log(`input from${directoryTail}`);
-    const importer = ImportIMJS.create(`d:\\bfiles\\importIMJS\\${directoryTail}.bim`,
-      "testSubject");
+    const importer = ImportIMJS.create(path.join("d:", "bfiles", "importIMJS", `${directoryTail}.bim`), "testSubject");
 
     if (!importer) {
       console.log("Failed to create bim file");
     } else {
-      const modelGroups = importer.importFilesFromDirectory(
-        `..\\..\\core\\geometry\\src\\test\\output\\${directoryTail}\\`);
+      const modelGroups = importer.importFilesFromDirectory(path.join("..", "..", "core", "geometry", "src", "test", "output", directoryTail));
       let numModel = 0;
       for (const group of modelGroups) {
         numModel += group.modelNames.length;

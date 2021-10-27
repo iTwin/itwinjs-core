@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   FitViewTool, IModelApp, NotifyMessageDetails, OutputMessagePriority, PanViewTool, RotateViewTool, SelectionTool, WindowAreaTool, ZoomViewTool,
-} from "@bentley/imodeljs-frontend";
-import { AbstractMenuItemProps, AbstractToolbarProps, BadgeType, Primitives, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
-import { ActionButtonItemDef, CommandItemDef } from "@bentley/ui-framework";
+} from "@itwin/core-frontend";
+import { AbstractMenuItemProps, AbstractToolbarProps, BadgeType, Primitives, PropertyDescription, RelativePosition } from "@itwin/appui-abstract";
+import { ActionButtonItemDef, CommandItemDef } from "@itwin/appui-react";
 
 export class AccuDrawPopupTools {
 
@@ -188,14 +188,14 @@ export class AccuDrawPopupTools {
           icon: SelectionTool.iconSpec,
           label: SelectionTool.flyover,
           description: SelectionTool.description,
-          execute: () => IModelApp.tools.run(SelectionTool.toolId),
+          execute: async () => IModelApp.tools.run(SelectionTool.toolId),
         },
         {
           id: FitViewTool.toolId, itemPriority: 20,
           icon: FitViewTool.iconSpec,
           label: FitViewTool.flyover,
           description: FitViewTool.description,
-          execute: () => IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true),
+          execute: async () => IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true),
         },
         {
           id: WindowAreaTool.toolId,
@@ -203,7 +203,7 @@ export class AccuDrawPopupTools {
           icon: WindowAreaTool.iconSpec,
           label: WindowAreaTool.flyover,
           description: WindowAreaTool.description,
-          execute: () => IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView),
+          execute: async () => IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView),
         },
         {
           id: ZoomViewTool.toolId,
@@ -211,7 +211,7 @@ export class AccuDrawPopupTools {
           icon: ZoomViewTool.iconSpec,
           label: ZoomViewTool.flyover,
           description: ZoomViewTool.description,
-          execute: () => IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView),
+          execute: async () => IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView),
         },
         {
           id: PanViewTool.toolId,
@@ -219,7 +219,7 @@ export class AccuDrawPopupTools {
           icon: PanViewTool.iconSpec,
           label: PanViewTool.flyover,
           description: PanViewTool.description,
-          execute: () => IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView),
+          execute: async () => IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView),
         },
         {
           id: RotateViewTool.toolId,
@@ -227,7 +227,7 @@ export class AccuDrawPopupTools {
           icon: RotateViewTool.iconSpec,
           label: RotateViewTool.flyover,
           description: RotateViewTool.description,
-          execute: () => IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView),
+          execute: async () => IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView),
         },
         { id: "accuDraw-mode-1", itemPriority: 70, label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
         { id: "accuDraw-mode-2", itemPriority: 80, label: "Mode 2", icon: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },

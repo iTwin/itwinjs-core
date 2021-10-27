@@ -1,0 +1,79 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "tool-settings/variables";
+@import "../widgetopacity";
+
+.nz-widget-toolSettings {
+  display: flex;
+  justify-content: center;
+  max-height: 100%;
+  max-width: 100%;
+
+  @include nz-widget-opacity;
+
+  &.nz-draggable {
+    >.nz-widget {
+      >.nz-handle {
+        cursor: pointer;
+      }
+    }
+  }
+
+  &.nz-fill {
+    height: 100%;
+    width: 100%;
+
+    >.nz-widget {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  >.nz-widget {
+    border-color: $nz-widget-border-color;
+    border-radius: $nz-widget-border-radius;
+    border-style: solid;
+    border-width: $nz-widget-border-width;
+    background-color: $nz-widget-background-color;
+    pointer-events: auto;
+    text-align: initial;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    max-width: 100%;
+
+    >.nz-content {
+      min-height: 0;
+      flex-basis: 100%;
+    }
+
+    >.nz-handle {
+      >.nz-title {
+        min-height: $nz-tool-settings-title-bar-min-height;
+      }
+    }
+
+    >.nz-left-grip {
+      top: 0;
+      @include nz-internal-grip-offset(left);
+    }
+
+    >.nz-top-grip {
+      left: 0;
+      @include nz-internal-grip-offset(top);
+    }
+
+    >.nz-right-grip {
+      top: 0;
+      @include nz-internal-grip-offset(right);
+    }
+
+    >.nz-bottom-grip {
+      left: 0;
+      @include nz-internal-grip-offset(bottom);
+    }
+  }
+}

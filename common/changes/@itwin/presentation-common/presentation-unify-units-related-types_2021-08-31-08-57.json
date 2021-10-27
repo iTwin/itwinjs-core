@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

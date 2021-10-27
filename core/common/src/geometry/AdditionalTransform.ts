@@ -7,6 +7,8 @@
  */
 // cspell:ignore Helmert
 
+import { Geometry } from "@itwin/core-geometry";
+
 /** An affine transformation with an additional Z Offset.
  *  The equations are:
  *  given a = scale * cos(rotation) and b = scale * sin(rotation)
@@ -72,15 +74,14 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     return { translationX: this.translationX, translationY: this.translationY, translationZ: this.translationZ, rotDeg: this.rotDeg, scale: this.scale };
   }
 
-  /** Compares two Helmert2DWithZOffset objects. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Helmert2DWithZOffset objects applying a minuscule tolerance.
+   *  @public */
   public equals(other: Helmert2DWithZOffset): boolean {
-    return (this.translationX === other.translationX &&
-      this.translationY === other.translationY &&
-      this.translationZ === other.translationZ &&
-      this.rotDeg === other.rotDeg &&
-      this.scale === other.scale);
+    return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
+      Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
+      Math.abs(this.translationZ - other.translationZ) < Geometry.smallMetricDistance &&
+      Math.abs(this.rotDeg - other.rotDeg) < Geometry.smallAngleDegrees &&
+      Math.abs(this.scale - other.scale) < Geometry.smallFraction);
   }
 }
 
@@ -120,9 +121,8 @@ export class AdditionalTransform implements AdditionalTransformProps {
     return { helmert2DWithZOffset: this.helmert2DWithZOffset };
   }
 
-  /** Compares two additional transforms. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two additional transforms applying a minuscule tolerance to comparing numbers.
+   *  @public */
   public equals(other: AdditionalTransform): boolean {
     if ((this.helmert2DWithZOffset === undefined) !== (other.helmert2DWithZOffset === undefined))
       return false;

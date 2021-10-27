@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@bentley/frontend-devtools";
-import { Point3d, Range1d } from "@bentley/geometry-core";
+import { assert } from "@itwin/core-bentley";
+import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@itwin/frontend-devtools";
+import { Point3d, Range1d } from "@itwin/core-geometry";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
   ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
 type Required<T> = {
   [P in keyof T]-?: T[P];
@@ -198,9 +198,7 @@ export class ThematicDisplayEditor {
 
       const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = ThematicDisplay.fromJSON(defaultSettings);
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.thematicDisplay = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("thematicDisplay", enabled);
       showHideControls(enabled);
       this.sync();
     };

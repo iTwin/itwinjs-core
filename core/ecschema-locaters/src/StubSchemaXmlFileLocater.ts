@@ -6,7 +6,7 @@
 import * as path from "path";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
 function isECv2Schema(schemaText: string): boolean {

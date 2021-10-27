@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanels should render 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-appContent"
+  />
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-centerContent"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-left"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-right"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-top"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-bottom"
+  />
+</div>
+`;
+
+exports[`WidgetPanels should render widget content 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-appContent"
+  />
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom nz-widgetPanels-centerContent"
+  />
+  <div
+    class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  >
+    <div
+      class="nz-content"
+    >
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
+      >
+        <div
+          class="nz-widget-tabBar nz-separator"
+        >
+          <div
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+            role="tablist"
+          >
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
+              role="tab"
+              title=""
+            >
+              <span />
+            </div>
+            <div
+              class="nz-widget-tabTarget nz-hidden"
+            />
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+                role="button"
+                tabindex="-1"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="nz-widget-tabBarButtons"
+          >
+            <button
+              class="nz-widget-pinToggle"
+            >
+              <i
+                class="icon icon-chevron-left"
+              />
+            </button>
+          </div>
+        </div>
+        <div
+          class="nz-widget-content-container"
+        >
+          <div
+            class="nz-widget-contentRenderer"
+          >
+            <div>
+              Hello World!
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
+    </div>
+    <div
+      class="nz-grip-container"
+    >
+      <div
+        class="nz-widgetPanels-grip nz-left nz-grip"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-handle"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-right"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-top"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-bottom"
+  />
+</div>
+`;

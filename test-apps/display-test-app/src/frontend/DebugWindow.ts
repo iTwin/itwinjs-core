@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@bentley/bentleyjs-core";
-import { DiagnosticsPanel } from "@bentley/frontend-devtools";
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { DiagnosticsPanel } from "@itwin/frontend-devtools";
+import { IModelApp, Viewport } from "@itwin/core-frontend";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
 
@@ -42,7 +42,7 @@ export class DebugWindow extends Window {
     this._dispose();
   }
 
-  public get isResizable() { return false; }
+  public override get isResizable() { return false; }
   public get windowId() { return this._windowId; }
 
   public toggle(): void {
@@ -70,7 +70,7 @@ export class DebugWindow extends Window {
     }
   }
 
-  public onClosed(): void {
+  public override onClosed(): void {
     this._isOpen = false;
   }
 }

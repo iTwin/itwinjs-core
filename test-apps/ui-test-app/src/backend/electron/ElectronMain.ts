@@ -4,25 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
+import { IModelHostConfiguration } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 
 /** Initializes Electron backend */
-export async function initializeElectron() {
-
+export async function initializeElectron(opts?: IModelHostConfiguration) {
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
       rpcInterfaces: getSupportedRpcs(),
+      authConfig: {
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+      },
     },
     nativeHost: {
       applicationName: "ui-test-app",
     },
+    iModelHost: opts,
   };
 
   await ElectronHost.startup(opt);
@@ -53,6 +59,6 @@ export async function initializeElectron() {
     ElectronHost.mainWindow.show();
   }
 
-  if ((undefined === process.env.imjs_TESTAPP_NO_DEV_TOOLS))
+  if ((undefined === process.env.IMJS_NO_DEV_TOOLS))
     ElectronHost.mainWindow.webContents.toggleDevTools();
 }

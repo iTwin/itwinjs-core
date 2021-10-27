@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "added RpcTrace",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
@@ -144,7 +144,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return map.isEnabled && map.isReady ? map.frustum : undefined;
   }
 
-  public get debugControl(): RenderTargetDebugControl { return this; }
+  public override get debugControl(): RenderTargetDebugControl { return this; }
 
   public get viewRect(): ViewRect {
     return this.renderRect;
@@ -182,10 +182,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get analysisFraction(): number { return this._analysisFraction; }
   public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
 
-  public get animationBranches(): AnimationBranchStates | undefined {
+  public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;
   }
-  public set animationBranches(branches: AnimationBranchStates | undefined) {
+  public override set animationBranches(branches: AnimationBranchStates | undefined) {
     this.disposeAnimationBranches();
     this._animationBranches = branches;
   }
@@ -194,31 +194,31 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._animationBranches = undefined;
   }
 
-  public get antialiasSamples(): number { return this._antialiasSamples; }
-  public set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
+  public override get antialiasSamples(): number { return this._antialiasSamples; }
+  public override set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
 
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
-  public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
+  public override getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
-  public createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier {
+  public override createPlanarClassifier(properties?: SpatialClassifier): PlanarClassifier {
     return PlanarClassifier.create(properties, this);
   }
-  public getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
+  public override getTextureDrape(id: Id64String): RenderTextureDrape | undefined {
     return undefined !== this._textureDrapes ? this._textureDrapes.get(id) : undefined;
   }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
-      const vf = new ViewFlags();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.clipVolume = false;
-      vf.whiteOnWhiteReversal = false;
-
-      vf.lighting = !this.is2d;
-      vf.shadows = false; // don't want shadows applied to these
+      const vf = new ViewFlags({
+        renderMode: RenderMode.SmoothShade,
+        clipVolume: false,
+        whiteOnWhiteReversal: false,
+        lighting: !this.is2d,
+        shadows: false,
+      });
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -273,9 +273,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined === color)
       return undefined;
 
-    this._fbo = FrameBuffer.create([color]);
+    const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
+    if (undefined === depth) {
+      color.dispose();
+      return undefined;
+    }
+
+    this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
       color.dispose();
+      depth.dispose();
       return undefined;
     }
 
@@ -287,15 +294,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     const tx = this._fbo.getColor(0);
+    const db = this._fbo.depthBuffer;
     this._fbo = dispose(this._fbo);
     this._dcAssigned = false;
 
     // We allocated our framebuffer's color attachment, so must dispose of it too.
     assert(undefined !== tx);
     dispose(tx);
+    // We allocated our framebuffer's depth attachment, so must dispose of it too.
+    assert(undefined !== db);
+    dispose(db);
   }
 
-  public dispose() {
+  public override dispose() {
     this.reset();
     this.disposeFbo();
     dispose(this._compositor);
@@ -369,7 +380,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.wantThematicDisplay && undefined !== thematic && ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode && thematic.sensorSettings.sensors.length > 0;
   }
 
-  public updateSolarShadows(context: SceneContext | undefined): void {
+  public override updateSolarShadows(context: SceneContext | undefined): void {
     this.compositor.updateSolarShadows(context);
   }
 
@@ -397,7 +408,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
   }
 
-  public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+  public override onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
     this._viewport = viewport;
     IModelFrameLifecycle.onBeforeRender.raiseEvent({
       renderSystem: this.renderSystem,
@@ -434,14 +445,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changeDynamics(dynamics?: GraphicList) {
     this.graphics.dynamics = dynamics;
   }
-  public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
+  public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
-  public setHiliteSet(hilite: HiliteSet): void {
+  public override setHiliteSet(hilite: HiliteSet): void {
     this._hilites = hilite;
     desync(this._hiliteSyncTarget);
   }
-  public setFlashed(id: Id64String, intensity: number) {
+  public override setFlashed(id: Id64String, intensity: number) {
     if (id !== this._flashedId) {
       this._flashedId = id;
       this._flashed = Id64.getUint32Pair(id);
@@ -454,7 +465,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.frustum.changeFrustum(newFrustum, newFraction, is3d);
   }
 
-  private readonly _scratchViewFlags = new ViewFlags();
   public changeRenderPlan(plan: RenderPlan): void {
     this.plan = plan;
 
@@ -480,15 +490,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.uniforms.branch.updateViewClip(plan.clip, plan.clipStyle);
 
-    const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
+    let vf = plan.viewFlags;
     if (!plan.is3d)
-      vf.renderMode = RenderMode.Wireframe;
+      vf = vf.withRenderMode(RenderMode.Wireframe);
 
     if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
       this._wantAmbientOcclusion = true;
       this.ambientOcclusionSettings = plan.ao;
     } else {
-      this._wantAmbientOcclusion = vf.ambientOcclusion = false;
+      this._wantAmbientOcclusion = false;
+      vf = vf.with("ambientOcclusion", false);
     }
 
     this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
@@ -513,12 +524,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   protected drawOverlayDecorations(): void { }
 
-  /*
+  /**
    * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
-  public reset(): void {
+  public override reset(): void {
     this.graphics.dispose();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
@@ -599,7 +610,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }
 
-  public assignFrameStatsCollector(collector: FrameStatsCollector) { this._frameStatsCollector = collector; }
+  public override assignFrameStatsCollector(collector: FrameStatsCollector) { this._frameStatsCollector = collector; }
 
   private paintScene(sceneMilSecElapsed?: number): void {
     if (!this._dcAssigned)
@@ -762,12 +773,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
-    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    if (!this.uniforms.thematic.wantIsoLines)
-      vf.thematicDisplay = false;
+    const vf = this.currentViewFlags.copy({
+      transparency: false,
+      lighting: false,
+      shadows: false,
+      acsTriad: false,
+      grid: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      thematicDisplay: this.currentViewFlags.thematicDisplay && this.uniforms.thematic.wantIsoLines,
+    });
 
-    vf.noGeometryMap = true;
     const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,
@@ -872,7 +889,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return result;
   }
 
-  public queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+  public override queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
     this.beginReadPixels(Pixel.Selector.Feature);
     callback(new VisibleTileFeatures(this._renderCommands, options, this, iModel));
     this.endReadPixels();
@@ -909,7 +926,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
    * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
    */
-  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
+  public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     if (!this.assignDC())
       return undefined;
 
@@ -1033,7 +1050,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     this._compositor.collectStatistics(stats);
     const thematicBytes = this.uniforms.thematic.bytesUsed;
     if (0 < thematicBytes)
@@ -1111,21 +1128,21 @@ export class OnScreenTarget extends Target {
     this._webglCanvas = new CanvasState(this.renderSystem.canvas);
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return undefined === this._blitGeom
       && undefined === this._scratchProgParams
       && undefined === this._scratchDrawParams
       && super.isDisposed;
   }
 
-  public dispose() {
+  public override dispose() {
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
     super.dispose();
   }
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     super.collectStatistics(stats);
     if (undefined !== this._blitGeom)
       this._blitGeom.collectStatistics(stats);
@@ -1133,7 +1150,7 @@ export class OnScreenTarget extends Target {
 
   public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
   public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
-  public get devicePixelRatio(): number {
+  public override get devicePixelRatio(): number {
     if (undefined !== this.devicePixelRatioOverride)
       return this.devicePixelRatioOverride;
 
@@ -1229,7 +1246,7 @@ export class OnScreenTarget extends Target {
     }
   }
 
-  protected drawOverlayDecorations(): void {
+  protected override drawOverlayDecorations(): void {
     const ctx = this._2dCanvas.canvas.getContext("2d", { alpha: true })!;
     if (this._usingWebGLCanvas && this._2dCanvas.needsClear) {
       ctx.save();
@@ -1253,7 +1270,7 @@ export class OnScreenTarget extends Target {
     }
   }
 
-  public pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
+  public override pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined {
     const overlays = this.graphics.canvasDecorations;
     if (undefined === overlays)
       return undefined;
@@ -1267,11 +1284,11 @@ export class OnScreenTarget extends Target {
     return undefined;
   }
 
-  public onResized(): void {
+  public override onResized(): void {
     this.disposeFbo();
   }
 
-  public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
+  public override setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
     if (toScreen === this._usingWebGLCanvas)
       return;
 
@@ -1279,7 +1296,7 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public readImageToCanvas(): HTMLCanvasElement {
+  public override readImageToCanvas(): HTMLCanvasElement {
     return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
 }
@@ -1290,7 +1307,7 @@ export class OffScreenTarget extends Target {
     super(rect);
   }
 
-  public onResized(): void {
+  public override onResized(): void {
     assert(false); // offscreen viewport's dimensions are set once, in constructor.
   }
 
@@ -1323,7 +1340,7 @@ export class OffScreenTarget extends Target {
     this.renderSystem.frameBufferStack.pop();
   }
 
-  public readImageToCanvas(): HTMLCanvasElement {
+  public override readImageToCanvas(): HTMLCanvasElement {
     return this.copyImageToCanvas();
   }
 }

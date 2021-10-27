@@ -441,7 +441,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d { return this.low.interpolate(fraction, this.high, result); }
 
   /**  Return a point given by fractional positions on the XYZ axes. This is done with no check for isNull !!! */
-  public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d {
+  public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number = 0, result?: Point3d): Point3d {
     return this.low.interpolateXYZ(fractionX, fractionY, fractionZ, this.high, result);
   }
 
@@ -546,6 +546,29 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (index === 4)
       return [0, 2, 3, 1];
     return [4, 5, 7, 6];
+  }
+  /**
+   * Return a rectangle that is the cross section as viewed from above (z direction) and at zFraction
+   * @param zFraction plane altitude within the 0..1 z fraction range
+   * @param upwardNormal true for CCW as viewed from above
+   * @param addClosure true to add closure edge back to the start
+   * @returns
+   */
+  public rectangleXY(zFraction: number = 0.0, upwardNormal: boolean = true, addClosure: boolean = true): Point3d[] | undefined{
+    if (this.isNull)
+      return undefined;
+    const points: Point3d[] = [
+      this.fractionToPoint(0, 0, zFraction),
+      this.fractionToPoint(1, 0, zFraction),
+      this.fractionToPoint(1, 1, zFraction),
+      this.fractionToPoint(0, 1, zFraction),
+    ];
+    if (addClosure)
+      points.push(points[0].clone());
+
+    if (!upwardNormal)
+      points.reverse();
+    return points;
   }
 
   /** Return the largest absolute value among any coordinates in the box corners. */

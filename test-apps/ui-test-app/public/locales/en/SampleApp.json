@@ -303,6 +303,15 @@
     "EditingSession": {
       "keyin": "test edit"
     },
+    "SaveContentLayoutTool": {
+      "flyover": "Save Content Layout"
+    },
+    "RestoreSavedContentLayoutTool": {
+      "flyover": "Restore Content Layout"
+    },
+    "RemoveSavedContentLayoutTool": {
+      "flyover": "Remove Saved Content Layout"
+    },
     "PlaceBlock": {
       "keyin": "test place block",
       "description": "Place Block",
@@ -331,8 +340,7 @@
     "TreeDemo": "Tree Demo",
     "FeedbackDemo": "Feedback Demo",
     "ActiveSettings": "Active Settings",
-    "ModelCreation": "Create Models",
-    "MobxDemoWidget": "Mobx Demo"
+    "ModelCreation": "Create Models"
   },
   "localFileStage": {
     "localFile": "Local File",
@@ -343,6 +351,12 @@
       "tooltip": "Display Style",
       "label": "Display"
     },
+    "pullMergePushFailed": "Pull or push failed.",
+    "pullMergeFailed": "Failed to pull changes from server",
+    "pushButtonTitle": "Push",
+    "pushButtonDisabledTitle": "No local changes to push",
+    "pullButtonTitle": "Pull",
+    "pullButtonDisabledTitle": "No server changes to pull",
     "sampleField": "Sample StatusBar Field",
     "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"
@@ -388,5 +402,31 @@
       "clockwise": "Clockwise",
       "counter-clockwise": "Counter-Clockwise"
     }
+  },
+  "signIn": {
+    "prompt": "Please sign in to access your Bentley services.",
+    "signInButton": "Sign In",
+    "profilePrompt": "Don't have a profile?",
+    "register": "Register",
+    "offlineButton": "Work Offline?",
+    "signingInMessage": "Sign In has started - please switch to your browser and enter your credentials"
+  },
+  "userProfile": {
+    "userprofile": "User Profile",
+    "signout": "Sign Out",
+    "signoutprompt": "Do you want to sign out?"
+  },
+  "iModelIndex": {
+    "views": "Views",
+    "3dModels": "3D Models",
+    "enteriModeling": "Enter iModel",
+    "upToDate": "You have the latest version.",
+    "updatesAvailable": "Later changes are available",
+    "toastTitle": "Need more control?",
+    "toastMessage": "Try ProjectWise Document Codes.",
+    "learnMore": "Learn more",
+    "enteriModel": "Enter iModel",
+    "noSavedView": "No saved views were found.",
+    "nextTab": "Switching you to the 3D Models tab..."
   }
 }

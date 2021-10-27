@@ -22,6 +22,7 @@ describe("ContextRealityModel", () => {
 
   it("initializes from JSON", () => {
     let m = makeModel({ tilesetUrl: "a" });
+    expect(m.rdSourceKey).to.be.undefined;
     expect(m.url).to.equal("a");
     expect(m.name).to.equal("");
     expect(m.realityDataId).to.be.undefined;
@@ -32,6 +33,9 @@ describe("ContextRealityModel", () => {
     expect(m.planarClipMaskSettings).to.be.undefined;
 
     m = makeModel({
+      rdSourceKey: {
+        provider: "ContextShare", format: "ThreeDTile", id: "dummy",
+      },
       tilesetUrl: "b",
       name: "c",
       description: "d",
@@ -43,10 +47,11 @@ describe("ContextRealityModel", () => {
         },
       }],
       orbitGtBlob: {
-        containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
+        rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
     });
+    expect(m.rdSourceKey).not.to.be.undefined;
     expect(m.url).to.equal("b");
     expect(m.name).to.equal("c");
     expect(m.description).to.equal("d");
@@ -106,7 +111,7 @@ describe("ContextRealityModel", () => {
 
   it("normalizes JSON when cloning", () => {
     const props: ContextRealityModelProps = {
-      tilesetUrl: "a", name: "", description: undefined, realityDataId: "", appearanceOverrides: undefined,
+      rdSourceKey: undefined, tilesetUrl: "a", name: "", description: undefined, realityDataId: "", appearanceOverrides: undefined,
       classifiers: undefined, orbitGtBlob: undefined, planarClipMask: undefined,
     };
     (props as any).tilesetUrl = undefined;
@@ -117,6 +122,9 @@ describe("ContextRealityModel", () => {
 
   it("clones deeply", () => {
     const props = {
+      rdSourceKey: {
+        provider: "ContextShare", format: "ThreeDTile", id: "dummy",
+      },
       tilesetUrl: "b",
       name: "c",
       description: "d",
@@ -128,7 +136,7 @@ describe("ContextRealityModel", () => {
         },
       }],
       orbitGtBlob: {
-        containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
+        rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
     };
@@ -137,6 +145,7 @@ describe("ContextRealityModel", () => {
     expect(clone).to.deep.equal(props);
     expect(clone).not.to.equal(props);
 
+    expect(clone.rdSourceKey).to.deep.equal(props.rdSourceKey);
     expect(clone.orbitGtBlob).not.to.equal(props.orbitGtBlob);
     expect(clone.planarClipMask).not.to.equal(props.planarClipMask);
 

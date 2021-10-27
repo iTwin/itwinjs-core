@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { SnapshotDb } from "@itwin/core-backend";
+import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.

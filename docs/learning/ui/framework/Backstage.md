@@ -6,7 +6,7 @@ These overlays are an implementation of a modal frontstage. The backstage is ope
 
 ## Defining the Backstage
 
-To ensure that an extension can supply items for the Backstage menu, it should be created using the [BackstageComposer]($ui-framework) component. The example below shows how to provide [BackstageActionItem]($ui-abstract) and [BackstageStageLauncher]($ui-abstract) item to the BackstageComposer.
+To ensure that an extension can supply items for the Backstage menu, it should be created using the [BackstageComposer]($appui-react) component. The example below shows how to provide [BackstageActionItem]($appui-abstract) and [BackstageStageLauncher]($appui-abstract) item to the BackstageComposer.
 
 ```tsx
 import stageIconSvg from "@bentley/icons-generic/icons/imodeljs.svg?sprite";
@@ -24,7 +24,7 @@ export function AppBackstageComposer() {
 }
 ```
 
-Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage.  This stage will display [SettingsTabEntry]($ui-core) items from [SettingsTabsProvider]($ui-core) classes registered with the [SettingsManager]($ui-core). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
+Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage.  This stage will display [SettingsTabEntry]($core-react) items from [SettingsTabsProvider]($core-react) classes registered with the [SettingsManager]($core-react). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
 
 See additional info in [Backstage](../../../learning/ui/abstract/Backstage.md).
 
@@ -35,3 +35,8 @@ Below is an example of defining the ConfigurableUiContent and specifying the bac
 ```tsx
 <ConfigurableUiContent appBackstage={<AppBackstageComposer />} />
 ```
+
+## API Reference
+
+- [Backstage in appui-react]($appui-react:Backstage)
+- [Backstage in appui-abstract]($appui-abstract:Backstage)

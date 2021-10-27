@@ -8,18 +8,15 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import {
-  BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
-} from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelClient } from "@bentley/imodelhub-client";
-import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
+import { UiAdmin } from "@itwin/appui-abstract";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
+import {
+  AuthorizationClient, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+} from "@itwin/core-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
@@ -28,14 +25,13 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { ExtensionAdmin } from "./extension/ExtensionAdmin";
-import { FrontendHubAccess, IModelHubFrontend } from "./FrontendHubAccess";
+import { FrontendHubAccess } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { RealityDataAccess } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -44,7 +40,6 @@ import { TentativePoint } from "./TentativePoint";
 import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
-import * as extensionTool from "./tools/ExtensionTool";
 import * as idleTool from "./tools/IdleTool";
 import * as measureTool from "./tools/MeasureTool";
 import * as selectTool from "./tools/SelectTool";
@@ -79,7 +74,7 @@ export interface FrontendSecurityOptions {
  */
 export interface IModelAppOptions {
   /** If present, supplies the [[IModelClient]] for this session. */
-  imodelClient?: IModelClient;
+  hubAccess?: FrontendHubAccess;
   /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
@@ -104,10 +99,10 @@ export interface IModelAppOptions {
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
-  /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
-  i18n?: I18N | I18NOptions;
+  /** If present, supplies the [[Localization]] for this session. Defaults to [ITwinLocalization]($i18n). */
+  localization?: Localization;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: FrontendAuthorizationClient;
+  authorizationClient?: AuthorizationClient;
   /** If present, supplies security options for the frontend. */
   security?: FrontendSecurityOptions;
   /** @internal */
@@ -120,13 +115,11 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
-  /** If present, supplies the [[ExtensionAdmin]] for this session.
-   * @beta
-   */
-  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
+  /** @beta */
+  realityDataAccess?: RealityDataAccess;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -164,7 +157,7 @@ interface IModelAppForDebugger {
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Before any interactive operations may be performed by the `@bentley/imodeljs-frontend package`, [[IModelApp.startup]] must be called.
+ * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called and awaited.
  * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
  *
  * @public
@@ -175,10 +168,9 @@ export class IModelApp {
   private static _accuSnap: AccuSnap;
   private static _applicationId: string;
   private static _applicationVersion: string;
-  private static _i18n: I18N;
+  private static _localization: Localization;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -193,13 +185,17 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
-  private static _hubAccess: FrontendHubAccess;
+  private static _hubAccess?: FrontendHubAccess;
+  private static _realityDataAccess?: RealityDataAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
 
+  /** Event raised just before the frontend IModelApp is to be shut down */
+  public static readonly onBeforeShutdown = new BeEvent<() => void>();
+
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: FrontendAuthorizationClient;
+  public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
@@ -233,8 +229,8 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[I18N]] for this session. */
-  public static get i18n(): I18N { return this._i18n; }
+  /** The [[Localization]] for this session. */
+  public static get localization(): Localization { return this._localization; }
   /** The [[SettingsAdmin]] for this session. */
   public static get settings(): SettingsAdmin { return this._settings; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
@@ -244,24 +240,17 @@ export class IModelApp {
   /** @internal */
   public static get initialized() { return this._initialized; }
 
-  /**
-   * @deprecated access to IModelHub should generally be through the higher level apis.
-   * For internal methods, use [[hubAccess]].
-   * If you really need to call the IModelClient api directly, use [[IModelHubFrontend.iModelClient]]
-   */
-  public static get iModelClient(): IModelClient { return IModelHubFrontend.iModelClient; }
-
   /** Provides access to the IModelHub implementation for this IModelApp.
    * @internal
    */
-  public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
+  public static get hubAccess(): FrontendHubAccess | undefined { return this._hubAccess; }
+  /** Provides access to the RealityData service implementation for this IModelApp
+   * @beta
+   */
+  public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
-  /** The [[ExtensionAdmin]] for this session.
-   * @beta
-   */
-  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
@@ -316,10 +305,10 @@ export class IModelApp {
   }
 
   /**
-   * This method must be called before any iModel.js frontend services are used.
-   * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
+   * This method must be called before any other `@itwin/core-frontend` methods are used.
+   * Somewhere in your startup code, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * IModelApp.startup( {applicationId: myAppId, i18n: myi18Opts} );
+   * await IModelApp.startup( {applicationId: myAppId} );
    * ```
    * @param opts The options for configuring IModelApp
    */
@@ -328,32 +317,23 @@ export class IModelApp {
       return; // we're already initialized, do nothing.
     this._initialized = true;
 
-    // Setup a current context for all requests that originate from this frontend
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-
     opts = opts ?? {};
-    this._securityOptions = opts.security || {};
+    this._securityOptions = opts.security ?? {};
 
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
-    // Initialize basic application details before log messages are sent out
-    this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
-    this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
+    this.sessionId = opts.sessionId ?? Guid.createValue();
+    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iModel.js
+    this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
-
-    this._hubAccess = IModelHubFrontend;
-    IModelHubFrontend.setIModelClient(opts.imodelClient);
+    this._hubAccess = opts.hubAccess;
 
     this._setupRpcRequestContext();
 
-    // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N("iModelJs", opts.i18n);
-
-    // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = this.i18n.registerNamespace("CoreTools");
+    this._localization = opts.localization ?? new ITwinLocalization();
+    const toolsNs = "CoreTools";
+    await this.localization.initialize(["iModelJs", toolsNs]);
     [
       selectTool,
       idleTool,
@@ -361,8 +341,7 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-      extensionTool,
-    ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
+    ].forEach((tool) => this.tools.registerModule(tool, toolsNs));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
     [
@@ -377,38 +356,20 @@ export class IModelApp {
       auxCoordState,
     ].forEach((module) => this.registerModuleEntities(module));
 
-    const defaultMapLayerOptions: MapLayerOptions = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      MapboxImagery: { key: "access_token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      BingMaps: { key: "key", value: "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt" },
-    };
-    if (opts.mapLayerOptions) {
-      // if we were passed maplayeroptions, fill in any gaps with defaultMapLayerOptions
-      for (const key of Object.keys(defaultMapLayerOptions)) {
-        if (opts.mapLayerOptions[key])
-          continue;
-        opts.mapLayerOptions[key] = defaultMapLayerOptions[key];
-      }
-    } else {
-      opts.mapLayerOptions = defaultMapLayerOptions;
-    }
-
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
-
-    this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
-    this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
+    this._settings = opts.settings ?? new ConnectSettingsClient(this.applicationId);
+    this._viewManager = opts.viewManager ?? new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
-    this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
-    this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
-    this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();
-    this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
-    this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
-    this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
-    this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
-    this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
+    this._notifications = opts.notifications ?? new NotificationManager();
+    this._toolAdmin = opts.toolAdmin ?? new ToolAdmin();
+    this._accuDraw = opts.accuDraw ?? new AccuDraw();
+    this._accuSnap = opts.accuSnap ?? new AccuSnap();
+    this._locateManager = opts.locateManager ?? new ElementLocateManager();
+    this._tentativePoint = opts.tentativePoint ?? new TentativePoint();
+    this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
+    this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    this._realityDataAccess = opts.realityDataAccess;
 
     [
       this.renderSystem,
@@ -418,15 +379,10 @@ export class IModelApp {
       this.accuSnap,
       this.locateManager,
       this.tentativePoint,
-      this.extensionAdmin,
       this.uiAdmin,
-    ].forEach((sys) => {
-      if (sys)
-        sys.onInitialized();
-    });
+    ].forEach((sys) => sys.onInitialized());
 
-    // process async onInitialized methods
-    await this.quantityFormatter.onInitialized();
+    return this.quantityFormatter.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -434,12 +390,17 @@ export class IModelApp {
     if (!this._initialized)
       return;
 
+    // notify listeners that this IModelApp is about to be shut down.
+    this.onBeforeShutdown.raiseEvent();
+    this.onBeforeShutdown.clear();
+
     (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
     this.clearIntervalAnimation();
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
+    this.tools.shutdown();
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
     this.authorizationClient = undefined;
@@ -526,39 +487,34 @@ export class IModelApp {
     }
   }
 
+  /** Get the user's access token for this IModelApp, or a blank string if none is available.
+   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * returned by this method may change over time throughout the course of a session.
+   */
+  public static async getAccessToken(): Promise<AccessToken> {
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
+  }
+
   /** @internal */
   public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
-      const id = ClientRequestContext.current.useContextForRpc ? ClientRequestContext.current.activityId : Guid.createValue(); // Use any context explicitly set for an RPC call if possible
-      ClientRequestContext.current.useContextForRpc = false; // Reset flag so it doesn't get used inadvertently for next RPC call
-      return id;
+      return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
-      let authorization: string | undefined;
-      let userId: string | undefined;
-      if (IModelApp.authorizationClient?.hasSignedIn) {
-        // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
-        try {
-          const accessToken = await IModelApp.authorizationClient.getAccessToken();
-          authorization = accessToken.toTokenString(IncludePrefix.Yes);
-          const userInfo = accessToken.getUserInfo();
-          if (userInfo)
-            userId = userInfo.id;
-        } catch (err) {
-          // The application may go offline
-        }
-      }
-      const serialized: SerializedClientRequestContext = {
+      const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization,
-        userId,
+        authorization: await this.getAccessToken(),
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;
@@ -704,8 +660,8 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
 
@@ -714,7 +670,7 @@ export class IModelApp {
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
-    msg.forEach((line) => out += `${IModelApp.i18n.translateKeys(line)}<br>`);
+    msg.forEach((line) => out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`);
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;
@@ -739,6 +695,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.i18n.translate(`${key.scope}.${key.val}`, key);
+    return this.localization.getLocalizedString(`${key.scope}.${key.val}`, key);
   }
 }

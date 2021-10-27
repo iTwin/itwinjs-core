@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
+import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
   SpatialModel, StandaloneDb, ViewDefinition,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
-  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, PersistentBackgroundMapProps, RenderMode, ViewFlags,
+} from "@itwin/core-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";
 
@@ -30,13 +30,13 @@ export class GeoJsonImporter {
   private readonly _pointRadius: number;
   private _colorIndex?: number;
   private readonly _viewFlags: ViewFlags;
-  private readonly _backgroundMap: BackgroundMapProps | undefined;
+  private readonly _backgroundMap: PersistentBackgroundMapProps | undefined;
 
   /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapTypeString?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
     this.iModelDb = appendToExisting ? StandaloneDb.openFile(iModelFileName, OpenMode.ReadWrite) : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
@@ -45,26 +45,17 @@ export class GeoJsonImporter {
     this._labelProperty = labelProperty;
     this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
     this._colorIndex = pseudoColor ? 0 : undefined;
-    this._viewFlags = new ViewFlags();
-    this._viewFlags.renderMode = RenderMode.SmoothShade;
-    switch (mapType) {
-      case "none":
-        this._viewFlags.backgroundMap = false;
-        break;
-      case "streets":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Street } };
-        break;
-      case "aerial":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Aerial } };
-        break;
-      default:
-      case "hybrid":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Hybrid } };
-        break;
+
+    let mapType;
+    switch (mapTypeString) {
+      case "streets": mapType = BackgroundMapType.Street; break;
+      case "aerial": mapType = BackgroundMapType.Aerial; break;
+      case "hybrid": mapType = BackgroundMapType.Hybrid; break;
     }
+
+    this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, backgroundMap: undefined !== mapType });
+    if (undefined !== mapType)
+      this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType } };
   }
 
   /** Perform the import */
@@ -90,10 +81,10 @@ export class GeoJsonImporter {
       /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
        * if the bounding box was directly available.
        */
-      const featureMin = new Cartographic(), featureMax = new Cartographic();
+      const featureMin = Cartographic.createZero(), featureMax = Cartographic.createZero();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = new Cartographic((featureMin.longitude + featureMax.longitude) / 2, (featureMin.latitude + featureMax.latitude) / 2);
+      const featureCenter = Cartographic.fromRadians({ longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2 });
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
@@ -249,7 +240,7 @@ export class GeoJsonImporter {
 
   }
 
-  /** Convert a GeoJSON LineString into an @bentley/geometry-core lineString */
+  /** Convert a GeoJSON LineString into an @itwin/core-geometry lineString */
   private convertLinestring(inLinestring: GeoJson.LineString): LineString3d | undefined {
     if (!Array.isArray(inLinestring))
       return undefined;
@@ -282,9 +273,9 @@ export class GeoJsonImporter {
         return undefined;   // TBD... Multi-loop Regions,
     }
   }
-  private static _scratchCartographic = new Cartographic();
+  private static _scratchCartographic = Cartographic.createZero();
 
-  /** Convert a GeoJSON LineString into an @bentley/geometry-core Loop */
+  /** Convert a GeoJSON LineString into an @itwin/core-geometry Loop */
   private convertLoop(inLoop: GeoJson.LineString): Loop | undefined {
     const lineString = this.convertLinestring(inLoop);
     return lineString ? Loop.create(lineString) : undefined;

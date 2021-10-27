@@ -4,16 +4,158 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
-import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { AppTools } from "../../tools/ToolSpecifications";
+  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  StandardNavigationToolsProvider,
+  StandardStatusbarItemsProvider,
+  SyncUiEventArgs, SyncUiEventDispatcher,
+  UiFramework,
+} from "@itwin/appui-react";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
-import { LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
+import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
+import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";
 
-/* eslint-disable react/jsx-key */
+export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
+  /* eslint-disable react/jsx-key */
+  public static supplyViewOverlay = (viewport: ScreenViewport) => {
+    if (viewport.view) {
+      return <MyCustomViewOverlay />;
+    }
+    return null;
+  };
+
+  public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+      if (newContent.applicationData)
+        delete newContent.applicationData;
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public override applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps, index) => {
+      const newContent = { ...content };
+
+      if (newContent.classId === IModelViewportControl.id) {
+        newContent.applicationData = {
+          ...newContent.applicationData,
+          supplyViewOverlay: index === 0 ? FrontstageUi2ContentGroupProvider.supplyViewOverlay : undefined,
+          supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
+          isPrimaryView: true,
+        };
+      }
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+    const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, UiFramework.getIModelConnection());
+    if (savedViewLayoutProps) {
+      const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
+      if (viewState) {
+        UiFramework.setDefaultViewState(viewState);
+      }
+      const contentGroupProps = this.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
+      return new ContentGroup(contentGroupProps);
+    }
+
+    return new ContentGroup({
+      id: "ui2-frontstage-main-content-group",
+      layout: StandardContentLayouts.singleView,
+      contents: [
+        {
+          id: "primaryContent",
+          classId: IModelViewportControl.id,
+          applicationData: {
+            supplyViewOverlay: FrontstageUi2ContentGroupProvider.supplyViewOverlay,
+            isPrimaryView: true,
+            supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
+            viewState: UiFramework.getDefaultViewState,
+            iModelConnection: UiFramework.getIModelConnection,
+          },
+        },
+      ],
+    });
+  }
+}
+
+export class FrontstageUi2 {
+  private static _contentGroupProvider = new FrontstageUi2ContentGroupProvider();
+  private static showCornerButtons = true;
+
+  public static supplyAppData(_id: string, _applicationData?: any) {
+    return {
+      viewState: UiFramework.getDefaultViewState,
+      iModelConnection: UiFramework.getIModelConnection,
+    };
+  }
+
+  public static register() {
+    const cornerButton = FrontstageUi2.showCornerButtons ? <BackstageAppButton key="ui2-backstage" icon={"icon-bentley-systems"} /> : undefined;
+    const hideNavigationAid = !FrontstageUi2.showCornerButtons;
+    const setUpCustomToolGroups = true;
+    const applicationData = setUpCustomToolGroups ? {
+      defaultContentTools: {
+        vertical: {
+          selectElementGroupPriority: 100,
+          measureGroupPriority: 200,
+          selectionGroupPriority: 300,
+        },
+        horizontal: {
+          clearSelectionGroupPriority: 100,
+          overridesGroupPriority: 200,
+        },
+      },
+    } : undefined;
+
+    const ui2StageProps: StandardFrontstageProps = {
+      id: "Ui2",
+      version: 1.1,
+      contentGroupProps: FrontstageUi2._contentGroupProvider,
+      hideNavigationAid,
+      cornerButton,
+      usage: StageUsage.General,
+      applicationData,
+    };
+
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
+    this.registerToolProviders();
+  }
+
+  private static registerToolProviders() {
+
+    // Provides standard tools for ToolWidget in ui2.0 stage
+    StandardContentToolsProvider.register({
+      horizontal: {
+        clearSelection: true,
+        clearDisplayOverrides: true,
+        hide: "group",
+        isolate: "group",
+        emphasize: "element",
+      },
+    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard tools for NavigationWidget in ui2.0 stage
+    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard status fields for ui2.0 stage
+    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides example widgets ui2.0 stage
+    AppUi2StageItemsProvider.register(FrontstageUi2.showCornerButtons);
+  }
+}
 
 export function MyCustomViewOverlay() {
   const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
@@ -53,172 +195,4 @@ export function MyCustomViewOverlay() {
         <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
       </div>
     </div> : null;
-}
-
-export class FrontstageUi2 extends FrontstageProvider {
-  private _supplyViewOverlay = (viewport: ScreenViewport) => {
-    if (viewport.view) {
-      return <MyCustomViewOverlay />;
-    }
-    return null;
-  };
-
-  public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
-    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
-  ];
-
-  public get frontstage(): React.ReactElement<FrontstageProps> {
-    const myContentGroup: ContentGroup = new ContentGroup(
-      {
-        contents: [
-          {
-            id: "primaryContent",
-            classId: IModelViewportControl.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, supplyViewOverlay: this._supplyViewOverlay },
-          },
-        ],
-      },
-    );
-
-    return (
-      <Frontstage id="Ui2"
-        version={1.1}
-        defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
-        contentGroup={myContentGroup}
-        defaultContentId="singleIModelView"
-        isInFooterMode={true}
-        usage={StageUsage.General}
-        applicationData={{ key: "value" }}
-        contentManipulationTools={
-          <Zone
-            widgets={
-              [
-                <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this.additionalHorizontalToolbarItems} />} />,
-              ]}
-          />
-        }
-        viewNavigationTools={
-          <Zone
-            widgets={
-              [
-                <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
-              ]}
-          />
-        }
-        toolSettings={
-          <Zone
-            widgets={
-              [
-                <Widget isToolSettings={true} />,
-              ]}
-          />
-        }
-        statusBar={
-          <Zone
-            widgets={
-              [
-                <Widget isStatusBar={true} classId="SmallStatusBar" />,
-              ]}
-          />
-        }
-
-        leftPanel={
-          <StagePanel
-            size={300}
-            defaultState={StagePanelState.Minimized}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="LeftStart1" canPopout={true} label="Start1" defaultState={WidgetState.Open} element={<h2>Left Start1 widget</h2>} />,
-                  <Widget id="LeftStart2" canPopout={true} label="Start2" element={<h2>Left Start2 widget</h2>} />,
-                ],
-              },
-              middle: {
-                widgets: [
-                  <Widget id="LeftMiddle1" label="Middle1" element={<h2>Left Middle1 widget</h2>} />,
-                  <Widget id="LeftMiddle2" canPopout={true} label="Middle2" defaultState={WidgetState.Open} element={<h2>Left Middle2 widget</h2>} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="LeftEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Left End1 widget</h2>} />,
-                  <Widget id="LeftEnd2" label="End2" element={<h2>Left End2 widget</h2>} />,
-                ],
-              },
-            }}
-          />
-        }
-
-        topPanel={
-          <StagePanel
-            size={90}
-            defaultState={StagePanelState.Minimized}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="TopStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Top Start1 widget</h2>} />,
-                  <Widget id="TopStart2" label="Start2" element={<h2>Top Start2 widget</h2>} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="TopEnd1" canPopout={true} label="End1" element={<h2>Top End1 widget</h2>} />,
-                  <Widget id="TopEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Top End2 widget</h2>} />,
-                ],
-              },
-            }}
-          />
-        }
-
-        rightPanel={
-          <StagePanel
-            defaultState={StagePanelState.Open}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="RightStart1" canPopout={true} label="Start1" element={<h2>Right Start1 widget</h2>} />,
-                  <Widget id="RightStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<h2>Right Start2 widget</h2>} />,
-                ],
-              },
-              middle: {
-                widgets: [
-                  <Widget id="RightMiddle1" label="Middle1" defaultState={WidgetState.Open} element={<h2>Right Middle1 widget</h2>} />,
-                  <Widget id="RightMiddle2" canPopout={true} label="Middle2" element={<h2>Right Middle2 widget</h2>} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="RightEnd1" label="End1" element={<h2>Right End1 widget</h2>} />,
-                  <Widget id="RightEnd2" canPopout={true} label="End2" defaultState={WidgetState.Open} element={<h2>Right End2 widget</h2>} />,
-                ],
-              },
-            }}
-          />
-        }
-
-        bottomPanel={
-          <StagePanel
-            size={180}
-            defaultState={StagePanelState.Open}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="BottomStart1" label="Start1" element={<h2>Bottom Start1 widget</h2>} />,
-                  <Widget id="BottomStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<LayoutInfo />} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="BottomEnd1" canPopout={true} label="End1" element={<h2>Bottom End1 widget</h2>} />,
-                  <Widget id="BottomEnd2" label="End2" defaultState={WidgetState.Open} element={<LayoutControls />} />,
-                ],
-              },
-            }}
-          />
-        }
-      />
-    );
-  }
 }

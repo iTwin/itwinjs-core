@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodel-components-react",
+      "comment": "Allow widgets supplied by a UiItemsProvider to specify a default state of floating.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodel-components-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

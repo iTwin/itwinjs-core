@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range1d } from "@bentley/geometry-core";
-import { calculateSunriseOrSunset, Cartographic } from "@bentley/imodeljs-common";
-import { Viewport } from "@bentley/imodeljs-frontend";
+import { Point3d, Range1d } from "@itwin/core-geometry";
+import { calculateSunriseOrSunset, Cartographic } from "@itwin/core-common";
+import { Viewport } from "@itwin/core-frontend";
 import { createToolButton, ToolBarDropDown } from "./ToolBar";
 
 interface TimelineProvider {
@@ -48,7 +48,7 @@ class SolarTimelineProvider {
       const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
       cartoCenter = vp.iModel.spatialToCartographicFromEcef(projectCenter);
     } else {
-      cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+      cartoCenter = Cartographic.fromDegrees({longitude: -75.17035, latitude: 39.954927, height: 0.0});
     }
 
     const today = new Date(Date.now());
@@ -215,7 +215,7 @@ class TimelinePanel extends ToolBarDropDown {
     this._element.style.display = "none";
   }
 
-  public get onViewChanged(): Promise<void> {
+  public override get onViewChanged(): Promise<void> {
     // Change the provider before invoking update
     this._provider = this.createProvider();
     if (this._isPlaying)

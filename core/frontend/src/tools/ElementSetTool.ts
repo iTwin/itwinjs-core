@@ -6,9 +6,9 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
+import { ColorDef, QueryRowFormat } from "@itwin/core-common";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
@@ -286,7 +286,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected get currentElementCount(): number { return undefined !== this._agenda ? this._agenda.count : 0; }
 
   /** Minimum required number of elements for tool to be able to complete.
-   * @return number to compare with [[ElementSetTool.currentElementCount]] to determine if more elements remain to be identifed.
+   * @return number to compare with [[ElementSetTool.currentElementCount]] to determine if more elements remain to be identified.
    * @note A tool to subtract elements is an example where returning 2 would be necessary.
    */
   protected get requiredElementCount(): number { return 1; }
@@ -313,7 +313,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   /** Whether to clear the active selection set for tools that return false for [[ElementSetTool.allowSelectionSet]].
    * @return true to clear unsupported selection sets (desired default behavior).
    * @note It is expected that the selection set be cleared before using [[ElementLocateManager]] to identify elements.
-   * This allows the element hilite to be a visual represention of the [[ElementSetTool.agenda]] contents.
+   * This allows the element hilite to be a visual representation of the [[ElementSetTool.agenda]] contents.
    */
   protected get clearSelectionSet(): boolean { return !this.allowSelectionSet; }
 
@@ -432,7 +432,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
     try {
       const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (${id}))`;
-      for await (const row of this.iModel.query(ecsql)) {
+      for await (const row of this.iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);
       }
@@ -600,7 +600,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Called from [[ElementSetTool.doLocate]] as well as auto-locate to accept or reject elements under the cursor. */
-  public async filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus> {
+  public override async filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus> {
     // Support deselect using control key and don't show "not" cursor over an already selected element...
     if (undefined !== this._agenda && this._agenda.find(hit.sourceId)) {
       const status = (this.isControlDown || !this.controlKeyInvertsSelection) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
@@ -626,7 +626,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const addNext = (undefined !== hit && !this.agenda.has(hit.sourceId));
     this.agenda.popGroup();
 
-    if (!addNext || !await this.buildLocateAgenda(hit!))
+    if (!addNext || !await this.buildLocateAgenda(hit))
       await this.onAgendaModified(); // only change was popGroup...
 
     return true;
@@ -721,30 +721,30 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Show graphics for when drag selection is active. */
-  public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
+  public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 
   /** Make sure drag selection graphics are updated when mouse moves. */
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     if (undefined !== ev.viewport && this.isSelectByPoints)
       ev.viewport.invalidateDecorations();
   }
 
   /** Support initiating drag selection on mouse start drag event when [[ElementSetTool.allowDragSelect]] is true. */
-  public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (await this.selectByPointsStart(ev))
       return EventHandled.Yes;
     return super.onMouseStartDrag(ev);
   }
 
   /** Support completing active drag selection on mouse end drag event and update [[ElementSetTool.agenda]]. */
-  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
     if (await this.selectByPointsEnd(ev))
       return EventHandled.Yes;
     return super.onMouseEndDrag(ev);
   }
 
   /** Update prompts, cursor, graphics, etc. as appropriate on ctrl and shift key transitions. */
-  public async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
+  public override async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
     if (this.isSelectionSetModify)
       return EventHandled.No;
 
@@ -762,12 +762,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Allow reset to cycle between elements identified for overlapping the locate circle.
-   * Advances to next prelocated hit from [[AccuSnap.aSnapHits]] or changes last accepted hit to next hit from [[ElementLocateManger.hitList]].
-   * @returns EventHandled.Yes if onReinitalize was called to restart or exit tool.
+   * Advances to next pre-located hit from [[AccuSnap.aSnapHits]] or changes last accepted hit to next hit from [[ElementLocateManger.hitList]].
+   * @returns EventHandled.Yes if onReinitialize was called to restart or exit tool.
    */
   protected async chooseNextHit(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.isSelectionSetModify) {
-      this.onReinitialize();
+      await this.onReinitialize();
       return EventHandled.Yes;
     }
 
@@ -787,7 +787,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
         await this.doLocate(ev, false);
 
         if (this.agenda.isEmpty) {
-          this.onReinitialize();
+          await this.onReinitialize();
           return EventHandled.Yes;
         }
 
@@ -796,12 +796,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
       }
     }
 
-    IModelApp.accuSnap.resetButton(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await IModelApp.accuSnap.resetButton();
     return EventHandled.No;
   }
 
   /** Orchestrates updating the internal state of the tool on a reset button event.
-   * @returns EventHandled.Yes if onReinitalize was called to restart or exit tool.
+   * @returns EventHandled.Yes if onReinitialize was called to restart or exit tool.
    */
   protected async processResetButton(ev: BeButtonEvent): Promise<EventHandled> {
     if (ev.isDown)
@@ -810,11 +810,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return this.chooseNextHit(ev);
   }
 
-  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processResetButton(ev);
   }
 
-  public async onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processResetButton(ev);
   }
 
@@ -822,7 +822,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected async gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     if (this.isSelectionSetModify) {
       if (this.agenda.isEmpty && !await this.buildSelectionSetAgenda(this.iModel.selectionSet)) {
-        this.onReinitialize();
+        await this.onReinitialize();
         return EventHandled.Yes;
       }
     }
@@ -871,7 +871,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * - Collect elements: Add to the element agenda until no additional elements are requested.
    * - Gather input: Initiates element dynamics and accepts additional points as required.
    * - Complete operation: Process agenda entries, restart or exit tool.
-   * @returns EventHandled.Yes if onReinitalize was called to restart or exit tool.
+   * @returns EventHandled.Yes if onReinitialize was called to restart or exit tool.
    */
   protected async processDataButton(ev: BeButtonEvent): Promise<EventHandled> {
     if (!ev.isDown && !this._processDataButtonUp)
@@ -891,11 +891,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processDataButton(ev);
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     return this.processDataButton(ev);
   }
 
@@ -910,10 +910,10 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * @note Tools should not modify [[ElementSetTool.agenda]] in this method, it should merely serve as a convenient place
    * to update information, such as element graphics once dynamics has started, ex. [[ElementSetTool.chooseNextHit]].
   */
-  protected async onAgendaModified(): Promise<void> {}
+  protected async onAgendaModified(): Promise<void> { }
 
   /** Sub-classes can override to continue with current [[ElementSetTool.agenda]] or restart after processing has completed. */
-  protected async onProcessComplete(): Promise<void> { this.onReinitialize(); }
+  protected async onProcessComplete(): Promise<void> { return this.onReinitialize(); }
 
   /** Sub-classes that return false for [[ElementSetTool.requireAcceptForSelectionSetOperation]] should override to apply the tool operation to [[ElementSetTool.agenda]]. */
   protected async processAgendaImmediate(): Promise<void> { }
@@ -929,10 +929,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
     if (!buildImmediate)
       return;
 
-    if (!await this.buildSelectionSetAgenda(this.iModel.selectionSet)) {
-      this.onReinitialize();
-      return;
-    }
+    if (!await this.buildSelectionSetAgenda(this.iModel.selectionSet))
+      return this.onReinitialize();
 
     if (!this.requireAcceptForSelectionSetOperation) {
       await this.processAgendaImmediate();
@@ -943,18 +941,18 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Setup initial element state, prompts, check [[SelectionSet]], etc. */
-  public onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setPreferredElementSource();
     this.setupAndPromptForNextAction();
 
     if (this.isSelectionSetModify)
-      this.doProcessSelectionSetImmediate(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doProcessSelectionSetImmediate();
   }
 
-  /** Make sure elements from [[ElemenetSetTool.agenda]] that aren't also from [[SelectionSet]] aren't left hilited. */
-  public onCleanup(): void {
-    super.onCleanup();
+  /** Make sure elements from [[ElementSetTool.agenda]] that aren't also from [[SelectionSet]] aren't left hilited. */
+  public override async onCleanup() {
+    await super.onCleanup();
     if (undefined !== this._agenda)
       this._agenda.clear();
   }
@@ -962,16 +960,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
   /** Exit and start default tool when [[ElementSetTool.isSelectionSetModify]] is true to allow [[SelectionSet]] to be modified,
    * or call [[PrimitiveTool.onRestartTool]] to install a new tool instance.
    */
-  public onReinitialize(): void {
-    if (this.isSelectionSetModify) {
-      this.exitTool();
-      return;
-    }
-    this.onRestartTool();
+  public override async onReinitialize() {
+    if (this.isSelectionSetModify)
+      return this.exitTool();
+
+    return this.onRestartTool();
   }
 
   /** Restore tool assistance after no longer being suspended by either a [[ViewTool]] or [[InputCollector]]. */
-  public onUnsuspend(): void {
+  public override async onUnsuspend() {
     this.provideToolAssistance();
   }
 
@@ -988,41 +985,41 @@ export abstract class ElementSetTool extends PrimitiveTool {
   protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     let mainMsg;
     let leftMsg;
-    let rghtMsg;
+    let rightMsg;
     let addDragInstr = false;
 
     if (this.isSelectionSetModify) {
       if (this.wantAdditionalInput) {
         mainMsg = "ElementSet.Prompts.IdentifyPoint";
         leftMsg = "ElementSet.Inputs.AcceptPoint";
-        rghtMsg = "ElementSet.Inputs.Exit";
+        rightMsg = "ElementSet.Inputs.Exit";
       } else if (0 === this.currentElementCount) {
         mainMsg = "ElementSet.Prompts.ConfirmSelection";
         leftMsg = "ElementSet.Inputs.AcceptSelection";
-        rghtMsg = "ElementSet.Inputs.RejectSelection";
+        rightMsg = "ElementSet.Inputs.RejectSelection";
       } else {
         mainMsg = "ElementSet.Inputs.Complete";
         leftMsg = "ElementSet.Inputs.Accept";
-        rghtMsg = "ElementSet.Inputs.Exit";
+        rightMsg = "ElementSet.Inputs.Exit";
       }
     } else {
       if (this.isSelectByPoints) {
         mainMsg = "ElementSet.Prompts.OppositeCorner";
         leftMsg = "ElementSet.Inputs.BoxCorners";
-        rghtMsg = "ElementSet.Inputs.CrossingLine";
+        rightMsg = "ElementSet.Inputs.CrossingLine";
       } else if (this.wantAdditionalElements) {
         mainMsg = "ElementSet.Prompts.IdentifyElement";
         leftMsg = "ElementSet.Inputs.AcceptElement";
-        rghtMsg = "ElementSet.Inputs.Cancel";
+        rightMsg = "ElementSet.Inputs.Cancel";
         addDragInstr = this.allowDragSelect;
       } else if (this.wantAdditionalInput) {
         mainMsg = "ElementSet.Prompts.IdentifyPoint";
         leftMsg = "ElementSet.Inputs.AcceptPoint";
-        rghtMsg = "ElementSet.Inputs.Cancel";
+        rightMsg = "ElementSet.Inputs.Cancel";
       } else {
         mainMsg = "ElementSet.Inputs.Complete";
         leftMsg = "ElementSet.Inputs.Accept";
-        rghtMsg = "ElementSet.Inputs.Restart";
+        rightMsg = "ElementSet.Inputs.Restart";
       }
     }
 
@@ -1033,8 +1030,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
 
     if (addDragInstr) {
       mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));

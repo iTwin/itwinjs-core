@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
+import { ColorDef, ColorIndex } from "@itwin/core-common";
 import { ColorMap } from "../../../render/primitives/ColorMap";
 
 describe("ColorMap", () => {

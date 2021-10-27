@@ -6,8 +6,8 @@
  * @module Tools
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
@@ -808,20 +808,20 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public static rotateAxes(aboutCurrentZ: boolean): void {
-    IModelApp.tools.run("AccuDraw.RotateAxes", aboutCurrentZ);
+  public static async rotateAxes(aboutCurrentZ: boolean) {
+    return IModelApp.tools.run("AccuDraw.RotateAxes", aboutCurrentZ);
   }
 
-  public static rotateToElement(): void {
-    IModelApp.tools.run("AccuDraw.RotateElement");
+  public static async rotateToElement() {
+    return IModelApp.tools.run("AccuDraw.RotateElement");
   }
 
-  public static defineACSByElement(): void {
-    IModelApp.tools.run("AccuDraw.DefineACSByElement");
+  public static async defineACSByElement() {
+    return IModelApp.tools.run("AccuDraw.DefineACSByElement");
   }
 
-  public static defineACSByPoints() {
-    IModelApp.tools.run("AccuDraw.DefineACSByPoints");
+  public static async defineACSByPoints() {
+    return IModelApp.tools.run("AccuDraw.DefineACSByPoints");
   }
 
   public static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus {
@@ -946,7 +946,7 @@ export class AccuDrawShortcuts {
   }
 
   /** @internal Temporary keyboard shortcuts. */
-  public static processShortcutKey(keyEvent: KeyboardEvent): boolean {
+  public static async processShortcutKey(keyEvent: KeyboardEvent) {
     switch (keyEvent.key.toLowerCase()) {
       case "enter":
         AccuDrawShortcuts.lockSmart();
@@ -988,14 +988,11 @@ export class AccuDrawShortcuts {
         AccuDrawShortcuts.rotateCycle();
         return true;
       case "q":
-        AccuDrawShortcuts.rotateAxes(true);
-        return true;
+        return AccuDrawShortcuts.rotateAxes(true);
       case "e":
-        AccuDrawShortcuts.rotateToElement();
-        return true;
+        return AccuDrawShortcuts.rotateToElement();
       case "r":
-        AccuDrawShortcuts.defineACSByPoints();
-        return true;
+        return AccuDrawShortcuts.defineACSByPoints();
     }
 
     return false;
@@ -1004,91 +1001,91 @@ export class AccuDrawShortcuts {
 
 /** @internal */
 export class AccuDrawSetOriginTool extends Tool {
-  public static toolId = "AccuDraw.SetOrigin";
-  public run(): boolean { AccuDrawShortcuts.setOrigin(); return true; }
+  public static override toolId = "AccuDraw.SetOrigin";
+  public override async run() { AccuDrawShortcuts.setOrigin(); return true; }
 }
 
 /** @internal */
 export class AccuDrawSetLockSmartTool extends Tool {
-  public static toolId = "AccuDraw.LockSmart";
-  public run(): boolean { AccuDrawShortcuts.lockSmart(); return true; }
+  public static override toolId = "AccuDraw.LockSmart";
+  public override async run() { AccuDrawShortcuts.lockSmart(); return true; }
 }
 
 /** @internal */
 export class AccuDrawSetLockXTool extends Tool {
-  public static toolId = "AccuDraw.LockX";
-  public run(): boolean { AccuDrawShortcuts.lockX(); return true; }
+  public static override toolId = "AccuDraw.LockX";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockX(); return true; }
 }
 
 /** @internal */
 export class AccuDrawSetLockYTool extends Tool {
-  public static toolId = "AccuDraw.LockY";
-  public run(): boolean { AccuDrawShortcuts.lockY(); return true; }
+  public static override toolId = "AccuDraw.LockY";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockY(); return true; }
 }
 
 /** @internal */
 export class AccuDrawSetLockZTool extends Tool {
-  public static toolId = "AccuDraw.LockZ";
-  public run(): boolean { AccuDrawShortcuts.lockZ(); return true; }
+  public static override toolId = "AccuDraw.LockZ";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockZ(); return true; }
 }
 
 /** @internal */
 export class AccuDrawSetLockDistanceTool extends Tool {
-  public static toolId = "AccuDraw.LockDistance";
-  public run(): boolean { AccuDrawShortcuts.lockDistance(); return true; }
+  public static override toolId = "AccuDraw.LockDistance";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockDistance(); return true; }
 }
 
 /** @internal */
 export class AccuDrawSetLockAngleTool extends Tool {
-  public static toolId = "AccuDraw.LockAngle";
-  public run(): boolean { AccuDrawShortcuts.lockAngle(); return true; }
+  public static override toolId = "AccuDraw.LockAngle";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.lockAngle(); return true; }
 }
 
 /** @internal */
 export class AccuDrawChangeModeTool extends Tool {
-  public static toolId = "AccuDraw.ChangeMode";
-  public run(): boolean { AccuDrawShortcuts.changeCompassMode(); return true; }
+  public static override toolId = "AccuDraw.ChangeMode";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.changeCompassMode(); return true; }
 }
 
 /** @internal */
 export class AccuDrawRotateCycleTool extends Tool {
-  public static toolId = "AccuDraw.RotateCycle";
-  public run(): boolean { AccuDrawShortcuts.rotateCycle(); return true; }
+  public static override toolId = "AccuDraw.RotateCycle";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.rotateCycle(); return true; }
 }
 
 /** @internal */
 export class AccuDrawRotateTopTool extends Tool {
-  public static toolId = "AccuDraw.RotateTop";
-  public run(): boolean { AccuDrawShortcuts.setStandardRotation(RotationMode.Top); return true; }
+  public static override toolId = "AccuDraw.RotateTop";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.Top); return true; }
 }
 
 /** @internal */
 export class AccuDrawRotateFrontTool extends Tool {
-  public static toolId = "AccuDraw.RotateFront";
-  public run(): boolean { AccuDrawShortcuts.setStandardRotation(RotationMode.Front); return true; }
+  public static override toolId = "AccuDraw.RotateFront";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.Front); return true; }
 }
 
 /** @internal */
 export class AccuDrawRotateSideTool extends Tool {
-  public static toolId = "AccuDraw.RotateSide";
-  public run(): boolean { AccuDrawShortcuts.setStandardRotation(RotationMode.Side); return true; }
+  public static override toolId = "AccuDraw.RotateSide";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.Side); return true; }
 }
 
 /** @internal */
 export class AccuDrawRotateViewTool extends Tool {
-  public static toolId = "AccuDraw.RotateView";
-  public run(): boolean { AccuDrawShortcuts.setStandardRotation(RotationMode.View); return true; }
+  public static override toolId = "AccuDraw.RotateView";
+  public override async run(): Promise<boolean> { AccuDrawShortcuts.setStandardRotation(RotationMode.View); return true; }
 }
 
 /** @internal */
 abstract class AccuDrawShortcutsTool extends InputCollector {
   private _cancel: boolean;
   public constructor() { super(); this._cancel = true; }
-  public onPostInstall(): void { super.onPostInstall(); this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); this.doManipulationStart(); } // NOTE: InputCollector inherits suspended primitive's state, set everything...
-  public onCleanup(): void { this.doManipulationStop(this._cancel); }
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.doManipulation(ev, false)) { this._cancel = false; this.exitTool(); } return EventHandled.No; }
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { this.doManipulation(ev, true); }
-  public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
+  public override async onPostInstall() { await super.onPostInstall(); this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); this.doManipulationStart(); } // NOTE: InputCollector inherits suspended primitive's state, set everything...
+  public override async onCleanup() { this.doManipulationStop(this._cancel); }
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (this.doManipulation(ev, false)) { this._cancel = false; await this.exitTool(); } return EventHandled.No; }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { this.doManipulation(ev, true); }
+  public override async exitTool() { await super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
 
   public activateAccuDrawOnStart() { return true; }
   public doManipulationStart() { if (this.activateAccuDrawOnStart()) IModelApp.accuDraw.activate(); this.doManipulation(undefined, true); }
@@ -1099,12 +1096,12 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
 
 /** @internal */
 export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
-  public static toolId = "AccuDraw.RotateAxes";
-  public static get maxArgs(): number { return 1; }
+  public static override toolId = "AccuDraw.RotateAxes";
+  public static override get maxArgs(): number { return 1; }
   protected _immediateMode: boolean = false;
   public constructor(public aboutCurrentZ: boolean = true) { super(); }
 
-  public onInstall(): boolean {
+  public override async onInstall(): Promise<boolean> {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isActive)
       return false; // Require compass to already be active for this shortcut...
@@ -1124,16 +1121,16 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
     return true;
   }
 
-  public onPostInstall(): void {
+  public override async onPostInstall() {
     if (this._immediateMode) {
-      this.exitTool();
+      await this.exitTool();
       return;
     }
-    super.onPostInstall();
+    return super.onPostInstall();
   }
 
-  public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
-  public doManipulationStart(): void {
+  public override onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public override doManipulationStart(): void {
     super.doManipulationStart();
     CoreTools.outputPromptByKey("AccuDraw.RotateAxes.Prompts.FirstPoint");
   }
@@ -1149,7 +1146,7 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
     return true;
   }
 
-  public parseAndRun(...args: any[]): boolean {
+  public override async parseAndRun(...args: any[]): Promise<boolean> {
     for (const arg of args) {
       if (arg.toLowerCase() === "unlockedz")
         this.aboutCurrentZ = false;
@@ -1160,18 +1157,18 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
 
 /** @internal */
 export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
-  public static toolId = "AccuDraw.RotateElement";
+  public static override toolId = "AccuDraw.RotateElement";
   public moveOrigin: boolean = !IModelApp.accuDraw.isActive; // By default use current origin if AccuDraw is already enabled...
-  public onInstall(): boolean { return IModelApp.accuDraw.isEnabled; } // Require compass to be enabled for this session...
+  public override async onInstall(): Promise<boolean> { return IModelApp.accuDraw.isEnabled; } // Require compass to be enabled for this session...
 
-  public onManipulationComplete(): AccuDrawFlags {
+  public override onManipulationComplete(): AccuDrawFlags {
     let ignoreFlags = AccuDrawFlags.SetRMatrix | AccuDrawFlags.Disable; // If AccuDraw wasn't active when the shortcut started, let it remain active for suspended tool when shortcut completes...
     if (this.moveOrigin)
       ignoreFlags |= AccuDrawFlags.SetOrigin;
     return ignoreFlags;
   }
 
-  public doManipulationStart(): void {
+  public override doManipulationStart(): void {
     super.doManipulationStart();
     CoreTools.outputPromptByKey("AccuDraw.RotateElement.Prompts.FirstPoint");
   }
@@ -1205,15 +1202,15 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
 
 /** @internal */
 export class DefineACSByElementTool extends AccuDrawShortcutsTool {
-  public static toolId = "AccuDraw.DefineACSByElement";
+  public static override toolId = "AccuDraw.DefineACSByElement";
   private _origin = Point3d.create();
   private _rMatrix = Matrix3d.createIdentity();
   private _acs?: AuxCoordSystemState;
 
-  public activateAccuDrawOnStart(): boolean { return false; }
-  public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public override activateAccuDrawOnStart(): boolean { return false; }
+  public override onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
 
-  public doManipulationStart(): void {
+  public override doManipulationStart(): void {
     super.doManipulationStart();
     CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint");
   }
@@ -1248,7 +1245,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
     return true;
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     const vp = context.viewport;
     if (!this._acs)
       this._acs = vp.view.auxiliaryCoordinateSystem.clone();
@@ -1260,14 +1257,14 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 
 /** @internal */
 export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
-  public static toolId = "AccuDraw.DefineACSByPoints";
+  public static override toolId = "AccuDraw.DefineACSByPoints";
   private readonly _points: Point3d[] = [];
   private _acs?: AuxCoordSystemState;
 
-  public activateAccuDrawOnStart(): boolean { return false; }
-  public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public override activateAccuDrawOnStart(): boolean { return false; }
+  public override onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
 
-  public doManipulationStart(): void {
+  public override doManipulationStart(): void {
     super.doManipulationStart();
     const tentativePoint = IModelApp.tentativePoint;
     if (!tentativePoint.isActive) {
@@ -1307,7 +1304,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     return false;
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     const tmpPoints: Point3d[] = [];
     this._points.forEach((pt) => tmpPoints.push(pt));
 

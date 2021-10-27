@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Allow the same tile to be drawn repeatedly and efficiently in same Viewport with different symbology overrides.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

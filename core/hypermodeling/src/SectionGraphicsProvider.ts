@@ -6,14 +6,14 @@
  * @module HyperModeling
  */
 
-import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyjs-core";
-import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
+import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
@@ -65,7 +65,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
 
       const ctor = id.isSheet ? SheetProxyTree : DrawingProxyTree;
       return new ctor({ tree, ref: treeRef, view, state: id.state, attachment: id.attachment });
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -118,11 +118,11 @@ class ProxyTreeReference extends TileTreeReference {
     this._owner = id.state.iModel.tiles.getTileTreeOwner(id, proxyTreeSupplier);
   }
 
-  public get castsShadows() {
+  public override get castsShadows() {
     return false;
   }
 
-  public getClipVolume(tree: TileTree) {
+  public override getClipVolume(tree: TileTree) {
     return true !== HyperModeling.graphicsConfig.ignoreClip ? super.getClipVolume(tree) : undefined;
   }
 
@@ -133,14 +133,14 @@ class ProxyTreeReference extends TileTreeReference {
     return undefined !== proxiedTree ? proxiedTree.ref : undefined;
   }
 
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     const ref = this._proxiedRef;
     if (undefined !== ref)
       ref.discloseTileTrees(trees);
   }
 
-  public async getToolTip(hit: HitDetail) {
+  public override async getToolTip(hit: HitDetail) {
     const ref = this._proxiedRef;
     return undefined !== ref ? ref.getToolTip(hit) : super.getToolTip(hit);
   }
@@ -174,11 +174,12 @@ abstract class ProxyTree extends TileTree {
     if (undefined !== inverse)
       inverse.multiplyRange(range, range);
 
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-
-    // View clip (section clip) should not apply to 2d graphics.
-    this._viewFlagOverrides.setShowClipVolume(false);
+    this._viewFlagOverrides = {
+      ...view.viewFlags,
+      lighting: false,
+      // View clip (section clip) should not apply to 2d graphics.
+      clipVolume: false,
+    };
 
     this._rootTile = new ProxyTile(this, range);
   }
@@ -186,7 +187,7 @@ abstract class ProxyTree extends TileTree {
   public get rootTile(): ProxyTile { return this._rootTile; }
   public get viewFlagOverrides() { return this._viewFlagOverrides; }
   public get is3d() { return false; }
-  public get isContentUnbounded() { return false; }
+  public override get isContentUnbounded() { return false; }
   public get maxDepth() { return 1; }
 
   protected abstract get isDisplayed(): boolean;
@@ -273,19 +274,19 @@ class ProxyTile extends Tile {
   }
 
   public get hasChildren() { return false; }
-  public get hasGraphics() { return true; }
+  public override get hasGraphics() { return true; }
 
   public get channel(): TileRequestChannel { throw new Error("Proxy tile has no content"); }
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
   protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }
 
-  public drawGraphics(args: TileDrawArgs) {
+  public override drawGraphics(args: TileDrawArgs) {
     const proxyTree = this.tree as ProxyTree;
     const sectionTree = proxyTree.tree;
 
     const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
-    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolumeOverride ? proxyTree.clipVolume : undefined;
+    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolume ? proxyTree.clipVolume : undefined;
     args = new TileDrawArgs({ context: args.context, location, tree: sectionTree, now: args.now, viewFlagOverrides: proxyTree.viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: args.parentsAndChildrenExclusive, symbologyOverrides: proxyTree.symbologyOverrides });
     sectionTree.draw(args);
 
@@ -309,8 +310,7 @@ class ProxyTile extends Tile {
 
     const branch = new GraphicBranch();
     branch.entries.push(builder.finish());
-    branch.setViewFlagOverrides(new ViewFlagOverrides());
-    branch.viewFlagOverrides.setShowClipVolume(false);
+    branch.setViewFlagOverrides({ clipVolume: false });
     args.context.outputGraphic(args.context.createGraphicBranch(branch, Transform.createIdentity()));
   }
 }

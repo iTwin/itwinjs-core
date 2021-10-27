@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
-import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { OpenMode } from "@itwin/core-bentley";
+import { ProjectsAccessClient } from "@itwin/projects-client";
+import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
@@ -33,12 +32,11 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-
-  private static _connectClient: ContextRegistryClient | undefined;
-  public static get connectClient(): ContextRegistryClient {
-    if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ContextRegistryClient();
-    return IModelTestUtils._connectClient;
+  private static _iTwinAccessClient: ProjectsAccessClient | undefined;
+  public static get iTwinAccessClient(): ProjectsAccessClient {
+    if (!IModelTestUtils._iTwinAccessClient)
+      IModelTestUtils._iTwinAccessClient = new ProjectsAccessClient();
+    return IModelTestUtils._iTwinAccessClient;
   }
 
   private static getStat(name: string) {

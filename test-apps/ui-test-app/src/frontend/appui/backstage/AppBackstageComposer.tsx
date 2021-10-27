@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { connect } from "react-redux";
-import { UserInfo } from "@bentley/itwin-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserProfileBackstageItem } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@itwin/appui-react";
+import { UserProfileBackstageItem } from "./UserProfile";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
 import { RootState, SampleAppIModelApp, SampleAppUiActionId } from "../..";
@@ -22,7 +22,7 @@ function mapStateToProps(state: RootState) {
   if (!frameworkState)
     return undefined;
 
-  return { userInfo: frameworkState.sessionState.userInfo };
+  return { userInfo: frameworkState.sessionState.userInfo! };
 }
 
 interface AppBackstageComposerProps {
@@ -40,26 +40,25 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
   const [backstageItems] = React.useState(() => {
     if (SampleAppIModelApp.allowWrite) {
       return [
-        BackstageItemUtilities.createStageLauncher(EditFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.editIModel"), IModelApp.i18n.translate("SampleApp:backstage.editStage"), "icon-edit"),
-        BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
-        BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
-        BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
+        BackstageItemUtilities.createStageLauncher(EditFrontstage.stageId, 100, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.editIModel"), IModelApp.localization.getLocalizedString("SampleApp:backstage.editStage"), "icon-edit"),
+        BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
+        BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
         SettingsModalFrontstage.getBackstageActionItem(400, 10),
       ];
     }
 
     return [
-      BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"), IModelApp.i18n.translate("SampleApp:backstage.iModelStage"), `svg:${stageIconSvg}`),
-      BackstageItemUtilities.createStageLauncher("Test1", 200, 10, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage1"), undefined, "icon-placeholder", { badgeType: BadgeType.TechnicalPreview }),
-      BackstageItemUtilities.createStageLauncher("Test2", 200, 20, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage2"), undefined, "icon-placeholder"),
-      BackstageItemUtilities.createStageLauncher("Test3", 200, 30, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage3"), undefined, "icon-placeholder", { isHidden: hiddenCondition3 }),
-      BackstageItemUtilities.createStageLauncher("Test4", 200, 40, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage4"), undefined, "icon-placeholder", { isDisabled: enableCondition }),
-      BackstageItemUtilities.createStageLauncher("Ui2", 200, 50, IModelApp.i18n.translate("SampleApp:backstage.testFrontstageUi20"), undefined, "icon-placeholder", { isHidden: notUi2Condition }),
-      BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
-      BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
-      BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
+      BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.viewIModel"), IModelApp.localization.getLocalizedString("SampleApp:backstage.iModelStage"), `svg:${stageIconSvg}`),
+      BackstageItemUtilities.createStageLauncher("Test1", 200, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage1"), undefined, "icon-placeholder", { badgeType: BadgeType.TechnicalPreview }),
+      BackstageItemUtilities.createStageLauncher("Test2", 200, 20, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage2"), undefined, "icon-placeholder"),
+      BackstageItemUtilities.createStageLauncher("Test3", 200, 30, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage3"), undefined, "icon-placeholder", { isHidden: hiddenCondition3 }),
+      BackstageItemUtilities.createStageLauncher("Test4", 200, 40, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage4"), undefined, "icon-placeholder", { isDisabled: enableCondition }),
+      BackstageItemUtilities.createStageLauncher("Ui2", 200, 50, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstageUi20"), undefined, "icon-placeholder", { isHidden: notUi2Condition }),
+      BackstageItemUtilities.createStageLauncher("IModelOpen", 300, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
+      BackstageItemUtilities.createStageLauncher("IModelIndex", 300, 20, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
+      BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
       SettingsModalFrontstage.getBackstageActionItem(400, 10),
-      BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.i18n.translate("SampleApp:backstage.componentExamples"), undefined, "icon-details", { badgeType: BadgeType.New }),
+      BackstageItemUtilities.createActionItem("SampleApp.componentExamples", 400, 20, () => FrontstageManager.openModalFrontstage(new ComponentExamplesModalFrontstage()), IModelApp.localization.getLocalizedString("SampleApp:backstage.componentExamples"), undefined, "icon-details", { badgeType: BadgeType.New }),
     ];
   });
 

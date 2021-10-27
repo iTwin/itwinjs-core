@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool"
+}

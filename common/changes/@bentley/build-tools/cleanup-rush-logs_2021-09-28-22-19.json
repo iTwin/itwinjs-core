@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/build-tools",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools"
+}

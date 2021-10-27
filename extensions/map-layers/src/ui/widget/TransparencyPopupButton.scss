@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .map-transparency-popup-panel {
   z-index: 14000;
@@ -10,18 +11,18 @@
   flex-direction: row;
 
   .map-transparency-slider-container {
-    display: flex;
-    align-items: center;
+    display: block;
     width: 160px;
     height: 2.5em;
     margin-left: 1em;
     margin-right: 1em;
+    margin-top: 6px;
   }
 }
 
 .map-transparency-popup-button {
   color: $buic-foreground-body;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   background-color: transparent;
   height: 2.2em;
   border: none;
@@ -44,6 +45,7 @@
       fill: $buic-foreground-primary-tone;
     }
   }
+
   &:focus {
     box-shadow: $uicore-button-focus-boxshadow;
     outline: none;

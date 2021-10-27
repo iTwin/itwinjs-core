@@ -12,7 +12,7 @@ describe("NativeApp storage backend", () => {
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
   });
 
-  it("Primitive Type", () => {
+  it("should persistence primitive type values", () => {
     const test1 = NativeAppStorage.open("backend_test_1");
     test1.removeAll();
     const dataset = [
@@ -20,7 +20,7 @@ describe("NativeApp storage backend", () => {
       { key: "b", value: 11.22 },
       { key: "c", value: "Hello World" },
       { key: "d", value: Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) },
-      { key: "e", value: null },
+      { key: "e", value: undefined },
     ];
 
     for (const item of dataset) {
@@ -60,14 +60,16 @@ describe("NativeApp storage backend", () => {
     assert.throw(() => { test3.close(); });
   });
 
-  it("Override and type check", () => {
+  it("should override and type check", () => {
     const test1 = NativeAppStorage.open("backend_test_2");
     test1.removeAll();
-    test1.setData("key1", null);
-    assert.isNull(test1.getData("key1"));
+    test1.setData("key1", undefined);
+    assert.isUndefined(test1.getData("key1"));
+    assert.isTrue(test1.hasNullValue("key1"));
 
     test1.setData("key1", 2222);
     assert.isNumber(test1.getData("key1"));
+    assert.equal(test1.getValueType("key1"), "number");
     assert.equal(test1.getData("key1"), 2222);
     assert.equal(test1.getNumber("key1"), 2222);
     assert.equal(test1.getString("key1"), undefined);
@@ -103,11 +105,12 @@ describe("NativeApp storage backend", () => {
     assert.equal(test1.getString("key1"), undefined);
     assert.equal(test1.getNumber("key1"), undefined);
     test1.removeAll();
+    assert.isFalse(test1.hasNullValue("key1"));
     assert.equal(test1.getKeys().length, 0);
     test1.close(true);
   });
 
-  it("Storage open/close test", () => {
+  it("storage open/close", () => {
     const storages: NativeAppStorage[] = [];
     for (let i = 0; i < 20; i++) {
       storages.push(NativeAppStorage.open(`backend_test_3-${i}`));

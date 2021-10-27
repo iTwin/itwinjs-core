@@ -1,0 +1,130 @@
+sep=;
+Release Tag;API Item
+beta;AlphaSlider 
+beta;AlphaSliderProps 
+public;AnimationFractionChangeHandler = (animationFraction: number) => void
+alpha;BaseSolarDataProvider 
+alpha;BaseTimelineDataProvider 
+beta;ColorEditor 
+beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
+beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
+beta;ColorPickerDialogProps
+public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
+public;ColorPickerPanelProps
+public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
+public;ColorPickerPopupProps 
+beta;ColorPickerProps 
+beta;ColorPropertyEditor 
+beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
+beta;ColorSwatchProps 
+internal;ContextMenu 
+deprecated;ContextMenu 
+internal;ContextMenuItem 
+deprecated;ContextMenuItem 
+internal;ContextMenuProps 
+deprecated;ContextMenuProps 
+public;Cube 
+internal;CubeFace 
+internal;CubeFaceProps 
+internal;CubeHover
+public;CubeNavigationAid 
+public;CubeNavigationAidProps 
+public;CubeNavigationHitBoxX
+public;CubeNavigationHitBoxY
+public;CubeNavigationHitBoxZ
+public;CubeProps 
+public;CubeRotationChangeEvent 
+public;CubeRotationChangeEventArgs
+internal;CustomThumb(): JSX.Element
+public;DrawingNavigationAid 
+public;DrawingNavigationAidProps 
+internal;DrawingNavigationCanvas 
+internal;DrawingNavigationCanvasProps
+public;DrawingViewportChangeEvent 
+public;DrawingViewportChangeEventArgs
+public;Face
+internal;FaceCell 
+internal;FaceCellProps 
+alpha;FormatPanel(props: FormatPanelProps): JSX.Element
+alpha;FormatPanelProps 
+alpha;FormatPrecision(props: FormatPrecisionProps): JSX.Element
+alpha;FormatPrecisionProps 
+alpha;FormatSample(props: FormatSampleProps): JSX.Element
+alpha;FormatSampleProps 
+alpha;FormatTypeOption(props: FormatTypeOptionProps): JSX.Element
+alpha;FormatTypeOptionProps 
+alpha;FormatUnitLabel(props: FormatUnitLabelProps): JSX.Element
+alpha;FormatUnitLabelProps 
+alpha;FormatUnits(props: FormatUnitsProps): JSX.Element
+alpha;FormatUnitsProps 
+internal;getCSSColorFromDef(colorDef: ColorDef): string
+internal;getPercentageOfRectangle(rect: DOMRect, pointer: number): number
+internal;HitBoxX
+deprecated;HitBoxX
+internal;HitBoxY
+deprecated;HitBoxY
+internal;HitBoxZ
+deprecated;HitBoxZ
+beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
+beta;HueSliderProps 
+internal;InlineEdit 
+public;LineWeightSwatch 
+public;LineWeightSwatchProps 
+internal;MapMode
+internal;MenuItem
+deprecated;MenuItem
+internal;Milestone
+deprecated;Milestone
+public;MilestoneRange
+alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
+alpha;MiscFormatOptionsProps 
+internal;NavCubeFace 
+internal;NavCubeFaceProps 
+public;PlaybackSettings
+public;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
+internal;PlayButton 
+internal;PlayerButton 
+internal;PlayerButtonProps 
+alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
+alpha;QuantityFormatPanelProps 
+beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
+beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
+beta;QuantityNumberInputProps 
+beta;QuantityProps 
+internal;RailMarkers({ showToolTip, percent, tooltipText, markDate }:
+beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
+beta;SaturationPickerProps 
+internal;Scrubber(props: ScrubberProps): JSX.Element
+internal;ScrubberProps 
+alpha;SolarDataProvider
+alpha;SolarPlaybackProgressHandler = (time: Date) => void
+alpha;SolarTimeline 
+public;StandardRotationChangeEvent 
+public;StandardRotationChangeEventArgs
+beta;StepFunctionProp = number | ((direction: string) => number | undefined)
+public;TimelineComponent 
+public;TimelineComponentProps
+public;TimelineDataProvider
+public;TimelineDateDisplay
+public;TimelineDateMarkerProps
+public;TimelineMenuItemOption = "replace" | "append" | "prefix"
+public;TimelineMenuItemProps
+public;TimelinePausePlayAction
+public;TimelinePausePlayArgs 
+public;TimelineScale
+public;UiIModelComponents
+internal;useFocusedThumb(sliderContainer: HTMLDivElement | undefined): boolean
+public;ViewClassFullNameChangedEvent 
+public;ViewClassFullNameChangedEventArgs
+public;ViewIdChangedEvent 
+public;ViewIdChangedEventArgs
+public;ViewportComponent 
+public;ViewportComponentEvents
+public;ViewportProps 
+public;ViewRotationChangeEvent 
+public;ViewRotationChangeEventArgs
+public;ViewStateProp = ViewState | (() => ViewState)
+public;WeightEditor 
+public;WeightPickerButton 
+public;WeightPickerProps 
+public;WeightPropertyEditor 

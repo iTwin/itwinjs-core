@@ -6,7 +6,7 @@
  * @module MarkupTools
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 

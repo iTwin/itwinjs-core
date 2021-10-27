@@ -1,6 +1,6 @@
 # Create a test iModel from a Bentley provided sample via the Free Trial service
 
-The quickest way to get access to a cloud hosted iModel is by creating an iModel seeded with Bentley provided sample data.
+The quickest way to get access to an iTwin Platform hosted iModel is by creating an iModel seeded with Bentley provided sample data.
 
 - Go to the "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page
 - Give your test iModel a name

@@ -1,58 +1,24 @@
 sep=;
 Release Tag;API Item
-beta;AccessToken
-beta;AccessTokenProps
-beta;AuthenticationError 
-beta;AuthorizationClient
-public;AuthorizedClientRequestContext 
-beta;AuthorizedClientRequestContextProps 
-beta;AuthorizedSession 
-beta;AuthorizedSessionProps 
 beta;CancelRequest
-beta;ChangeState = "new" | "modified" | "deleted" | "existing"
-beta;ChunkedQueryContext
-internal;ClassKeyMapInfo
 beta;class Client
-internal;ConstructorType = new () => any
 internal;DefaultRequestOptionsProvider
-internal;DefaultWsgRequestOptionsProvider 
 internal;DownloadFailed 
-beta;class ECInstance
-internal;ECJsonTypeMap
-beta;FileHandler
-internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
-internal;getJson(requestContext: ClientRequestContext, url: string): Promise
-beta;HttpRequestOptions
+internal;FileHandler
+internal;getJson(url: string): Promise
 beta;ImsAuthorizationClient 
-beta;IncludePrefix
-beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
 beta;ITwinClientLoggerCategory
-beta;ProgressCallback = (progress: ProgressInfo) => void
-beta;ProgressInfo
-internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
-beta;RequestBasicCredentials
-beta;RequestGlobalOptions
-beta;requestIdHeaderName = "X-Correlation-Id"
-beta;RequestOptions
-beta;RequestQueryOptions
-beta;RequestQueryStringifyOptions
-beta;RequestTimeoutOptions
-beta;Response
-beta;ResponseError 
-internal;SamlAccessToken 
-deprecated;SamlAccessToken 
-internal;SamlAuthorizationToken 
-deprecated;SamlAuthorizationToken 
-internal;class SamlToken
-deprecated;class SamlToken
+internal;ProgressCallback = (progress: ProgressInfo) => void
+internal;ProgressInfo
+internal;request(url: string, options: RequestOptions): Promise
+internal;RequestBasicCredentials
+internal;RequestGlobalOptions
+internal;requestIdHeaderName = "X-Correlation-Id"
+internal;RequestOptions
+internal;RequestQueryOptions
+internal;RequestQueryStringifyOptions
+internal;RequestTimeoutOptions
+internal;Response
+internal;ResponseError 
 beta;SasUrlExpired 
-internal;TokenPrefix(prefix: string): (constructor: any) => void
-internal;UrlDiscoveryClient 
 internal;UserCancelledError 
-beta;UserInfo
-beta;UserInfoProps
-beta;class WsgClient 
-beta;WsgError 
-beta;class WsgInstance 
-beta;WsgQuery
-beta;WsgRequestOptions

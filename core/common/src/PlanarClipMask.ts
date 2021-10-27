@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 
 /** The different modes by which a [[PlanarClipMaskSettings]] collects the geometry used to mask a model.
  * @public
@@ -48,7 +48,7 @@ export enum PlanarClipMaskPriority {
  * @see [[DisplayStyleSettingsProps.planarClipOvr]] and [[ContextRealityModelProps.planarClipMask]].
  * @public
  */
-export interface  PlanarClipMaskProps {
+export interface PlanarClipMaskProps {
   /** Controls how the mask geometry is collected */
   mode: PlanarClipMaskMode;
   /** @see [[PlanarClipMaskSettings.modelIds]]. */
@@ -158,8 +158,8 @@ export class PlanarClipMaskSettings {
     return this.mode === other.mode &&
       this.priority === other.priority &&
       this.transparency === other.transparency &&
-      this._modelIds === other._modelIds  &&
-      this._subCategoryOrElementIds ===  other._subCategoryOrElementIds;
+      this._modelIds === other._modelIds &&
+      this._subCategoryOrElementIds === other._subCategoryOrElementIds;
   }
 
   /** Create a copy of this TerrainSettings, optionally modifying some of its properties.

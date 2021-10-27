@@ -6,11 +6,10 @@
  * @module ChangedElementsDb
  */
 
-import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
+import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -95,16 +94,15 @@ export class ChangedElementsDb implements IDisposable {
   }
 
   /** Processes a range of changesets and adds it to the changed elements cache
-   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param options Options for processing
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
-    requestContext.enter();
-    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
+  public async processChangesets(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+    const iModelId = briefcase.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
-    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
-    requestContext.enter();
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
     const status = this.nativeDb.processChangesets(
@@ -124,20 +122,20 @@ export class ChangedElementsDb implements IDisposable {
 
   /** Processes a range of changesets and adds it to the changed elements cache
    * This call will close the IModelDb object as it is required for processing and applying changesets
-   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param options options for processing
    */
-  public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
-    requestContext.enter();
-    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
-    requestContext.enter();
+  public async processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+    const iModelId = briefcase.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
     // Close briefcase before doing processing and rolling briefcase
     const dbFilename = briefcase.pathName;
-    const dbGuid = briefcase.getGuid();
+    const dbGuid = briefcase.iModelId;
     briefcase.close();
     // Process changesets
     const status = this.nativeDb.processChangesetsAndRoll(

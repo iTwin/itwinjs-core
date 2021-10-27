@@ -11,9 +11,34 @@ require('jsdom-global')();
 window.Date = Date;
 document.elementFromPoint = () => null;
 
-const {
-  JSDOM
-} = require('jsdom');
+// Fill in more missing functions left out by jsdom or mocha
+performance = window.performance;
+
+// See https://github.com/jsdom/jsdom/issues/2527
+global.PointerEvent = global.MouseEvent;
+global.WheelEvent = global.MouseEvent;
+
+// See https://github.com/jsdom/jsdom/pull/2926
+global.DOMRect = class DOMRect {
+  constructor(x, y, width, height) {
+    this.x = x ?? 0;
+    this.y = y ?? 0;
+    this.width = width ?? 0;
+    this.height = height ?? 0;
+    this.top = this.y;
+    this.left = this.x;
+    this.right = this.x + this.width;
+    this.bottom = this.y + this.height;
+  }
+  toJSON() {
+    return { ...this }
+  }
+};
+global.DOMRect.fromRect = function (rect) {
+  return new DOMRect(rect.x, rect.y, rect.width, rect.height);
+};
+
+const { JSDOM } = require('jsdom');
 global.DOMParser = new JSDOM().window.DOMParser;
 
 /** Enzyme mount with automatic unmount after the test. */
@@ -49,9 +74,10 @@ m._load = (request, parent, isMain) => {
 
 // setup enzyme (testing utils for React)
 enzyme.configure({
-  adapter: new (require("enzyme-adapter-react-16/build"))()
+  adapter: new (require("@wojtekmaj/enzyme-adapter-react-17/build"))()
 });
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
+
 
 // setup chai
 chai.should();
@@ -111,3 +137,6 @@ afterEach(async () => {
     sinon.restore();
   } catch (e) { }
 });
+
+// This is required by our I18n module (specifically the i18next-http-backend package).
+global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;

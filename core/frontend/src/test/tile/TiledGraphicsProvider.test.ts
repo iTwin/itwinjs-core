@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeDuration, BeEvent } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
@@ -37,7 +36,7 @@ class TestTile extends Tile {
   }
 
   public async readContent(): Promise<TileContent> {
-    return { };
+    return {};
   }
 }
 
@@ -65,7 +64,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return {}; }
 
   protected _selectTiles(): Tile[] {
     return [this.rootTile];
@@ -101,7 +100,7 @@ class TestRef extends TileTreeReference {
 
   public get treeOwner() { return this._owner; }
 
-  protected get _isLoadingComplete(): boolean {
+  protected override get _isLoadingComplete(): boolean {
     return this.loadingComplete;
   }
 }

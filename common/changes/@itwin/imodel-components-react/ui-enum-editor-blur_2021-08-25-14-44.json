@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodel-components-react",
+      "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodel-components-react"
+}

@@ -10,17 +10,29 @@ import { Client } from "./Client";
 
 /** @beta */
 export class ImsAuthorizationClient extends Client {
-  public static readonly searchKey: string = "IMSOpenID";
+  protected override baseUrl = "https://ims.bentley.com";
 
   public constructor() {
     super();
   }
 
   /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
+   * Gets the URL of the service. The default URL is ims.bentley.com, but it can be overridden by
+   * IMJS_ITWIN_PLATFORM_AUTHORITY environment variable. In that case, the URL will be used without prefix.
+   * @see [[Client.getUrl]]
+   *
+   * Note that for consistency sake, the URL is always stripped of any trailing "/".
+   * @returns URL for the service
    */
-  protected getUrlSearchKey(): string {
-    return ImsAuthorizationClient.searchKey;
+  public override async getUrl() {
+    if (this._url)
+      return this._url;
+
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY) {
+      // Strip trailing '/'
+      this._url = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY.replace(/\/$/, "");
+      return this._url;
+    }
+    return super.getUrl();
   }
 }

@@ -4,23 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport,
+  SnapshotConnection,
+} from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
-import { Point3d } from "@bentley/geometry-core";
-import { Graphic, GraphicOwner } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   class TestCanvasDecoration implements CanvasDecoration {

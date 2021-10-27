@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import { ClassRegistry, KnownLocations, Schema, Schemas } from "@bentley/imodeljs-backend";
+import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
 import * as elementsModule from "./AnalyticalElements";
 import * as modelsModule from "./AnalyticalModels";
 import * as relationshipsModule from "./AnalyticalRelationships";
@@ -16,7 +16,7 @@ import * as relationshipsModule from "./AnalyticalRelationships";
  * @beta
  */
 export class AnalyticalSchema extends Schema {
-  public static get schemaName(): string { return "Analytical"; }
+  public static override get schemaName(): string { return "Analytical"; }
   public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Dropped DisplayStyleState.changeBaseMapProps. Added new DisplayStyleState.backgroundMapBase setter.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

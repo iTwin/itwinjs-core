@@ -8,6 +8,10 @@ Example command line:
 
 `npm start -- --sourceFile=<sourceIModelFileName> --targetFile=<targetIModelFileName>`
 
+The target file must be a `StandaloneDb`, you can use the utility script `test-apps/display-test-app/src/backend/SetToStandalone.ts`
+to turn a snapshot into a `StandaloneDb` for testing purposes.
+You can also perform a transform onto an empty target by specifying `--targetDestination=<path>` instead.
+
 To get usage help run:
 
 `npm start -- --help`
@@ -17,7 +21,7 @@ To get usage help run:
 This application demonstrates the following:
 
 - Using the `IModelTransformer` API
-- Calling the `ContextRegistry` API to get *context* (project or asset) information
+- Calling the `ITwinRegistry` API to get *context* (project or asset) information
 - Querying `IModelHub` to get iModel information
 - How to handle either *briefcase* or *snapshot* iModel in the same application
 - Using [yargs](http://yargs.js.org/) to handle command line arguments
@@ -31,14 +35,14 @@ Here are the steps that can be used:
 
 - Ask to be invited to the project/asset context that contains the iModel. This is straightforward in *QA* and *DEV* but may require more legwork for a user iModel in *PROD*.
 - After being invited, your name should show up in the "Team Members" list. If it does not, you may not have the required permissions to pull a briefcase of the iModel.
-- Get the GUID of the contextId and the GUID of the iModelId. Both should be available in the URL used by Design Review to view the iModel.
+- Get the GUID of the iTwinId and the GUID of the iModelId. Both should be available in the URL used by Design Review to view the iModel.
 - Optionally, you can turn on verbose iModel transformation-related logging with the `--logTransformer` option.
 - Set the appropriate options either on the command line or by editing the `imodel-transformer (app)` launch configuration within `launch.json` (in the root imodeljs directory)
   - `--hub='qa'` (or 'dev' or 'prod')
   - `--logTransformer`
   - `--sourceContextId='<context GUID>'`
   - `--sourceIModelId='<iModel GUID>'`
-  - `--targetFile='<full path to file on local computer>'`
+  - `--targetDestination='<full path to file on local computer>'`
 
 A common strategy is to run with verbose logging on to find the problem element or spot where the problem occurs.
 Once the problem area has been identified, you can employ various strategies to set a conditional breakpoint.

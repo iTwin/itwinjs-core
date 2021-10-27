@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames, StructValue,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
+/**
+ * @internal Used for testing only.
+ */
 export function createPrimitiveStringProperty(
   name: string,
   rawValue: string,
@@ -37,6 +40,9 @@ export function createPrimitiveStringProperty(
   return property;
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export function createArrayProperty(name: string, items?: PropertyRecord[], autoExpand?: boolean): PropertyRecord {
   if (!items)
     items = [];
@@ -58,6 +64,9 @@ export function createArrayProperty(name: string, items?: PropertyRecord[], auto
   return property;
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export function createStructProperty(
   name: string,
   members?: {

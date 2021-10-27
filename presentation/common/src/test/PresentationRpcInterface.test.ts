@@ -2,22 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String, using } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
+import { Id64String, using } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRpcRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions,
-  HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationRpcInterface,
+  ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,
   SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  createRandomDescriptorJSON, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
-} from "./_helpers/random";
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, MultiElementPropertiesRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
+} from "../presentation-common/PresentationRpcInterface";
+import { createTestContentDescriptor } from "./_helpers/Content";
+import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {
@@ -27,7 +28,7 @@ describe("PresentationRpcInterface", () => {
   }
 
   it("finds imodel tokens in RPC requests", () => {
-    const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
+    const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
     const parameters = [
       token,
       { rulesetOrId: faker.random.word() },
@@ -55,65 +56,23 @@ describe("PresentationRpcInterface", () => {
 
     let rpcInterface: PresentationRpcInterface;
     let spy: sinon.SinonSpy<[IArguments], Promise<any>>;
-    const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
+    const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
       spy = sinon.stub(rpcInterface, "forward");
     });
 
-    it("[deprecated] forwards getNodesAndCount call", async () => {
-      const options: Paged<HierarchyRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
-      };
-      await rpcInterface.getNodesAndCount(token, options); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
-    it("[deprecated] forwards getNodes call for root nodes", async () => {
-      const options: Paged<HierarchyRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
-      };
-      await rpcInterface.getNodes(token, options); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
-    it("[deprecated] forwards getNodes call for child nodes", async () => {
-      const options: Paged<HierarchyRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
-      };
-      const parentKey = createRandomECInstancesNodeKey();
-      await rpcInterface.getNodes(token, options, parentKey); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, parentKey));
-    });
-
-    it("[deprecated] forwards getNodesCount call for root nodes", async () => {
-      const options: HierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-      };
-      await rpcInterface.getNodesCount(token, options); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
     it("forwards getNodesCount call for root nodes", async () => {
-      const options: ExtendedHierarchyRpcRequestOptions = {
+      const options: HierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getNodesCount(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards getNodesCount call for child nodes", async () => {
-      const options: HierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-      };
-      const parentKey = createRandomECInstancesNodeKey();
-      await rpcInterface.getNodesCount(token, options, parentKey); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, parentKey));
-    });
-
     it("forwards getNodesCount call for child nodes", async () => {
-      const options: ExtendedHierarchyRpcRequestOptions = {
+      const options: HierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
         parentKey: createRandomECInstancesNodeKey(),
       };
@@ -122,7 +81,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getPagedNodes call", async () => {
-      const options: Paged<ExtendedHierarchyRpcRequestOptions> = {
+      const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
         parentKey: createRandomECInstancesNodeKeyJSON(),
       };
@@ -131,29 +90,31 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const options: ExtendedHierarchyRpcRequestOptions = {
+      const options: FilterByTextHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
+        filterText: "filter",
       };
-      await rpcInterface.getFilteredNodePaths(token, options, "filter");
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, "filter"));
+      await rpcInterface.getFilteredNodePaths(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
     it("forwards getNodePaths call", async () => {
-      const options: ExtendedHierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-      };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
-      await rpcInterface.getNodePaths(token, options, keys, 1);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, keys, 1));
+      const options: FilterByInstancePathsHierarchyRpcRequestOptions = {
+        rulesetOrId: faker.random.word(),
+        instancePaths: keys,
+        markedIndex: 1,
+      };
+      await rpcInterface.getNodePaths(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards getContentDescriptor call", async () => {
-      const options: ContentRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+    it("forwards getContentSources call", async () => {
+      const options: ContentSourcesRpcRequestOptions = {
+        classes: ["test.class-one", "test.class-two"],
       };
-      const keys = new KeySet().toJSON();
-      await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, "test", keys, undefined));
+      await rpcInterface.getContentSources(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
     it("forwards getContentDescriptor call", async () => {
@@ -166,50 +127,20 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards getContentSetSize call", async () => {
+    it("forwards getContentSetSize call", async () => {
       const options: ContentRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
-      };
-      const descriptor = createRandomDescriptorJSON();
-      const keys = new KeySet().toJSON();
-      await rpcInterface.getContentSetSize(token, options, descriptor, keys); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, descriptor, keys));
-    });
-
-    it("forwards getContentSetSize call", async () => {
-      const options: ExtendedContentRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-        descriptor: createRandomDescriptorJSON(),
+        descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
       };
       await rpcInterface.getContentSetSize(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards getContent call", async () => {
-      const options: Paged<ContentRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
-      };
-      const descriptor = createRandomDescriptorJSON();
-      const keys = new KeySet().toJSON();
-      await rpcInterface.getContent(token, options, descriptor, keys); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, descriptor, keys));
-    });
-
-    it("[deprecated] forwards getContentAndSize call", async () => {
-      const options: Paged<ContentRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
-      };
-      const descriptor = createRandomDescriptorJSON();
-      const keys = new KeySet().toJSON();
-      await rpcInterface.getContentAndSize(token, options, descriptor, keys); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, descriptor, keys));
-    });
-
     it("forwards getPagedContent call", async () => {
-      const options: Paged<ExtendedContentRpcRequestOptions> = {
+      const options: Paged<ContentRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
-        descriptor: createRandomDescriptorJSON(),
+        descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
       };
       await rpcInterface.getPagedContent(token, options);
@@ -217,31 +148,19 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getPagedContentSet call", async () => {
-      const options: Paged<ExtendedContentRpcRequestOptions> = {
+      const options: Paged<ContentRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
-        descriptor: createRandomDescriptorJSON(),
+        descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
       };
       await rpcInterface.getPagedContentSet(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards getDistinctValues call", async () => {
-      const options: ContentRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-      };
-      const descriptor = createRandomDescriptorJSON();
-      const fieldName = faker.random.word();
-      const maximumValueCount = faker.random.number();
-      const keys = new KeySet().toJSON();
-      await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount));
-    });
-
     it("forwards getPagedDistinctValues call", async () => {
       const options: DistinctValuesRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
-        descriptor: createRandomDescriptorJSON(),
+        descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         fieldDescriptor: {
           type: FieldDescriptorType.Name,
           fieldName: "test",
@@ -252,20 +171,20 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards getElementProperties call", async () => {
-      const options: ElementPropertiesRpcRequestOptions = {
+    it("forwards getElementProperties call with single element options", async () => {
+      const options: SingleElementPropertiesRpcRequestOptions = {
         elementId: "0x1",
       };
       await rpcInterface.getElementProperties(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards getDisplayLabelDefinition call", async () => {
-      const key = createRandomECInstanceKey();
-      const options: LabelRpcRequestOptions = {
+    it("forwards getElementProperties call with multi element options", async () => {
+      const options: MultiElementPropertiesRpcRequestOptions = {
+        elementClasses: ["TestSchema:TestClass"],
       };
-      await rpcInterface.getDisplayLabelDefinition(token, options, key); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, key));
+      await rpcInterface.getElementProperties(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {
@@ -274,14 +193,6 @@ describe("PresentationRpcInterface", () => {
       };
       await rpcInterface.getDisplayLabelDefinition(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
-    it("[deprecated] forwards getDisplayLabelDefinitions call", async () => {
-      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const options: LabelRpcRequestOptions = {
-      };
-      await rpcInterface.getDisplayLabelDefinitions(token, options, keys); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, keys));
     });
 
     it("forwards getPagedDisplayLabelDefinitions call", async () => {
@@ -306,31 +217,6 @@ describe("PresentationRpcInterface", () => {
       const scopeId = faker.random.uuid();
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
-    });
-
-    it("[deprecated] forwards compareHierarchies call", async () => {
-      const options: HierarchyCompareRpcOptions = {
-        prev: {
-          rulesetOrId: "test1",
-        },
-        rulesetOrId: "test2",
-        expandedNodeKeys: [],
-      };
-      await rpcInterface.compareHierarchies(token, options); // eslint-disable-line deprecation/deprecation
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
-    it("forwards compareHierarchiesPaged call", async () => {
-      const options: HierarchyCompareRpcOptions = {
-        prev: {
-          rulesetOrId: "test1",
-        },
-        rulesetOrId: "test2",
-        expandedNodeKeys: [],
-        resultSetSize: 10,
-      };
-      await rpcInterface.compareHierarchiesPaged(token, options);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
   });

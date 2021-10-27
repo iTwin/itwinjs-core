@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
-import {
-  ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
-  Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
-} from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
-import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
+import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
+import {
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
+  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+} from "@itwin/core-frontend";
+import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
+import {
+  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
+} from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -22,20 +23,19 @@ describe("Vertex buffer objects", () => {
     const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
-    await IModelApp.startup({ renderSys: renderSysOpts });
+    await TestUtility.startFrontend({ renderSys: renderSysOpts });
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should render correctly", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = true;
+      vp.view.viewFlags = vp.view.viewFlags.with("visibleEdges", true);
 
       await vp.waitForAllTilesToRender();
       expect(vp.numRequestedTiles).to.equal(0);
@@ -91,13 +91,13 @@ describe("RenderTarget", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should have expected view definition", async () => {
@@ -192,9 +192,7 @@ describe("RenderTarget", () => {
 
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
-      const vf = vp.view.viewFlags;
-      vf.lighting = false;
-      vp.invalidateRenderPlan();
+      vp.viewFlags = vp.viewFlags.with("lighting", false);
       await vp.drawFrame();
 
       const white = Color.from(0xffffffff);
@@ -204,8 +202,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(white)).to.be.true;
 
       // In wireframe, same colors, but center pixel will be background color - only edges draw.
-      vf.renderMode = RenderMode.Wireframe;
-      vp.invalidateRenderPlan();
+      vp.viewFlags = vp.viewFlags.withRenderMode(RenderMode.Wireframe);
       await vp.drawFrame();
 
       colors = vp.readUniqueColors();
@@ -268,8 +265,7 @@ describe("RenderTarget", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";
       const subcatId = "0x18";
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
 
       type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
       class RenderTestOverrideProvider implements FeatureOverrideProvider {
@@ -389,9 +385,7 @@ describe("RenderTarget", () => {
   it("should augment symbology", async () => {
     await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
       // Draw unlit surfaces only - a white slab on a black background.
-      const vf = vp.viewFlags.clone();
-      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
 
       const expectSurfaceColor = async (color: ColorDef) => {
         await vp.waitForAllTilesToRender();
@@ -541,8 +535,7 @@ describe("RenderTarget", () => {
   it("should render hilite", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
+      vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, hiddenEdges: false, lighting: false });
       vp.hilite = new Hilite.Settings(ColorDef.red, 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();
@@ -643,9 +636,7 @@ describe("RenderTarget", () => {
 
     const fullRect = new ViewRect(0, 0, 100, 100);
     await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.backgroundMap = true;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
 
       await vp.waitForAllTilesToRender();
       const mapTreeRef = vp.backgroundMap!;
@@ -676,8 +667,7 @@ describe("RenderTarget", () => {
   it("should clip using a single plane", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags;
-      vf.visibleEdges = false;
+      vp.viewFlags = vp.viewFlags.with("visibleEdges", false);
 
       const clip = ClipVector.fromJSON([{
         shape: {

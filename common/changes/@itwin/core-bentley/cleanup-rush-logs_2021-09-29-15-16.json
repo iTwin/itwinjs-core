@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

@@ -1,0 +1,337 @@
+sep=;
+Release Tag;API Item
+public;AcquireNewBriefcaseIdArg 
+beta;AliCloudStorageService 
+public;AnnotationElement2d 
+public;class AuxCoordSystem 
+public;AuxCoordSystem2d 
+public;AuxCoordSystem3d 
+public;AuxCoordSystemSpatial 
+beta;AzureBlobStorage 
+beta;BackendHubAccess
+public;BackendLoggerCategory
+public;BindParameter = number | string
+public;BisCoreSchema 
+public;BriefcaseDb 
+public;BriefcaseDbArg 
+public;BriefcaseIdArg 
+internal;BriefcaseLocalValue
+public;BriefcaseManager
+public;class Callout 
+public;Category 
+public;CategoryOwnsSubCategories 
+public;CategorySelector 
+internal;ChangedElementsDb 
+public;ChangesetArg 
+internal;ChangesetIndexArg 
+public;ChangesetRangeArg 
+beta;ChangeSummary
+beta;ChangeSummaryExtractOptions
+deprecated;ChangeSummaryExtractOptions
+beta;ChangeSummaryManager
+public;ChannelRootAspect 
+internal;CheckpointArg = DownloadRequest
+internal;CheckpointManager
+public;CheckpointProps 
+public;ClassRegistry
+beta;class CloudStorageService
+beta;CloudStorageServiceCredentials
+internal;CloudStorageTileUploader
+beta;CloudStorageUploadOptions
+public;CodeSpecs
+public;ComputedProjectExtents
+public;ComputeProjectExtentsOptions
+alpha;CrashReportingConfig
+alpha;CrashReportingConfigNameValuePair
+beta;CreateChangeSummaryArgs 
+public;CreateNewIModelProps 
+public;DefinitionContainer 
+public;class DefinitionElement 
+public;DefinitionGroup 
+public;DefinitionGroupGroupsDefinitions 
+public;DefinitionModel 
+public;DefinitionPartition 
+public;class DefinitionSet 
+public;DetailCallout 
+public;class DetailingSymbol 
+internal;DevTools
+internal;DevToolsOsStats
+internal;DevToolsProcessStats
+internal;DevToolsStats
+internal;DevToolsStatsFormatter
+public;DictionaryModel 
+public;class DisplayStyle 
+public;DisplayStyle2d 
+public;DisplayStyle3d 
+public;DisplayStyleCreationOptions 
+public;class Document 
+public;DocumentListModel 
+public;DocumentPartition 
+internal;DownloadJob
+internal;DownloadRequest
+internal;Downloads
+public;Drawing 
+public;DrawingCategory 
+public;DrawingGraphic 
+public;DrawingGraphicRepresentsElement 
+public;DrawingGraphicRepresentsFunctionalElement 
+public;DrawingModel 
+public;DrawingViewDefinition 
+beta;class DriverBundleElement 
+public;ECDb 
+public;ECDbOpenMode
+public;ECEnumValue
+internal;ECSchemaXmlContext
+public;ECSqlBinder
+public;ECSqlColumnInfo
+public;ECSqlInsertResult
+public;ECSqlStatement 
+public;ECSqlValue
+public;ECSqlValueIterator 
+public;Element 
+public;ElementAspect 
+beta;ElementDrivesElement 
+beta;ElementDrivesElementProps 
+public;ElementEncapsulatesElements 
+public;ElementGroupsMembers 
+public;ElementGroupsMembersProps 
+public;ElementMultiAspect 
+public;ElementOwnsChildElements 
+public;ElementOwnsExternalSourceAspects 
+public;ElementOwnsMultiAspects 
+public;ElementOwnsUniqueAspect 
+public;ElementRefersToElements 
+public;ElementUniqueAspect 
+public;ElevationCallout 
+public;EmbeddedFileLink 
+public;Entity 
+public;EntityClassType
+public;ExportGraphics
+public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
+public;ExportGraphicsInfo
+public;ExportGraphicsLines
+public;ExportGraphicsMesh
+public;ExportGraphicsMeshVisitor 
+public;ExportGraphicsOptions
+public;ExportLinesFunction = (info: ExportLinesInfo) => void
+public;ExportLinesInfo
+public;ExportPartDisplayInfo
+public;ExportPartFunction = (info: ExportPartInfo) => void
+public;ExportPartGraphicsOptions
+public;ExportPartInfo
+public;ExportPartInstanceInfo
+public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
+public;ExportPartLinesInfo
+beta;ExternalSource 
+public;ExternalSourceAspect 
+public;ExternalSourceAspect
+beta;ExternalSourceAttachment 
+beta;ExternalSourceAttachmentAttachesSource 
+beta;ExternalSourceGroup 
+beta;ExternalSourceGroupGroupsSources 
+beta;ExternalSourceIsInRepository 
+beta;ExternalSourceOwnsAttachments 
+public;class FileNameResolver
+beta;FolderContainsRepositories 
+alpha;FolderLink 
+public;class FunctionalBreakdownElement 
+public;class FunctionalComponentElement 
+public;FunctionalComposite 
+public;class FunctionalElement 
+public;FunctionalElementIsOfType 
+public;FunctionalModel 
+public;FunctionalPartition 
+public;FunctionalSchema 
+public;class FunctionalType 
+internal;generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise
+public;GenericDocument 
+public;GenericGraphicalModel3d 
+public;GenericGraphicalType2d 
+public;GenericPhysicalMaterial 
+public;GenericPhysicalType 
+public;GenericSchema 
+public;class GeometricElement 
+public;class GeometricElement2d 
+public;GeometricElement2dHasTypeDefinition 
+public;class GeometricElement3d 
+public;GeometricElement3dHasTypeDefinition 
+public;GeometricModel 
+public;class GeometricModel2d 
+public;class GeometricModel3d 
+public;GeometryPart 
+public;Graphic3d 
+public;class GraphicalElement2d 
+public;GraphicalElement2dIsOfType 
+public;class GraphicalElement3d 
+public;GraphicalElement3dRepresentsElement 
+public;class GraphicalModel2d 
+public;class GraphicalModel3d 
+public;GraphicalPartition3d 
+public;class GraphicalType2d 
+public;Group 
+public;GroupImpartsToMembers 
+public;class GroupInformationElement 
+public;class GroupInformationModel 
+public;GroupInformationPartition 
+public;GroupModel 
+beta;IModelCloneContext
+public;class IModelDb 
+public;IModelDb
+internal;TileContentState
+internal;Tiles
+public;IModelHost
+public;IModelHostConfiguration
+public;IModelIdArg 
+public;IModelJsFs
+public;IModelJsFsStats
+public;IModelNameArg 
+alpha;IModelSchemaLoader
+public;class InformationContentElement 
+public;class InformationModel 
+public;class InformationPartitionElement 
+public;class InformationRecordElement 
+public;InformationRecordModel 
+public;InformationRecordPartition 
+public;class InformationReferenceElement 
+internal;initializeRpcBackend(): void
+beta;InstanceChange
+public;class IpcHandler
+public;IpcHost
+public;IpcHostOpts
+public;ITwinIdArg
+public;KnownLocations
+internal;LightLocation 
+public;LineStyle 
+public;LineStyleDefinition
+public;class LinkElement 
+public;LinkModel 
+public;LinkPartition 
+internal;LocalhostIpcHost
+internal;LocalhostIpcHostOpts
+beta;LockConflict 
+beta;LockControl
+internal;LockMap = Map
+beta;LockProps
+public;LockState
+internal;MetaDataRegistry
+public;Model 
+public;ModelSelector 
+internal;class NativeAppAuthorizationBackend 
+public;NativeAppStorage
+public;NativeHost
+public;NativeHostOpts 
+beta;OnAspectArg
+beta;OnAspectIdArg 
+beta;OnAspectPropsArg 
+beta;OnChildElementArg 
+beta;OnChildElementIdArg 
+beta;OnChildElementPropsArg 
+beta;OnElementArg
+beta;OnElementIdArg 
+beta;OnElementInModelIdArg 
+beta;OnElementInModelPropsArg 
+beta;OnElementPropsArg 
+beta;OnModelArg
+beta;OnModelIdArg 
+beta;OnModelPropsArg 
+beta;OnSubModelIdArg 
+beta;OnSubModelPropsArg 
+public;OpenBriefcaseArgs = OpenBriefcaseProps &
+public;OrthographicViewDefinition 
+public;class PhysicalElement 
+public;PhysicalElementAssemblesElements 
+public;PhysicalElementFulfillsFunction 
+public;PhysicalElementIsOfPhysicalMaterial 
+public;PhysicalElementIsOfType 
+public;class PhysicalMaterial 
+public;PhysicalModel 
+public;PhysicalObject 
+public;PhysicalPartition 
+public;class PhysicalType 
+public;PhysicalTypeIsOfPhysicalMaterial 
+public;PlanCallout 
+public;Platform
+internal;ProcessChangesetOptions
+public;ProgressFunction = (loaded: number, total: number) => number
+public;PullChangesArgs = ToChangesetArgs
+public;PushChangesArgs 
+beta;class RecipeDefinitionElement 
+public;Relationship 
+public;Relationships
+public;RenderMaterialElement 
+public;RenderMaterialElement
+public;RenderMaterialOwnsRenderMaterials 
+public;RenderTimeline 
+public;RepositoryLink 
+public;RepositoryModel 
+public;RequestNewBriefcaseArg 
+public;class RoleElement 
+public;RoleModel 
+public;RpcTrace
+public;Schema
+internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
+internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
+public;Schemas
+public;SectionCallout 
+public;SectionDrawing 
+public;SectionDrawingLocation 
+public;SectionDrawingModel 
+internal;setMaxEntitiesPerEvent(max: number): number
+public;Sheet 
+public;SheetBorderTemplate 
+public;SheetModel 
+public;SheetTemplate 
+public;SheetViewDefinition 
+public;SnapshotDb 
+public;SpatialCategory 
+public;class SpatialElement 
+public;SpatialLocation 
+public;class SpatialLocationElement 
+public;SpatialLocationIsOfType 
+public;SpatialLocationModel 
+public;SpatialLocationPartition 
+public;class SpatialLocationType 
+public;class SpatialModel 
+public;SpatialViewDefinition 
+public;SQLiteDb 
+public;SqliteStatement 
+public;SqliteValue
+public;SqliteValueType
+public;StandaloneDb 
+internal;StatementCache
+internal;StringParam
+public;SubCategory 
+public;Subject 
+public;SubjectOwnsPartitionElements 
+public;SubjectOwnsSubjects 
+beta;SynchronizationConfigLink 
+beta;SynchronizationConfigProcessesSources 
+beta;SynchronizationConfigSpecifiesRootSources 
+beta;TemplateRecipe2d 
+beta;TemplateRecipe3d 
+internal;TemplateViewDefinition2d 
+internal;TemplateViewDefinition3d 
+public;TextAnnotation2d 
+public;TextAnnotation3d 
+public;Texture 
+internal;TextureCreateProps 
+public;TitleText 
+public;ToChangesetArgs 
+public;TokenArg
+public;TxnChangedEntities
+public;TxnIdString = string
+public;TxnManager
+public;class TypeDefinitionElement 
+public;UpdateModelOptions 
+public;UrlLink 
+internal;V1CheckpointManager
+internal;V2CheckpointAccessProps
+internal;V2CheckpointManager
+public;ValidationError
+public;ViewAttachment 
+public;ViewAttachmentLabel 
+public;class ViewDefinition 
+public;ViewDefinition2d 
+public;class ViewDefinition3d 
+public;VolumeElement 
+public;WebMercatorModel 

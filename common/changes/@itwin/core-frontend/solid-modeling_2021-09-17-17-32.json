@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Avoid skipping tool dynamics frame when new graphic is still pending.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

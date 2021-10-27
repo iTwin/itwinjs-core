@@ -6,6 +6,7 @@ public;ArrayTypeDescription
 internal;AsyncTasksTracker
 public;BaseFieldJSON
 public;BaseNodeKey
+public;BaseNodeKeyJSON
 public;BaseTypeDescription
 public;BooleanRulesetVariable 
 public;BooleanRulesetVariableJSON 
@@ -13,8 +14,10 @@ public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CategoryDescription
 public;CategoryDescriptionJSON
+public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
 public;CheckBoxRule 
 public;ChildNodeRule 
+public;ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
 public;ChildNodeSpecificationBase
 public;ChildNodeSpecificationTypes
 public;ClassGroup 
@@ -23,6 +26,7 @@ public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
 internal;CommonIpcParams
+public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
 public;Content
@@ -33,17 +37,18 @@ public;ContentInstancesOfSpecificClassesSpecification
 public;ContentJSON
 public;ContentModifier 
 public;ContentModifiersList
-public;ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew
-public;ContentRelatedInstancesSpecificationNew 
+public;ContentRelatedInstancesSpecification 
 public;ContentRequestOptions
-deprecated;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions
-deprecated;ContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentRule 
+beta;ContentSourcesRequestOptions
+beta;ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions
+beta;ContentSourcesRpcResult
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
+internal;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification
@@ -51,22 +56,6 @@ public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;DefaultPropertyCategoryOverride 
-public;DEPRECATED_AllInstanceNodesSpecification 
-deprecated;DEPRECATED_AllInstanceNodesSpecification 
-public;DEPRECATED_AllRelatedInstanceNodesSpecification 
-deprecated;DEPRECATED_AllRelatedInstanceNodesSpecification 
-public;DEPRECATED_ContentRelatedInstancesSpecification 
-deprecated;DEPRECATED_ContentRelatedInstancesSpecification 
-public;DEPRECATED_PropertiesDisplaySpecification
-deprecated;DEPRECATED_PropertiesDisplaySpecification
-public;DEPRECATED_PropertyEditorsSpecification 
-deprecated;DEPRECATED_PropertyEditorsSpecification 
-public;DEPRECATED_RelatedInstanceNodesSpecification 
-deprecated;DEPRECATED_RelatedInstanceNodesSpecification 
-public;DEPRECATED_RelatedInstanceSpecification
-deprecated;DEPRECATED_RelatedInstanceSpecification
-public;DEPRECATED_RelatedPropertiesSpecification
-deprecated;DEPRECATED_RelatedPropertiesSpecification
 public;Descriptor 
 public;DescriptorJSON
 public;DescriptorOverrides
@@ -97,9 +86,11 @@ public;DisplayValuesMapJSON
 public;DistinctValuesRequestOptions
 public;DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions
 public;ECClassGroupingNodeKey 
+public;ECClassGroupingNodeKeyJSON 
 public;ECInstancesNodeKey 
 public;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
+public;ECPropertyGroupingNodeKeyJSON 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
 beta;ElementProperties
@@ -115,6 +106,7 @@ beta;ElementPropertiesPropertyItemBase
 beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
+beta;ElementPropertiesRpcResult = ElementProperties | PagedResponse
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
 public;EnumerationChoice
@@ -122,11 +114,7 @@ public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
 alpha;ExpandedNodeUpdateRecord
 alpha;ExpandedNodeUpdateRecordJSON
-public;ExtendedContentRequestOptions
-public;ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ExtendedDataRule 
-public;ExtendedHierarchyRequestOptions
-public;ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 public;Field
 internal;FIELD_NAMES_SEPARATOR = "$"
 public;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor
@@ -134,11 +122,16 @@ public;FieldDescriptor
 public;FieldDescriptorBase
 public;FieldDescriptorType
 alpha;FieldHierarchy
-public;FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON
-internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
+public;FieldJSON
+public;FilterByInstancePathsHierarchyRequestOptions
+public;FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestOptions
+public;FilterByTextHierarchyRequestOptions
+public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
+internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
 internal;getLocalesDirectory: (assetsDirectory: string) => string
 public;GroupingNodeKey 
+public;GroupingNodeKeyJSON 
 public;GroupingRule 
 public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
 public;GroupingSpecificationBase
@@ -147,11 +140,8 @@ public;HierarchyCompareInfo
 public;HierarchyCompareInfo
 public;HierarchyCompareInfoJSON
 public;HierarchyCompareOptions
-public;HierarchyCompareRpcOptions = PresentationRpcRequestOptions
 public;HierarchyRequestOptions
-deprecated;HierarchyRequestOptions
 public;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
-deprecated;HierarchyRpcRequestOptions = PresentationRpcRequestOptions
 alpha;HierarchyUpdateInfo = typeof UPDATE_FULL | HierarchyUpdateRecord[]
 alpha;HierarchyUpdateInfo
 alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[]
@@ -163,6 +153,7 @@ public;Id64RulesetVariable
 public;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
 public;Id64sRulesetVariableJSON 
+public;IdCategoryIdentifier
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
@@ -185,11 +176,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
-internal;isContentDescriptorRequestOptions: 
-internal;isDisplayLabelRequestOptions: 
-internal;isDisplayLabelsRequestOptions: 
-internal;isExtendedContentRequestOptions: 
-internal;isExtendedHierarchyRequestOptions: 
+beta;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
 public;Key = Readonly
@@ -208,25 +195,22 @@ internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
 internal;reviver(key: string, value: any): any
 public;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
+public;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
-deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
-public;LabelRequestOptions
-deprecated;LabelRequestOptions
-public;LabelRpcRequestOptions = PresentationRpcRequestOptions
-deprecated;LabelRpcRequestOptions = PresentationRpcRequestOptions
-public;LoggingNamespaces
-deprecated;LoggingNamespaces
+beta;MultiElementPropertiesRequestOptions
+beta;MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
-public;NestedContentFieldJSON 
+public;NestedContentFieldJSON
 public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
+public;NoCategoryIdentifier
 public;Node
 public;Node
 internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
@@ -242,7 +226,7 @@ public;NodeInsertionInfoJSON
 public;NodeJSON
 public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
-public;NodeKeyJSON = BaseNodeKey | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+public;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement
@@ -259,6 +243,8 @@ public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions
+public;ParentCategoryIdentifier
+public;PartialBy
 public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
@@ -266,23 +252,21 @@ public;PartialNode = AllOrNone
 public;PartialNodeJSON = AllOrNone
 internal;PRESENTATION_COMMON_ROOT: string
 internal;PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface"
-public;PresentationDataCompareOptions
-deprecated;PresentationDataCompareOptions
 public;PresentationError 
 alpha;PresentationIpcEvents
 internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
-beta;PresentationUnitSystem
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
+public;Prioritized
 alpha;ProcessFieldHierarchiesProps
 alpha;ProcessMergedValueProps
 alpha;ProcessPrimitiveValueProps
 public;PropertiesField 
 public;PropertiesFieldDescriptor 
-public;PropertiesFieldJSON 
+public;PropertiesFieldJSON
 public;Property
 public;Property
 public;PropertyAccessor
@@ -304,8 +288,6 @@ public;PropertyInfoJSON
 public;PropertyJSON
 public;PropertyOverrides
 public;PropertyRangeGroupSpecification
-public;PropertyRendererSpecification = CustomRendererSpecification
-deprecated;PropertyRendererSpecification = CustomRendererSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat
@@ -316,18 +298,18 @@ public;RegisteredRuleset
 public;RelatedClassInfo
 public;RelatedClassInfo
 public;RelatedClassInfoJSON
-public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
-public;RelatedInstanceNodesSpecificationNew 
-public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew
-public;RelatedInstanceSpecificationNew
+public;RelatedClassInfoWithOptionalRelationship = PartialBy
+public;RelatedClassInfoWithOptionalRelationship
+public;RelatedClassInfoWithOptionalRelationshipJSON
+public;RelatedInstanceNodesSpecification 
+public;RelatedInstanceSpecification
 public;RelatedPropertiesSpecialValues
-public;RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew
-public;RelatedPropertiesSpecificationNew
+public;RelatedPropertiesSpecification
 public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
 public;RelationshipPath
-public;RelationshipPathJSON = RelatedClassInfoJSON[]
+public;RelationshipPathJSON
 public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
 public;RelationshipStepSpecification
 public;RendererDescription
@@ -335,8 +317,8 @@ public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpeci
 public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
-public;RequestPriority
 beta;RequiredSchemaSpecification
+public;RootCategoryIdentifier
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
@@ -355,6 +337,7 @@ public;SameLabelInstanceGroupApplicationStage
 public;SchemasSpecification
 public;SelectClassInfo
 public;SelectClassInfo
+internal;listFromCompressedJSON(json: SelectClassInfoJSON
 public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
@@ -362,6 +345,8 @@ public;SelectionScope
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
+beta;SingleElementPropertiesRequestOptions
+beta;SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule

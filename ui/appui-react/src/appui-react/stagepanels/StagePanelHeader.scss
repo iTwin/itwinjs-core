@@ -1,0 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/footer/dialog/variables";
+
+.uifw-stagepanelheader {
+  align-items: center;
+  height: $nz-footer-title-bar-height;
+  justify-content: flex-end;
+  padding: 5px 10px;
+  box-sizing: border-box;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr auto;
+
+  >.uifw-collapse {
+    cursor: pointer;
+    justify-self: end;
+    padding: 5px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}

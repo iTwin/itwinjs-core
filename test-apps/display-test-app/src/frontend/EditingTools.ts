@@ -2,32 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   IModelJson, LineString3d, Point3d, Sphere, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
-} from "@bentley/imodeljs-common";
-import { CreateElementTool, EditTools } from "@bentley/imodeljs-editor-frontend";
+} from "@itwin/core-common";
+import { CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext,
   EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+} from "@itwin/core-frontend";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { setTitle } from "./Title";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.
 
 /** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
 export class EditingScopeTool extends Tool {
-  public static toolId = "EditingSession";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
+  public static override toolId = "EditingSession";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
 
-  public run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -48,15 +47,15 @@ export class EditingScopeTool extends Tool {
 
 /** Places a line string. Uses model and category from ToolAdmin.ActiveSettings. */
 export class PlaceLineStringTool extends CreateElementTool {
-  public static toolId = "PlaceLineString";
+  public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];
   private _snapGeomId?: Id64String;
   private _testGeomJson = false;
   private _testGeomParts = false;
   protected _startedCmd?: string;
 
-  protected get wantAccuSnap(): boolean { return true; }
-  protected get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantDynamics(): boolean { return true; }
 
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)
@@ -68,7 +67,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
-  protected setupAndPromptForNextAction(): void {
+  protected override setupAndPromptForNextAction(): void {
     const nPts = this._points.length;
 
     if (0 !== nPts) {
@@ -85,11 +84,11 @@ export class PlaceLineStringTool extends CreateElementTool {
     super.setupAndPromptForNextAction();
   }
 
-  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+  protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
     const nPts = this._points.length;
     const mainMsg = 0 === nPts ? "ElementSet.Prompts.StartPoint" : (1 === nPts ? "ElementSet.Prompts.EndPoint" : "ElementSet.Inputs.AdditionalPoint");
     const leftMsg = "ElementSet.Inputs.AcceptPoint";
-    const rghtMsg = nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel";
+    const rightMsg = nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel";
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -98,8 +97,8 @@ export class PlaceLineStringTool extends CreateElementTool {
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -110,11 +109,11 @@ export class PlaceLineStringTool extends CreateElementTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  public testDecorationHit(id: Id64String): boolean {
+  public override testDecorationHit(id: Id64String): boolean {
     return id === this._snapGeomId;
   }
 
-  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
+  public override getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
     if (this._points.length < 2)
       return undefined;
 
@@ -122,7 +121,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     return geom ? [geom] : undefined;
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     if (this._points.length < 2)
       return;
 
@@ -135,7 +134,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     context.addDecorationFromBuilder(builder);
   }
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     if (this._points.length < 1)
       return;
 
@@ -146,7 +145,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     context.addGraphic(builder.finish());
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this._points.push(ev.point.clone());
     return super.onDataButtonDown(ev);
   }
@@ -223,36 +222,36 @@ export class PlaceLineStringTool extends CreateElementTool {
         await PlaceLineStringTool.callCommand("insertGeometricElement", elemProps, { entryArray: builder.entries });
         await this.saveChanges();
       }
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     // Accept on reset if we have at least 2 points, starting another tool will reject accepted segments...
     if (this._points.length >= 2)
       await this.createElement();
 
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public async onUndoPreviousStep(): Promise<boolean> {
+  public override async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this._points.length)
       return false;
 
     this._points.pop();
     if (0 === this._points.length)
-      this.onReinitialize();
+      await this.onReinitialize();
     else
       this.setupAndPromptForNextAction();
 
     return true;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new PlaceLineStringTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

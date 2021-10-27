@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
@@ -145,7 +145,7 @@ describe("BandedSystem", () => {
       for (const order of [4, 3, 5, 7]) {
         if (points.length >= order) {
           for (const q of points.points) GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, q, 0.15, x0, y0);
-          const curve = BSplineCurve3d.createThroughPoints(points, order);
+          const curve = BSplineCurveOps.createThroughPoints(points, order);
           if (curve) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0);
             for (const f of [0.25, 0.50, 0.75]) GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, curve.fractionToPoint(f), 0.10, x0, y0);

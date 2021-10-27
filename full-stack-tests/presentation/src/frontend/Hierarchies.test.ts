@@ -4,16 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Id64, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { Id64, using } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, InstanceKey, KeySet, RegisteredRuleset, RelationshipDirection, Ruleset,
   RuleTypes,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
-
-/* eslint-disable deprecation/deprecation */
 
 describe("Hierarchies", () => {
 
@@ -90,7 +88,7 @@ describe("Hierarchies", () => {
             }],
           }],
       };
-      const result = await Presentation.presentation.getFilteredNodePaths({ imodel, rulesetOrId: ruleset }, "filter");
+      const result = await Presentation.presentation.getFilteredNodePaths({ imodel, rulesetOrId: ruleset, filterText: "filter" });
       expect(result).to.matchSnapshot();
     });
 
@@ -110,26 +108,34 @@ describe("Hierarchies", () => {
               ruleType: RuleTypes.ChildNodes,
               specifications: [{
                 specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
-                relatedClasses: {
-                  schemaName: "BisCore",
-                  classNames: ["Subject"],
-                },
-                relationships: {
-                  schemaName: "BisCore",
-                  classNames: ["ModelContainsElements"],
-                },
-                requiredDirection: RelationshipDirection.Forward,
+                relationshipPaths: [
+                  {
+                    relationship: {
+                      schemaName: "BisCore",
+                      className: "ModelContainsElements",
+                    },
+                    targetClass: {
+                      schemaName: "BisCore",
+                      className: "Subject",
+                    },
+                    direction: RelationshipDirection.Forward,
+                  },
+                ],
                 groupByClass: false,
                 groupByLabel: false,
                 nestedRules: [{
                   ruleType: RuleTypes.ChildNodes,
                   specifications: [{
                     specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
-                    relationships: {
-                      schemaName: "BisCore",
-                      classNames: ["ElementOwnsChildElements"],
-                    },
-                    requiredDirection: RelationshipDirection.Forward,
+                    relationshipPaths: [
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ElementOwnsChildElements",
+                        },
+                        direction: RelationshipDirection.Forward,
+                      },
+                    ],
                     groupByClass: true,
                     groupByLabel: false,
                   }],
@@ -152,7 +158,7 @@ describe("Hierarchies", () => {
       const key3: InstanceKey = { id: Id64.fromString("0x10"), className: "BisCore:DefinitionPartition" };
       const key4: InstanceKey = { id: Id64.fromString("0xe"), className: "BisCore:LinkPartition" };
       const keys: InstanceKey[][] = [[key1, key2, key3], [key1, key2, key4]];
-      const result = await Presentation.presentation.getNodePaths({ imodel, rulesetOrId: ruleset }, keys, 1);
+      const result = await Presentation.presentation.getNodePaths({ imodel, rulesetOrId: ruleset, instancePaths: keys, markedIndex: 1 });
       expect(result).to.matchSnapshot();
     });
 
@@ -195,10 +201,16 @@ describe("Hierarchies", () => {
         the result should be 1 + 1 + 2 = 4
         */
 
-        const definitionModelNodes = await Presentation.presentation.getNodes(
-          { imodel, rulesetOrId: ruleset.id }, rootNodes[0].key);
-        const dictionaryModelNodes = await Presentation.presentation.getNodes(
-          { imodel, rulesetOrId: ruleset.id }, rootNodes[1].key);
+        const definitionModelNodes = await Presentation.presentation.getNodes({
+          imodel,
+          rulesetOrId: ruleset.id,
+          parentKey: rootNodes[0].key,
+        });
+        const dictionaryModelNodes = await Presentation.presentation.getNodes({
+          imodel,
+          rulesetOrId: ruleset.id,
+          parentKey: rootNodes[1].key,
+        });
 
         const keys = new KeySet([
           definitionModelNodes[0].key,
@@ -252,7 +264,10 @@ describe("Hierarchies", () => {
 
       resetBackend();
 
-      const childNodes = await frontend.getNodes(props, rootNodes[0].key);
+      const childNodes = await frontend.getNodes({
+        ...props,
+        parentKey: rootNodes[0].key,
+      });
       expect(childNodes.length).to.eq(1);
       expect(childNodes[0].key.type).to.eq("child");
     });

@@ -5,22 +5,27 @@
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
+import splitVerticalIconSvg from "@bentley/icons-generic/icons/window-split-vertical.svg?sprite";
+import singlePaneIconSvg from "@bentley/icons-generic/icons/window.svg?sprite";
+
 import {
+  ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType, SelectionTool, SnapMode,
-} from "@bentley/imodeljs-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { Presentation } from "@itwin/presentation-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
-  UiItemsManager, UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
-import { Dialog, MessageSeverity, Radio, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
+  MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
+} from "@itwin/appui-abstract";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
-  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
+  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
-} from "@bentley/ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { FooterSeparator } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
@@ -29,6 +34,9 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
+import { Radio } from "@itwin/itwinui-react";
+import { BeDuration } from "@itwin/core-bentley";
+import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -53,32 +61,10 @@ export function UnitsFormatDialog() {
   }, []);
 
   const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const unitSystem = event.target.value;
-
-    switch (unitSystem) {
-      case "imperial":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "metric":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "usSurvey":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "usCustomary":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      default:
-        break;
-    }
+    const unitSystem = event.target.value as UnitSystemKey;
+    setUnitFormat(unitSystem);
+    Presentation.presentation.activeUnitSystem = unitSystem;
+    await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
   }, [setUnitFormat]);
 
   const buttonCluster = React.useMemo(() => [
@@ -160,8 +146,8 @@ export class AppTools {
       iconSpec: Tool1.iconSpec,
       label: () => Tool1.flyover,
       description: () => Tool1.description,
-      execute: () => {
-        IModelApp.tools.run(Tool1.toolId);
+      execute: async () => {
+        await IModelApp.tools.run(Tool1.toolId);
         AppItemsProvider.toggleStatusBarItem();
         AppItemsProvider.toggleBackstageItem();
       },
@@ -174,9 +160,7 @@ export class AppTools {
       iconSpec: Tool2.iconSpec,
       labelKey: "SampleApp:tools.Tool2.flyover",
       tooltipKey: "SampleApp:tools.Tool2.description",
-      execute: () => {
-        IModelApp.tools.run(Tool2.toolId);
-      },
+      execute: async () => IModelApp.tools.run(Tool2.toolId),
     });
   }
 
@@ -191,7 +175,7 @@ export class AppTools {
         // as the ImodelApp starts. =====
         // make sure formatting and parsing data are cached before the tool starts.
         // await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
-        IModelApp.tools.run(ToolWithSettings.toolId);
+        return IModelApp.tools.run(ToolWithSettings.toolId);
       },
     });
   }
@@ -202,19 +186,13 @@ export class AppTools {
       iconSpec: "icon-camera-animation",
       label: () => AnalysisAnimationTool.flyover,
       description: () => AnalysisAnimationTool.description,
-      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
+      execute: async () => { return IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+          return false;
+        return true;
+      }, [SyncUiEventId.ActiveContentChanged]),
     });
   }
 
@@ -250,7 +228,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item3",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -260,7 +238,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item4",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -270,7 +248,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item5",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -280,7 +258,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item6",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -290,7 +268,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item7",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -300,7 +278,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item8",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -313,9 +291,9 @@ export class AppTools {
       commandId: "setLengthFormatMetric",
       iconSpec: pathIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
-      execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = false; // eslint-disable-line deprecation/deprecation
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
+      execute: async () => {
+        await IModelApp.quantityFormatter.setActiveUnitSystem("metric");
+        Presentation.presentation.activeUnitSystem = "metric";
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
     });
@@ -327,9 +305,9 @@ export class AppTools {
       commandId: "setLengthFormatImperial",
       iconSpec: spriteIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
-      execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+      execute: async () => {
+        await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
+        Presentation.presentation.activeUnitSystem = "imperial";
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });
@@ -403,13 +381,90 @@ export class AppTools {
       // Even though the following will work because calling SampleAppIModelApp.getTestProperty will update redux and trigger event - exercise the tool's call to dispatchUiSyncEvent instead.
       // iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [SampleAppUiActionId.setTestProperty]),
       // label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [SampleAppUiActionId.setTestProperty]),
-      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [toolSyncUiEventId]),
+      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-zoom-out" : "icon-zoom-in", [toolSyncUiEventId]),
       label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [toolSyncUiEventId]),
 
       execute: () => {
         SampleAppIModelApp.setTestProperty(SampleAppIModelApp.getTestProperty() === "HIDE" ? "" : "HIDE");
         // demonstrate how tool could dispatch its own event.
         IModelApp.toolAdmin.dispatchUiSyncEvent(toolSyncUiEventId);
+      },
+    });
+  }
+
+  public static get splitSingleViewportCommandDef() {
+    const commandId = "splitSingleViewportCommandDef";
+    return new CommandItemDef({
+      commandId,
+      iconSpec: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? `svg:${splitVerticalIconSvg}` : `svg:${singlePaneIconSvg}`, [SyncUiEventId.ActiveContentChanged]),
+      label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+      execute: async () => {
+        // if the active frontstage is only showing an single viewport then split it and have two copies of it
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
+          activeFrontstageDef.contentControls[0].viewport) {
+          const vp = activeFrontstageDef.contentControls[0].viewport;
+          if (vp) {
+            const contentPropsArray: ContentProps[] = [];
+            contentPropsArray.push({
+              id: "imodel-view-0",
+              classId: IModelViewportControl.id,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+
+              },
+            });
+            contentPropsArray.push({
+              id: "imodel-view-1",
+              classId: IModelViewportControl.id,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+              },
+            });
+
+            let contentGroupProps: ContentGroupProps = {
+              id: "split-vertical-group",
+              layout: StandardContentLayouts.twoVerticalSplit,
+              contents: contentPropsArray,
+            };
+
+            if (activeFrontstageDef.contentGroupProvider)
+              contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+            const contentGroup = new ContentGroup(contentGroupProps);
+            await FrontstageManager.setActiveContentGroup(contentGroup);
+          }
+        } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
+          activeFrontstageDef.contentControls[0].viewport) {
+          const vp = activeFrontstageDef.contentControls[0].viewport;
+          if (vp) {
+            const contentPropsArray: ContentProps[] = [];
+            contentPropsArray.push({
+              id: "imodel-view-0",
+              classId: IModelViewportControl.id,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+              },
+            });
+
+            let contentGroupProps: ContentGroupProps = {
+              id: "single-content",
+              layout: StandardContentLayouts.singleView,
+              contents: contentPropsArray,
+            };
+            if (activeFrontstageDef.contentGroupProvider)
+              contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+            const contentGroup = new ContentGroup(contentGroupProps);
+            await FrontstageManager.setActiveContentGroup(contentGroup);
+          }
+        }
       },
     });
   }
@@ -483,7 +538,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.errorMessageBox",
       execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
         "This is an error message", this._longMessage,
-        OutputMessageType.Alert, OutputMessageAlert.Dialog)),
+        OutputMessageType.Alert, OutputMessageAlert.Balloon)),
     });
   }
 
@@ -550,7 +605,7 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.i18n.translate("SampleApp:buttons.errorMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
 
@@ -559,7 +614,7 @@ export class AppTools {
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.i18n.translate("SampleApp:buttons.successMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -568,7 +623,7 @@ export class AppTools {
       commandId: "informationMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.i18n.translate("SampleApp:buttons.informationMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.localization.getLocalizedString("SampleApp:buttons.informationMessageBox"))),
     });
   }
 
@@ -577,7 +632,7 @@ export class AppTools {
       commandId: "questionMessage",
       iconSpec: "icon-help",
       labelKey: "SampleApp:buttons.questionMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.i18n.translate("SampleApp:buttons.questionMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.localization.getLocalizedString("SampleApp:buttons.questionMessageBox"))),
     });
   }
 
@@ -586,7 +641,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.localization.getLocalizedString("SampleApp:buttons.warningMessageBox"))),
     });
   }
 
@@ -696,4 +751,95 @@ export class AppTools {
       },
     });
   }
+
+  /** Tool that will start a sample activity and display ActivityMessage.
+   */
+  private static _activityTool = async () => {
+    let isCancelled = false;
+    let progress = 0;
+
+    const details = new ActivityMessageDetails(true, true, true, true);
+    details.onActivityCancelled = () => {
+      isCancelled = true;
+    };
+    IModelApp.notifications.setupActivityMessage(details);
+
+    while (!isCancelled && progress <= 100) {
+      IModelApp.notifications.outputActivityMessage("This is a sample activity message", progress);
+      await BeDuration.wait(100);
+      progress++;
+    }
+
+    const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
+    IModelApp.notifications.endActivityMessage(endReason);
+  };
+
+  public static get activityMessageItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._activityTool(); },
+    });
+  }
+
+  public static get saveContentLayout() {
+    return new ToolItemDef({
+      toolId: SaveContentLayoutTool.toolId,
+      iconSpec: SaveContentLayoutTool.iconSpec,
+      label: SaveContentLayoutTool.flyover,
+      tooltip: SaveContentLayoutTool.description,
+      execute: async () => {
+        await IModelApp.tools.run(SaveContentLayoutTool.toolId);
+      },
+    });
+  }
+
+  public static get restoreSavedContentLayout() {
+    return new ToolItemDef({
+      toolId: RestoreSavedContentLayoutTool.toolId,
+      iconSpec: RestoreSavedContentLayoutTool.iconSpec,
+      label: RestoreSavedContentLayoutTool.flyover,
+      tooltip: RestoreSavedContentLayoutTool.description,
+      execute: async () => {
+        await IModelApp.tools.run(RestoreSavedContentLayoutTool.toolId);
+      },
+    });
+  }
+
+  public static get switchLayout1() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Horizontal Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
+          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          } else {
+            IModelApp.notifications.outputMessage(
+              new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
+          }
+        }
+      },
+    });
+  }
+
+  public static get switchLayout2() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Vertical Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
+          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          } else {
+            IModelApp.notifications.outputMessage(
+              new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
+          }
+        }
+      },
+    });
+  }
+
 }

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {

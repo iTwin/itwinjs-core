@@ -8,6 +8,7 @@
  */
 
 // import { Point2d } from "./Geometry2d";
+import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -143,6 +144,30 @@ export abstract class IndexedXYZCollection {
     }
     return range;
   }
+
+  /**
+   * For each run of points with indices i+1 to i+n within distance tolerance of points[i], return the indices i+1, ..., i+n.
+   * @return ordered array of 0-based indices of duplicate points
+   */
+  public findOrderedDuplicates(tolerance: number = Geometry.smallMetricDistance): number[] {
+    const tol2 = tolerance * tolerance;
+    const indices: number[] = [];
+    if (this.length > 1) {
+      for (let i = 0; i < this.length - 1;) {
+        let j = i + 1;
+        for (; j < this.length; ++j) {
+          const dist2 = this.distanceSquaredIndexIndex(i, j);
+          if (dist2 !== undefined && dist2 < tol2)
+            indices.push(j);
+          else
+            break;
+        }
+        i = j; // found next unique point
+      }
+    }
+    return indices;
+  }
+
   /** Accumulate scale times the x,y,z values at index.
    * * No action if index is out of bounds.
    */
@@ -164,6 +189,13 @@ export abstract class IndexedXYZCollection {
    */
   public get points(): Iterable<Point3d> {
     return new PointsIterator(this);
+  }
+  /** convert to Point3d[] */
+  public getArray(): Point3d[] {
+    const result = [];
+    for (const p of this.points)
+      result.push(p);
+    return result;
   }
 }
 /**

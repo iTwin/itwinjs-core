@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { assert, IDisposable, using } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, using } from "@itwin/core-bentley";
 import { CategoryDescription } from "./Category";
 import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";
@@ -205,7 +205,11 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
         return;
       }
 
-      item = convertNestedContentItemToStructArrayItem(item, parentField, nextField);
+      const { emptyNestedItem, convertedItem } = convertNestedContentItemToStructArrayItem(item, parentField, nextField);
+      if (emptyNestedItem)
+        return;
+
+      item = convertedItem;
       namePrefix = applyOptionalPrefix(parentField.name, namePrefix);
     }
 
@@ -216,7 +220,10 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
 
     if (fieldHierarchy.field.isNestedContentField()) {
       fieldHierarchy = convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy, namePrefix);
-      item = convertNestedContentFieldHierarchyItemToStructArrayItem(item, fieldHierarchy);
+      const { emptyNestedItem, convertedItem } = convertNestedContentFieldHierarchyItemToStructArrayItem(item, fieldHierarchy);
+      if (emptyNestedItem)
+        return;
+      item = convertedItem;
     } else if (pathUpToField.length > 0) {
       fieldHierarchy = {
         ...fieldHierarchy,
@@ -230,30 +237,30 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
       };
     }
 
-    traverseContentItemFieldValue(visitor, fieldHierarchy, fieldHierarchy.field.type, namePrefix, item.values[fieldHierarchy.field.name], item.displayValues[fieldHierarchy.field.name]);
+    traverseContentItemFieldValue(visitor, fieldHierarchy, item.mergedFieldNames, fieldHierarchy.field.type, namePrefix, item.values[fieldHierarchy.field.name], item.displayValues[fieldHierarchy.field.name]);
 
   } finally {
     visitor.finishField();
   }
 }
 
-function traverseContentItemFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, valueType: TypeDescription, namePrefix: string | undefined, rawValue: Value, displayValue: DisplayValue) {
+function traverseContentItemFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValue: Value, displayValue: DisplayValue) {
   if (rawValue !== undefined) {
     if (valueType.valueFormat === PropertyValueFormat.Array) {
       assert(Value.isArray(rawValue));
       assert(DisplayValue.isArray(displayValue));
-      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, valueType, namePrefix, rawValue, displayValue);
+      return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, namePrefix, rawValue, displayValue);
     }
     if (valueType.valueFormat === PropertyValueFormat.Struct) {
       assert(Value.isMap(rawValue));
       assert(DisplayValue.isMap(displayValue));
-      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, valueType, namePrefix, rawValue, displayValue);
+      return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, namePrefix, rawValue, displayValue);
     }
   }
-  traverseContentItemPrimitiveFieldValue(visitor, fieldHierarchy, valueType, namePrefix, rawValue, displayValue);
+  traverseContentItemPrimitiveFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, namePrefix, rawValue, displayValue);
 }
 
-function traverseContentItemArrayFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, valueType: TypeDescription, namePrefix: string | undefined, rawValues: ValuesArray, displayValues: DisplayValuesArray) {
+function traverseContentItemArrayFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValues: ValuesArray, displayValues: DisplayValuesArray) {
   assert(rawValues.length === displayValues.length);
   assert(valueType.valueFormat === PropertyValueFormat.Array);
   if (!visitor.startArray({ hierarchy: fieldHierarchy, valueType, namePrefix, rawValues, displayValues }))
@@ -262,14 +269,14 @@ function traverseContentItemArrayFieldValue(visitor: IContentVisitor, fieldHiera
   try {
     const itemType = valueType.memberType;
     rawValues.forEach((_, i) => {
-      traverseContentItemFieldValue(visitor, fieldHierarchy, itemType, namePrefix, rawValues[i], displayValues[i]);
+      traverseContentItemFieldValue(visitor, fieldHierarchy, mergedFieldNames, itemType, namePrefix, rawValues[i], displayValues[i]);
     });
   } finally {
     visitor.finishArray();
   }
 }
 
-function traverseContentItemStructFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, valueType: TypeDescription, namePrefix: string | undefined, rawValues: ValuesMap, displayValues: DisplayValuesMap) {
+function traverseContentItemStructFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValues: ValuesMap, displayValues: DisplayValuesMap) {
   assert(valueType.valueFormat === PropertyValueFormat.Struct);
   if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, namePrefix, rawValues, displayValues }))
     return;
@@ -288,18 +295,28 @@ function traverseContentItemStructFieldValue(visitor: IContentVisitor, fieldHier
           childFields: [],
         };
       }
-      traverseContentItemFieldValue(visitor, memberField, memberDescription.type, namePrefix, rawValues[memberDescription.name], displayValues[memberDescription.name]);
+      traverseContentItemFieldValue(visitor, memberField, mergedFieldNames, memberDescription.type, namePrefix, rawValues[memberDescription.name], displayValues[memberDescription.name]);
     });
   } finally {
     visitor.finishStruct();
   }
 }
 
-function traverseContentItemPrimitiveFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, valueType: TypeDescription, namePrefix: string | undefined, rawValue: Value, displayValue: DisplayValue) {
+function traverseContentItemPrimitiveFieldValue(visitor: IContentVisitor, fieldHierarchy: FieldHierarchy, mergedFieldNames: string[], valueType: TypeDescription, namePrefix: string | undefined, rawValue: Value, displayValue: DisplayValue) {
+  if (-1 !== mergedFieldNames.indexOf(fieldHierarchy.field.name)) {
+    visitor.processMergedValue({ mergedField: fieldHierarchy.field, requestedField: fieldHierarchy.field, namePrefix });
+    return;
+  }
+
   visitor.processPrimitiveValue({ field: fieldHierarchy.field, valueType, namePrefix, rawValue, displayValue });
 }
 
-function createFieldHierarchies(fields: Field[]) {
+/**
+  * `ignoreCategories` parameter enables adding all of the `nestedFields` to parent field's `childFields`
+  *  without considering categories.
+  *  @internal
+ */
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean) {
   const hierarchies = new Array<FieldHierarchy>();
   const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): FieldHierarchy | undefined => {
     let childFields: FieldHierarchy[] = [];
@@ -310,7 +327,7 @@ function createFieldHierarchies(fields: Field[]) {
         return undefined;
     }
     const fieldHierarchy = { field, childFields };
-    if (category === parentField?.category) {
+    if (category === parentField?.category || ignoreCategories && parentField) {
       // if categories of this field and its parent field match - return the field hierarchy without
       // including it as a top level field
       return fieldHierarchy;
@@ -430,9 +447,17 @@ export function applyOptionalPrefix(str: string, prefix?: string) {
   return prefix ? `${prefix}${FIELD_NAMES_SEPARATOR}${str}` : str;
 }
 
-function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: Field, nextField: Field) {
+interface NestedItemConversionResult {
+  emptyNestedItem: boolean;
+  convertedItem: Item;
+}
+
+function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: Field, nextField: Field): NestedItemConversionResult {
   const value = item.values[field.name] ?? [];
   assert(Value.isNestedContent(value));
+  if (value.length === 0)
+    return { emptyNestedItem: true, convertedItem: item };
+
   const nextFieldValues: { raw: ValuesArray, display: DisplayValuesArray } = { raw: [], display: [] };
   value.forEach((ncv) => {
     const nextRawValue = ncv.values[nextField.name];
@@ -447,7 +472,8 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
       nextFieldValues.display.push(nextDisplayValue);
     }
   });
-  return new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [nextField.name]: nextFieldValues.raw }, { [nextField.name]: nextFieldValues.display }, item.mergedFieldNames, item.extendedData);
+  const convertedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [nextField.name]: nextFieldValues.raw }, { [nextField.name]: nextFieldValues.display }, item.mergedFieldNames, item.extendedData);
+  return { emptyNestedItem: false, convertedItem };
 }
 
 function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy: FieldHierarchy, namePrefix: string | undefined) {
@@ -479,30 +505,40 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
 }
 
 function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: FieldHierarchy, ncvs: ReadonlyArray<NestedContentValue>) {
-  const result: { raw: ValuesArray, display: DisplayValuesArray } = { raw: [], display: [] };
+  const result: { raw: ValuesArray, display: DisplayValuesArray, mergedFieldNames: string[] } = { raw: [], display: [], mergedFieldNames: [] };
   ncvs.forEach((ncv) => {
     const values: ValuesMap = { ...ncv.values };
     const displayValues: DisplayValuesMap = { ...ncv.displayValues };
+    const mergedFieldNames: string[] = [...ncv.mergedFieldNames];
     fieldHierarchy.childFields.forEach((childFieldHierarchy) => {
       const childFieldName = childFieldHierarchy.field.name;
+      if (-1 !== ncv.mergedFieldNames.indexOf(childFieldName)) {
+        return;
+      }
       if (childFieldHierarchy.field.isNestedContentField()) {
         const value = values[childFieldName];
         assert(Value.isNestedContent(value));
         const convertedValues = convertNestedContentValuesToStructArrayValuesRecursive(childFieldHierarchy, value);
         values[childFieldName] = convertedValues.raw;
         displayValues[childFieldName] = convertedValues.display;
+        mergedFieldNames.push(...convertedValues.mergedFieldNames);
       }
     });
     result.raw.push(values);
     result.display.push(displayValues);
+    result.mergedFieldNames.push(...mergedFieldNames);
   });
   return result;
 }
 
-function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<Item>, fieldHierarchy: FieldHierarchy): Item {
+function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<Item>, fieldHierarchy: FieldHierarchy): NestedItemConversionResult {
   const fieldName = fieldHierarchy.field.name;
   const rawValue = item.values[fieldName];
   assert(Value.isNestedContent(rawValue));
+  if (rawValue.length === 0)
+    return { emptyNestedItem: true, convertedItem: item };
+
   const converted = convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy, rawValue);
-  return new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [fieldName]: converted.raw }, { [fieldName]: converted.display }, item.mergedFieldNames, item.extendedData);
+  const convertedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [fieldName]: converted.raw }, { [fieldName]: converted.display }, converted.mergedFieldNames, item.extendedData);
+  return { emptyNestedItem: false, convertedItem };
 }

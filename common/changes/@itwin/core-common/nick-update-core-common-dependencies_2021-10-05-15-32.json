@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "move js-base64 from devDeps to deps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
