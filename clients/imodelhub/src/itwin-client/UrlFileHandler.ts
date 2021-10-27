@@ -10,7 +10,6 @@ import * as fs from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { URL } from "url";
 import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { downloadFileAtomic } from "./downloadFileAtomic";
 import { AccessToken } from "@itwin/core-bentley";
