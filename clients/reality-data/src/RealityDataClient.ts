@@ -7,7 +7,6 @@
  * @module RealityData
  */
 
-import { URL } from "url";
 import { Angle } from "@itwin/core-geometry";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
