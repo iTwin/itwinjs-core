@@ -18,7 +18,6 @@
 rush.json       @calebmshafer @pmconne @wgoehrig
 
 /clients                        @calebmshafer @ramanujam-raman
-/clients/extension              @calebmshafer @paulius-valiunas
 /clients/imodelhub              @amikoliunas @Animagne
 
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
@@ -108,7 +107,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 
 /core/backend                   @imodeljs/admins
 /core/transformer               @MichaelBelousov @ColinKerr
-/core/backend-itwin-client      @calebmshafer @ramanujam-raman
 /core/bentley                   @imodeljs/admins
 /core/common                    @imodeljs/admins @imodeljs/display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
@@ -149,7 +147,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /full-stack-tests/core                @imodeljs/admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
 /full-stack-tests/imodelhub-client    @amikoliunas @Animagne
-/full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
 /full-stack-tests/presentation  @imodeljs/presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig

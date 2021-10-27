@@ -2,11 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import {
-  ECClassModifier, ECVersion, EntityClass, EntityClassProps, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
+  ECClassModifier, ECObjectsError, ECVersion, EntityClass, EntityClassProps, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+
+const expect = chai.expect;
+chai.use(chaiAsPromised);
 
 describe("Entities tests", () => {
   let testEditor: SchemaContextEditor;
@@ -89,10 +93,7 @@ describe("Entities tests", () => {
   it("try creating a new entity class with base class from unknown schema, returns error", async () => {
     const badSchemaKey = new SchemaKey("badSchema", new ECVersion(1,0,0));
     const baseClassKey = new SchemaItemKey("testBaseClass", badSchemaKey);
-    const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey);
-    expect(result).to.not.be.undefined;
-    expect(result.errorMessage).to.not.be.undefined;
-    expect(result.errorMessage).to.equal(`Unable to locate the schema ${baseClassKey.schemaKey.toString()} for the specified base class ${baseClassKey.fullName}.`);
+    await expect(testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey)).to.be.rejectedWith(ECObjectsError, `Schema Key ${badSchemaKey.toString(true)} not found in context`);
   });
 
   it("try creating a new entity class with a base class that cannot be located, returns error", async () => {

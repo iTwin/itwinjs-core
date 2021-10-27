@@ -166,6 +166,7 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
       this._fragments.push(new PathFragment(f0, f1, d0, this._accumulatedDistance, cp));
     }
   }
+  public needPrimaryGeometryForStrokes?(): boolean { return true;}
   public static createPathFragmentIndex(path: CurveChain, options?: StrokeOptions): PathFragment[] {
     const handler = new DistanceIndexConstructionContext();
     for (const curve of path.children) {

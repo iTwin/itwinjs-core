@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
 import { ClipStyle } from "@itwin/core-common";
-import {
-  IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState,
-} from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
@@ -28,7 +27,7 @@ describe("Section-cut tile tree", () => {
   const testCases: TestCase[] = [];
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     const imodels = await Promise.all([ SnapshotConnection.openFile("mirukuru.ibim"), SnapshotConnection.openFile("planprojection.bim") ]);
     testCases.push({ imodel: imodels[0], viewId: "0x24" });
     testCases.push({ imodel: imodels[1], viewId: "0x29" });
@@ -37,7 +36,7 @@ describe("Section-cut tile tree", () => {
   after(async () => {
     await Promise.all(testCases.map(async (x) => x.imodel.close()));
     testCases.length = 0;
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   async function test(setup: (view: SpatialViewState) => void, verify: (view: SpatialViewState) => void): Promise<void> {

@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@itwin/frontend-devtools";
-import { Vector3d } from "@itwin/core-geometry";
+import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput } from "@itwin/frontend-devtools";
 import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@itwin/core-common";
 import { Viewport, ViewState } from "@itwin/core-frontend";
 
@@ -28,6 +27,7 @@ export class LightingEditor {
     this.addSolar(content);
     this.addIntensities(content);
     this.addAmbient(content);
+    this.addFresnel(content);
     this.addHemisphere(content);
 
     const celInput = createLabeledNumericInput({
@@ -98,40 +98,21 @@ export class LightingEditor {
   }
 
   private addSolar(parent: HTMLElement): void {
-    const formatSunDirection = (dir: Vector3d) => {
-      return `${dir.x.toFixed(4)}, ${dir.y.toFixed(4)}, ${dir.z.toFixed(4)}`;
-    };
-
     const span = document.createElement("span");
     span.style.display = "flex";
     parent.appendChild(span);
     const intensityInput = this.addIntensityInput(span, "Solar", this._vp.lightSettings?.solar.intensity ?? 0, (intensity) => this.updateSettings({ solar: { intensity } }));
     intensityInput.style.marginRight = "0.67em";
 
-    const dirInput = createTextBox({
-      label: "Direction: ",
-      id: "sundir_input",
+    createButton({
       parent: span,
-      handler: (tb) => {
-        const lights = this._vp.lightSettings;
-        const parts = tb.value.split(",");
-        if (3 !== parts.length || !lights)
-          return;
-
-        const x = parseFloat(parts[0].trim());
-        const y = parseFloat(parts[1].trim());
-        const z = parseFloat(parts[2].trim());
-        if (Number.isNaN(x) || Number.isNaN(y) || Number.isNaN(z))
-          return;
-
-        const dir = new Vector3d(x, y, z).normalize();
-        if (dir) {
-          this.updateSettings({ solar: { direction: dir } });
-          tb.value = formatSunDirection(dir);
-        }
+      value: "Set direction from view",
+      handler: () => {
+        const direction = this._vp.view.getZVector();
+        direction.negate(direction);
+        this.updateSettings({ solar: { direction } });
       },
     });
-    dirInput.div.style.marginRight = "0.67em";
 
     const cb = this.addCheckBox("Always", (alwaysEnabled: boolean) => {
       this.updateSettings({ solar: { alwaysEnabled } });
@@ -143,7 +124,6 @@ export class LightingEditor {
         return;
 
       intensityInput.value = lights.solar.intensity.toString();
-      dirInput.textbox.value = formatSunDirection(lights.solar.direction);
       cb.checkbox.checked = lights.solar.alwaysEnabled;
     });
   }
@@ -163,6 +143,24 @@ export class LightingEditor {
       if (settings) {
         portrait.value = settings.portraitIntensity.toString();
         specular.value = settings.specularIntensity.toString();
+      }
+    });
+  }
+
+  private addFresnel(parent: HTMLElement): void {
+    const span = document.createElement("span");
+    span.style.display = "flex";
+    parent.appendChild(span);
+
+    const intensityInput = this.addIntensityInput(span, "Fresnel", this._vp.lightSettings?.fresnel.intensity ?? 0, (intensity) => this.updateSettings({ fresnel: { intensity } }));
+    intensityInput.style.marginRight = "0.67em";
+
+    const cb = this.addCheckBox("Invert", (invert: boolean) => this.updateSettings({ fresnel: { invert } }), span);
+    this._updates.push(() => {
+      const lights = this._vp.lightSettings;
+      if (lights) {
+        intensityInput.value = lights.fresnel.intensity.toString();
+        cb.checkbox.checked = lights.fresnel.invert;
       }
     });
   }

@@ -10,14 +10,15 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
-import { ProgressInfo } from "@bentley/itwin-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
+import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@itwin/appui-react";
@@ -29,7 +30,6 @@ import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
@@ -61,7 +61,7 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
-  SaveContentLayoutTool, UiProviderTool,
+  SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
 } from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
@@ -180,7 +180,6 @@ export class SampleAppIModelApp {
 
     const iModelAppOpts = {
       ...opts.iModelApp,
-      localization: new ITwinLocalization( { urlTemplate: "locales/en/{{ns}}.json" }),
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
@@ -210,7 +209,7 @@ export class SampleAppIModelApp {
         redirectUri,
         scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
         responseType: "code",
-        authority: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
+        authority: await new ImsAuthorizationClient().getUrl(),
       });
       try {
         await auth.signInSilent();
@@ -277,6 +276,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
+    TestExtensionUiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
     OpenCustomPopoutTool.register(this.sampleAppNamespace);
@@ -318,7 +318,7 @@ export class SampleAppIModelApp {
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults = {
+    const defaults: InitialAppUiSettings = {
       colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
       dragInteraction: false,
       frameworkVersion: "2",
@@ -488,10 +488,10 @@ export class SampleAppIModelApp {
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const accessToken = await IModelApp.getAccessToken();
-      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(accessToken, {
+      const iTwinList: ITwin[] = await (new ProjectsAccessClient()).getAll(accessToken, {
         search: {
           searchString: iTwinName,
-          propertyName: ITwinSearchableProperty.Name,
+          propertyName: ProjectsSearchableProperty.Name,
           exactMatch: true,
         },
       });
@@ -608,7 +608,7 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
 
 function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
   return (
-    <FrameworkVersion version={props.frameworkVersion === "2" ? "2" : "1"}>
+    <FrameworkVersion>
       {props.children}
     </FrameworkVersion>
   );

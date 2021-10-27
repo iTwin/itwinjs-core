@@ -10,6 +10,7 @@
 
 import * as React from "react";
 import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import { UiTestExtension } from "@itwin/ui-test-extension";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
@@ -271,6 +272,24 @@ export class UiProviderTool extends Tool {
       UiProviderTool.testExtensionLoaded = testUiProvider.id;
     }
 
+    return true;
+  }
+}
+
+export class TestExtensionUiProviderTool extends Tool {
+  public static testExtensionLoaded = "";
+
+  public static override toolId = "TestExtensionUiProvider";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "load test extension";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+  public override async run(_args: any[]): Promise<boolean> {
+    await UiTestExtension.initialize();
     return true;
   }
 }

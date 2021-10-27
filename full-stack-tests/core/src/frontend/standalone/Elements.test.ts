@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, Placement2d, Placement3d } from "@itwin/core-common";
-import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("Elements", () => {
   let imodel: SnapshotConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
   after(async () => {
     await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("loads element properties by identifier with options", async () => {

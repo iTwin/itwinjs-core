@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory, NativeLoggerCategory } from "@itwin/core-backend";
-import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import { PresentationBackendNativeLoggerCategory } from "@itwin/presentation-backend";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
@@ -17,7 +16,7 @@ export function initializeLogging() {
 
   Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
   Logger.setLevel(BackendLoggerCategory.IModelHost, LogLevel.Trace);
-  Logger.setLevel(BackendITwinClientLoggerCategory.FileHandlers, LogLevel.Trace);
+  Logger.setLevel(IModelHubClientLoggerCategory.FileHandlers, LogLevel.Trace);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Warning);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_Connections, LogLevel.Info);
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation_RulesEngine_Threads, LogLevel.Info);

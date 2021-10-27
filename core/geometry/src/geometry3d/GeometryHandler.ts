@@ -290,12 +290,21 @@ export interface IStrokeHandler {
    */
   announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void;
 
-  /** Announce that curve primitive cp should be evaluated in the specified fraction interval. */
+  /** Announce that curve primitive cp should be evaluated in the specified fraction interval.
+   * * Note that this method is permitted (expected) to provide pre-stroked data if available.
+   * * In th pre-stroked case, the cp passed to the handler will be the stroked image, not the original.
+   * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes
+  */
   announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive,
     numStrokes: number,
     fraction0: number,
     fraction1: number): void;
+  /**
+   * OPTIONAL method for a handler to indicate that it wants primary geometry (e.g. spirals) rather than strokes.
+   * @returns true if primary geometry should be passed (rather than stroked or otherwise simplified)
+  */
+  needPrimaryGeometryForStrokes?(): boolean;
   /** Announce numPoints interpolated between point0 and point1, with associated fractions */
   announceSegmentInterval(
     cp: CurvePrimitive,

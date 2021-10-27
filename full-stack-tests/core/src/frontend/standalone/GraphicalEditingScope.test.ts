@@ -11,8 +11,8 @@ import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -38,13 +38,13 @@ describe("GraphicalEditingScope", () => {
     }
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend();
       await initializeEditTools();
     });
 
     after(async () => {
       await closeIModel();
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     afterEach(async () => {

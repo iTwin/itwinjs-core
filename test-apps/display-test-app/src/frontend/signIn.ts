@@ -5,6 +5,7 @@
 import { IModelApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken } from "@itwin/core-bentley";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -26,7 +27,7 @@ export async function signIn(): Promise<boolean> {
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
     responseType: "code",
-    authority: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
+    authority: await new ImsAuthorizationClient().getUrl(),
   });
   try {
     await browserAuth.signInSilent();
@@ -41,4 +42,10 @@ export async function signIn(): Promise<boolean> {
     browserAuth.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
     browserAuth.signIn().catch((err) => reject(err));
   });
+}
+
+export async function signOut(): Promise<void> {
+  const auth = IModelApp.authorizationClient;
+  if (auth instanceof NativeAppAuthorization || auth instanceof BrowserAuthorizationClient)
+    return auth.signOut();
 }

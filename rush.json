@@ -49,13 +49,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/itwin-registry-client",
-      "projectFolder": "clients/itwin-registry",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodelhub-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
@@ -150,13 +143,6 @@
       "packageName": "@itwin/editor-frontend",
       "projectFolder": "editor/frontend",
       "reviewCategory": "edit",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/backend-itwin-client",
-      "projectFolder": "core/backend-itwin-client",
-      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -260,42 +246,42 @@
     },
     {
       "packageName": "@itwin/appui-abstract",
-      "projectFolder": "ui/abstract",
+      "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/core-react",
-      "projectFolder": "ui/core",
+      "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/components-react",
-      "projectFolder": "ui/components",
+      "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/imodel-components-react",
-      "projectFolder": "ui/imodel-components",
+      "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/appui-layout-react",
-      "projectFolder": "ui/ninezone",
+      "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/appui-react",
-      "projectFolder": "ui/framework",
+      "projectFolder": "ui/appui-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -524,14 +510,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "core-full-stack-tests",
-      "projectFolder": "full-stack-tests/core",
+      "packageName": "backend-integration-tests",
+      "projectFolder": "full-stack-tests/backend",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "native-app-full-stack-tests",
-      "projectFolder": "full-stack-tests/native-app",
+      "packageName": "core-full-stack-tests",
+      "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -552,7 +538,6 @@
       "packageName": "@itwin/imodelhub-client-tests",
       "projectFolder": "full-stack-tests/imodelhub-client",
       "reviewCategory": "integration-testing",
-      "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     }
   ]

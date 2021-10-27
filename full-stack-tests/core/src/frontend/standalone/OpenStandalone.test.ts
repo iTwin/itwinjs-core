@@ -5,18 +5,18 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModel, IModelError } from "@itwin/core-common";
 import { BriefcaseConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
   describe("BriefcaseConnection.openStandalone", () => {
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend();
     });
 
     after(async () => {
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     it("openStandalone properties", async () => {

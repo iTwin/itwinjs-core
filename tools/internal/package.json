@@ -8,8 +8,8 @@
     "internal-tools": "./bin/internal-tools.js"
   },
   "scripts": {
-    "compile": "",
     "build": "",
+    "build:ci": "",
     "clean": "",
     "docs": "",
     "lint": "",

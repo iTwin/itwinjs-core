@@ -7,6 +7,7 @@ import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { GltfDataType, RenderTexture } from "@itwin/core-common";
 import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../../TestUtility";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -282,13 +283,13 @@ describe("B3dmReader", () => {
   let imodel: SnapshotConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
     await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should locate texture for mesh", async () => {

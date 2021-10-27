@@ -26,7 +26,6 @@ import { ChangedElements } from '@itwin/core-common';
 import { ChangedModels } from '@itwin/core-common';
 import { ChangedValueState } from '@itwin/core-common';
 import { ChangeOpCode } from '@itwin/core-common';
-import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesetFileProps } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
@@ -40,7 +39,6 @@ import { CloudStorageContainerDescriptor } from '@itwin/core-common';
 import { CloudStorageContainerUrl } from '@itwin/core-common';
 import { CloudStorageProvider } from '@itwin/core-common';
 import { Code } from '@itwin/core-common';
-import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
@@ -99,7 +97,6 @@ import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
@@ -121,7 +118,6 @@ import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
-import { Lock } from '@bentley/imodelhub-client';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
@@ -306,41 +302,41 @@ export class AzureBlobStorage extends CloudStorageService {
 // @beta
 export interface BackendHubAccess {
     // @internal
-    acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
-    createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
-    downloadChangeset(arg: ChangesetArg & {
+    acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
+    acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
+    createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
+    deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
+    downloadChangeset: (arg: ChangesetArg & {
         targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps>;
-    downloadChangesets(arg: ChangesetRangeArg & {
+    }) => Promise<ChangesetFileProps>;
+    downloadChangesets: (arg: ChangesetRangeArg & {
         targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps[]>;
+    }) => Promise<ChangesetFileProps[]>;
     // @internal
-    downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
     // @internal
-    downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
-    getChangesetFromNamedVersion(arg: IModelIdArg & {
+    downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
+    getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
-    }): Promise<ChangesetProps>;
-    getChangesetFromVersion(arg: IModelIdArg & {
+    }) => Promise<ChangesetProps>;
+    getChangesetFromVersion: (arg: IModelIdArg & {
         version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
-    pushChangeset(arg: IModelIdArg & {
+    }) => Promise<ChangesetProps>;
+    getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
+    getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
+    pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
+    }) => Promise<ChangesetIndex>;
     // @internal
-    queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
-    queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
+    queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
+    queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
+    queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     // @internal
-    queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     // @internal
-    releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+    releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
+    releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
 
 // @public
@@ -596,7 +592,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 }
 
 // @internal (undocumented)
-export type CheckPointArg = DownloadRequest;
+export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
 export class CheckpointManager {
@@ -1069,7 +1065,7 @@ export class ECDb implements IDisposable {
     // @internal
     resetSqliteCache(size: number): void;
     restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
-    saveChanges(changeSetName?: string): void;
+    saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -2407,7 +2403,8 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
-    imodelClient?: IModelClient;
+    // @beta
+    hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal
@@ -2420,77 +2417,6 @@ export class IModelHostConfiguration {
     tileContentRequestTimeout: number;
     // @internal
     tileTreeRequestTimeout: number;
-}
-
-// @internal (undocumented)
-export class IModelHubBackend {
-    // (undocumented)
-    static acquireLocks(arg: BriefcaseDbArg & {
-        locks: LockProps[];
-    }): Promise<void>;
-    // (undocumented)
-    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
-    // (undocumented)
-    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    // (undocumented)
-    static deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
-    // (undocumented)
-    static downloadChangeset(arg: ChangesetArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps>;
-    static downloadChangesets(arg: ChangesetRangeArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps[]>;
-    // (undocumented)
-    static downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
-    // (undocumented)
-    static downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
-    // (undocumented)
-    static getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getChangesetFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
-    // (undocumented)
-    static get iModelClient(): IModelClient;
-    // (undocumented)
-    static get isUsingIModelBankClient(): boolean;
-    // (undocumented)
-    static pushChangeset(arg: IModelIdArg & {
-        changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
-    // (undocumented)
-    static queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-    // (undocumented)
-    static queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
-    // (undocumented)
-    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    static queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-    // (undocumented)
-    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-    // (undocumented)
-    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-    // (undocumented)
-    static releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
-    // (undocumented)
-    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
-    // (undocumented)
-    static setIModelClient(client?: IModelClient): void;
-    // (undocumented)
-    static toChangeSetProps(cs: ChangeSet): ChangesetProps;
-    // (undocumented)
-    static toHubLock(arg: BriefcaseDbArg, reqLock: LockProps): Lock;
-    // (undocumented)
-    static toHubLocks(arg: BriefcaseDbArg & {
-        locks: LockProps[];
-    }): Lock[];
 }
 
 // @public
@@ -2611,6 +2537,9 @@ export abstract class InformationReferenceElement extends InformationContentElem
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @internal (undocumented)
+export function initializeRpcBackend(): void;
 
 // @beta
 export interface InstanceChange {
@@ -3467,6 +3396,12 @@ export class RoleModel extends Model {
 }
 
 // @public
+export class RpcTrace {
+    static get currentActivity(): RpcActivity | undefined;
+    static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
+    }
+
+// @public
 export class Schema {
     // @internal
     protected constructor();
@@ -4111,14 +4046,11 @@ export class V1CheckpointManager {
     static getFolder(iModelId: GuidString): LocalDirName;
     }
 
-// @beta
+// @internal
 export interface V2CheckpointAccessProps {
-    // (undocumented)
-    readonly auth: string;
-    // (undocumented)
+    readonly auth: AccessToken;
     readonly container: string;
     readonly dbAlias: string;
-    // (undocumented)
     readonly storageType: string;
     readonly user: string;
 }

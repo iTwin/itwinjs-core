@@ -723,6 +723,7 @@ describe("Geodetic Settings", () => {
 
     roundTrip({ horizontalCRS: { id: "LL83" }, verticalCRS: { id: "NAVD88" } }, "input");
     roundTrip({ horizontalCRS: { id: "ETRF89" }, verticalCRS: { id: "ELLIPSOID" } }, "input");
+    roundTrip({ horizontalCRS: { id: "OSGB" }, verticalCRS: { id: "LOCAL_ELLIPSOID" } }, "input");
     roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" } }, "input");
     roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" }, additionalTransform: { helmert2DWithZOffset: { translationX: 10.0, translationY: 15.0, translationZ: 0.02, rotDeg: 1.2, scale: 1.0001 } } }, "input");
 

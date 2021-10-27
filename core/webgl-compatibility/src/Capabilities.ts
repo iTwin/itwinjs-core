@@ -265,7 +265,9 @@ export class Capabilities {
     }
 
     // Determine the maximum color-renderable attachment type.
-    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
+    // Note: iOS>=15 allows full-float rendering. However, it does not actually work on non-M1 devices. Because of this, for now we disallow full float rendering on iOS devices.
+    // ###TODO: Re-assess this after future iOS updates.
+    const allowFloatRender = (undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float")) && !ProcessDetector.isIOSBrowser;
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {

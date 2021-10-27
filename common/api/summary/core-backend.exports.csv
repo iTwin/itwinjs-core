@@ -30,7 +30,7 @@ beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
-internal;CheckPointArg = DownloadRequest
+internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -181,7 +181,6 @@ internal;TileContentState
 internal;Tiles
 public;IModelHost
 public;IModelHostConfiguration
-internal;IModelHubBackend
 public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
@@ -194,6 +193,7 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
+internal;initializeRpcBackend(): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
@@ -267,6 +267,7 @@ public;RepositoryModel
 public;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
+public;RpcTrace
 public;Schema
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
@@ -324,7 +325,7 @@ public;class TypeDefinitionElement
 public;UpdateModelOptions 
 public;UrlLink 
 internal;V1CheckpointManager
-beta;V2CheckpointAccessProps
+internal;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
 public;ViewAttachment 

@@ -73,6 +73,9 @@
     "SignIn": {
       "keyin": "dta signin"
     },
+    "SignOut": {
+      "keyin": "dta signout"
+    },
     "PushChanges": {
       "keyin": "dta push"
     },
