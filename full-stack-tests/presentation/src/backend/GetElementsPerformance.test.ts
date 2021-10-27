@@ -5,8 +5,7 @@
 import { expect } from "chai";
 import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
-import { PagedResponse, PageOptions } from "@itwin/presentation-common";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { DbResult, QueryRowFormat } from "@itwin/core-common";
 
 /* eslint-disable no-console */
 const PAGE_SIZE = 1000;
@@ -75,8 +74,8 @@ async function getElementsPropertiesECSQL(db: IModelDb) {
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id`;
 
   let propertiesCount = 0;
-  for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames, { convertClassIdsToClassNames: true })) {
-    const properties = await loadElementProperties(db, row.className, row.id);
+  for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    const properties = loadElementProperties(db, row.className, row.id);
     expect(properties.id).to.be.eq(row.id);
     propertiesCount++;
     if (propertiesCount % 1000 === 0)
@@ -86,99 +85,103 @@ async function getElementsPropertiesECSQL(db: IModelDb) {
   return propertiesCount;
 }
 
-async function loadElementProperties(db: IModelDb, className: string, elementId: string) {
-  const elementProperties = await loadProperties(db, className, [elementId], true);
+function loadElementProperties(db: IModelDb, className: string, elementId: string) {
+  const elementProperties = loadProperties(db, className, [elementId], true);
   return {
     ...elementProperties[0],
-    ...(await loadRelatedProperties(db, async () => queryGeometricElement3dTypeDefinitions(db, elementId), true)),
-    ...(await loadRelatedProperties(db, async () => queryGeometricElement2dTypeDefinitions(db, elementId), true)),
-    ...(await loadRelatedProperties(db, async () => queryElementLinks(db, elementId), false)),
-    ...(await loadRelatedProperties(db, async () => queryGroupElementLinks(db, elementId), false)),
-    ...(await loadRelatedProperties(db, async () => queryModelLinks(db, elementId), false)),
-    ...(await loadRelatedProperties(db, async () => queryDrawingGraphicElements(db, elementId), false)),
-    ...(await loadRelatedProperties(db, async () => queryGraphicalElement3dElements(db, elementId), false)),
-    ...(await loadRelatedProperties(db, async () => queryExternalSourceRepositories(db, elementId), false)),
-    ...(await loadRelatedProperties(db, async () => queryExternalSourceGroupRepositories(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryGeometricElement3dTypeDefinitions(db, elementId), true)),
+    ...(loadRelatedProperties(db, () => queryGeometricElement2dTypeDefinitions(db, elementId), true)),
+    ...(loadRelatedProperties(db, () => queryElementLinks(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryGroupElementLinks(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryModelLinks(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryDrawingGraphicElements(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryGraphicalElement3dElements(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryExternalSourceRepositories(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryExternalSourceGroupRepositories(db, elementId), false)),
   };
 }
 
-async function loadRelatedProperties(db: IModelDb, idsGetter: () => Promise<Map<string, string[]>>, loadAspects: boolean) {
-  const idsByClass = await idsGetter();
+function loadRelatedProperties(db: IModelDb, idsGetter: () => Map<string, string[]>, loadAspects: boolean) {
+  const idsByClass = idsGetter();
   const properties: any = {};
   for (const entry of idsByClass) {
-    properties[entry[0]] = await loadProperties(db, entry[0], entry[1], loadAspects);
+    properties[entry[0]] = loadProperties(db, entry[0], entry[1], loadAspects);
   }
   return properties;
 }
 
-async function loadProperties(db: IModelDb, className: string, ids: string[], loadAspects: boolean) {
+function loadProperties(db: IModelDb, className: string, ids: string[], loadAspects: boolean) {
   const query = `
     SELECT *
     FROM ${className}
     WHERE ECInstanceId IN (${ids.map((_v, idx) => `:id${idx}`).join(",")})`;
 
-  const properties: any[] = [];
-  for await (const row of db.query(query, QueryBinder.from(ids), QueryRowFormat.UseJsPropertyNames)) {
-    properties.push({
-      ...collectProperties(row),
-      ...(loadAspects ? await loadRelatedProperties(db, async () => queryUniqueAspects(db, row.Id), false) : {}),
-      ...(loadAspects ? await loadRelatedProperties(db, async () => queryMultiAspects(db, row.Id), false) : {}),
-    });
-  }
-  return properties;
+  return db.withPreparedStatement(query, (stmt) => {
+    const properties: any[] = [];
+    stmt.bindValues(ids);
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const row = stmt.getRow();
+      properties.push({
+        ...collectProperties(row),
+        ...(loadAspects ? loadRelatedProperties(db, () => queryUniqueAspects(db, row.Id), false) : {}),
+        ...(loadAspects ? loadRelatedProperties(db, () => queryMultiAspects(db, row.Id), false) : {}),
+      });
+    }
+    return properties;
+  });
 }
 
-async function queryMultiAspects(db: IModelDb, elementId: string) {
+function queryMultiAspects(db: IModelDb, elementId: string) {
   const query = `
     SELECT ma.ECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ElementMultiAspect ma
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = ma.ECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE ma.Element.Id = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryUniqueAspects(db: IModelDb, elementId: string) {
+function queryUniqueAspects(db: IModelDb, elementId: string) {
   const query = `
     SELECT ua.ECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ElementUniqueAspect ua
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = ua.ECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE ua.Element.Id = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryGeometricElement3dTypeDefinitions(db: IModelDb, elementId: string) {
+function queryGeometricElement3dTypeDefinitions(db: IModelDb, elementId: string) {
   const query = `
     SELECT relType.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.GeometricElement3dHasTypeDefinition relType
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relType.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relType.SourceECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryGeometricElement2dTypeDefinitions(db: IModelDb, elementId: string) {
+function queryGeometricElement2dTypeDefinitions(db: IModelDb, elementId: string) {
   const query = `
     SELECT relType.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.GeometricElement2dHasTypeDefinition relType
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relType.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relType.SourceECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryElementLinks(db: IModelDb, elementId: string) {
+function queryElementLinks(db: IModelDb, elementId: string) {
   const query = `
     SELECT relLink.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ElementHasLinks relLink
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relLink.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relLink.SourceECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryGroupElementLinks(db: IModelDb, elementId: string) {
+function queryGroupElementLinks(db: IModelDb, elementId: string) {
   const query = `
     SELECT relLink.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ElementHasLinks relLink
@@ -186,10 +189,10 @@ async function queryGroupElementLinks(db: IModelDb, elementId: string) {
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relLink.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relElementGroup.TargetECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryModelLinks(db: IModelDb, elementId: string) {
+function queryModelLinks(db: IModelDb, elementId: string) {
   const query = `
     SELECT relLink.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ElementHasLinks relLink
@@ -198,30 +201,30 @@ async function queryModelLinks(db: IModelDb, elementId: string) {
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relLink.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relModelContains.TargetECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryDrawingGraphicElements(db: IModelDb, elementId: string) {
+function queryDrawingGraphicElements(db: IModelDb, elementId: string) {
   const query = `
     SELECT relRepresents.SourceECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.DrawingGraphicRepresentsElement relRepresents
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relRepresents.SourceECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relRepresents.TargetECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryGraphicalElement3dElements(db: IModelDb, elementId: string) {
+function queryGraphicalElement3dElements(db: IModelDb, elementId: string) {
   const query = `
     SELECT relRepresents.SourceECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.GraphicalElement3dRepresentsElement relRepresents
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relRepresents.SourceECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE relRepresents.TargetECInstanceId = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryExternalSourceRepositories(db: IModelDb, elementId: string) {
+function queryExternalSourceRepositories(db: IModelDb, elementId: string) {
   const query = `
     SELECT relRepository.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ExternalSourceIsInRepository relRepository
@@ -230,10 +233,10 @@ async function queryExternalSourceRepositories(db: IModelDb, elementId: string) 
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relRepository.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE aspect.Element.Id = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryExternalSourceGroupRepositories(db: IModelDb, elementId: string) {
+function queryExternalSourceGroupRepositories(db: IModelDb, elementId: string) {
   const query = `
     SELECT relRepository.TargetECInstanceId id, '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.ExternalSourceIsInRepository relRepository
@@ -243,21 +246,25 @@ async function queryExternalSourceGroupRepositories(db: IModelDb, elementId: str
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = relRepository.TargetECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id
     WHERE aspect.Element.Id = :id`;
-  return queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
+  return queryRelatedClasses(db, query, { id: elementId });
 }
 
-async function queryRelatedClasses(db: IModelDb, query: string, bindings: QueryBinder) {
-  const relatedClasses = new Map<string, string[]>();
-  for await (const row of db.query(query, bindings, QueryRowFormat.UseJsPropertyNames)) {
-    const className = row.className ?? row.targetClassName ?? row.sourceClassName;
-    const relatedIds = relatedClasses.get(className);
-    if (!relatedIds) {
-      relatedClasses.set(className, [row.id]);
-      continue;
+function queryRelatedClasses(db: IModelDb, query: string, bindings: object) {
+  return db.withPreparedStatement(query, (stmt) => {
+    stmt.bindValues(bindings);
+    const relatedClasses = new Map<string, string[]>();
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const row = stmt.getRow();
+      const className = row.className;
+      const relatedIds = relatedClasses.get(className);
+      if (!relatedIds) {
+        relatedClasses.set(className, [row.id]);
+        continue;
+      }
+      relatedIds.push(row.id);
     }
-    relatedIds.push(row.id);
-  }
-  return relatedClasses;
+    return relatedClasses;
+  });
 }
 
 const excludedProperties = new Set<string>(["element", "jsonProperties", "geometryStream"]);
