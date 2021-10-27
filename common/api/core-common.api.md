@@ -8970,13 +8970,13 @@ export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
-    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
     toJSON(): VerticalCRSProps;
 }
 
 // @public
 export interface VerticalCRSProps {
-    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
 }
 
 // @public (undocumented)

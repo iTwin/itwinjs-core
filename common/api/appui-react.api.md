@@ -556,7 +556,7 @@ export class AppUiSettings implements UserSettingsProvider {
     // (undocumented)
     dragInteraction: UiSetting<boolean>;
     // (undocumented)
-    frameworkVersion: UiSetting<FrameworkVersionId>;
+    frameworkVersion: UiSetting<string>;
     // (undocumented)
     loadUserSettings(storage: UiSettingsStorage): Promise<void>;
     // (undocumented)
@@ -1122,7 +1122,7 @@ export const ConfigurableUiActions: {
     setToolPrompt: (toolPrompt: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetToolPrompt, string>;
     setWidgetOpacity: (opacity: number) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
     setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
-    setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>;
+    setFrameworkVersion: (frameworkVersion: string) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, string>;
 };
 
 // @public
@@ -1215,7 +1215,7 @@ export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, ac
 // @public
 export interface ConfigurableUiState {
     // (undocumented)
-    frameworkVersion: FrameworkVersionId;
+    frameworkVersion: string;
     // (undocumented)
     snapMode: number;
     // (undocumented)
@@ -2198,7 +2198,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("../UserInfo").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("../UserInfo").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2311,8 +2311,11 @@ export class FrameworkUiAdmin extends UiAdmin {
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
-// @public
+// @alpha (undocumented)
 export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
+
+// @alpha (undocumented)
+export type FrameworkVersion = "1" | "2";
 
 // @internal
 export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChangedEventArgs> {
@@ -2321,21 +2324,20 @@ export class FrameworkVersionChangedEvent extends UiEvent<FrameworkVersionChange
 // @internal
 export interface FrameworkVersionChangedEventArgs {
     // (undocumented)
-    oldVersion: FrameworkVersionId;
+    oldVersion: string;
     // (undocumented)
-    version: FrameworkVersionId;
+    version: string;
 }
 
-// @public (undocumented)
-export const FrameworkVersionContext: React.Context<FrameworkVersionId>;
+// @internal (undocumented)
+export const FrameworkVersionContext: React.Context<FrameworkVersion>;
 
-// @public
-export type FrameworkVersionId = "1" | "2";
-
-// @public (undocumented)
+// @alpha (undocumented)
 export interface FrameworkVersionProps {
     // (undocumented)
     children?: React.ReactNode;
+    // (undocumented)
+    version: FrameworkVersion;
 }
 
 // @internal (undocumented)
@@ -3124,7 +3126,7 @@ export interface InitialAppUiSettings {
     // (undocumented)
     dragInteraction: boolean;
     // (undocumented)
-    frameworkVersion: FrameworkVersionId;
+    frameworkVersion: string;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -6564,6 +6566,8 @@ export class UiFramework {
     static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    // @internal
+    static readonly onFrameworkVersionChangedEvent: FrameworkVersionChangedEvent;
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
     // (undocumented)
     static openCursorMenu(menuData: CursorMenuData | undefined): void;
@@ -6599,7 +6603,7 @@ export class UiFramework {
     // (undocumented)
     static setUiSettingsStorage(storage: UiSettingsStorage, immediateSync?: boolean): Promise<void>;
     // (undocumented)
-    static setUiVersion(version: FrameworkVersionId): void;
+    static setUiVersion(version: string): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
     // (undocumented)
@@ -6610,7 +6614,7 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
-    static get uiVersion(): FrameworkVersionId;
+    static get uiVersion(): string;
     // (undocumented)
     static useDefaultPopoutUrl: boolean;
     // (undocumented)
@@ -6754,8 +6758,8 @@ export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 // @public
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
-// @public (undocumented)
-export function useFrameworkVersion(): FrameworkVersionId;
+// @internal (undocumented)
+export function useFrameworkVersion(): FrameworkVersion;
 
 // @internal (undocumented)
 export function useFrontstageManager(frontstageDef: FrontstageDef): void;
