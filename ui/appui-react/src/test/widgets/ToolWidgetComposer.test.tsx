@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
+import { Provider } from "react-redux";
 import { FrameworkVersion } from "../../appui-react/hooks/useFrameworkVersion";
 import { BackstageAppButton, ToolWidgetComposer } from "../../appui-react/widgets/ToolWidgetComposer";
 import TestUtils, { mount, storageMock } from "../TestUtils";
@@ -24,7 +25,6 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
   });
 
   describe("ToolWidgetComposer", () => {
-
     before(async () => {
       await TestUtils.initializeUiFramework();
     });
@@ -57,16 +57,21 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
 
     it("BackstageAppButton should render in 2.0 mode", () => {
       mount(
-        <FrameworkVersion version="2">
-          <BackstageAppButton icon={"icon-test"} />
-        </FrameworkVersion>);
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <BackstageAppButton icon={"icon-test"} />
+          </FrameworkVersion>
+        </Provider>);
     });
 
     it("BackstageAppButton should render in 1.0 mode", () => {
       mount(
-        <FrameworkVersion version="1">
-          <BackstageAppButton icon={"icon-test"} />
-        </FrameworkVersion>);
+        <Provider store={TestUtils.store} >
+          <FrameworkVersion>
+            <BackstageAppButton icon={"icon-test"} />
+          </FrameworkVersion>
+        </Provider>
+      );
     });
 
   });

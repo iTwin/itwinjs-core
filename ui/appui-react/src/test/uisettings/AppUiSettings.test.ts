@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { storageMock, TestUtils } from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { AppUiSettings } from "../../appui-react/uisettings/AppUiSettings";
+import { AppUiSettings, InitialAppUiSettings } from "../../appui-react/uisettings/AppUiSettings";
 import { SYSTEM_PREFERRED_COLOR_THEME } from "../../appui-react/theme/ThemeManager";
 
 describe("AppUiSettings", () => {
@@ -47,7 +47,7 @@ describe("AppUiSettings", () => {
   });
 
   it("should used default settings", async () => {
-    const defaults = {
+    const defaults: InitialAppUiSettings = {
       colorTheme: SYSTEM_PREFERRED_COLOR_THEME,
       dragInteraction: false,
       frameworkVersion: "2",

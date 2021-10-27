@@ -679,7 +679,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     }
     return;
   });
-  if (FrontstageManager.nineZoneSize) {
+  if (FrontstageManager.nineZoneSize && (0 !== FrontstageManager.nineZoneSize.height || 0 !== FrontstageManager.nineZoneSize.width)) {
     restored = FrameworkStateReducer(restored, {
       type: "RESIZE",
       size: {
