@@ -198,7 +198,7 @@ export class IModelHost {
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
   /** Root directory holding all the files that iTwin.js caches */
-  public static get cacheDir(): string { return this._cacheDir; }
+  public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
   /** get the Workspaces */
   public static get workspace(): Workspace { return this._workspace; }
@@ -359,7 +359,7 @@ export class IModelHost {
     IModelHost.onAfterStartup.raiseEvent();
   }
 
-  private static _briefcaseCacheDir: string;
+  private static _briefcaseCacheDir: LocalDirName;
 
   private static logStartup() {
     if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
@@ -385,7 +385,7 @@ export class IModelHost {
   }
 
   private static setupHostDirs(configuration: IModelHostConfiguration) {
-    const setupDir = (dir: string) => {
+    const setupDir = (dir: LocalDirName) => {
       dir = path.normalize(dir);
       IModelJsFs.recursiveMkDirSync(dir);
       return dir;
