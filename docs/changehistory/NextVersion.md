@@ -108,6 +108,10 @@ The following code applies a display style similar to those illustrated above to
       intensity: 0.8,
       invert: true,
     },
+    // Disable directional lighting.
+    solar: {
+      intensity: 0,
+    },
   });
 ```
 
